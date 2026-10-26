@@ -23,6 +23,7 @@ export interface HudOptions {
 export interface Hud {
   update(model: HudModel): void;
   setBadge(asset: ResolvedAsset): void;
+  setMuted(muted: boolean): void;
   warn(message: string): void;
   fatal(error: Error): void;
 }
@@ -98,7 +99,7 @@ function badgeLabel(asset: ResolvedAsset | undefined): string {
   if (asset && asset.placeholderSpec.kind === "css") {
     return asset.placeholderSpec.label;
   }
-  return "M0.1";
+  return "M0.2";
 }
 
 export function mountHud(
@@ -111,8 +112,10 @@ export function mountHud(
 
   const titlePanel = element("header", "hud__panel hud__panel--title");
   const eyebrowRow = element("div", "hud__eyebrow-row");
-  const eyebrow = element("span", "hud__eyebrow", "M0.1 · Placeholder room");
+  const eyebrow = element("span", "hud__eyebrow", "M0.2 · Placeholder room");
   const stamp = element("span", "hud__stamp", badgeLabel(options.badge));
+  const audioStatus = element("span", "hud__audio", "Audio on");
+  audioStatus.dataset.muted = "false";
   styleBadge(stamp, options.badge);
 
   const title = element("h1", "hud__title");
@@ -126,6 +129,7 @@ export function mountHud(
   const controlRows: ReadonlyArray<[string, string]> = [
     ["Player 1", "A / D · W or Space"],
     ["Player 2", "← / → · ↑"],
+    ["Audio", "M · mute / unmute"],
     ["Camera", "Follows both players"],
   ];
 
@@ -152,7 +156,7 @@ export function mountHud(
   );
   fatal.append(fatalHeading, fatalMessage, fatalHint);
 
-  eyebrowRow.append(eyebrow, stamp);
+  eyebrowRow.append(eyebrow, stamp, audioStatus);
   titlePanel.append(eyebrowRow, title, badge, meta, roomId);
   controls.append(controlsHeading, controlsList);
   footer.append(assetsHeading, summary, overrideList, warningList);
@@ -205,6 +209,11 @@ export function mountHud(
       stamp.removeAttribute("style");
       stamp.classList.remove("hud__stamp--image");
       styleBadge(stamp, asset);
+    },
+
+    setMuted(muted) {
+      audioStatus.textContent = muted ? "Muted" : "Audio on";
+      audioStatus.dataset.muted = String(muted);
     },
 
     fatal(error) {
