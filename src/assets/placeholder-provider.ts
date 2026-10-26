@@ -104,7 +104,7 @@ function lastSegment(id: AssetId): string {
 
 function shortLabel(id: AssetId): string {
   if (id === "ui.icon.badge") {
-    return "M0.1";
+    return "M0.2";
   }
 
   const segment = lastSegment(id);

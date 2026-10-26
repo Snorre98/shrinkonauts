@@ -1,5 +1,7 @@
 export { createAssets, DefaultAssetsModule } from "./assets";
 export type { AssetsModule, CreateAssetsOptions } from "./assets";
+export { PLAYER_ASSET_IDS } from "./ids";
+export type { PlayerAssetKey } from "./ids";
 export { loadManifest, parseManifest } from "./manifest";
 export { ManifestProvider } from "./manifest-provider";
 export { PlaceholderProvider } from "./placeholder-provider";

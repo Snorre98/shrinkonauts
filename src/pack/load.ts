@@ -1,17 +1,40 @@
 import type { AssetId } from "../assets";
 import { err, ok, type Result } from "../core/result";
+import {
+  isAssetId,
+  isFiniteNumber,
+  isHexColor,
+  isRecord,
+  isSchemaVersionSupported,
+  parseJsonUrl,
+  readAssetId,
+  readBoolean,
+  readInteger,
+  readNonEmptyString,
+  readNumber,
+  readOptionalAssetId,
+  readOptionalString,
+  readStringArray,
+  type UnknownRecord,
+} from "./parse-common";
 import type {
   BackgroundBlend,
   BackgroundFit,
   RoomBackgroundLayer,
+  RoomCheckpoint,
   RoomDocument,
+  RoomEntity,
+  RoomEntityType,
+  RoomExit,
+  RoomPropertyValue,
   RoomSpawn,
+  RoomTrigger,
   ThemeDocument,
   ThemeFonts,
   ThemePalette,
 } from "./types";
 
-type UnknownRecord = Record<string, unknown>;
+export { isAssetId } from "./parse-common";
 
 const PALETTE_KEYS: readonly (keyof ThemePalette)[] = [
   "bg",
@@ -41,52 +64,17 @@ const BLEND_MODES: readonly BackgroundBlend[] = [
   "screen",
 ];
 
-function isRecord(value: unknown): value is UnknownRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
-}
-
-function isSchemaVersionSupported(value: unknown): value is string {
-  return typeof value === "string" && /^1\.\d+$/.test(value);
-}
-
-export function isAssetId(value: unknown): value is AssetId {
-  return (
-    typeof value === "string" &&
-    /^[a-z][a-z0-9_-]*(\.[a-z0-9_-]+)+$/.test(value)
-  );
-}
-
-function isHexColor(value: unknown): value is string {
-  return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
-}
-
-function readNonEmptyString(
-  record: UnknownRecord,
-  key: string,
-  code: string,
-): Result<string> {
-  const value = record[key];
-  if (typeof value !== "string" || value.trim() === "") {
-    return err(`${code}: ${key} must be a non-empty string`);
-  }
-  return ok(value);
-}
-
-function readAssetId(
-  record: UnknownRecord,
-  key: string,
-  code: string,
-): Result<AssetId> {
-  const value = record[key];
-  if (!isAssetId(value)) {
-    return err(`${code}: ${key} must be a logical asset ID, not a path`);
-  }
-  return ok(value);
-}
+const ENTITY_TYPES: readonly RoomEntityType[] = [
+  "agent",
+  "movingPlatform",
+  "hazard",
+  "pickup",
+  "trigger",
+  "gate",
+  "checkpoint",
+  "scanTarget",
+  "decor",
+];
 
 function parseSpawn(
   value: unknown,
@@ -111,7 +99,12 @@ function parseBackgroundLayer(
     return err(`${code}: background.layers[${index}] must be an object`);
   }
 
-  const assetId = readAssetId(value, "assetId", code);
+  const assetId = readAssetId(
+    value,
+    "assetId",
+    code,
+    `background.layers[${index}].assetId`,
+  );
   if (!assetId.ok) {
     return err(assetId.error);
   }
@@ -160,6 +153,243 @@ function parseBackgroundLayer(
   }
 
   return ok(layer);
+}
+
+function parseCheckpoint(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<RoomCheckpoint> {
+  if (!isRecord(value)) {
+    return err(`${code}: checkpoints[${index}] must be an object`);
+  }
+  const id = readNonEmptyString(value, "id", code, `checkpoints[${index}].id`);
+  if (!id.ok) return err(id.error);
+  const x = readNumber(value, "x", code, `checkpoints[${index}].x`);
+  if (!x.ok) return err(x.error);
+  const y = readNumber(value, "y", code, `checkpoints[${index}].y`);
+  if (!y.ok) return err(y.error);
+  return ok({ id: id.value, x: x.value, y: y.value });
+}
+
+function parseExit(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<RoomExit> {
+  if (!isRecord(value)) {
+    return err(`${code}: exits[${index}] must be an object`);
+  }
+  const id = readNonEmptyString(value, "id", code, `exits[${index}].id`);
+  if (!id.ok) return err(id.error);
+  const x = readNumber(value, "x", code, `exits[${index}].x`);
+  if (!x.ok) return err(x.error);
+  const y = readNumber(value, "y", code, `exits[${index}].y`);
+  if (!y.ok) return err(y.error);
+  const toLevelId = readNonEmptyString(
+    value,
+    "toLevelId",
+    code,
+    `exits[${index}].toLevelId`,
+  );
+  if (!toLevelId.ok) return err(toLevelId.error);
+
+  const exit: RoomExit = {
+    id: id.value,
+    x: x.value,
+    y: y.value,
+    toLevelId: toLevelId.value,
+  };
+
+  if (value.width !== undefined) {
+    const width = readNumber(value, "width", code, `exits[${index}].width`);
+    if (!width.ok) return err(width.error);
+    exit.width = width.value;
+  }
+  if (value.height !== undefined) {
+    const height = readNumber(value, "height", code, `exits[${index}].height`);
+    if (!height.ok) return err(height.error);
+    exit.height = height.value;
+  }
+  if (value.gateId !== undefined) {
+    const gateId = readNonEmptyString(
+      value,
+      "gateId",
+      code,
+      `exits[${index}].gateId`,
+    );
+    if (!gateId.ok) return err(gateId.error);
+    exit.gateId = gateId.value;
+  }
+  return ok(exit);
+}
+
+function parseTrigger(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<RoomTrigger> {
+  if (!isRecord(value)) {
+    return err(`${code}: triggers[${index}] must be an object`);
+  }
+  const id = readNonEmptyString(value, "id", code, `triggers[${index}].id`);
+  if (!id.ok) return err(id.error);
+  if (value.type !== "enter") {
+    return err(`${code}: triggers[${index}].type must be "enter"`);
+  }
+  const x = readNumber(value, "x", code, `triggers[${index}].x`);
+  if (!x.ok) return err(x.error);
+  const y = readNumber(value, "y", code, `triggers[${index}].y`);
+  if (!y.ok) return err(y.error);
+  const width = readNumber(value, "width", code, `triggers[${index}].width`);
+  if (!width.ok) return err(width.error);
+  const height = readNumber(value, "height", code, `triggers[${index}].height`);
+  if (!height.ok) return err(height.error);
+
+  const trigger: RoomTrigger = {
+    id: id.value,
+    type: "enter",
+    x: x.value,
+    y: y.value,
+    width: width.value,
+    height: height.value,
+  };
+
+  if (value.dialogueId !== undefined) {
+    const dialogueId = readNonEmptyString(
+      value,
+      "dialogueId",
+      code,
+      `triggers[${index}].dialogueId`,
+    );
+    if (!dialogueId.ok) return err(dialogueId.error);
+    trigger.dialogueId = dialogueId.value;
+  }
+  if (value.gateId !== undefined) {
+    const gateId = readNonEmptyString(
+      value,
+      "gateId",
+      code,
+      `triggers[${index}].gateId`,
+    );
+    if (!gateId.ok) return err(gateId.error);
+    trigger.gateId = gateId.value;
+  }
+  if (value.event !== undefined) {
+    const event = readNonEmptyString(
+      value,
+      "event",
+      code,
+      `triggers[${index}].event`,
+    );
+    if (!event.ok) return err(event.error);
+    trigger.event = event.value;
+  }
+  return ok(trigger);
+}
+
+function parseEntityProperties(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<Record<string, RoomPropertyValue> | undefined> {
+  if (value === undefined) {
+    return ok(undefined);
+  }
+  if (!isRecord(value)) {
+    return err(`${code}: entities[${index}].properties must be an object`);
+  }
+  const properties: Record<string, RoomPropertyValue> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (
+      typeof entry === "string" ||
+      typeof entry === "number" ||
+      typeof entry === "boolean"
+    ) {
+      properties[key] = entry;
+      continue;
+    }
+    if (Array.isArray(entry) && entry.every((item) => typeof item === "string")) {
+      properties[key] = entry as string[];
+      continue;
+    }
+    return err(
+      `${code}: entities[${index}].properties.${key} must be a scalar or string array`,
+    );
+  }
+  return ok(properties);
+}
+
+function parseEntity(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<RoomEntity> {
+  if (!isRecord(value)) {
+    return err(`${code}: entities[${index}] must be an object`);
+  }
+  const id = readNonEmptyString(value, "id", code, `entities[${index}].id`);
+  if (!id.ok) return err(id.error);
+  const type = readNonEmptyString(value, "type", code, `entities[${index}].type`);
+  if (!type.ok) return err(type.error);
+  if (!ENTITY_TYPES.includes(type.value as RoomEntityType)) {
+    return err(`${code}: entities[${index}].type "${type.value}" is not supported`);
+  }
+  const x = readNumber(value, "x", code, `entities[${index}].x`);
+  if (!x.ok) return err(x.error);
+  const y = readNumber(value, "y", code, `entities[${index}].y`);
+  if (!y.ok) return err(y.error);
+
+  const entity: RoomEntity = {
+    id: id.value,
+    type: type.value as RoomEntityType,
+    x: x.value,
+    y: y.value,
+  };
+
+  const sprite = readOptionalAssetId(
+    value,
+    "sprite",
+    code,
+    `entities[${index}].sprite`,
+  );
+  if (!sprite.ok) return err(sprite.error);
+  if (sprite.value) entity.sprite = sprite.value;
+
+  for (const key of ["dialogueId", "gateId", "conceptId", "label"] as const) {
+    if (value[key] === undefined) continue;
+    const field = readNonEmptyString(
+      value,
+      key,
+      code,
+      `entities[${index}].${key}`,
+    );
+    if (!field.ok) return err(field.error);
+    entity[key] = field.value;
+  }
+
+  const properties = parseEntityProperties(
+    value.properties,
+    index,
+    code,
+  );
+  if (!properties.ok) return err(properties.error);
+  if (properties.value) entity.properties = properties.value;
+
+  if (entity.type === "agent" && !entity.dialogueId) {
+    return err(`${code}: entities[${index}] agent needs a dialogueId`);
+  }
+  if (entity.type === "gate" && !entity.gateId) {
+    return err(`${code}: entities[${index}] gate needs a gateId`);
+  }
+  if (entity.type === "scanTarget" && !entity.conceptId) {
+    return err(`${code}: entities[${index}] scanTarget needs a conceptId`);
+  }
+  if ((entity.type === "agent" || entity.type === "gate") && !entity.sprite) {
+    return err(`${code}: entities[${index}] ${entity.type} needs a sprite asset ID`);
+  }
+
+  return ok(entity);
 }
 
 export function parseRoom(value: unknown): Result<RoomDocument> {
@@ -248,6 +478,58 @@ export function parseRoom(value: unknown): Result<RoomDocument> {
     spawns: { player1: player1.value, player2: player2.value },
   };
 
+  if (value.checkpoints !== undefined) {
+    if (!Array.isArray(value.checkpoints)) {
+      return err(`${code}: checkpoints must be an array`);
+    }
+    const checkpoints: RoomCheckpoint[] = [];
+    for (const [index, raw] of value.checkpoints.entries()) {
+      const parsed = parseCheckpoint(raw, index, code);
+      if (!parsed.ok) return err(parsed.error);
+      checkpoints.push(parsed.value);
+    }
+    room.checkpoints = checkpoints;
+  }
+
+  if (value.exits !== undefined) {
+    if (!Array.isArray(value.exits)) {
+      return err(`${code}: exits must be an array`);
+    }
+    const exits: RoomExit[] = [];
+    for (const [index, raw] of value.exits.entries()) {
+      const parsed = parseExit(raw, index, code);
+      if (!parsed.ok) return err(parsed.error);
+      exits.push(parsed.value);
+    }
+    room.exits = exits;
+  }
+
+  if (value.entities !== undefined) {
+    if (!Array.isArray(value.entities)) {
+      return err(`${code}: entities must be an array`);
+    }
+    const entities: RoomEntity[] = [];
+    for (const [index, raw] of value.entities.entries()) {
+      const parsed = parseEntity(raw, index, code);
+      if (!parsed.ok) return err(parsed.error);
+      entities.push(parsed.value);
+    }
+    room.entities = entities;
+  }
+
+  if (value.triggers !== undefined) {
+    if (!Array.isArray(value.triggers)) {
+      return err(`${code}: triggers must be an array`);
+    }
+    const triggers: RoomTrigger[] = [];
+    for (const [index, raw] of value.triggers.entries()) {
+      const parsed = parseTrigger(raw, index, code);
+      if (!parsed.ok) return err(parsed.error);
+      triggers.push(parsed.value);
+    }
+    room.triggers = triggers;
+  }
+
   if (value.music !== undefined) {
     const music = readAssetId(value, "music", code);
     if (!music.ok) return err(music.error);
@@ -286,9 +568,9 @@ function parseFonts(value: unknown): Result<ThemeFonts> {
   if (!isRecord(value)) {
     return err(`${code}: fonts must be an object`);
   }
-  const ui = readNonEmptyString(value, "ui", code);
+  const ui = readNonEmptyString(value, "ui", code, "fonts.ui");
   if (!ui.ok) return err(ui.error);
-  const display = readNonEmptyString(value, "display", code);
+  const display = readNonEmptyString(value, "display", code, "fonts.display");
   if (!display.ok) return err(display.error);
   return ok({ ui: ui.value, display: display.value });
 }
@@ -401,32 +683,11 @@ export function parseTheme(value: unknown): Result<ThemeDocument> {
   });
 }
 
-async function fetchJson(url: string, fetchImpl: typeof fetch): Promise<Result<unknown>> {
-  let response: Response;
-  try {
-    response = await fetchImpl(url, { cache: "no-cache" });
-  } catch (error) {
-    return err(
-      `CONTENT_FETCH_FAILED: ${url} (${error instanceof Error ? error.message : String(error)})`,
-    );
-  }
-
-  if (!response.ok) {
-    return err(`CONTENT_FETCH_FAILED: ${url} (${response.status})`);
-  }
-
-  try {
-    return ok(await response.json());
-  } catch {
-    return err(`CONTENT_JSON_INVALID: ${url}`);
-  }
-}
-
 export async function loadRoom(
   url: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<Result<RoomDocument>> {
-  const data = await fetchJson(url, fetchImpl);
+  const data = await parseJsonUrl(url, fetchImpl);
   if (!data.ok) return err(data.error);
   return parseRoom(data.value);
 }
@@ -435,7 +696,7 @@ export async function loadTheme(
   url: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<Result<ThemeDocument>> {
-  const data = await fetchJson(url, fetchImpl);
+  const data = await parseJsonUrl(url, fetchImpl);
   if (!data.ok) return err(data.error);
   return parseTheme(data.value);
 }
@@ -445,6 +706,11 @@ export function collectRoomAssetIds(room: RoomDocument): AssetId[] {
   ids.add(room.tileset);
   for (const layer of room.background.layers) {
     ids.add(layer.assetId);
+  }
+  for (const entity of room.entities ?? []) {
+    if (entity.sprite) {
+      ids.add(entity.sprite);
+    }
   }
   if (room.music) {
     ids.add(room.music);
@@ -467,4 +733,67 @@ export function collectThemeAssetIds(theme: ThemeDocument): AssetId[] {
     ids.add(cue);
   }
   return [...ids];
+}
+
+/** Kept exported for validator and script callers that used the M0 helper. */
+export function readRecordBoolean(
+  record: UnknownRecord,
+  key: string,
+  code: string,
+): Result<boolean> {
+  return readBoolean(record, key, code);
+}
+
+/** Kept exported for validator and script callers that used the M0 helper. */
+export function readRecordInteger(
+  record: UnknownRecord,
+  key: string,
+  code: string,
+): Result<number> {
+  return readInteger(record, key, code);
+}
+
+/** Kept exported for validator and script callers that used the M0 helper. */
+export function readRecordString(
+  record: UnknownRecord,
+  key: string,
+  code: string,
+): Result<string> {
+  return readNonEmptyString(record, key, code);
+}
+
+/** Kept exported for validator and script callers that used the M0 helper. */
+export function readRecordOptionalString(
+  record: UnknownRecord,
+  key: string,
+  code: string,
+): Result<string | undefined> {
+  return readOptionalString(record, key, code);
+}
+
+/** Kept exported for validator and script callers that used the M0 helper. */
+export function readRecordStrings(
+  record: UnknownRecord,
+  key: string,
+  code: string,
+): Result<string[]> {
+  return readStringArray(record, key, code);
+}
+
+/** Kept exported for validator and script callers that used the M0 helper. */
+export function readRecordAssetId(
+  record: UnknownRecord,
+  key: string,
+  code: string,
+): Result<AssetId> {
+  return readAssetId(record, key, code);
+}
+
+/** Kept exported for validator and script callers that used the M0 helper. */
+export function readRecordNumber(
+  record: UnknownRecord,
+  key: string,
+  code: string,
+): Result<number> {
+  return readNumber(record, key, code);
 }
