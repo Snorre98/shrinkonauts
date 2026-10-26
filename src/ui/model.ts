@@ -18,6 +18,8 @@ export interface PlayerView {
   active: boolean;
   dashing: boolean;
   dashReady: boolean;
+  abilities: string[];
+  carrying: string | null;
 }
 
 export interface CameraView {
@@ -28,9 +30,10 @@ export interface CameraView {
 }
 
 export interface InteractionView {
-  kind: "dialogue" | "gate";
+  kind: "dialogue" | "gate" | "prop" | "pulse";
   id: string;
   label: string;
+  key?: string;
 }
 
 export interface DialogueChoiceView {
@@ -106,6 +109,15 @@ export interface ConceptView {
   discovered: boolean;
 }
 
+export interface PuzzleView {
+  id: string;
+  title: string;
+  solved: boolean;
+  canReset: boolean;
+  tether: string;
+  counters: Record<string, number>;
+}
+
 export interface SettingsView {
   audio: { muted: boolean; volume: number };
   accessibility: { textScale: number; reducedMotion: boolean };
@@ -138,6 +150,7 @@ export interface RuntimeSnapshot {
   debrief: DebriefView | null;
   map: MapView;
   conceptLog: ConceptView[];
+  puzzle: PuzzleView | null;
   toast: string | null;
   muted: boolean;
   settings: SettingsView;

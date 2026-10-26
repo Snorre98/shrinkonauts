@@ -9,6 +9,7 @@ import {
   readNonEmptyString,
   readNumber,
   readOptionalString,
+  readOptionalStringArray,
   readScalarRecord,
   readStringArray,
   type UnknownRecord,
@@ -225,6 +226,11 @@ function parseMapEdge(
     if (!gateId.ok) return err(gateId.error);
     edge.gateId = gateId.value;
   }
+  if (value.puzzleId !== undefined) {
+    const puzzleId = readNonEmptyString(value, "puzzleId", LEVEL_CODE, `map.edges[${index}].puzzleId`);
+    if (!puzzleId.ok) return err(puzzleId.error);
+    edge.puzzleId = puzzleId.value;
+  }
   return ok(edge);
 }
 
@@ -308,6 +314,13 @@ export function parseLevel(value: unknown): Result<LevelDocument> {
     allowEmpty: true,
   });
   if (!gateIds.ok) return err(gateIds.error);
+  const puzzleIds = readOptionalStringArray(
+    value,
+    "puzzleIds",
+    LEVEL_CODE,
+    "puzzleIds",
+  );
+  if (!puzzleIds.ok) return err(puzzleIds.error);
 
   if (!isRecord(value.map)) {
     return err(`${LEVEL_CODE}: map must be an object`);
@@ -398,6 +411,7 @@ export function parseLevel(value: unknown): Result<LevelDocument> {
     ...(backgroundId.value ? { backgroundId: backgroundId.value } : {}),
     dialogueIds: dialogueIds.value,
     gateIds: gateIds.value,
+    puzzleIds: puzzleIds.value ?? [],
     map: {
       nodeId: nodeId.value,
       label: label.value,

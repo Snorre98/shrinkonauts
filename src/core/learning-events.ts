@@ -13,6 +13,7 @@ export const LEARNING_EVENT_TYPES = [
   "gate_attempted",
   "gate_solved",
   "gate_failed",
+  "puzzle_solved",
   "hint_used",
   "ability_unlocked",
   "map_revealed",

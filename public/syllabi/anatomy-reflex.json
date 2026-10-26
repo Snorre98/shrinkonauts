@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "status": "draft",
   "audience": {
-    "primary": "VG2 Biologi 1 students (16–19)",
+    "primary": "VG2 Biologi 1 students (16\u201319)",
     "secondary": "VG3 revision; first-year anatomy & physiology bridge",
     "curriculum": "Norwegian upper-secondary biology, Biologi 1 (BIO01-02), VG2 (Udir)",
     "priorKnowledge": [
@@ -13,8 +13,14 @@
       "Organ systems",
       "Neurons carry electrical signals"
     ],
-    "context": ["Classroom", "Home"],
-    "sessionMinutes": { "slice": 8, "pack": 30 },
+    "context": [
+      "Classroom",
+      "Home"
+    ],
+    "sessionMinutes": {
+      "slice": 8,
+      "pack": 30
+    },
     "device": "Desktop or laptop browser; keyboard; 16:9",
     "players": "Solo or two-player local co-op",
     "accessibility": [
@@ -42,9 +48,17 @@
       "id": "OBJ-1",
       "verb": "identify",
       "statement": "Identify the bone, joint, neuron, synapse, spinal cord, and muscle effector structures in the reflex arc.",
-      "conceptIds": ["CON-1", "CON-2", "CON-3", "CON-5", "CON-6"],
+      "conceptIds": [
+        "CON-1",
+        "CON-2",
+        "CON-3",
+        "CON-5",
+        "CON-6"
+      ],
       "prerequisiteIds": [],
-      "evidence": ["EV-1"],
+      "evidence": [
+        "EV-1"
+      ],
       "successCriterion": "The player can name the structures and place them on the map.",
       "assessment": "concept_log",
       "levelHint": "bone-gate"
@@ -53,20 +67,38 @@
       "id": "OBJ-2",
       "verb": "trace",
       "statement": "Trace the signal from the sensory receptor through the sensory neuron, spinal cord, motor neuron, and muscle.",
-      "conceptIds": ["CON-3", "CON-4", "CON-5", "CON-6", "CON-7"],
-      "prerequisiteIds": ["OBJ-1"],
-      "evidence": ["EV-2"],
-      "successCriterion": "The player orders the pathway correctly without hints.",
-      "assessment": "gate",
+      "conceptIds": [
+        "CON-3",
+        "CON-4",
+        "CON-5",
+        "CON-6",
+        "CON-7"
+      ],
+      "prerequisiteIds": [
+        "OBJ-1"
+      ],
+      "evidence": [
+        "EV-2",
+        "EV-7"
+      ],
+      "successCriterion": "The player matches the tracer to the correct receptor and explains the one-way signal.",
+      "assessment": "puzzle",
       "levelHint": "nerve-forest"
     },
     {
       "id": "OBJ-3",
       "verb": "explain",
       "statement": "Explain why the knee-jerk response happens before the brain consciously feels it.",
-      "conceptIds": ["CON-5", "CON-7"],
-      "prerequisiteIds": ["OBJ-2"],
-      "evidence": ["EV-3"],
+      "conceptIds": [
+        "CON-5",
+        "CON-7"
+      ],
+      "prerequisiteIds": [
+        "OBJ-2"
+      ],
+      "evidence": [
+        "EV-3"
+      ],
       "successCriterion": "The player explains the spinal bypass in their own words.",
       "assessment": "debrief",
       "levelHint": "reflex-core"
@@ -75,9 +107,20 @@
       "id": "OBJ-4",
       "verb": "predict",
       "statement": "Predict the effect of a blockage or lesion in the sensory neuron, motor neuron, spinal cord, or muscle.",
-      "conceptIds": ["CON-3", "CON-4", "CON-5", "CON-6", "CON-7"],
-      "prerequisiteIds": ["OBJ-2", "OBJ-3"],
-      "evidence": ["EV-4"],
+      "conceptIds": [
+        "CON-3",
+        "CON-4",
+        "CON-5",
+        "CON-6",
+        "CON-7"
+      ],
+      "prerequisiteIds": [
+        "OBJ-2",
+        "OBJ-3"
+      ],
+      "evidence": [
+        "EV-4"
+      ],
       "successCriterion": "The player predicts at least one correct effect and explains why.",
       "assessment": "challenge",
       "levelHint": "reflex-core"
@@ -85,10 +128,18 @@
     {
       "id": "OBJ-5",
       "verb": "transfer",
-      "statement": "Apply the sensor → controller → actuator loop to a new system.",
-      "conceptIds": ["CON-7", "CON-8"],
-      "prerequisiteIds": ["OBJ-2", "OBJ-3"],
-      "evidence": ["EV-5"],
+      "statement": "Apply the sensor \u2192 controller \u2192 actuator loop to a new system.",
+      "conceptIds": [
+        "CON-7",
+        "CON-8"
+      ],
+      "prerequisiteIds": [
+        "OBJ-2",
+        "OBJ-3"
+      ],
+      "evidence": [
+        "EV-5"
+      ],
       "successCriterion": "The player maps the reflex loop to a computer interrupt/response loop.",
       "assessment": "transfer",
       "levelHint": "silicon-fixture"
@@ -100,95 +151,180 @@
       "term": "Bone structure",
       "definition": "Bones are living organs with compact and spongy bone, periosteum, marrow, and a blood supply. They provide structure, protection, and leverage.",
       "relationships": [
-        { "type": "part_of", "target": "CON-7" },
-        { "type": "enables", "target": "CON-2" }
+        {
+          "type": "part_of",
+          "target": "CON-7"
+        },
+        {
+          "type": "enables",
+          "target": "CON-2"
+        }
       ],
-      "misconceptions": ["Bones are dead scaffolding."],
+      "misconceptions": [
+        "Bones are dead scaffolding."
+      ],
       "visual": "bone-structure",
-      "tags": ["skeletal", "structure"]
+      "tags": [
+        "skeletal",
+        "structure"
+      ]
     },
     {
       "id": "CON-2",
       "term": "Joint structure",
       "definition": "A joint connects bones; a synovial hinge joint has cartilage, synovial fluid, and ligaments. It allows controlled movement.",
       "relationships": [
-        { "type": "part_of", "target": "CON-7" },
-        { "type": "enables", "target": "CON-6" }
+        {
+          "type": "part_of",
+          "target": "CON-7"
+        },
+        {
+          "type": "enables",
+          "target": "CON-6"
+        }
       ],
-      "misconceptions": ["Bones move themselves."],
+      "misconceptions": [
+        "Bones move themselves."
+      ],
       "visual": "joint-structure",
-      "tags": ["skeletal", "movement"]
+      "tags": [
+        "skeletal",
+        "movement"
+      ]
     },
     {
       "id": "CON-3",
       "term": "Neuron structure",
       "definition": "A neuron has dendrites, a soma, an axon, and axon terminals. It carries electrical signals in one direction.",
       "relationships": [
-        { "type": "part_of", "target": "CON-7" },
-        { "type": "prerequisite_of", "target": "CON-4" }
+        {
+          "type": "part_of",
+          "target": "CON-7"
+        },
+        {
+          "type": "prerequisite_of",
+          "target": "CON-4"
+        }
       ],
-      "misconceptions": ["Signals travel both ways."],
+      "misconceptions": [
+        "Signals travel both ways."
+      ],
       "visual": "neuron-structure",
-      "tags": ["nervous", "signalling"]
+      "tags": [
+        "nervous",
+        "signalling"
+      ]
     },
     {
       "id": "CON-4",
       "term": "Synapse",
       "definition": "A synapse is a gap between neurons; neurotransmitters carry the signal across it.",
       "relationships": [
-        { "type": "part_of", "target": "CON-7" },
-        { "type": "enables", "target": "CON-5" }
+        {
+          "type": "part_of",
+          "target": "CON-7"
+        },
+        {
+          "type": "enables",
+          "target": "CON-5"
+        }
       ],
-      "misconceptions": ["Neurons touch directly."],
+      "misconceptions": [
+        "Neurons touch directly."
+      ],
       "visual": "synapse-gap",
-      "tags": ["nervous", "signalling"]
+      "tags": [
+        "nervous",
+        "signalling"
+      ]
     },
     {
       "id": "CON-5",
       "term": "Sensory and motor pathways",
       "definition": "Sensory neurons carry signals from receptors to the spinal cord; motor neurons carry signals from the spinal cord to muscles.",
       "relationships": [
-        { "type": "part_of", "target": "CON-7" },
-        { "type": "prerequisite_of", "target": "CON-7" }
+        {
+          "type": "part_of",
+          "target": "CON-7"
+        },
+        {
+          "type": "prerequisite_of",
+          "target": "CON-7"
+        }
       ],
-      "misconceptions": ["The brain is always in the loop."],
+      "misconceptions": [
+        "The brain is always in the loop."
+      ],
       "visual": "sensory-motor-pathway",
-      "tags": ["nervous", "pathway"]
+      "tags": [
+        "nervous",
+        "pathway"
+      ]
     },
     {
       "id": "CON-6",
       "term": "Muscle effector",
       "definition": "A muscle contracts when a motor neuron signals the neuromuscular junction. The contraction pulls a tendon and moves a bone.",
       "relationships": [
-        { "type": "part_of", "target": "CON-7" },
-        { "type": "example_of", "target": "CON-8" }
+        {
+          "type": "part_of",
+          "target": "CON-7"
+        },
+        {
+          "type": "example_of",
+          "target": "CON-8"
+        }
       ],
-      "misconceptions": ["The muscle decides to move."],
+      "misconceptions": [
+        "The muscle decides to move."
+      ],
       "visual": "muscle-effector",
-      "tags": ["muscular", "effector"]
+      "tags": [
+        "muscular",
+        "effector"
+      ]
     },
     {
       "id": "CON-7",
       "term": "Reflex arc",
-      "definition": "A reflex arc is a fast, involuntary pathway: receptor → sensory neuron → spinal cord → motor neuron → muscle. The brain is not required for the response.",
+      "definition": "A reflex arc is a fast, involuntary pathway: receptor \u2192 sensory neuron \u2192 spinal cord \u2192 motor neuron \u2192 muscle. The brain is not required for the response.",
       "relationships": [
-        { "type": "example_of", "target": "CON-8" },
-        { "type": "requires", "target": "CON-5" }
+        {
+          "type": "example_of",
+          "target": "CON-8"
+        },
+        {
+          "type": "requires",
+          "target": "CON-5"
+        }
       ],
-      "misconceptions": ["A reflex is a conscious decision."],
+      "misconceptions": [
+        "A reflex is a conscious decision."
+      ],
       "visual": "reflex-arc",
-      "tags": ["nervous", "system"]
+      "tags": [
+        "nervous",
+        "system"
+      ]
     },
     {
       "id": "CON-8",
-      "term": "Sensor–controller–actuator loop",
+      "term": "Sensor\u2013controller\u2013actuator loop",
       "definition": "A general control loop: a sensor detects a change, a controller processes it, an actuator responds. The same pattern appears in the body and in hardware.",
       "relationships": [
-        { "type": "same_pattern_as", "target": "CON-7" }
+        {
+          "type": "same_pattern_as",
+          "target": "CON-7"
+        }
       ],
-      "misconceptions": ["Biology and technology have nothing in common."],
+      "misconceptions": [
+        "Biology and technology have nothing in common."
+      ],
       "visual": "control-loop",
-      "tags": ["systems", "transfer"]
+      "tags": [
+        "systems",
+        "transfer"
+      ]
     }
   ],
   "misconceptions": [
@@ -197,40 +333,71 @@
       "statement": "The brain is in the loop.",
       "whyItPersists": "Students see the brain as the boss of the nervous system.",
       "correction": "The spinal cord integrates the reflex; the brain feels it after the fact.",
-      "conceptIds": ["CON-5", "CON-7"],
-      "addressedBy": ["gate-nerve-01", "debrief-obj-3"]
+      "conceptIds": [
+        "CON-5",
+        "CON-7"
+      ],
+      "addressedBy": [
+        "gate-nerve-01",
+        "debrief-obj-3"
+      ]
     },
     {
       "id": "MIS-2",
       "statement": "The signal travels both ways.",
       "whyItPersists": "The diagram has arrows, but the direction is easy to miss.",
       "correction": "The signal enters at the dendrite and leaves at the terminal; the reflex arc is directional.",
-      "conceptIds": ["CON-3", "CON-5"],
-      "addressedBy": ["gate-nerve-01", "dlg-neuron-01"]
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "addressedBy": [
+        "gate-nerve-01",
+        "dlg-neuron-01"
+      ]
     },
     {
       "id": "MIS-3",
       "statement": "The muscle decides.",
       "whyItPersists": "The muscle is the visible mover.",
       "correction": "The muscle contracts only when the motor neuron signals the neuromuscular junction.",
-      "conceptIds": ["CON-6", "CON-7"],
-      "addressedBy": ["gate-reflex-01", "dlg-muscle-01"]
+      "conceptIds": [
+        "CON-6",
+        "CON-7"
+      ],
+      "addressedBy": [
+        "gate-reflex-01",
+        "dlg-muscle-01"
+      ]
     },
     {
       "id": "MIS-4",
       "statement": "Bones move themselves.",
       "whyItPersists": "The skeleton looks like a mechanical frame.",
       "correction": "Muscles pull tendons, tendons pull bones, and joints allow controlled movement.",
-      "conceptIds": ["CON-1", "CON-2", "CON-6"],
-      "addressedBy": ["gate-joint-01", "dlg-synoviocyte-01"]
+      "conceptIds": [
+        "CON-1",
+        "CON-2",
+        "CON-6"
+      ],
+      "addressedBy": [
+        "gate-joint-01",
+        "dlg-synoviocyte-01"
+      ]
     },
     {
       "id": "MIS-5",
       "statement": "A reflex is a conscious decision.",
       "whyItPersists": "The word 'reflex' is used loosely.",
       "correction": "The reflex is a fast spinal arc; conscious feeling arrives later.",
-      "conceptIds": ["CON-5", "CON-7"],
-      "addressedBy": ["debrief-obj-3", "gate-reflex-01"]
+      "conceptIds": [
+        "CON-5",
+        "CON-7"
+      ],
+      "addressedBy": [
+        "debrief-obj-3",
+        "gate-reflex-01"
+      ]
     }
   ],
   "evidence": [
@@ -241,110 +408,221 @@
       "filter": {},
       "required": true,
       "weight": 1,
-      "objectiveIds": ["OBJ-1"],
-      "conceptIds": ["CON-1", "CON-2", "CON-3", "CON-5", "CON-6"]
+      "objectiveIds": [
+        "OBJ-1"
+      ],
+      "conceptIds": [
+        "CON-1",
+        "CON-2",
+        "CON-3",
+        "CON-5",
+        "CON-6"
+      ]
     },
     {
       "id": "EV-2",
-      "description": "Gate attempts and answers for the nerve sequence.",
-      "event": "gate_solved",
-      "filter": { "gateId": "gate-nerve-01" },
+      "description": "Signal Ferry puzzle solve and diagnostic counters.",
+      "event": "puzzle_solved",
+      "filter": {
+        "puzzleId": "puzzle-ferry-01"
+      },
       "required": true,
       "weight": 1,
-      "objectiveIds": ["OBJ-2"],
-      "conceptIds": ["CON-3", "CON-4", "CON-5", "CON-6", "CON-7"]
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-4",
+        "CON-5",
+        "CON-6",
+        "CON-7"
+      ]
     },
     {
       "id": "EV-3",
       "description": "Debrief teach-back answer.",
       "event": "debrief_answered",
-      "filter": { "promptId": "prompt-obj-3" },
+      "filter": {
+        "promptId": "prompt-obj-3"
+      },
       "required": true,
       "weight": 2,
-      "objectiveIds": ["OBJ-3"],
-      "conceptIds": ["CON-5", "CON-7"]
+      "objectiveIds": [
+        "OBJ-3"
+      ],
+      "conceptIds": [
+        "CON-5",
+        "CON-7"
+      ]
     },
     {
       "id": "EV-4",
       "description": "Optional lesion/blockage prediction.",
       "event": "debrief_answered",
-      "filter": { "promptId": "prompt-obj-4" },
+      "filter": {
+        "promptId": "prompt-obj-4"
+      },
       "required": false,
       "weight": 1,
-      "objectiveIds": ["OBJ-4"],
-      "conceptIds": ["CON-3", "CON-4", "CON-5", "CON-6", "CON-7"]
+      "objectiveIds": [
+        "OBJ-4"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-4",
+        "CON-5",
+        "CON-6",
+        "CON-7"
+      ]
     },
     {
       "id": "EV-5",
       "description": "Transfer prompt after the Silicon teaser.",
       "event": "debrief_answered",
-      "filter": { "promptId": "prompt-transfer" },
+      "filter": {
+        "promptId": "prompt-transfer"
+      },
       "required": false,
       "weight": 1,
-      "objectiveIds": ["OBJ-5"],
-      "conceptIds": ["CON-7", "CON-8"]
+      "objectiveIds": [
+        "OBJ-5"
+      ],
+      "conceptIds": [
+        "CON-7",
+        "CON-8"
+      ]
     },
     {
       "id": "EV-6",
       "description": "Co-op peer explanation observed during playtest.",
       "event": "playtest_observation",
-      "filter": { "mode": "co-op" },
+      "filter": {
+        "mode": "co-op"
+      },
       "required": false,
       "weight": 1,
-      "objectiveIds": ["OBJ-3"],
-      "conceptIds": ["CON-5", "CON-7"]
+      "objectiveIds": [
+        "OBJ-3"
+      ],
+      "conceptIds": [
+        "CON-5",
+        "CON-7"
+      ]
+    },
+    {
+      "id": "EV-7",
+      "description": "Signal Ferry debrief teach-back answer.",
+      "event": "debrief_answered",
+      "filter": {
+        "promptId": "prompt-obj-2"
+      },
+      "required": true,
+      "weight": 2,
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-4",
+        "CON-5",
+        "CON-6",
+        "CON-7"
+      ]
     }
   ],
   "assessment": {
     "mode": "formative",
     "stakes": "none",
-    "methods": ["concept_gate", "debrief", "optional_challenge", "playtest_observation"],
+    "methods": [
+      "concept_gate",
+      "debrief",
+      "optional_challenge",
+      "playtest_observation"
+    ],
     "teacherDashboard": false,
     "notes": "The game is not a high-stakes test. Evidence supports the debrief and the playtest, not grades."
   },
   "progression": [
     {
       "stage": 1,
-      "objectiveIds": ["OBJ-1"],
+      "objectiveIds": [
+        "OBJ-1"
+      ],
       "experience": "Explore the bone/joint/nerve structures; meet the agents; scan the system.",
-      "evidence": ["EV-1"]
+      "evidence": [
+        "EV-1"
+      ]
     },
     {
       "stage": 2,
-      "objectiveIds": ["OBJ-2"],
+      "objectiveIds": [
+        "OBJ-2"
+      ],
       "experience": "Route the signal through the nerve pathway; solve the directional gate.",
-      "evidence": ["EV-2"]
+      "evidence": [
+        "EV-2"
+      ]
     },
     {
       "stage": 3,
-      "objectiveIds": ["OBJ-3"],
+      "objectiveIds": [
+        "OBJ-3"
+      ],
       "experience": "Complete the reflex core; explain the bypass in the debrief.",
-      "evidence": ["EV-3"]
+      "evidence": [
+        "EV-3"
+      ]
     },
     {
       "stage": 4,
-      "objectiveIds": ["OBJ-4"],
+      "objectiveIds": [
+        "OBJ-4"
+      ],
       "experience": "Try a lesion/blockage scenario; predict the effect.",
-      "evidence": ["EV-4"]
+      "evidence": [
+        "EV-4"
+      ]
     },
     {
       "stage": 5,
-      "objectiveIds": ["OBJ-5"],
+      "objectiveIds": [
+        "OBJ-5"
+      ],
       "experience": "See the Silicon reflex; map the loop to hardware.",
-      "evidence": ["EV-5"]
+      "evidence": [
+        "EV-5"
+      ]
     }
   ],
   "transfer": {
     "target": "silicon-reflex",
-    "statement": "Apply the sensor → controller → actuator loop to a new system.",
+    "statement": "Apply the sensor \u2192 controller \u2192 actuator loop to a new system.",
     "mapping": [
-      { "from": "receptor", "to": "sensor" },
-      { "from": "sensory neuron", "to": "interrupt line" },
-      { "from": "spinal cord", "to": "interrupt controller" },
-      { "from": "motor neuron", "to": "CPU output" },
-      { "from": "muscle", "to": "actuator" }
+      {
+        "from": "receptor",
+        "to": "sensor"
+      },
+      {
+        "from": "sensory neuron",
+        "to": "interrupt line"
+      },
+      {
+        "from": "spinal cord",
+        "to": "interrupt controller"
+      },
+      {
+        "from": "motor neuron",
+        "to": "CPU output"
+      },
+      {
+        "from": "muscle",
+        "to": "actuator"
+      }
     ],
-    "evidence": ["EV-5"]
+    "evidence": [
+      "EV-5"
+    ]
   },
   "successCriteria": [
     {
@@ -352,21 +630,29 @@
       "statement": "Three external players/pairs can explain the spinal bypass after playing.",
       "method": "playtest",
       "threshold": "2 of 3",
-      "objectiveIds": ["OBJ-3"]
+      "objectiveIds": [
+        "OBJ-3"
+      ]
     },
     {
       "id": "SC-2",
       "statement": "At least two of the three can predict a lesion effect and say why.",
       "method": "playtest",
       "threshold": "2 of 3",
-      "objectiveIds": ["OBJ-4"]
+      "objectiveIds": [
+        "OBJ-4"
+      ]
     },
     {
       "id": "SC-3",
       "statement": "The debrief records evidence for OBJ-1 to OBJ-3; OBJ-4/5 are stretch.",
       "method": "evidence_export",
       "threshold": "OBJ-1..3 met",
-      "objectiveIds": ["OBJ-1", "OBJ-2", "OBJ-3"]
+      "objectiveIds": [
+        "OBJ-1",
+        "OBJ-2",
+        "OBJ-3"
+      ]
     }
   ],
   "theory": [
@@ -375,91 +661,126 @@
       "element": "Intrinsic fantasy",
       "design": "The body/system is the level; anatomy knowledge is the key to progression.",
       "effect": "The fantasy is intrinsic, not a wrapper.",
-      "evidence": ["OBJ-2", "OBJ-3"]
+      "evidence": [
+        "OBJ-2",
+        "OBJ-3"
+      ]
     },
     {
       "source": "Malone",
       "element": "Curiosity",
       "design": "What is behind the next gate; what the next agent will say.",
       "effect": "The player wants to explore the system.",
-      "evidence": ["OBJ-1", "OBJ-2"]
+      "evidence": [
+        "OBJ-1",
+        "OBJ-2"
+      ]
     },
     {
       "source": "Malone",
       "element": "Control",
       "design": "Route choice, backtracking, ability use.",
       "effect": "The player owns the route.",
-      "evidence": ["OBJ-2"]
+      "evidence": [
+        "OBJ-2"
+      ]
     },
     {
       "source": "Malone",
       "element": "Challenge",
       "design": "Concept gates and the reflex core.",
       "effect": "The challenge is understanding.",
-      "evidence": ["OBJ-2", "OBJ-3"]
+      "evidence": [
+        "OBJ-2",
+        "OBJ-3"
+      ]
     },
     {
       "source": "Self-determination theory",
       "element": "Autonomy",
       "design": "Choose the order of side content; backtrack.",
       "effect": "The player feels ownership.",
-      "evidence": ["OBJ-2"]
+      "evidence": [
+        "OBJ-2"
+      ]
     },
     {
       "source": "Self-determination theory",
       "element": "Competence",
       "design": "Earn abilities; solve gates; complete the map.",
       "effect": "The player feels capable.",
-      "evidence": ["OBJ-2", "OBJ-3"]
+      "evidence": [
+        "OBJ-2",
+        "OBJ-3"
+      ]
     },
     {
       "source": "Self-determination theory",
       "element": "Relatedness",
       "design": "Agents with personalities; co-op partner.",
       "effect": "The player feels connected.",
-      "evidence": ["OBJ-3"]
+      "evidence": [
+        "OBJ-3"
+      ]
     },
     {
       "source": "Cognitive load",
       "element": "Segmenting",
       "design": "One concept per level; one agent at a time.",
       "effect": "The system is digestible.",
-      "evidence": ["OBJ-1", "OBJ-2"]
+      "evidence": [
+        "OBJ-1",
+        "OBJ-2"
+      ]
     },
     {
       "source": "Cognitive load",
       "element": "Signalling",
       "design": "Scan highlights; HUD objective; map labels.",
       "effect": "Attention is directed.",
-      "evidence": ["OBJ-1", "OBJ-2"]
+      "evidence": [
+        "OBJ-1",
+        "OBJ-2"
+      ]
     },
     {
       "source": "Cognitive load",
       "element": "Dual coding",
       "design": "Dialogue (verbal) + visual system + map (spatial).",
       "effect": "The concept is encoded multiple ways.",
-      "evidence": ["OBJ-1", "OBJ-2", "OBJ-3"]
+      "evidence": [
+        "OBJ-1",
+        "OBJ-2",
+        "OBJ-3"
+      ]
     },
     {
       "source": "Cognitive load",
       "element": "Spatial contiguity",
       "design": "Labels sit on the structures in the world; the map mirrors the system.",
       "effect": "The diagram and the place are linked.",
-      "evidence": ["OBJ-1", "OBJ-2"]
+      "evidence": [
+        "OBJ-1",
+        "OBJ-2"
+      ]
     },
     {
       "source": "Constructive alignment",
-      "element": "Objectives → mechanics → evidence",
+      "element": "Objectives \u2192 mechanics \u2192 evidence",
       "design": "The syllabus table maps every objective to a mechanic and evidence.",
       "effect": "Learning and game actions are the same.",
-      "evidence": ["OBJ-1", "OBJ-2", "OBJ-3"]
+      "evidence": [
+        "OBJ-1",
+        "OBJ-2",
+        "OBJ-3"
+      ]
     }
   ],
   "scope": {
     "in": [
       "Knee-jerk reflex arc",
       "Bone/joint/neuron/synapse/muscle effector",
-      "Sensor–controller–actuator transfer"
+      "Sensor\u2013controller\u2013actuator transfer"
     ],
     "out": [
       "Full skeletal system",
@@ -472,7 +793,10 @@
     "author": "Snorre",
     "created": "2026-10-26",
     "updated": "2026-10-26",
-    "sourceDocs": ["syllabus.md", "LEARNING-DESIGN.md"],
+    "sourceDocs": [
+      "syllabus.md",
+      "LEARNING-DESIGN.md"
+    ],
     "license": "CC BY 4.0 for the syllabus text; assets have their own licences"
   }
 }

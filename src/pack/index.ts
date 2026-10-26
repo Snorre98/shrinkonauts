@@ -25,6 +25,7 @@ export {
   parsePack,
 } from "./parse-content";
 export { loadPackContent } from "./load-pack";
+export { parsePuzzle } from "./parse-puzzle";
 export type {
   LoadedPackContent,
   LoadPackContentOptions,
@@ -51,6 +52,11 @@ export type {
   DialogueDocument,
   DialogueEffect,
   DialogueNode,
+  EntityBodyComponent,
+  EntityGateComponent,
+  EntityPropComponent,
+  EntityPulseSourceComponent,
+  EntityReceptorComponent,
   GateAnswer,
   GateDocument,
   GateEffect,
@@ -79,6 +85,7 @@ export type {
   RoomCheckpoint,
   RoomDocument,
   RoomEntity,
+  RoomEntityComponents,
   RoomEntityType,
   RoomExit,
   RoomPropertyValue,

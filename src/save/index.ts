@@ -1,7 +1,9 @@
 import type { LearningEvent } from "../curriculum";
 import type { ProgressionSnapshot } from "../progression";
+import type { PuzzleRunState } from "../puzzle";
 
-export const SAVE_SCHEMA_VERSION = "1.0";
+export const RUN_SCHEMA_VERSION = "2.0";
+export const SAVE_SCHEMA_VERSION = "2.0";
 export const RUN_STORAGE_KEY = "shrinkonauts.run";
 export const SETTINGS_STORAGE_KEY = "shrinkonauts.settings";
 
@@ -13,15 +15,31 @@ export interface SaveAudioStorage {
 
 export type SaveStatus = "playing" | "debrief" | "complete";
 
-export interface PlayerPositionSnapshot {
+export interface BodySnapshot {
   x: number;
   y: number;
+  vx: number;
+  vy: number;
+  angle: number;
+  angularVelocity: number;
+  sleeping: boolean;
+  /** Player-only controller timers; absent on prop body snapshots. */
+  dashTime?: number;
+  dashCooldown?: number;
+}
+
+export interface PropSnapshot {
+  bodyId: string;
+  state: "free" | "carried" | "placed" | "docked";
+  carriedBy: "p1" | "p2" | null;
+  placedOn: string | null;
 }
 
 export interface RunSnapshot {
   schemaVersion: string;
   packId: string;
   packVersion: string;
+  contentVersion: string;
   levelId: string;
   roomId: string;
   checkpointId: string | null;
@@ -29,12 +47,17 @@ export interface RunSnapshot {
   events: LearningEvent[];
   elapsed: number;
   savedAt: string;
-  players: {
-    p1: PlayerPositionSnapshot;
-    p2: PlayerPositionSnapshot;
-    activeP2: boolean;
-  };
   status: SaveStatus;
+  players: {
+    activeP2: boolean;
+    bodies: Record<"p1" | "p2", BodySnapshot>;
+  };
+  world: {
+    bodies: Record<string, BodySnapshot>;
+    props: Record<string, PropSnapshot>;
+    puzzles: Record<string, PuzzleRunState>;
+  };
+  audio: { muted: boolean };
   dialogue?: { dialogueId: string; nodeId: string };
 }
 
@@ -164,6 +187,47 @@ function isValidProgression(value: unknown): value is ProgressionSnapshot {
   );
 }
 
+function isBodySnapshot(value: unknown): value is BodySnapshot {
+  return (
+    isRecord(value) &&
+    isFiniteNumber(value.x) &&
+    isFiniteNumber(value.y) &&
+    isFiniteNumber(value.vx) &&
+    isFiniteNumber(value.vy) &&
+    isFiniteNumber(value.angle) &&
+    isFiniteNumber(value.angularVelocity) &&
+    typeof value.sleeping === "boolean"
+  );
+}
+
+function isPropSnapshot(value: unknown): value is PropSnapshot {
+  return (
+    isRecord(value) &&
+    typeof value.bodyId === "string" &&
+    (value.state === "free" ||
+      value.state === "carried" ||
+      value.state === "placed" ||
+      value.state === "docked") &&
+    (value.carriedBy === null ||
+      value.carriedBy === "p1" ||
+      value.carriedBy === "p2") &&
+    (value.placedOn === null || typeof value.placedOn === "string")
+  );
+}
+
+function isPuzzleState(value: unknown): value is PuzzleRunState {
+  return (
+    isRecord(value) &&
+    typeof value.puzzleId === "string" &&
+    isFiniteNumber(value.tick) &&
+    typeof value.solved === "boolean" &&
+    isRecord(value.nodes) &&
+    isRecord(value.counters) &&
+    Array.isArray(value.pulses) &&
+    (value.lastError === null || typeof value.lastError === "string")
+  );
+}
+
 function validRun(
   value: unknown,
   packId?: string,
@@ -172,34 +236,58 @@ function validRun(
   if (!isRecord(value)) return false;
   if (
     typeof value.schemaVersion !== "string" ||
-    !/^1\.\d+$/.test(value.schemaVersion)
+    !/^2\.\d+$/.test(value.schemaVersion)
   ) {
     return false;
   }
-  if (typeof value.packId !== "string" || typeof value.levelId !== "string") {
+  if (
+    typeof value.packId !== "string" ||
+    typeof value.packVersion !== "string" ||
+    typeof value.contentVersion !== "string" ||
+    typeof value.levelId !== "string" ||
+    typeof value.roomId !== "string"
+  ) {
     return false;
   }
   if (packId !== undefined && value.packId !== packId) return false;
-  if (
-    packVersion !== undefined &&
-    typeof value.packVersion === "string" &&
-    value.packVersion !== packVersion
-  ) {
+  if (packVersion !== undefined && value.packVersion !== packVersion) {
     return false;
   }
   if (!isValidProgression(value.progression)) return false;
   if (!Array.isArray(value.events)) return false;
-  if (!isRecord(value.players)) return false;
-  const p1 = value.players.p1;
-  const p2 = value.players.p2;
+  if (value.status !== "playing" && value.status !== "debrief" && value.status !== "complete") {
+    return false;
+  }
+  if (value.checkpointId !== null && typeof value.checkpointId !== "string") {
+    return false;
+  }
+
+  if (!isRecord(value.players) || typeof value.players.activeP2 !== "boolean") {
+    return false;
+  }
+  if (!isRecord(value.players.bodies)) return false;
   if (
-    !isRecord(p1) ||
-    !isRecord(p2) ||
-    !isFiniteNumber(p1.x) ||
-    !isFiniteNumber(p1.y) ||
-    !isFiniteNumber(p2.x) ||
-    !isFiniteNumber(p2.y)
+    !isBodySnapshot(value.players.bodies.p1) ||
+    !isBodySnapshot(value.players.bodies.p2)
   ) {
+    return false;
+  }
+
+  if (!isRecord(value.world)) return false;
+  if (!isRecord(value.world.bodies)) return false;
+  for (const snapshot of Object.values(value.world.bodies)) {
+    if (!isBodySnapshot(snapshot)) return false;
+  }
+  if (!isRecord(value.world.props)) return false;
+  for (const snapshot of Object.values(value.world.props)) {
+    if (!isPropSnapshot(snapshot)) return false;
+  }
+  if (!isRecord(value.world.puzzles)) return false;
+  for (const snapshot of Object.values(value.world.puzzles)) {
+    if (!isPuzzleState(snapshot)) return false;
+  }
+
+  if (!isRecord(value.audio) || typeof value.audio.muted !== "boolean") {
     return false;
   }
   return true;
@@ -322,6 +410,18 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
 
     if (validRun(parsed, packId, packVersion)) {
       return { ok: true, run: parsed };
+    }
+
+    if (
+      isRecord(parsed) &&
+      typeof parsed.schemaVersion === "string" &&
+      /^1\.\d+$/.test(parsed.schemaVersion)
+    ) {
+      return {
+        ok: false,
+        reason: "VERSION_MISMATCH",
+        message: "Save format updated — level restarted",
+      };
     }
 
     if (isRecord(parsed) && typeof parsed.packId === "string") {

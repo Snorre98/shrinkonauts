@@ -18,6 +18,7 @@ export type AssessmentMode = (typeof ASSESSMENT_MODES)[number];
 
 export const OBJECTIVE_ASSESSMENTS = [
   "concept_log",
+  "puzzle",
   "gate",
   "debrief",
   "challenge",

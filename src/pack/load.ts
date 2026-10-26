@@ -20,10 +20,16 @@ import {
 import type {
   BackgroundBlend,
   BackgroundFit,
+  EntityBodyComponent,
+  EntityGateComponent,
+  EntityPropComponent,
+  EntityPulseSourceComponent,
+  EntityReceptorComponent,
   RoomBackgroundLayer,
   RoomCheckpoint,
   RoomDocument,
   RoomEntity,
+  RoomEntityComponents,
   RoomEntityType,
   RoomExit,
   RoomPropertyValue,
@@ -74,6 +80,11 @@ const ENTITY_TYPES: readonly RoomEntityType[] = [
   "checkpoint",
   "scanTarget",
   "decor",
+  "body",
+  "prop",
+  "receptor",
+  "pulseSource",
+  "puzzleGate",
 ];
 
 function parseSpawn(
@@ -221,6 +232,16 @@ function parseExit(
     if (!gateId.ok) return err(gateId.error);
     exit.gateId = gateId.value;
   }
+  if (value.puzzleId !== undefined) {
+    const puzzleId = readNonEmptyString(
+      value,
+      "puzzleId",
+      code,
+      `exits[${index}].puzzleId`,
+    );
+    if (!puzzleId.ok) return err(puzzleId.error);
+    exit.puzzleId = puzzleId.value;
+  }
   return ok(exit);
 }
 
@@ -320,6 +341,163 @@ function parseEntityProperties(
   return ok(properties);
 }
 
+function parseBodyComponent(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<EntityBodyComponent> {
+  if (!isRecord(value)) {
+    return err(`${code}: entities[${index}].components.body must be an object`);
+  }
+  const width = readNumber(value, "width", code, `entities[${index}].components.body.width`);
+  if (!width.ok) return err(width.error);
+  const height = readNumber(value, "height", code, `entities[${index}].components.body.height`);
+  if (!height.ok) return err(height.error);
+  if (width.value <= 0 || height.value <= 0) {
+    return err(`${code}: entities[${index}].components.body width/height must be positive`);
+  }
+
+  const body: EntityBodyComponent = {
+    width: width.value,
+    height: height.value,
+  };
+  if (value.dynamic !== undefined) {
+    const dynamic = readBoolean(value, "dynamic", code, `entities[${index}].components.body.dynamic`);
+    if (!dynamic.ok) return err(dynamic.error);
+    body.dynamic = dynamic.value;
+  }
+  if (value.mass !== undefined) {
+    const mass = readNumber(value, "mass", code, `entities[${index}].components.body.mass`);
+    if (!mass.ok) return err(mass.error);
+    if (mass.value <= 0) {
+      return err(`${code}: entities[${index}].components.body.mass must be positive`);
+    }
+    body.mass = mass.value;
+  }
+  if (value.fixedRotation !== undefined) {
+    const fixed = readBoolean(value, "fixedRotation", code, `entities[${index}].components.body.fixedRotation`);
+    if (!fixed.ok) return err(fixed.error);
+    body.fixedRotation = fixed.value;
+  }
+  if (value.gravity !== undefined) {
+    const gravity = readBoolean(value, "gravity", code, `entities[${index}].components.body.gravity`);
+    if (!gravity.ok) return err(gravity.error);
+    body.gravity = gravity.value;
+  }
+  for (const key of ["friction", "restitution"] as const) {
+    if (value[key] === undefined) continue;
+    const number = readNumber(value, key, code, `entities[${index}].components.body.${key}`);
+    if (!number.ok) return err(number.error);
+    body[key] = number.value;
+  }
+  return ok(body);
+}
+
+function parsePropComponent(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<EntityPropComponent> {
+  if (!isRecord(value)) {
+    return err(`${code}: entities[${index}].components.prop must be an object`);
+  }
+  const bodyId = readNonEmptyString(value, "bodyId", code, `entities[${index}].components.prop.bodyId`);
+  if (!bodyId.ok) return err(bodyId.error);
+  const tags = readStringArray(value, "tags", code, `entities[${index}].components.prop.tags`);
+  if (!tags.ok) return err(tags.error);
+  const shape = readNonEmptyString(value, "shape", code, `entities[${index}].components.prop.shape`);
+  if (!shape.ok) return err(shape.error);
+
+  const prop: EntityPropComponent = {
+    bodyId: bodyId.value,
+    tags: tags.value,
+    shape: shape.value,
+    carryable: true,
+    placeable: true,
+  };
+  for (const key of ["carryable", "placeable", "pushable", "throwable"] as const) {
+    if (value[key] === undefined) continue;
+    const boolean = readBoolean(value, key, code, `entities[${index}].components.prop.${key}`);
+    if (!boolean.ok) return err(boolean.error);
+    prop[key] = boolean.value;
+  }
+  return ok(prop);
+}
+
+function parseReceptorComponent(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<EntityReceptorComponent> {
+  if (!isRecord(value)) {
+    return err(`${code}: entities[${index}].components.receptor must be an object`);
+  }
+  const receptor: EntityReceptorComponent = {};
+  const acceptsTag = readOptionalString(value, "acceptsTag", code, `entities[${index}].components.receptor.acceptsTag`);
+  if (!acceptsTag.ok) return err(acceptsTag.error);
+  if (acceptsTag.value) receptor.acceptsTag = acceptsTag.value;
+  const acceptsShape = readOptionalString(value, "acceptsShape", code, `entities[${index}].components.receptor.acceptsShape`);
+  if (!acceptsShape.ok) return err(acceptsShape.error);
+  if (acceptsShape.value) receptor.acceptsShape = acceptsShape.value;
+  if (!receptor.acceptsTag && !receptor.acceptsShape) {
+    return err(`${code}: entities[${index}].components.receptor needs acceptsTag or acceptsShape`);
+  }
+  if (value.snap !== undefined) {
+    const snap = parseSpawn(value.snap, "snap", code);
+    if (!snap.ok) return err(snap.error);
+    receptor.snap = snap.value;
+  }
+  return ok(receptor);
+}
+
+function parseEntityComponents(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<RoomEntityComponents | undefined> {
+  if (value === undefined) return ok(undefined);
+  if (!isRecord(value)) {
+    return err(`${code}: entities[${index}].components must be an object`);
+  }
+
+  const components: RoomEntityComponents = {};
+  if (value.body !== undefined) {
+    const body = parseBodyComponent(value.body, index, code);
+    if (!body.ok) return err(body.error);
+    components.body = body.value;
+  }
+  if (value.prop !== undefined) {
+    const prop = parsePropComponent(value.prop, index, code);
+    if (!prop.ok) return err(prop.error);
+    components.prop = prop.value;
+  }
+  if (value.receptor !== undefined) {
+    const receptor = parseReceptorComponent(value.receptor, index, code);
+    if (!receptor.ok) return err(receptor.error);
+    components.receptor = receptor.value;
+  }
+  if (value.pulseSource !== undefined) {
+    if (!isRecord(value.pulseSource)) {
+      return err(`${code}: entities[${index}].components.pulseSource must be an object`);
+    }
+    if (value.pulseSource.ability !== "pulse") {
+      return err(`${code}: entities[${index}].components.pulseSource.ability must be "pulse"`);
+    }
+    const pulseSource: EntityPulseSourceComponent = { ability: "pulse" };
+    components.pulseSource = pulseSource;
+  }
+  if (value.gate !== undefined) {
+    if (!isRecord(value.gate)) {
+      return err(`${code}: entities[${index}].components.gate must be an object`);
+    }
+    const gateId = readNonEmptyString(value.gate, "gateId", code, `entities[${index}].components.gate.gateId`);
+    if (!gateId.ok) return err(gateId.error);
+    const gate: EntityGateComponent = { gateId: gateId.value };
+    components.gate = gate;
+  }
+  return ok(components);
+}
+
 function parseEntity(
   value: unknown,
   index: number,
@@ -376,6 +554,10 @@ function parseEntity(
   if (!properties.ok) return err(properties.error);
   if (properties.value) entity.properties = properties.value;
 
+  const components = parseEntityComponents(value.components, index, code);
+  if (!components.ok) return err(components.error);
+  if (components.value) entity.components = components.value;
+
   if (entity.type === "agent" && !entity.dialogueId) {
     return err(`${code}: entities[${index}] agent needs a dialogueId`);
   }
@@ -387,6 +569,21 @@ function parseEntity(
   }
   if ((entity.type === "agent" || entity.type === "gate") && !entity.sprite) {
     return err(`${code}: entities[${index}] ${entity.type} needs a sprite asset ID`);
+  }
+  if (entity.type === "body" && !entity.components?.body) {
+    return err(`${code}: entities[${index}] body needs components.body`);
+  }
+  if (entity.type === "prop" && !entity.components?.prop) {
+    return err(`${code}: entities[${index}] prop needs components.prop`);
+  }
+  if (entity.type === "receptor" && !entity.components?.receptor) {
+    return err(`${code}: entities[${index}] receptor needs components.receptor`);
+  }
+  if (entity.type === "pulseSource" && !entity.components?.pulseSource) {
+    return err(`${code}: entities[${index}] pulseSource needs components.pulseSource`);
+  }
+  if (entity.type === "puzzleGate" && !entity.components?.gate) {
+    return err(`${code}: entities[${index}] puzzleGate needs components.gate`);
   }
 
   return ok(entity);
@@ -515,6 +712,28 @@ export function parseRoom(value: unknown): Result<RoomDocument> {
       entities.push(parsed.value);
     }
     room.entities = entities;
+
+    const bodies = new Map(
+      entities
+        .filter((entity) => entity.type === "body")
+        .map((entity) => [entity.id, entity]),
+    );
+    const usedBodies = new Set<string>();
+    for (const entity of entities) {
+      if (entity.type !== "prop" || !entity.components?.prop) continue;
+      const bodyId = entity.components.prop.bodyId;
+      if (!bodies.has(bodyId)) {
+        return err(
+          `${code}: prop "${entity.id}" references missing body "${bodyId}"`,
+        );
+      }
+      if (usedBodies.has(bodyId)) {
+        return err(
+          `${code}: body "${bodyId}" is referenced by more than one prop`,
+        );
+      }
+      usedBodies.add(bodyId);
+    }
   }
 
   if (value.triggers !== undefined) {

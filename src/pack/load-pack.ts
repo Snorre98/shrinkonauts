@@ -10,6 +10,7 @@ import {
   parseMapping,
   parsePack,
 } from "./parse-content";
+import { parsePuzzle } from "./parse-puzzle";
 import type {
   DialogueDocument,
   GateDocument,
@@ -19,6 +20,7 @@ import type {
   RoomDocument,
   ThemeDocument,
 } from "./types";
+import type { PuzzleDocument } from "../puzzle";
 
 export interface LoadPackContentOptions {
   /** Directory URL of the pack, for example `/packs/anatomy-reflex/`. */
@@ -103,6 +105,7 @@ export async function loadPackContent(
   const rooms: Record<string, RoomDocument> = {};
   const dialogues: Record<string, DialogueDocument> = {};
   const gates: Record<string, GateDocument> = {};
+  const puzzles: Record<string, PuzzleDocument> = {};
 
   for (const levelId of pack.levels) {
     const levelDir = new URL(`levels/${levelId}/`, packUrl);
@@ -155,6 +158,24 @@ export async function loadPackContent(
       if (!gate.ok) return err(gate.error);
       gates[gateId] = gate.value;
     }
+
+    for (const puzzleId of level.value.puzzleIds ?? []) {
+      if (puzzles[puzzleId]) continue;
+      const puzzleJson = await firstJson(
+        [
+          new URL(`${puzzleId}.json`, levelDir),
+          new URL("puzzle.json", levelDir),
+        ],
+        fetchImpl,
+      );
+      if (!puzzleJson.ok) return err(puzzleJson.error);
+      const puzzle = expect(
+        parsePuzzle(puzzleJson.value),
+        `puzzle ${puzzleId}`,
+      );
+      if (!puzzle.ok) return err(puzzle.error);
+      puzzles[puzzleId] = puzzle.value;
+    }
   }
 
   const mappingJson = await json(new URL(pack.mapping, packUrl), fetchImpl);
@@ -177,6 +198,7 @@ export async function loadPackContent(
     rooms,
     dialogues,
     gates,
+    puzzles,
     warnings,
   });
 }

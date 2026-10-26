@@ -19,6 +19,7 @@ import {
   type ManifestAssetEntry,
 } from "../assets";
 import { silentLogger } from "../core/logger";
+import { replaySolution, validatePuzzleDocument } from "../puzzle";
 import { collectRoomAssetIds, collectThemeAssetIds } from "./load";
 import { buildMapping, mappingDrift } from "./mapping";
 import type {
@@ -46,12 +47,15 @@ export type PackIssueCode =
   | "LEVEL_SCHEMA_VERSION"
   | "LEVEL_REFERENCE_MISSING"
   | "LEVEL_EVIDENCE_MISSING"
+  | "PUZZLE_INVALID"
+  | "PUZZLE_REFERENCE_MISSING"
   | "SYLLABUS_REFERENCE_MISSING"
   | "COVERAGE_OBJECTIVE_UNMAPPED"
   | "COVERAGE_CONCEPT_UNMAPPED"
   | "COVERAGE_GATE_ORPHAN"
   | "COVERAGE_DIALOGUE_ORPHAN"
   | "COVERAGE_LEVEL_ORPHAN"
+  | "COVERAGE_PUZZLE_ORPHAN"
   | "REACHABILITY_DEAD_END"
   | "THEME_TOKEN_INVALID"
   | "MAPPING_DRIFT";
@@ -437,7 +441,7 @@ function checkContent(
   addIssue: AddIssue,
   addWarning: AddWarning,
 ): void {
-  const { pack, syllabus, mapping, levels, rooms, dialogues, gates } = content;
+  const { pack, syllabus, mapping, levels, rooms, dialogues, gates, puzzles } = content;
   const levelIds = new Set(pack.levels);
   const levelById = new Map(levels.map((level) => [level.id, level]));
 
@@ -470,6 +474,7 @@ function checkContent(
 
   const referencedDialogues = new Set<string>();
   const referencedGates = new Set<string>();
+  const referencedPuzzles = new Set<string>();
   const scenarioDialogues = new Set<string>();
 
   for (const room of Object.values(rooms)) {
@@ -480,10 +485,14 @@ function checkContent(
     for (const entity of room.entities ?? []) {
       if (entity.dialogueId) scenarioDialogues.add(entity.dialogueId);
       if (entity.gateId) referencedGates.add(entity.gateId);
+      if (entity.type === "puzzleGate" && entity.components?.gate?.gateId) {
+        referencedPuzzles.add(entity.components.gate.gateId);
+      }
     }
   }
   for (const exit of Object.values(rooms).flatMap((room) => room.exits ?? [])) {
     if (exit.gateId) referencedGates.add(exit.gateId);
+    if (exit.puzzleId) referencedPuzzles.add(exit.puzzleId);
     if (!levelIds.has(exit.toLevelId)) {
       // The M1 vertical slice ships only one level. Forward exits are kept in
       // the data so later slices need no schema change; they are reported but
@@ -562,6 +571,80 @@ function checkContent(
       }
     }
 
+    for (const puzzleId of level.puzzleIds ?? []) {
+      referencedPuzzles.add(puzzleId);
+      const puzzle = puzzles[puzzleId];
+      if (!puzzle) {
+        addIssue(
+          "PUZZLE_REFERENCE_MISSING",
+          `level "${level.id}" references missing puzzle "${puzzleId}"`,
+        );
+        continue;
+      }
+
+      const validation = validatePuzzleDocument(puzzle);
+      for (const issue of validation.issues) {
+        addIssue("PUZZLE_INVALID", `${puzzle.id}: ${issue.message}`);
+      }
+      const replay = replaySolution(puzzle);
+      if (!replay.ok) {
+        addIssue(
+          "PUZZLE_INVALID",
+          `${puzzle.id}: solution trace does not reach the win predicate${
+            replay.error ? ` (${replay.error})` : ""
+          }`,
+        );
+      }
+      for (const objectiveId of puzzle.objectiveIds) {
+        if (!syllabus.objectives.some((item) => item.id === objectiveId)) {
+          addIssue(
+            "SYLLABUS_REFERENCE_MISSING",
+            `puzzle "${puzzle.id}" references unknown objective "${objectiveId}"`,
+            objectiveId,
+          );
+        }
+      }
+      for (const conceptId of puzzle.conceptIds) {
+        if (!syllabus.concepts.some((item) => item.id === conceptId)) {
+          addIssue(
+            "SYLLABUS_REFERENCE_MISSING",
+            `puzzle "${puzzle.id}" references unknown concept "${conceptId}"`,
+            conceptId,
+          );
+        }
+      }
+
+      const roomEntities = room?.entities ?? [];
+      for (const node of puzzle.nodes) {
+        if (!node.entityId) continue;
+        const entity = roomEntities.find((item) => item.id === node.entityId);
+        if (!entity) {
+          addIssue(
+            "PUZZLE_REFERENCE_MISSING",
+            `puzzle "${puzzle.id}" node "${node.id}" references missing entity "${node.entityId}"`,
+          );
+          continue;
+        }
+        const expected: Record<string, string> = {
+          prop: "prop",
+          receptor: "receptor",
+          pulseSource: "pulseSource",
+          gate: "puzzleGate",
+        };
+        const wanted = expected[node.type];
+        if (wanted && entity.type !== wanted) {
+          addIssue(
+            "PUZZLE_REFERENCE_MISSING",
+            `puzzle "${puzzle.id}" node "${node.id}" expects entity type "${wanted}" but "${entity.id}" is "${entity.type}"`,
+          );
+        }
+      }
+    }
+
+    for (const edge of level.map.edges) {
+      if (edge.puzzleId) referencedPuzzles.add(edge.puzzleId);
+    }
+
     for (const next of level.nextLevelIds) {
       if (!levelIds.has(next)) {
         addWarning(
@@ -605,6 +688,15 @@ function checkContent(
     }
   }
 
+  for (const puzzle of Object.values(puzzles)) {
+    if (!referencedPuzzles.has(puzzle.id)) {
+      addIssue(
+        "COVERAGE_PUZZLE_ORPHAN",
+        `puzzle "${puzzle.id}" is not referenced by any level, room, or exit`,
+      );
+    }
+  }
+
   for (const dialogue of Object.values(dialogues)) {
     if (!referencedDialogues.has(dialogue.id) && !scenarioDialogues.has(dialogue.id)) {
       addIssue(
@@ -636,6 +728,9 @@ function checkContent(
       mappedConcepts.has(concept.id) ||
       scanConcepts.has(concept.id) ||
       Object.values(gates).some((gate) => gate.conceptIds.includes(concept.id)) ||
+      Object.values(puzzles).some((puzzle) =>
+        puzzle.conceptIds.includes(concept.id),
+      ) ||
       Object.values(dialogues).some((dialogue) =>
         dialogueRevealsConcept(dialogue, concept.id),
       );

@@ -29,7 +29,7 @@
       "next": "check"
     },
     "right": {
-      "text": "Exactly. Scan the glowing structures for the details, then open the gate at the far end. It will ask you to order the whole reflex pathway.",
+      "text": "Exactly. Scan the glowing structures for the details. Then carry the tracer across the cleft, place it in the receptor that matches its shape, and pulse from the presynaptic terminal. The gate opens only when the signal finds its match.",
       "effects": [
         { "type": "revealConcept", "conceptId": "CON-3" },
         { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-3" },

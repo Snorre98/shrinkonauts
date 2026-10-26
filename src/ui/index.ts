@@ -15,6 +15,7 @@ export type {
   InteractionView,
   MapView,
   PlayerView,
+  PuzzleView,
   RuntimeSnapshot,
   SettingsView,
 } from "./model";

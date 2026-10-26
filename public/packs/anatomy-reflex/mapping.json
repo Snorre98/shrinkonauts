@@ -19,11 +19,10 @@
       "dialogues": [
         "dlg-neuron-01"
       ],
-      "gates": [
-        "gate-nerve-01"
-      ],
+      "gates": [],
       "evidence": [
-        "EV-2"
+        "EV-2",
+        "EV-7"
       ],
       "debrief": "debrief-obj-2"
     },

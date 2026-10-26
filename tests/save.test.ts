@@ -3,11 +3,16 @@ import {
   createSave,
   defaultSettings,
   MemorySaveStorage,
+  RUN_SCHEMA_VERSION,
   RUN_STORAGE_KEY,
   SAVE_SCHEMA_VERSION,
   SETTINGS_STORAGE_KEY,
 } from "../src/save";
 import { createProgression } from "../src/progression";
+
+function body(x: number, y: number) {
+  return { x, y, vx: 0, vy: 0, angle: 0, angularVelocity: 0, sleeping: false };
+}
 
 describe("save", () => {
   it("persists versioned audio and accessibility settings", () => {
@@ -53,9 +58,10 @@ describe("save", () => {
     });
 
     save.saveRun({
-      schemaVersion: SAVE_SCHEMA_VERSION,
+      schemaVersion: RUN_SCHEMA_VERSION,
       packId: "anatomy-reflex",
       packVersion: "0.1.0",
+      contentVersion: "0.1.0",
       levelId: "03-nerve-forest",
       roomId: "room-nerve-forest",
       checkpointId: "checkpoint-entry",
@@ -63,10 +69,11 @@ describe("save", () => {
       events: [],
       elapsed: 42,
       players: {
-        p1: { x: 112, y: 640 },
-        p2: { x: 176, y: 640 },
         activeP2: true,
+        bodies: { p1: body(112, 618), p2: body(176, 618) },
       },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
       status: "playing",
     });
 
@@ -97,17 +104,23 @@ describe("save", () => {
     storage.setItem(
       RUN_STORAGE_KEY,
       JSON.stringify({
-        schemaVersion: SAVE_SCHEMA_VERSION,
+        schemaVersion: RUN_SCHEMA_VERSION,
         packId: "other-pack",
         packVersion: "0.1.0",
+        contentVersion: "0.1.0",
         levelId: "03-nerve-forest",
+        roomId: "room-nerve-forest",
+        checkpointId: null,
         progression: createProgression(),
         events: [],
+        elapsed: 0,
         players: {
-          p1: { x: 0, y: 0 },
-          p2: { x: 0, y: 0 },
           activeP2: true,
+          bodies: { p1: body(0, 0), p2: body(0, 0) },
         },
+        world: { bodies: {}, props: {}, puzzles: {} },
+        audio: { muted: false },
+        status: "playing",
       }),
     );
     expect(save.loadRun("anatomy-reflex", "0.1.0")).toMatchObject({
@@ -125,9 +138,10 @@ describe("save", () => {
     const save = createSave({ storage });
     save.updateAudio({ muted: true });
     save.saveRun({
-      schemaVersion: SAVE_SCHEMA_VERSION,
+      schemaVersion: RUN_SCHEMA_VERSION,
       packId: "anatomy-reflex",
       packVersion: "0.1.0",
+      contentVersion: "0.1.0",
       levelId: "03-nerve-forest",
       roomId: "room-nerve-forest",
       checkpointId: null,
@@ -135,10 +149,11 @@ describe("save", () => {
       events: [],
       elapsed: 0,
       players: {
-        p1: { x: 0, y: 0 },
-        p2: { x: 0, y: 0 },
         activeP2: true,
+        bodies: { p1: body(0, 0), p2: body(0, 0) },
       },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
       status: "playing",
     });
 

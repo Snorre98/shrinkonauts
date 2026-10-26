@@ -55,8 +55,8 @@ function emptyActions(input: RuntimeInput): RuntimeInput {
       p2: { ...input.intents.p2, jump: false, dash: false },
     },
     actions: {
-      p1: { interact: false, scan: false },
-      p2: { interact: false, scan: false },
+      p1: { interact: false, scan: false, pulse: false, carry: false, throw: false },
+      p2: { interact: false, scan: false, pulse: false, carry: false, throw: false },
       map: false,
       log: false,
       pause: false,
@@ -78,6 +78,7 @@ export class RoomScene extends Phaser.Scene {
   > = {};
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly entityGlows = new Map<string, Phaser.GameObjects.Ellipse>();
+  private readonly propSprites = new Map<string, Phaser.GameObjects.Image>();
   private accumulator = 0;
   private started = false;
   /**
@@ -267,6 +268,9 @@ export class RoomScene extends Phaser.Scene {
 
       this.entityGlows.set(entity.id, glow);
       this.entitySprites.set(entity.id, sprite);
+      if (entity.type === "prop") {
+        this.propSprites.set(entity.id, sprite);
+      }
     }
   }
 
@@ -339,6 +343,13 @@ export class RoomScene extends Phaser.Scene {
         );
         shadow.setAlpha(player.onGround ? 0.32 : 0.18);
       }
+    }
+
+    for (const [id, sprite] of this.propSprites) {
+      const prop = this.simulation.props[id];
+      if (!prop) continue;
+      sprite.setPosition(prop.x, prop.y + prop.height / 2);
+      sprite.setVisible(true);
     }
   }
 }

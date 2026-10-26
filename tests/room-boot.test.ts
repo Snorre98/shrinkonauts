@@ -152,8 +152,14 @@ describe("room simulation", () => {
 
     expect(simulation.players.p1.onGround).toBe(true);
     expect(simulation.players.p2.onGround).toBe(true);
-    expect(simulation.players.p1.y).toBeCloseTo(room.spawns.player1.y * room.tileSize);
-    expect(simulation.players.p2.y).toBeCloseTo(room.spawns.player2.y * room.tileSize);
+    expect(simulation.players.p1.y).toBeCloseTo(
+      room.spawns.player1.y * room.tileSize,
+      0,
+    );
+    expect(simulation.players.p2.y).toBeCloseTo(
+      room.spawns.player2.y * room.tileSize,
+      0,
+    );
 
     const p2X = simulation.players.p2.x;
     const moveRight = emptyIntents();

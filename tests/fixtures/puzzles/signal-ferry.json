@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0",
+  "id": "puzzle-ferry-01",
+  "title": "Signal Ferry",
+  "objectiveIds": ["OBJ-2"],
+  "conceptIds": ["CON-3", "CON-4", "CON-5", "CON-6", "CON-7"],
+  "activation": { "mode": "roomStart" },
+  "tether": "off",
+  "nodes": [
+    {
+      "id": "tracer-prop",
+      "type": "prop",
+      "entityId": "tracer-prop",
+      "tags": ["tracer"],
+      "shape": "triangle",
+      "spawn": { "x": 400, "y": 600 }
+    },
+    {
+      "id": "pulse-terminal",
+      "type": "pulseSource",
+      "entityId": "pulse-terminal",
+      "ability": "pulse",
+      "cooldownTicks": 24,
+      "travelTicks": 18,
+      "range": 96
+    },
+    {
+      "id": "receptor-a",
+      "type": "receptor",
+      "entityId": "receptor-a",
+      "accepts": { "tag": "tracer", "shape": "triangle" },
+      "rect": { "x": 880, "y": 548, "width": 64, "height": 96 },
+      "snap": { "x": 912, "y": 596 }
+    },
+    {
+      "id": "receptor-b",
+      "type": "receptor",
+      "entityId": "receptor-b",
+      "accepts": { "tag": "tracer", "shape": "circle" },
+      "rect": { "x": 1008, "y": 548, "width": 64, "height": 96 },
+      "snap": { "x": 1040, "y": 596 }
+    },
+    {
+      "id": "gate-ferry",
+      "type": "gate",
+      "entityId": "gate-ferry",
+      "initial": "closed",
+      "latched": true
+    }
+  ],
+  "links": [
+    { "from": "pulse-terminal", "to": "receptor-a", "type": "pulse" },
+    { "from": "pulse-terminal", "to": "receptor-b", "type": "pulse" },
+    { "from": "receptor-a", "to": "gate-ferry", "type": "open" }
+  ],
+  "win": { "type": "gateOpen", "gateId": "gate-ferry" },
+  "reset": { "props": ["tracer-prop"], "nodes": [] },
+  "evidence": {
+    "onSolve": ["puzzle_solved"],
+    "counters": ["pickups", "drops", "placements", "pulses", "wrongReceptor", "wrongSide", "resets"]
+  },
+  "rewards": {
+    "abilities": ["signal-dash"],
+    "mapNodes": ["map-muscle-effector"]
+  },
+  "solution": [
+    { "action": "move", "actor": "p2", "x": 400, "y": 600 },
+    { "action": "pickup", "actor": "p2", "target": "tracer-prop" },
+    { "action": "move", "actor": "p2", "x": 912, "y": 596 },
+    { "action": "place", "actor": "p2", "target": "receptor-a" },
+    { "action": "move", "actor": "p1", "x": 272, "y": 620 },
+    { "action": "pulse", "actor": "p1", "target": "pulse-terminal" },
+    { "action": "wait", "ticks": 22 }
+  ],
+  "hints": [
+    "The tracer fits only one receptor shape.",
+    "One player can hold the terminal while the other carries the tracer."
+  ]
+}

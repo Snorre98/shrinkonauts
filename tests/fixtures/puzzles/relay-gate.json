@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "1.0",
+  "id": "fixture-relay-gate",
+  "title": "Relay Gate Fixture",
+  "objectiveIds": ["OBJ-2"],
+  "conceptIds": ["CON-7"],
+  "activation": { "mode": "roomStart" },
+  "tether": "normal",
+  "nodes": [
+    {
+      "id": "zone-entry",
+      "type": "zone",
+      "rect": { "x": 150, "y": 450, "width": 100, "height": 100 },
+      "detects": ["player"],
+      "minimum": 1,
+      "countCarried": false
+    },
+    { "id": "trigger-entry", "type": "trigger", "once": true },
+    { "id": "timer-delay", "type": "timer", "durationTicks": 20, "repeat": false },
+    { "id": "counter-entry", "type": "counter", "target": 1, "comparison": "==" },
+    {
+      "id": "plate-stand",
+      "type": "plate",
+      "rect": { "x": 550, "y": 450, "width": 100, "height": 100 },
+      "detects": ["player"],
+      "minimum": 1,
+      "countCarried": false
+    },
+    { "id": "relay-all", "type": "relay", "mode": "allOf" },
+    { "id": "gate-exit", "type": "gate", "initial": "closed", "latched": true }
+  ],
+  "links": [
+    { "from": "zone-entry", "to": "trigger-entry", "type": "enter" },
+    { "from": "trigger-entry", "to": "timer-delay", "type": "start" },
+    { "from": "trigger-entry", "to": "counter-entry", "type": "increment" },
+    { "from": "timer-delay", "to": "relay-all", "type": "activate" },
+    { "from": "counter-entry", "to": "relay-all", "type": "activate" },
+    { "from": "plate-stand", "to": "relay-all", "type": "activate" },
+    { "from": "relay-all", "to": "gate-exit", "type": "open" }
+  ],
+  "win": { "type": "gateOpen", "gateId": "gate-exit" },
+  "reset": { "props": [], "nodes": [] },
+  "evidence": { "onSolve": ["puzzle_solved"], "counters": ["resets"] },
+  "rewards": {},
+  "solution": [
+    { "action": "move", "actor": "p1", "x": 200, "y": 500 },
+    { "action": "wait", "ticks": 1 },
+    { "action": "move", "actor": "p1", "x": 600, "y": 500 },
+    { "action": "wait", "ticks": 30 }
+  ],
+  "hints": ["Cross the entry zone, then hold the plate until the delay elapses."]
+}

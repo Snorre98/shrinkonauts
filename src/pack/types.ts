@@ -1,4 +1,5 @@
 import type { AssetId } from "../assets";
+import type { PuzzleDocument } from "../puzzle";
 import type { Syllabus } from "../syllabus";
 
 export type BackgroundFit = "cover" | "tile" | "stretch" | "contain";
@@ -30,9 +31,57 @@ export type RoomEntityType =
   | "gate"
   | "checkpoint"
   | "scanTarget"
-  | "decor";
+  | "decor"
+  | "body"
+  | "prop"
+  | "receptor"
+  | "pulseSource"
+  | "puzzleGate";
 
 export type RoomPropertyValue = string | number | boolean | string[];
+
+export interface EntityBodyComponent {
+  dynamic?: boolean;
+  width: number;
+  height: number;
+  mass?: number;
+  fixedRotation?: boolean;
+  gravity?: boolean;
+  friction?: number;
+  restitution?: number;
+}
+
+export interface EntityPropComponent {
+  bodyId: string;
+  tags: string[];
+  shape: string;
+  carryable: boolean;
+  placeable: boolean;
+  pushable?: boolean;
+  throwable?: boolean;
+}
+
+export interface EntityReceptorComponent {
+  acceptsTag?: string;
+  acceptsShape?: string;
+  snap?: RoomSpawn;
+}
+
+export interface EntityPulseSourceComponent {
+  ability: "pulse";
+}
+
+export interface EntityGateComponent {
+  gateId: string;
+}
+
+export interface RoomEntityComponents {
+  body?: EntityBodyComponent;
+  prop?: EntityPropComponent;
+  receptor?: EntityReceptorComponent;
+  pulseSource?: EntityPulseSourceComponent;
+  gate?: EntityGateComponent;
+}
 
 export interface RoomEntity {
   id: string;
@@ -46,6 +95,7 @@ export interface RoomEntity {
   conceptId?: string;
   label?: string;
   properties?: Record<string, RoomPropertyValue>;
+  components?: RoomEntityComponents;
 }
 
 export interface RoomCheckpoint {
@@ -62,6 +112,7 @@ export interface RoomExit {
   height?: number;
   toLevelId: string;
   gateId?: string;
+  puzzleId?: string;
 }
 
 export interface RoomTrigger {
@@ -185,6 +236,7 @@ export interface LevelMapEdge {
   to: string;
   type: MapEdgeType;
   gateId?: string;
+  puzzleId?: string;
 }
 
 export interface LevelMapNode {
@@ -233,6 +285,7 @@ export interface LevelDocument {
   backgroundId?: string;
   dialogueIds: string[];
   gateIds: string[];
+  puzzleIds?: string[];
   map: LevelMapNode;
   evidence: LevelEvidenceRule[];
   unlocks: LevelUnlock[];
@@ -407,6 +460,7 @@ export interface PackContent {
   rooms: Record<string, RoomDocument>;
   dialogues: Record<string, DialogueDocument>;
   gates: Record<string, GateDocument>;
+  puzzles: Record<string, PuzzleDocument>;
 }
 
 export interface LevelBundle {
@@ -414,4 +468,5 @@ export interface LevelBundle {
   room: RoomDocument;
   dialogues: DialogueDocument[];
   gates: GateDocument[];
+  puzzles: PuzzleDocument[];
 }

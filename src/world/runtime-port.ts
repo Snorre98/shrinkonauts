@@ -9,6 +9,9 @@ import type { GameplayCue, Intents, RoomSimulation } from "./simulation";
 export interface PlayerActionInput {
   interact: boolean;
   scan: boolean;
+  pulse: boolean;
+  carry: boolean;
+  throw: boolean;
 }
 
 export interface FrameActions {
@@ -43,8 +46,8 @@ export function emptyRuntimeInput(): RuntimeInput {
       p2: { moveX: 0, jump: false, dash: false },
     },
     actions: {
-      p1: { interact: false, scan: false },
-      p2: { interact: false, scan: false },
+      p1: { interact: false, scan: false, pulse: false, carry: false, throw: false },
+      p2: { interact: false, scan: false, pulse: false, carry: false, throw: false },
       map: false,
       log: false,
       pause: false,

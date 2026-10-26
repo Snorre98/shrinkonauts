@@ -239,6 +239,7 @@ export async function bootGame(options: BootOptions = {}): Promise<BootResult> {
         onToggleLog: () => runtime?.toggleConceptLog(),
         onResume: () => runtime?.togglePause(),
         onEscape: () => runtime?.togglePause(),
+        onResetPuzzle: () => runtime?.resetPuzzle(),
         onMute: () => runtime?.toggleMute(),
         onTextScale: (scale) => runtime?.setTextScale(scale),
         onToggleReducedMotion: () => runtime?.toggleReducedMotion(),

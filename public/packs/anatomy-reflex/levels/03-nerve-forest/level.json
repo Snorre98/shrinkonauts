@@ -9,7 +9,8 @@
   "roomId": "room-nerve-forest",
   "backgroundId": "bg.nerve_forest",
   "dialogueIds": ["dlg-neuron-01"],
-  "gateIds": ["gate-nerve-01"],
+  "gateIds": [],
+  "puzzleIds": ["puzzle-ferry-01"],
   "map": {
     "nodeId": "map-nerve-forest",
     "label": "Nerve Forest",
@@ -17,27 +18,33 @@
     "y": 1,
     "edges": [
       { "to": "map-joint-chamber", "type": "door" },
-      { "to": "map-muscle-effector", "type": "gate", "gateId": "gate-nerve-01" }
+      { "to": "map-muscle-effector", "type": "gate", "puzzleId": "puzzle-ferry-01" }
     ]
   },
   "evidence": [
     {
       "objectiveId": "OBJ-2",
-      "event": "gate_solved",
-      "filter": { "gateId": "gate-nerve-01" },
+      "event": "puzzle_solved",
+      "filter": { "puzzleId": "puzzle-ferry-01" },
+      "required": true
+    },
+    {
+      "objectiveId": "OBJ-2",
+      "event": "debrief_answered",
+      "filter": { "promptId": "prompt-obj-2" },
       "required": true
     }
   ],
-  "unlocks": [{ "type": "ability", "id": "signal-dash" }],
+  "unlocks": [],
   "nextLevelIds": ["04-muscle-effector"],
   "coop": {
     "supported": true,
-    "notes": "Both players can scan and dash; either can interact. Solo is possible."
+    "notes": "P1 pulses; P2 carries and places. Solo uses the union of both roles."
   },
   "authoring": {
     "levelSpec": "README.md",
     "playtestedSolo": false,
     "playtestedCoop": false,
-    "notes": "M1 vertical slice: placeholder assets, gate at the east exit."
+    "notes": "M1.5 Signal Ferry: carry the tracer across the cleft, place it on the matching receptor, and pulse from the presynaptic terminal."
   }
 }

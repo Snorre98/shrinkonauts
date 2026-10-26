@@ -8,6 +8,7 @@ import {
   parseLicences,
   parseMapping,
   parsePack,
+  parsePuzzle,
   parseRoom,
   parseTheme,
   type DialogueDocument,
@@ -20,6 +21,7 @@ import {
   type RoomDocument,
   type ThemeDocument,
 } from "../src/pack";
+import type { PuzzleDocument } from "../src/puzzle";
 import { parseSyllabus, type Syllabus } from "../src/syllabus";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -86,6 +88,7 @@ export function loadContent(
   const rooms: Record<string, RoomDocument> = {};
   const dialogues: Record<string, DialogueDocument> = {};
   const gates: Record<string, GateDocument> = {};
+  const puzzles: Record<string, PuzzleDocument> = {};
 
   for (const levelId of pack.levels) {
     const levelDir = join(directory, "levels", levelId);
@@ -123,6 +126,19 @@ export function loadContent(
       );
       gates[gateId] = expectOk(parseGate(readJson(path)), path);
     }
+
+    for (const puzzleId of level.puzzleIds ?? []) {
+      if (puzzles[puzzleId]) continue;
+      const path = firstExisting(
+        [
+          join(levelDir, `${puzzleId}.json`),
+          join(levelDir, "puzzle.json"),
+          join(directory, "puzzles", `${puzzleId}.json`),
+        ],
+        `puzzle ${puzzleId}`,
+      );
+      puzzles[puzzleId] = expectOk(parsePuzzle(readJson(path)), path);
+    }
   }
 
   const mappingPath = join(directory, pack.mapping);
@@ -148,6 +164,7 @@ export function loadContent(
     rooms,
     dialogues,
     gates,
+    puzzles,
   };
 }
 

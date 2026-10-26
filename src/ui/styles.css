@@ -186,6 +186,12 @@ body {
   font-size: 0.78rem;
 }
 
+.hud__abilities {
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.7rem;
+}
+
 .hud__room-id {
   margin: 0.15rem 0 0;
   color: color-mix(in srgb, var(--color-muted) 75%, transparent);

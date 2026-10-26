@@ -12,6 +12,9 @@ interface PlayerKeys {
   dash: Phaser.Input.Keyboard.Key;
   interact: Phaser.Input.Keyboard.Key;
   scan: Phaser.Input.Keyboard.Key;
+  pulse: Phaser.Input.Keyboard.Key | null;
+  carry: Phaser.Input.Keyboard.Key | null;
+  throw: Phaser.Input.Keyboard.Key | null;
 }
 
 function axis(left: Phaser.Input.Keyboard.Key, right: Phaser.Input.Keyboard.Key): -1 | 0 | 1 {
@@ -75,6 +78,9 @@ export class KeyboardIntentSource {
         dash: latch(captured(Phaser.Input.Keyboard.KeyCodes.SHIFT)),
         interact: latch(captured(Phaser.Input.Keyboard.KeyCodes.E)),
         scan: latch(captured(Phaser.Input.Keyboard.KeyCodes.Q)),
+        pulse: latch(captured(Phaser.Input.Keyboard.KeyCodes.F)),
+        carry: latch(captured(Phaser.Input.Keyboard.KeyCodes.G)),
+        throw: latch(captured(Phaser.Input.Keyboard.KeyCodes.H)),
       },
       p2: {
         left: captured(Phaser.Input.Keyboard.KeyCodes.LEFT),
@@ -84,6 +90,9 @@ export class KeyboardIntentSource {
         dash: latch(captured(Phaser.Input.Keyboard.KeyCodes.FORWARD_SLASH)),
         interact: latch(captured(Phaser.Input.Keyboard.KeyCodes.COMMA)),
         scan: latch(captured(Phaser.Input.Keyboard.KeyCodes.PERIOD)),
+        pulse: null,
+        carry: latch(captured(Phaser.Input.Keyboard.KeyCodes.QUOTES)),
+        throw: latch(captured(Phaser.Input.Keyboard.KeyCodes.SEMICOLON)),
       },
     };
 
@@ -127,10 +136,28 @@ export class KeyboardIntentSource {
         p1: {
           interact: this.consume(this.keys.p1.interact),
           scan: this.consume(this.keys.p1.scan),
+          pulse: this.keys.p1.pulse
+            ? this.consume(this.keys.p1.pulse)
+            : false,
+          carry: this.keys.p1.carry
+            ? this.consume(this.keys.p1.carry)
+            : false,
+          throw: this.keys.p1.throw
+            ? this.consume(this.keys.p1.throw)
+            : false,
         },
         p2: {
           interact: this.consume(this.keys.p2.interact),
           scan: this.consume(this.keys.p2.scan),
+          pulse: this.keys.p2.pulse
+            ? this.consume(this.keys.p2.pulse)
+            : false,
+          carry: this.keys.p2.carry
+            ? this.consume(this.keys.p2.carry)
+            : false,
+          throw: this.keys.p2.throw
+            ? this.consume(this.keys.p2.throw)
+            : false,
         },
         map: this.consume(this.mapKey),
         log: this.consume(this.logKey),

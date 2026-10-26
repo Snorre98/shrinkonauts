@@ -1,4 +1,16 @@
 import type { RoomDocument } from "../pack";
+import type { TetherPolicy } from "../puzzle";
+import {
+  PLAYER_HEIGHT,
+  PLAYER_WIDTH,
+  RoomPhysics,
+  type BodySnapshot,
+  type PropSnapshot,
+  type PropState,
+} from "./physics";
+
+export { PLAYER_HEIGHT, PLAYER_WIDTH };
+export type { BodySnapshot, PropSnapshot, PropState };
 
 export type PlayerId = "p1" | "p2";
 
@@ -11,7 +23,11 @@ export interface PlayerIntent {
 export type Intents = Record<PlayerId, PlayerIntent>;
 
 /** Semantic gameplay cues emitted by actual fixed-step transitions. */
-export type GameplayCue = "jump" | "land" | "dash";
+export type GameplayCue =
+  | "jump"
+  | "land"
+  | "dash"
+  | "propReturned";
 
 export interface PlayerState {
   id: PlayerId;
@@ -51,24 +67,19 @@ export interface RoomSimulation {
   room: RoomDocument;
   solids: Solid[];
   players: Record<PlayerId, PlayerState>;
+  props: Record<string, PropState>;
   camera: CameraFrame;
   viewport: Viewport;
   elapsed: number;
+  tick: number;
+  physics: RoomPhysics;
+  tetherPolicy: TetherPolicy;
+  propReturnTimers: Record<string, number>;
 }
 
-export const PLAYER_WIDTH = 28;
-export const PLAYER_HEIGHT = 44;
-export const TETHER_DISTANCE = 560;
-const MOVE_SPEED = 260;
-const JUMP_SPEED = 620;
-const GRAVITY = 1900;
-const MAX_FALL_SPEED = 1200;
-const DASH_SPEED = 620;
-const DASH_DURATION = 0.16;
-const DASH_COOLDOWN = 0.6;
-const DASH_ABILITY = "signal-dash";
 const CAMERA_SMOOTHING = 8;
-const EPSILON = 0.0001;
+const PROP_RETURN_DELAY = 1;
+export const TETHER_DISTANCE = 560;
 
 export function emptyIntents(): Intents {
   return {
@@ -169,6 +180,7 @@ export function createRoomSimulation(
   room: RoomDocument,
   viewport: Viewport = { width: 1280, height: 720 },
 ): RoomSimulation {
+  const physics = new RoomPhysics(room);
   const simulation: RoomSimulation = {
     room,
     solids: buildSolids(room),
@@ -176,6 +188,7 @@ export function createRoomSimulation(
       p1: makePlayer("p1", room, room.spawns.player1),
       p2: makePlayer("p2", room, room.spawns.player2),
     },
+    props: physics.propStates(),
     camera: {
       x: 0,
       y: 0,
@@ -184,97 +197,22 @@ export function createRoomSimulation(
     },
     viewport,
     elapsed: 0,
+    tick: 0,
+    physics,
+    tetherPolicy: "normal",
+    propReturnTimers: {},
   };
+
+  for (const id of ["p1", "p2"] as const) {
+    const player = simulation.players[id];
+    physics.setPlayerPosition(id, player.x, player.y);
+  }
+  physics.setTetherPolicy("normal");
 
   const target = cameraTarget(simulation);
   simulation.camera.x = target.x;
   simulation.camera.y = target.y;
   return simulation;
-}
-
-interface Bounds {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-}
-
-function boundsOf(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-): Bounds {
-  return {
-    left: x - width / 2,
-    right: x + width / 2,
-    top: y - height,
-    bottom: y,
-  };
-}
-
-function intersects(a: Bounds, solid: Solid): boolean {
-  return (
-    a.left < solid.x + solid.width - EPSILON &&
-    a.right > solid.x + EPSILON &&
-    a.top < solid.y + solid.height - EPSILON &&
-    a.bottom > solid.y + EPSILON
-  );
-}
-
-function resolveHorizontal(
-  player: PlayerState,
-  solids: Solid[],
-  room: RoomDocument,
-): void {
-  for (const solid of solids) {
-    const bounds = boundsOf(player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-    if (!intersects(bounds, solid)) {
-      continue;
-    }
-
-    if (player.vx > 0) {
-      player.x = solid.x - PLAYER_WIDTH / 2;
-      player.vx = 0;
-    } else if (player.vx < 0) {
-      player.x = solid.x + solid.width + PLAYER_WIDTH / 2;
-      player.vx = 0;
-    }
-  }
-
-  player.x = clamp(
-    player.x,
-    PLAYER_WIDTH / 2,
-    roomPixelWidth(room) - PLAYER_WIDTH / 2,
-  );
-}
-
-function resolveVertical(
-  player: PlayerState,
-  solids: Solid[],
-): void {
-  player.onGround = false;
-
-  for (const solid of solids) {
-    const bounds = boundsOf(player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-    if (!intersects(bounds, solid)) {
-      continue;
-    }
-
-    if (player.vy > 0) {
-      player.y = solid.y;
-      player.vy = 0;
-      player.onGround = true;
-    } else if (player.vy < 0) {
-      player.y = solid.y + solid.height + PLAYER_HEIGHT;
-      player.vy = 0;
-    }
-  }
-
-  if (player.y - PLAYER_HEIGHT < 0) {
-    player.y = PLAYER_HEIGHT;
-    player.vy = 0;
-  }
 }
 
 export function respawnPlayer(player: PlayerState): void {
@@ -296,6 +234,20 @@ export function setPlayerSpawn(
   player.spawnY = y;
 }
 
+export function placePlayer(
+  simulation: RoomSimulation,
+  id: PlayerId,
+  x: number,
+  y: number,
+): void {
+  const player = simulation.players[id];
+  player.x = x;
+  player.y = y;
+  player.vx = 0;
+  player.vy = 0;
+  simulation.physics.setPlayerPosition(id, x, y);
+}
+
 export function setPlayerActive(
   simulation: RoomSimulation,
   id: PlayerId,
@@ -308,89 +260,15 @@ export function setPlayerActive(
     player.vy = 0;
     player.dashTime = 0;
   }
+  simulation.physics.setPlayerActive(id, active);
 }
 
-function stepPlayer(
-  player: PlayerState,
-  intent: PlayerIntent,
+export function setTetherPolicy(
   simulation: RoomSimulation,
-  dt: number,
-  canDash: boolean,
+  policy: TetherPolicy,
 ): void {
-  if (!player.active) {
-    return;
-  }
-
-  player.dashCooldown = Math.max(0, player.dashCooldown - dt);
-  if (player.dashTime > 0) {
-    player.dashTime = Math.max(0, player.dashTime - dt);
-  }
-
-  if (
-    intent.dash &&
-    canDash &&
-    player.dashTime === 0 &&
-    player.dashCooldown === 0
-  ) {
-    player.dashTime = DASH_DURATION;
-    player.dashCooldown = DASH_COOLDOWN;
-  }
-
-  if (player.dashTime > 0) {
-    player.vx = player.facing * DASH_SPEED;
-  } else {
-    player.vx = intent.moveX * MOVE_SPEED;
-    if (intent.moveX !== 0) {
-      player.facing = intent.moveX;
-    }
-  }
-
-  if (intent.jump && player.onGround) {
-    player.vy = -JUMP_SPEED;
-    player.onGround = false;
-  }
-
-  player.vy = Math.min(player.vy + GRAVITY * dt, MAX_FALL_SPEED);
-
-  player.x += player.vx * dt;
-  resolveHorizontal(player, simulation.solids, simulation.room);
-
-  player.y += player.vy * dt;
-  resolveVertical(player, simulation.solids);
-
-  if (player.y - PLAYER_HEIGHT > roomPixelHeight(simulation.room) + 160) {
-    respawnPlayer(player);
-  }
-}
-
-/**
- * Co-op tether: when the players drift further apart than the camera can
- * comfortably frame, the trailing player is pulled toward the midpoint. It is
- * intentionally soft (no teleport, no velocity change) so platforming stays
- * predictable.
- */
-function applyTether(simulation: RoomSimulation): void {
-  const { p1, p2 } = simulation.players;
-  if (!p1.active || !p2.active) return;
-
-  const distance = Math.abs(p1.x - p2.x);
-  if (distance <= TETHER_DISTANCE) return;
-
-  const midpoint = (p1.x + p2.x) / 2;
-  const maxOffset = TETHER_DISTANCE / 2;
-  const minimum = PLAYER_WIDTH / 2;
-  const maximum = roomPixelWidth(simulation.room) - PLAYER_WIDTH / 2;
-
-  p1.x = clamp(
-    clamp(p1.x, midpoint - maxOffset, midpoint + maxOffset),
-    minimum,
-    maximum,
-  );
-  p2.x = clamp(
-    clamp(p2.x, midpoint - maxOffset, midpoint + maxOffset),
-    minimum,
-    maximum,
-  );
+  simulation.tetherPolicy = policy;
+  simulation.physics.setTetherPolicy(policy);
 }
 
 export function stepRoomSimulation(
@@ -400,18 +278,50 @@ export function stepRoomSimulation(
   abilities: readonly string[] = [],
 ): void {
   const safeDt = Math.max(0, Math.min(dt, 0.05));
-  const canDash = abilities.includes(DASH_ABILITY);
+  const canDash = abilities.includes("signal-dash");
 
-  stepPlayer(simulation.players.p1, intents.p1, simulation, safeDt, canDash);
-  stepPlayer(simulation.players.p2, intents.p2, simulation, safeDt, canDash);
+  for (const id of ["p1", "p2"] as const) {
+    const player = simulation.players[id];
+    if (!player.active) continue;
+    simulation.physics.applyPlayerIntent(
+      id,
+      player,
+      intents[id],
+      safeDt,
+      canDash,
+    );
+  }
 
-  applyTether(simulation);
+  simulation.physics.step();
+
+  for (const id of ["p1", "p2"] as const) {
+    const player = simulation.players[id];
+    if (!player.active) continue;
+    simulation.physics.syncPlayer(id, player);
+    player.onGround = simulation.physics.groundCheck(id);
+  }
+
+  simulation.props = simulation.physics.propStates();
+  for (const propId of Object.keys(simulation.props)) {
+    if (!simulation.physics.propOutOfBounds(propId)) {
+      delete simulation.propReturnTimers[propId];
+      continue;
+    }
+    const remaining = (simulation.propReturnTimers[propId] ?? PROP_RETURN_DELAY) - safeDt;
+    if (remaining > 0) {
+      simulation.propReturnTimers[propId] = remaining;
+      continue;
+    }
+    simulation.physics.resetProp(propId);
+    delete simulation.propReturnTimers[propId];
+  }
 
   const target = cameraTarget(simulation);
   const factor = Math.min(1, safeDt * CAMERA_SMOOTHING);
   simulation.camera.x += (target.x - simulation.camera.x) * factor;
   simulation.camera.y += (target.y - simulation.camera.y) * factor;
   simulation.elapsed += safeDt;
+  simulation.tick += 1;
 }
 
 interface CueSnapshot {
@@ -450,12 +360,18 @@ export function stepRoomSimulationWithCues(
     p1: cueSnapshot(simulation.players.p1),
     p2: cueSnapshot(simulation.players.p2),
   };
+  const propsBefore = new Set(
+    Object.keys(simulation.props).filter(
+      (propId) => simulation.physics.propOutOfBounds(propId),
+    ),
+  );
 
   stepRoomSimulation(simulation, intents, dt, abilities);
 
   let jumped = false;
   let landed = false;
   let dashed = false;
+  let propReturned = false;
 
   for (const id of ["p1", "p2"] as const) {
     const previous = before[id];
@@ -473,15 +389,18 @@ export function stepRoomSimulationWithCues(
     }
   }
 
+  for (const propId of propsBefore) {
+    if (!simulation.physics.propOutOfBounds(propId)) {
+      propReturned = true;
+    }
+  }
+
   const cues: GameplayCue[] = [];
-  if (jumped) {
-    cues.push("jump");
-  }
-  if (landed) {
-    cues.push("land");
-  }
-  if (dashed) {
-    cues.push("dash");
-  }
+  if (jumped) cues.push("jump");
+  if (landed) cues.push("land");
+  if (dashed) cues.push("dash");
+  if (propReturned) cues.push("propReturned");
   return cues;
 }
+
+export type { BodySnapshot as PhysicsBodySnapshot };

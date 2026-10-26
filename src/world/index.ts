@@ -17,24 +17,33 @@ export {
   cameraTarget,
   createRoomSimulation,
   emptyIntents,
+  placePlayer,
   PLAYER_HEIGHT,
   PLAYER_WIDTH,
+  respawnPlayer,
   roomPixelHeight,
   roomPixelWidth,
+  setPlayerActive,
+  setPlayerSpawn,
+  setTetherPolicy,
   stepRoomSimulation,
   stepRoomSimulationWithCues,
 } from "./simulation";
 export type {
+  BodySnapshot,
   CameraFrame,
   GameplayCue,
   Intents,
   PlayerId,
   PlayerIntent,
   PlayerState,
+  PropSnapshot,
+  PropState,
   RoomSimulation,
   Solid,
   Viewport,
 } from "./simulation";
+export { RoomPhysics, TETHER_LENGTHS } from "./physics";
 export {
   ensurePlaceholderTexture,
   resolveTexture,

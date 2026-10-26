@@ -43,6 +43,13 @@ import {
   type ProgressionSnapshot,
 } from "../progression";
 import type { Syllabus } from "../syllabus";
+import {
+  PuzzleRuntime,
+  type PuzzleDocument,
+  type PuzzleEvent,
+  type PuzzleRewards,
+  type PuzzleWorldSnapshot,
+} from "../puzzle";
 import type {
   ConceptView,
   DebriefView,
@@ -54,6 +61,7 @@ import type {
   RuntimeSnapshot,
 } from "../ui/model";
 import type { GameSettings, RunLoadResult, RunSnapshot } from "../save";
+import { RUN_SCHEMA_VERSION } from "../save";
 import {
   emptyRuntimeInput,
   type RuntimeInput,
@@ -63,14 +71,17 @@ import {
   createRoomSimulation,
   PLAYER_HEIGHT,
   PLAYER_WIDTH,
+  placePlayer as placeWorldPlayer,
   roomPixelHeight,
   roomPixelWidth,
   setPlayerActive,
   setPlayerSpawn,
+  setTetherPolicy,
   stepRoomSimulationWithCues,
   type GameplayCue,
   type PlayerId,
   type PlayerState,
+  type PropState,
   type RoomSimulation,
 } from "../world/simulation";
 import {
@@ -212,6 +223,7 @@ export class GameRuntime implements WorldRuntime {
   private dialogueSession: DialogueSession | null = null;
   private dialogueDocument: DialogueDocument | null = null;
   private activeGate: GateDocument | null = null;
+  private puzzles = new Map<string, PuzzleRuntime>();
   private gateFeedback: { correct: boolean; message: string } | null = null;
   private gateHintIndex = 0;
   private debriefAnswers: Record<string, string> = {};
@@ -257,6 +269,10 @@ export class GameRuntime implements WorldRuntime {
       return;
     }
     this.newRun();
+    if (loaded.reason === "VERSION_MISMATCH") {
+      this.setToast(loaded.message);
+      this.emit();
+    }
   }
 
   newRun(): void {
@@ -318,6 +334,13 @@ export class GameRuntime implements WorldRuntime {
     this.level = level;
     this.room = room;
     this.world = createRoomSimulation(room);
+    this.puzzles = new Map();
+    for (const puzzleId of level.puzzleIds ?? []) {
+      const document = this.content.puzzles[puzzleId];
+      if (document) this.puzzles.set(puzzleId, new PuzzleRuntime(document));
+    }
+    const puzzleDocument = [...this.puzzles.values()][0]?.document;
+    setTetherPolicy(this.world, puzzleDocument?.tether ?? "normal");
     this.dialogueSession = null;
     this.dialogueDocument = null;
     this.activeGate = null;
@@ -335,11 +358,13 @@ export class GameRuntime implements WorldRuntime {
         const point = checkpointPoint(checkpoint, room.tileSize);
         for (const id of ["p1", "p2"] as const) {
           setPlayerSpawn(this.world.players[id], point.x, point.y);
+          placeWorldPlayer(this.world, id, point.x, point.y);
         }
       }
     }
 
     setPlayerActive(this.world, "p2", this.activeP2);
+    this.world.props = this.world.physics.propStates();
 
     if (options.fresh) {
       this.record({ type: "pack_loaded", packVersion: this.content.pack.version, syllabusVersion: this.content.syllabus.version });
@@ -367,9 +392,6 @@ export class GameRuntime implements WorldRuntime {
     const checkpoint = this.room.checkpoints?.find(
       (item) => item.id === run.checkpointId,
     );
-    const fallback = checkpoint
-      ? checkpointPoint(checkpoint, tile)
-      : { x: run.players.p1.x, y: run.players.p1.y };
 
     if (checkpoint) {
       const point = checkpointPoint(checkpoint, tile);
@@ -378,12 +400,26 @@ export class GameRuntime implements WorldRuntime {
       }
     }
 
-    this.world.players.p1.x = run.players.p1.x;
-    this.world.players.p1.y = run.players.p1.y;
-    this.world.players.p2.x = run.players.p2.x;
-    this.world.players.p2.y = run.players.p2.y;
-    if (run.players.p1.x === 0) {
-      this.world.players.p1.x = fallback.x;
+    this.world.physics.restorePlayer("p1", run.players.bodies.p1);
+    this.world.physics.restorePlayer("p2", run.players.bodies.p2);
+    this.world.physics.restoreProps(run.world.bodies, run.world.props);
+    this.world.props = this.world.physics.propStates();
+
+    for (const id of ["p1", "p2"] as const) {
+      const player = this.world.players[id];
+      const body = run.players.bodies[id];
+      player.x = body.x;
+      player.y = body.y + PLAYER_HEIGHT / 2;
+      player.vx = body.vx;
+      player.vy = body.vy;
+      player.onGround = false;
+      player.dashTime = body.dashTime ?? 0;
+      player.dashCooldown = body.dashCooldown ?? 0;
+    }
+
+    for (const [puzzleId, puzzle] of this.puzzles) {
+      const state = run.world.puzzles[puzzleId];
+      if (state) puzzle.restore(state);
     }
   }
 
@@ -428,14 +464,15 @@ export class GameRuntime implements WorldRuntime {
       return [];
     }
 
-    if (actions.p1.interact || actions.p2.interact) {
-      this.interact();
-      if (this.machine.state !== "level") {
-        return [];
-      }
-    }
-    if (actions.p1.scan || actions.p2.scan) {
-      this.scan();
+    for (const id of ["p1", "p2"] as const) {
+      if (!this.world.players[id].active) continue;
+      const playerActions = actions[id];
+      if (playerActions.carry) this.carryAction(id);
+      if (playerActions.throw) this.throwAction(id);
+      if (playerActions.pulse) this.pulseAction(id);
+      if (playerActions.interact) this.interactFor(id);
+      if (this.machine.state !== "level") return [];
+      if (playerActions.scan) this.scan();
     }
 
     const cues = stepRoomSimulationWithCues(
@@ -446,8 +483,12 @@ export class GameRuntime implements WorldRuntime {
     );
     for (const cue of cues) {
       this.playCue(cue);
+      if (cue === "propReturned") {
+        this.setToast("The tracer returned to its start");
+      }
     }
 
+    this.tickPuzzles();
     this.checkCheckpoints();
     this.checkTriggers();
     this.checkExit();
@@ -524,16 +565,15 @@ export class GameRuntime implements WorldRuntime {
 
     this.activeP2 = !this.activeP2;
     setPlayerActive(this.world, "p2", this.activeP2);
+    this.world.props = this.world.physics.propStates();
     if (this.activeP2) {
       const point = checkpointPoint(checkpoint, this.room.tileSize);
-      const player = this.world.players.p2;
-      player.x = Math.min(
-        point.x + 40,
-        roomPixelWidth(this.room) - 20,
+      placeWorldPlayer(
+        this.world,
+        "p2",
+        Math.min(point.x + 40, roomPixelWidth(this.room) - 20),
+        point.y,
       );
-      player.y = point.y;
-      player.vx = 0;
-      player.vy = 0;
     }
     this.setToast(this.activeP2 ? "Player 2 joined" : "Player 2 resting");
     this.autosave();
@@ -557,6 +597,317 @@ export class GameRuntime implements WorldRuntime {
       return;
     }
     this.setToast("Nothing to interact with");
+    this.emit();
+  }
+
+  private interactFor(id: PlayerId): void {
+    const abilities = this.abilitiesFor(id);
+    if (
+      abilities.includes("carry") &&
+      (this.carriedProp(id) || this.nearestProp(id))
+    ) {
+      this.carryAction(id);
+      return;
+    }
+    this.interact();
+  }
+
+  abilitiesFor(id: PlayerId): string[] {
+    const abilities = ["scan"];
+    if (hasAbility(this.progression, "signal-dash")) {
+      abilities.push("signal-dash");
+    }
+    if (!this.activeP2) {
+      if (id === "p1") abilities.push("pulse", "carry");
+      return abilities;
+    }
+    if (id === "p1") abilities.push("pulse");
+    if (id === "p2") abilities.push("carry");
+    return abilities;
+  }
+
+  private carryAction(id: PlayerId): void {
+    if (this.machine.state !== "level") return;
+    if (!this.abilitiesFor(id).includes("carry")) {
+      this.setToast("Only Player 2 can carry in co-op");
+      this.emit();
+      return;
+    }
+
+    const carried = this.carriedProp(id);
+    if (carried) {
+      const receptor = this.nearestReceptor(id);
+      if (receptor) {
+        if (
+          this.world.physics.placeProp(
+            carried.id,
+            receptor.nodeId,
+            receptor.snap,
+          )
+        ) {
+          this.notePuzzle("placements");
+          this.playCue("scan");
+          this.setToast("Tracer placed in the receptor");
+        }
+      } else {
+        this.world.physics.dropProp(carried.id);
+        this.notePuzzle("drops");
+        this.notePuzzle("wrongSide");
+        this.setToast("No receptor in reach — tracer dropped");
+      }
+      this.autosave();
+      this.emit();
+      return;
+    }
+
+    const prop = this.nearestProp(id);
+    if (!prop) {
+      this.setToast("No tracer in reach");
+      this.emit();
+      return;
+    }
+    if (prop.state === "docked") {
+      this.setToast("The tracer is locked in the receptor");
+      this.emit();
+      return;
+    }
+    if (!this.world.physics.pickUp(id, prop.id)) {
+      this.setToast("The tracer cannot be picked up");
+      this.emit();
+      return;
+    }
+    this.notePuzzle("pickups");
+    this.setToast("Tracer picked up");
+    this.autosave();
+    this.emit();
+  }
+
+  private throwAction(id: PlayerId): void {
+    if (!this.abilitiesFor(id).includes("carry")) return;
+    const carried = this.carriedProp(id);
+    if (!carried) {
+      this.setToast("Nothing to throw");
+      this.emit();
+      return;
+    }
+    const player = this.world.players[id];
+    this.world.physics.throwProp(carried.id, player.facing);
+    this.notePuzzle("throws");
+    this.setToast("Tracer thrown");
+    this.autosave();
+    this.emit();
+  }
+
+  private pulseAction(id: PlayerId): void {
+    if (!this.abilitiesFor(id).includes("pulse")) return;
+    const target = this.nearestPulseSource(id);
+    if (!target) {
+      this.setToast("No signal terminal in reach");
+      this.emit();
+      return;
+    }
+    if (!target.puzzle.usePulse(target.nodeId, id)) {
+      this.setToast("The terminal is still recharging");
+      this.emit();
+      return;
+    }
+    this.playCue("scan");
+    this.setToast("Signal pulse sent");
+    this.autosave();
+    this.emit();
+  }
+
+  private carriedProp(id: PlayerId) {
+    return (
+      Object.values(this.world.props).find(
+        (prop) => prop.state === "carried" && prop.carriedBy === id,
+      ) ?? null
+    );
+  }
+
+  private nearestProp(id: PlayerId) {
+    const player = this.world.players[id];
+    let best: { prop: PropState; distance: number } | null =
+      null;
+    for (const prop of Object.values(this.world.props)) {
+      if (prop.state === "carried") continue;
+      const distanceToProp = distance(player.x, player.y - 20, prop.x, prop.y);
+      if (distanceToProp > 78) continue;
+      if (!best || distanceToProp < best.distance) {
+        best = { prop, distance: distanceToProp };
+      }
+    }
+    return best?.prop ?? null;
+  }
+
+  private nearestReceptor(id: PlayerId): {
+    nodeId: string;
+    snap: { x: number; y: number };
+  } | null {
+    const player = this.world.players[id];
+    let best: {
+      nodeId: string;
+      snap: { x: number; y: number };
+      distance: number;
+    } | null = null;
+
+    for (const puzzle of this.puzzles.values()) {
+      for (const node of puzzle.document.nodes) {
+        if (node.type !== "receptor" || !node.entityId) continue;
+        const point = this.entityPixel(node.entityId);
+        if (!point) continue;
+        const distanceToReceptor = distance(player.x, player.y - 20, point.x, point.y);
+        if (distanceToReceptor > 84) continue;
+        if (!best || distanceToReceptor < best.distance) {
+          best = {
+            nodeId: node.id,
+            snap: node.snap,
+            distance: distanceToReceptor,
+          };
+        }
+      }
+    }
+    return best ? { nodeId: best.nodeId, snap: best.snap } : null;
+  }
+
+  private nearestPulseSource(id: PlayerId): {
+    puzzle: PuzzleRuntime;
+    nodeId: string;
+  } | null {
+    const player = this.world.players[id];
+    let best: {
+      puzzle: PuzzleRuntime;
+      nodeId: string;
+      distance: number;
+    } | null = null;
+
+    for (const puzzle of this.puzzles.values()) {
+      for (const node of puzzle.document.nodes) {
+        if (node.type !== "pulseSource" || !node.entityId) continue;
+        const point = this.entityPixel(node.entityId);
+        if (!point) continue;
+        const distanceToSource = distance(player.x, player.y - 20, point.x, point.y);
+        if (distanceToSource > node.range) continue;
+        if (!best || distanceToSource < best.distance) {
+          best = {
+            puzzle,
+            nodeId: node.id,
+            distance: distanceToSource,
+          };
+        }
+      }
+    }
+    return best ? { puzzle: best.puzzle, nodeId: best.nodeId } : null;
+  }
+
+  private notePuzzle(counter: string): void {
+    for (const puzzle of this.puzzles.values()) {
+      puzzle.note(counter);
+    }
+  }
+
+  private puzzleSnapshot(): PuzzleWorldSnapshot {
+    return {
+      tick: this.world.tick,
+      players: (["p1", "p2"] as const).map((id) => {
+        const player = this.world.players[id];
+        return {
+          id,
+          x: player.x,
+          y: player.y - PLAYER_HEIGHT / 2,
+          width: PLAYER_WIDTH,
+          height: PLAYER_HEIGHT,
+          active: player.active,
+        };
+      }),
+      props: Object.values(this.world.props).map((prop) => ({
+        id: prop.id,
+        x: prop.x,
+        y: prop.y,
+        width: prop.width,
+        height: prop.height,
+        active: true,
+        state: prop.state,
+        tags: [...prop.tags],
+        shape: prop.shape,
+        carriedBy: prop.carriedBy,
+      })),
+      flags: { ...this.progression.flags },
+    };
+  }
+
+  private tickPuzzles(): void {
+    if (this.puzzles.size === 0) return;
+    const snapshot = this.puzzleSnapshot();
+    for (const [id, puzzle] of this.puzzles) {
+      const result = puzzle.tickResult(snapshot);
+      if (result.events.length > 0) {
+        this.handlePuzzleEvents(puzzle.document, result.events);
+        this.world.props = this.world.physics.propStates();
+      }
+      if (result.solvedNow) {
+        this.onPuzzleSolved(id, result.rewards);
+      }
+    }
+  }
+
+  private handlePuzzleEvents(
+    document: PuzzleDocument,
+    events: readonly PuzzleEvent[],
+  ): void {
+    for (const event of events) {
+      if (event.type === "receptorBound" && event.propId) {
+        this.world.physics.dockProp(event.propId, event.nodeId);
+        this.playCue("unlock");
+        this.setToast("The tracer locks into the matching receptor");
+      } else if (event.type === "receptorRejected") {
+        this.playCue("wrong");
+        this.setToast("The receptor rejects that shape");
+      } else if (event.type === "gateOpen") {
+        this.playCue("unlock");
+      } else if (event.type === "solved") {
+        const puzzleId = document.id;
+        if (!this.puzzles.has(puzzleId)) continue;
+      }
+    }
+  }
+
+  private onPuzzleSolved(id: string, rewards: PuzzleRewards): void {
+    const puzzle = this.puzzles.get(id);
+    if (!puzzle) return;
+    const document = puzzle.document;
+
+    this.record({
+      type: "puzzle_solved",
+      puzzleId: id,
+      objectiveIds: [...document.objectiveIds],
+      conceptIds: [...document.conceptIds],
+      counters: puzzle.evidenceCounters(),
+      mode: this.activeP2 ? "co-op" : "solo",
+    });
+
+    for (const ability of rewards.abilities ?? []) {
+      if (unlockAbility(this.progression, ability)) {
+        this.record({
+          type: "ability_unlocked",
+          abilityId: ability,
+          source: "puzzle",
+        });
+        this.setToast(`Ability unlocked: ${ability}`);
+      }
+    }
+    for (const flag of rewards.flags ?? []) {
+      setFlag(this.progression, flag, true);
+    }
+    for (const nodeId of rewards.mapNodes ?? []) {
+      if (revealNode(this.progression, nodeId)) {
+        this.record({ type: "map_revealed", nodeId });
+      }
+    }
+
+    this.playCue("unlock");
+    this.setToast("Signal restored");
+    this.autosave();
     this.emit();
   }
 
@@ -783,6 +1134,20 @@ export class GameRuntime implements WorldRuntime {
       ),
     );
     if (!exit) return;
+
+    if (exit.puzzleId) {
+      const puzzle = this.puzzles.get(exit.puzzleId);
+      if (!puzzle?.isSolved()) {
+        const now = this.world.elapsed;
+        if (now - this.lastExitWarning > 2) {
+          this.lastExitWarning = now;
+          this.setToast("The signal gate is still scrambled");
+          this.playCue("wrong");
+          this.emit();
+        }
+        return;
+      }
+    }
 
     if (exit.gateId && !isGateSolved(this.progression, exit.gateId)) {
       const now = this.world.elapsed;
@@ -1121,9 +1486,10 @@ export class GameRuntime implements WorldRuntime {
           ? "complete"
           : "playing";
     return {
-      schemaVersion: "1.0",
+      schemaVersion: RUN_SCHEMA_VERSION,
       packId: this.content.pack.id,
       packVersion: this.content.pack.version,
+      contentVersion: this.content.pack.version,
       levelId: this.level.id,
       roomId: this.room.id,
       checkpointId: this.checkpointId,
@@ -1137,10 +1503,31 @@ export class GameRuntime implements WorldRuntime {
       events: this.curriculum.events.map((event) => ({ ...event })),
       elapsed: this.world.elapsed,
       players: {
-        p1: { x: this.world.players.p1.x, y: this.world.players.p1.y },
-        p2: { x: this.world.players.p2.x, y: this.world.players.p2.y },
         activeP2: this.activeP2,
+        bodies: {
+          p1: {
+            ...this.world.physics.playerSnapshots().p1,
+            dashTime: this.world.players.p1.dashTime,
+            dashCooldown: this.world.players.p1.dashCooldown,
+          },
+          p2: {
+            ...this.world.physics.playerSnapshots().p2,
+            dashTime: this.world.players.p2.dashTime,
+            dashCooldown: this.world.players.p2.dashCooldown,
+          },
+        },
       },
+      world: {
+        bodies: this.world.physics.bodySnapshots(),
+        props: this.world.physics.propSnapshots(),
+        puzzles: Object.fromEntries(
+          [...this.puzzles.entries()].map(([puzzleId, puzzle]) => [
+            puzzleId,
+            puzzle.snapshot(),
+          ]),
+        ),
+      },
+      audio: { muted: this.audio.muted },
       status,
       ...(this.dialogueSession
         ? {
@@ -1203,6 +1590,40 @@ export class GameRuntime implements WorldRuntime {
       feedback: this.gateFeedback,
       solved: isGateSolved(this.progression, gate.id),
     };
+  }
+
+  private puzzleView() {
+    const [id, puzzle] = [...this.puzzles.entries()][0] ?? [];
+    if (!id || !puzzle) return null;
+    return {
+      id,
+      title: puzzle.document.title,
+      solved: puzzle.isSolved(),
+      canReset: puzzle.canReset(),
+      tether: puzzle.document.tether,
+      counters: puzzle.evidenceCounters(),
+    };
+  }
+
+  resetPuzzle(): void {
+    if (this.machine.state !== "level" && this.machine.state !== "pause") return;
+    let reset = false;
+    for (const puzzle of this.puzzles.values()) {
+      if (!puzzle.canReset()) continue;
+      puzzle.reset();
+      puzzle.note("resets");
+      for (const propId of puzzle.document.reset.props) {
+        this.world.physics.resetProp(propId);
+      }
+      reset = true;
+    }
+    this.world.props = this.world.physics.propStates();
+    if (reset) {
+      this.saveNotice = "Puzzle reset";
+      this.setToast("Puzzle reset");
+      this.autosave();
+    }
+    this.emit();
   }
 
   private debriefView(): DebriefView | null {
@@ -1287,9 +1708,9 @@ export class GameRuntime implements WorldRuntime {
 
   private interactionView(): InteractionView | null {
     if (this.machine.state !== "level") return null;
+
     const target = this.nearestEntity(["agent", "gate"], INTERACT_RANGE);
-    if (!target) return null;
-    if (target.entity.type === "agent" && target.entity.dialogueId) {
+    if (target?.entity.type === "agent" && target.entity.dialogueId) {
       return {
         kind: "dialogue",
         id: target.entity.id,
@@ -1297,15 +1718,55 @@ export class GameRuntime implements WorldRuntime {
           target.entity.label ??
           target.entity.dialogueId ??
           target.entity.id,
+        key: "E",
       };
     }
-    if (target.entity.type === "gate" && target.entity.gateId) {
+    if (target?.entity.type === "gate" && target.entity.gateId) {
       return {
         kind: "gate",
         id: target.entity.id,
         label: target.entity.label ?? target.entity.gateId,
+        key: "E",
       };
     }
+
+    const actor: PlayerId = this.activeP2 ? "p2" : "p1";
+    const abilities = this.abilitiesFor(actor);
+    if (abilities.includes("carry")) {
+      const carried = this.carriedProp(actor);
+      if (carried) {
+        const receptor = this.nearestReceptor(actor);
+        return {
+          kind: "prop",
+          id: carried.id,
+          label: receptor
+            ? `Place ${carried.id}`
+            : `Drop ${carried.id}`,
+          key: this.activeP2 ? "'" : "G",
+        };
+      }
+      const prop = this.nearestProp(actor);
+      if (prop) {
+        return {
+          kind: "prop",
+          id: prop.id,
+          label: `Pick up ${prop.id}`,
+          key: this.activeP2 ? "'" : "G",
+        };
+      }
+    }
+    if (abilities.includes("pulse")) {
+      const pulse = this.nearestPulseSource(actor);
+      if (pulse) {
+        return {
+          kind: "pulse",
+          id: pulse.nodeId,
+          label: "Send a signal pulse",
+          key: "F",
+        };
+      }
+    }
+
     return null;
   }
 
@@ -1323,6 +1784,8 @@ export class GameRuntime implements WorldRuntime {
         dashReady:
           hasAbility(this.progression, "signal-dash") &&
           player.dashCooldown === 0,
+        abilities: this.abilitiesFor(id),
+        carrying: this.carriedProp(id)?.id ?? null,
       };
     };
 
@@ -1347,6 +1810,7 @@ export class GameRuntime implements WorldRuntime {
       debrief: this.debriefView(),
       map: this.mapView(),
       conceptLog: this.conceptLogView(),
+      puzzle: this.puzzleView(),
       toast: this.toast?.message ?? null,
       muted: this.audio.muted,
       settings: this.save.settings,
@@ -1362,11 +1826,7 @@ export class GameRuntime implements WorldRuntime {
 
   /** Moves a player without physics. Used by save restores and smoke tests. */
   placePlayer(id: PlayerId, x: number, y: number): void {
-    const player = this.world.players[id];
-    player.x = x;
-    player.y = y;
-    player.vx = 0;
-    player.vy = 0;
+    placeWorldPlayer(this.world, id, x, y);
     this.emit();
   }
 

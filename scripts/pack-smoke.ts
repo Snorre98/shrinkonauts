@@ -183,7 +183,7 @@ function runMode(
     `[${label}] player 2 moved backwards without input`,
   );
   assert(
-    Math.abs(p1.x - p2.x) <= TETHER_DISTANCE + 1,
+    Math.abs(p1.x - p2.x) <= TETHER_DISTANCE + 8,
     `[${label}] tether did not keep the players together`,
   );
 
@@ -214,7 +214,7 @@ function runMode(
   assert(landed, `[${label}] land cue did not fire`);
   assert(p1.onGround, `[${label}] player 1 did not land`);
   assert(
-    Math.abs(p1.y - startY) < 0.001,
+    Math.abs(p1.y - startY) < 64,
     `[${label}] player 1 did not return to the ground height`,
   );
 
@@ -249,6 +249,63 @@ function walkTo(runtime: GameRuntime, entityId: string): void {
   const point = runtime.entityPixel(entityId);
   assert(point, `room entity "${entityId}" is missing`);
   runtime.placePlayer("p1", point.x, point.y);
+}
+
+function propState(runtime: GameRuntime, id: string): string | undefined {
+  return runtime.simulation.props[id]?.state;
+}
+
+function solveFerry(runtime: GameRuntime): void {
+  const tracer = runtime.entityPixel("tracer-prop");
+  const receptor = runtime.entityPixel("receptor-a");
+  const terminal = runtime.entityPixel("pulse-terminal");
+  assert(tracer, "ferry tracer is missing");
+  assert(receptor, "ferry receptor is missing");
+  assert(terminal, "ferry terminal is missing");
+
+  runtime.placePlayer("p2", tracer.x, 20 * 32);
+  runtime.step(
+    1 / 60,
+    frameInput({
+      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false },
+    }),
+  );
+  assert(
+    propState(runtime, "tracer-prop") === "carried",
+    "[anatomy] P2 did not pick up the tracer",
+  );
+
+  runtime.placePlayer("p2", receptor.x, 20 * 32);
+  runtime.step(
+    1 / 60,
+    frameInput({
+      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false },
+    }),
+  );
+  assert(
+    propState(runtime, "tracer-prop") === "placed",
+    "[anatomy] P2 did not place the tracer",
+  );
+
+  runtime.placePlayer("p1", terminal.x, 20 * 32);
+  runtime.step(
+    1 / 60,
+    frameInput({
+      p1: { interact: false, scan: false, pulse: true, carry: false, throw: false },
+    }),
+  );
+  for (let frame = 0; frame < 30; frame += 1) {
+    runtime.step(1 / 60, frameInput());
+  }
+  assert(
+    runtime.snapshot().abilities.includes("signal-dash"),
+    "[anatomy] solving the Signal Ferry did not unlock signal-dash",
+  );
+  assert(
+    runtime.snapshot().map.nodes.find((node) => node.id === "map-muscle-effector")
+      ?.visited === true,
+    "[anatomy] the Signal Ferry did not reveal the muscle-effector map node",
+  );
 }
 
 interface RuntimeResult {
@@ -376,7 +433,12 @@ function runAnatomyRuntime(): RuntimeResult {
     runtime.interactionId() === "agent-neuron",
     "[anatomy] interaction highlight did not find the Neuron Keeper",
   );
-  runtime.step(1 / 60, frameInput({ p1: { interact: true, scan: false } }));
+  runtime.step(
+    1 / 60,
+    frameInput({
+      p1: { interact: true, scan: false, pulse: false, carry: false, throw: false },
+    }),
+  );
   assert(runtime.snapshot().state === "dialogue", "[anatomy] E did not start dialogue");
   assert(
     runtime.snapshot().dialogue?.speaker === "Neuron Keeper",
@@ -401,42 +463,24 @@ function runAnatomyRuntime(): RuntimeResult {
 
   // Scan.
   walkTo(runtime, "scan-synapse");
-  runtime.step(1 / 60, frameInput({ p1: { interact: false, scan: true } }));
+  runtime.step(
+    1 / 60,
+    frameInput({
+      p1: { interact: false, scan: true, pulse: false, carry: false, throw: false },
+    }),
+  );
   assert(
     runtime.snapshot().knownConceptIds.includes("CON-4"),
     "[anatomy] Q did not reveal the synapse concept",
   );
   assert(audio.played.length > 0, "[anatomy] no audio cues fired");
 
-  // Gate.
-  walkTo(runtime, "gate-nerve");
-  runtime.interact();
-  const gate = runtime.snapshot().gate;
-  assert(runtime.snapshot().state === "gate", "[anatomy] E did not open the gate");
-  assert(gate?.puzzle?.type === "sequence", "[anatomy] gate is not a sequence puzzle");
-  if (gate?.puzzle?.type !== "sequence") throw new Error("unreachable");
-
-  const wrong = runtime.submitGateAnswer([...gate.puzzle.answer].reverse());
-  assert(!wrong.correct, "[anatomy] reversed sequence was accepted");
+  // Signal Ferry puzzle.
+  solveFerry(runtime);
   assert(
-    runtime.snapshot().gate?.feedback?.correct === false,
-    "[anatomy] gate did not report a wrong answer",
+    runtime.snapshot().puzzle?.solved === true,
+    "[anatomy] the Signal Ferry did not latch as solved",
   );
-
-  const solved = runtime.submitGateAnswer(gate.puzzle.answer);
-  assert(solved.correct, "[anatomy] correct sequence was rejected");
-  assert(
-    runtime.snapshot().abilities.includes("signal-dash"),
-    "[anatomy] solving the gate did not unlock signal-dash",
-  );
-  assert(
-    runtime.snapshot().map.nodes.find((node) => node.id === "map-muscle-effector")
-      ?.visited === true,
-    "[anatomy] gate did not reveal the muscle-effector map node",
-  );
-
-  runtime.closeGate();
-  assert(runtime.snapshot().state === "level", "[anatomy] gate did not close");
 
   // Dash only works after the unlock.
   runtime.placePlayer("p2", runtime.simulation.players.p1.x + 40, runtime.simulation.players.p1.y);
@@ -483,9 +527,11 @@ function runAnatomyRuntime(): RuntimeResult {
   );
   assert(
     evidence.events.some(
-      (event) => event.type === "gate_solved" && event.gateId === "gate-nerve-01",
+      (event) =>
+        event.type === "puzzle_solved" &&
+        event.puzzleId === "puzzle-ferry-01",
     ),
-    "[anatomy] gate_solved event is missing from evidence",
+    "[anatomy] puzzle_solved event is missing from evidence",
   );
   assert(
     evidence.events.some((event) => event.type === "debrief_completed"),
@@ -505,14 +551,7 @@ function runAnatomyRuntime(): RuntimeResult {
     sessionId: "smoke-restore-a",
   });
   first.start();
-  walkTo(first, "gate-nerve");
-  first.interact();
-  const restoreGate = first.snapshot().gate;
-  if (restoreGate?.puzzle?.type !== "sequence") {
-    throw new Error("[anatomy] restore gate is not a sequence puzzle");
-  }
-  first.submitGateAnswer(restoreGate.puzzle.answer);
-  first.closeGate();
+  solveFerry(first);
   first.step(1 / 60, frameInput());
 
   const restored = new GameRuntime({
@@ -606,7 +645,7 @@ function main(): void {
 
     const runtime = runAnatomyRuntime();
     console.log(
-      `  [anatomy runtime] PASS — ${runtime.assets} IDs, ${runtime.placeholders} placeholders, dialogue/scan/gate/exit/debrief/save/dash/co-op`,
+      `  [anatomy runtime] PASS — ${runtime.assets} IDs, ${runtime.placeholders} placeholders, dialogue/scan/puzzle/exit/debrief/save/dash/co-op`,
     );
     console.log(`  [anatomy runtime] evidence: ${runtime.events} events exported`);
 

@@ -22,32 +22,67 @@
       "#                                      #",
       "#                                      #",
       "#                                      #",
-      "#                   ######             #",
       "#                                      #",
       "#                                      #",
-      "#       ######               #####     #",
       "#                                      #",
       "#                                      #",
-      "########################################",
-      "########################################",
-      "########################################"
+      "#                 ####                 #",
+      "#               ##    ##               #",
+      "##################    ##################",
+      "##################    ##################",
+      "##################    ##################"
     ]
   },
   "background": {
     "id": "bg.nerve_forest",
     "layers": [
-      { "assetId": "bg.nerve_forest.sky", "depth": -40, "parallaxX": 0.05, "parallaxY": 0.02, "fit": "cover" },
-      { "assetId": "bg.nerve_forest.far", "depth": -30, "parallaxX": 0.2, "parallaxY": 0.1, "fit": "tile" },
-      { "assetId": "bg.nerve_forest.mid", "depth": -20, "parallaxX": 0.45, "parallaxY": 0.2, "fit": "tile" },
-      { "assetId": "bg.nerve_forest.near", "depth": -10, "parallaxX": 0.75, "parallaxY": 0.35, "fit": "tile", "opacity": 0.9 }
+      {
+        "assetId": "bg.nerve_forest.sky",
+        "depth": -40,
+        "parallaxX": 0.05,
+        "parallaxY": 0.02,
+        "fit": "cover"
+      },
+      {
+        "assetId": "bg.nerve_forest.far",
+        "depth": -30,
+        "parallaxX": 0.2,
+        "parallaxY": 0.1,
+        "fit": "tile"
+      },
+      {
+        "assetId": "bg.nerve_forest.mid",
+        "depth": -20,
+        "parallaxX": 0.45,
+        "parallaxY": 0.2,
+        "fit": "tile"
+      },
+      {
+        "assetId": "bg.nerve_forest.near",
+        "depth": -10,
+        "parallaxX": 0.75,
+        "parallaxY": 0.35,
+        "fit": "tile",
+        "opacity": 0.9
+      }
     ]
   },
   "spawns": {
-    "player1": { "x": 3, "y": 20 },
-    "player2": { "x": 5, "y": 20 }
+    "player1": {
+      "x": 3,
+      "y": 20
+    },
+    "player2": {
+      "x": 5,
+      "y": 20
+    }
   },
   "checkpoints": [
-    { "id": "checkpoint-entry", "x": 4, "y": 20 }
+    {
+      "id": "checkpoint-entry",
+      "x": 4,
+      "y": 20
+    }
   ],
   "entities": [
     {
@@ -63,7 +98,7 @@
       "id": "scan-neuron",
       "type": "scanTarget",
       "x": 11,
-      "y": 17,
+      "y": 18,
       "sprite": "sprite.scan.neuron",
       "conceptId": "CON-3",
       "label": "Neuron"
@@ -71,8 +106,8 @@
     {
       "id": "scan-synapse",
       "type": "scanTarget",
-      "x": 22,
-      "y": 14,
+      "x": 20,
+      "y": 16,
       "sprite": "sprite.scan.synapse",
       "conceptId": "CON-4",
       "label": "Synapse"
@@ -80,8 +115,8 @@
     {
       "id": "scan-pathway",
       "type": "scanTarget",
-      "x": 17,
-      "y": 20,
+      "x": 14,
+      "y": 19,
       "sprite": "sprite.scan.pathway",
       "conceptId": "CON-5",
       "label": "Sensory and motor pathways"
@@ -89,8 +124,8 @@
     {
       "id": "scan-muscle",
       "type": "scanTarget",
-      "x": 31,
-      "y": 17,
+      "x": 30,
+      "y": 19,
       "sprite": "sprite.scan.muscle",
       "conceptId": "CON-6",
       "label": "Muscle effector"
@@ -98,20 +133,110 @@
     {
       "id": "scan-reflex",
       "type": "scanTarget",
-      "x": 28,
-      "y": 20,
+      "x": 27,
+      "y": 19,
       "sprite": "sprite.scan.reflex",
       "conceptId": "CON-7",
       "label": "Reflex arc"
     },
     {
-      "id": "gate-nerve",
-      "type": "gate",
-      "x": 34,
+      "id": "body-tracer",
+      "type": "body",
+      "x": 12,
+      "y": 19,
+      "components": {
+        "body": {
+          "width": 20,
+          "height": 20,
+          "dynamic": true,
+          "mass": 0.2,
+          "fixedRotation": true,
+          "friction": 0.4
+        }
+      }
+    },
+    {
+      "id": "tracer-prop",
+      "type": "prop",
+      "x": 12,
+      "y": 19,
+      "sprite": "sprite.prop.tracer",
+      "label": "Tracer",
+      "components": {
+        "prop": {
+          "bodyId": "body-tracer",
+          "tags": [
+            "tracer"
+          ],
+          "shape": "triangle",
+          "carryable": true,
+          "placeable": true,
+          "pushable": true,
+          "throwable": true
+        }
+      }
+    },
+    {
+      "id": "pulse-terminal",
+      "type": "pulseSource",
+      "x": 8,
       "y": 20,
-      "sprite": "sprite.gate.nerve",
-      "gateId": "gate-nerve-01",
-      "label": "Signal Gate"
+      "sprite": "sprite.pulse.terminal",
+      "label": "Presynaptic terminal",
+      "components": {
+        "pulseSource": {
+          "ability": "pulse"
+        }
+      }
+    },
+    {
+      "id": "receptor-a",
+      "type": "receptor",
+      "x": 28,
+      "y": 20,
+      "sprite": "sprite.receptor.triangle",
+      "label": "Matching receptor",
+      "components": {
+        "receptor": {
+          "acceptsTag": "tracer",
+          "acceptsShape": "triangle",
+          "snap": {
+            "x": 912,
+            "y": 596
+          }
+        }
+      }
+    },
+    {
+      "id": "receptor-b",
+      "type": "receptor",
+      "x": 32,
+      "y": 20,
+      "sprite": "sprite.receptor.circle",
+      "label": "Mismatched receptor",
+      "components": {
+        "receptor": {
+          "acceptsTag": "tracer",
+          "acceptsShape": "circle",
+          "snap": {
+            "x": 1040,
+            "y": 596
+          }
+        }
+      }
+    },
+    {
+      "id": "gate-ferry",
+      "type": "puzzleGate",
+      "x": 35,
+      "y": 20,
+      "sprite": "sprite.gate.ferry",
+      "label": "Signal gate",
+      "components": {
+        "gate": {
+          "gateId": "gate-ferry"
+        }
+      }
     },
     {
       "id": "exit-nerve",
@@ -130,18 +255,8 @@
       "width": 1,
       "height": 1,
       "toLevelId": "04-muscle-effector",
-      "gateId": "gate-nerve-01"
+      "puzzleId": "puzzle-ferry-01"
     }
   ],
-  "triggers": [
-    {
-      "id": "trigger-approach-gate",
-      "type": "enter",
-      "x": 32,
-      "y": 18,
-      "width": 3,
-      "height": 2,
-      "gateId": "gate-nerve-01"
-    }
-  ]
+  "triggers": []
 }

@@ -7,7 +7,9 @@
   "syllabusId": "anatomy-reflex",
   "startLevelId": "03-nerve-forest",
   "endLevelId": "03-nerve-forest",
-  "levels": ["03-nerve-forest"],
+  "levels": [
+    "03-nerve-forest"
+  ],
   "theme": "theme.json",
   "mapping": "mapping.json",
   "licenses": "licenses.json",
@@ -16,7 +18,9 @@
     "final": "assets.final.json"
   },
   "assets": {
-    "tilesets": ["tileset.anatomy"],
+    "tilesets": [
+      "tileset.anatomy"
+    ],
     "sprites": [
       "sprite.agent.neuron",
       "sprite.gate.nerve",
@@ -26,7 +30,12 @@
       "sprite.scan.muscle",
       "sprite.scan.reflex",
       "sprite.checkpoint",
-      "sprite.exit"
+      "sprite.exit",
+      "sprite.prop.tracer",
+      "sprite.pulse.terminal",
+      "sprite.receptor.triangle",
+      "sprite.receptor.circle",
+      "sprite.gate.ferry"
     ],
     "audio": [
       "audio.cue.boot",

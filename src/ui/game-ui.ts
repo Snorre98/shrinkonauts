@@ -26,6 +26,7 @@ export interface GameUiCallbacks {
   onToggleLog(): void;
   onResume(): void;
   onEscape(): void;
+  onResetPuzzle(): void;
   onMute(): void;
   onTextScale(scale: number): void;
   onToggleReducedMotion(): void;
@@ -110,7 +111,8 @@ export function mountGameUi(
   const eyebrow = el("p", "hud__eyebrow", "M1 · Anatomy: The Reflex Arc");
   const title = el("h1", "hud__title", "Nerve Forest");
   const objectiveRow = el("p", "hud__meta");
-  identity.append(eyebrow, title, objectiveRow);
+  const abilityRow = el("p", "hud__abilities");
+  identity.append(eyebrow, title, objectiveRow, abilityRow);
 
   const badgeRow = el("div", "hud__badges");
   const modeBadge = el("span", "hud__mode-badge", options.diagnostics.modeLabel);
@@ -124,8 +126,8 @@ export function mountGameUi(
   const helpHeading = el("h2", "hud__heading", "Controls");
   const helpList = el("dl", "hud__controls");
   const rows: ReadonlyArray<[string, string]> = [
-    ["Player 1", "A / D · W or Space · E · Q · Shift"],
-    ["Player 2", "← / → · ↑ · , · . · /"],
+    ["Player 1", "A / D · W / Space · Shift · E · Q · F"],
+    ["Player 2", "← / → · ↑ · / · , · . · ' · ;"],
     ["Shared", "P join · Tab map · C log · Esc pause · M mute"],
   ];
   for (const [label, keys] of rows) {
@@ -786,6 +788,9 @@ export function mountGameUi(
     const actions = el("div", "overlay__actions");
     actions.append(
       button("Resume", "button button--primary", () => callbacks.onResume()),
+      ...(snapshot?.puzzle?.canReset
+        ? [button("Reset puzzle", "button", () => callbacks.onResetPuzzle())]
+        : []),
       button("Restart level", "button", () => callbacks.onNewRun()),
     );
     body.append(actions);
@@ -847,8 +852,20 @@ export function mountGameUi(
     title.textContent = next.level.title;
     eyebrow.textContent = `M1 · ${next.level.id}`;
     objectiveRow.textContent = next.level.objectiveIds.length
-      ? `Objectives: ${next.level.objectiveIds.join(", ")} · ${next.mode}`
+      ? `Objectives: ${next.level.objectiveIds.join(", ")} · ${next.mode}${
+          next.puzzle
+            ? ` · ${next.puzzle.title}${next.puzzle.solved ? " ✓" : ""}`
+            : ""
+        }`
       : next.mode;
+    const p1 = next.players.p1;
+    const p2 = next.players.p2;
+    abilityRow.textContent = [
+      `P1: ${p1.abilities.join(" · ")}${p1.carrying ? " (carrying)" : ""}`,
+      p2.active
+        ? `P2: ${p2.abilities.join(" · ")}${p2.carrying ? " (carrying)" : ""}`
+        : "P2: resting · solo union",
+    ].join("  |  ");
     modeBadge.textContent = diagnostics.modeLabel;
     audioStatus.textContent = next.muted ? "Muted" : "Audio on";
     audioStatus.dataset.muted = String(next.muted);
@@ -856,11 +873,13 @@ export function mountGameUi(
 
     if (next.interaction) {
       prompt.hidden = false;
-      promptKey.textContent = next.interaction.kind === "gate" ? "E" : "E";
+      promptKey.textContent = next.interaction.key ?? "E";
       promptText.textContent =
         next.interaction.kind === "gate"
           ? `Open ${next.interaction.label}`
-          : `Talk to ${next.interaction.label}`;
+          : next.interaction.kind === "dialogue"
+            ? `Talk to ${next.interaction.label}`
+            : next.interaction.label;
     } else {
       prompt.hidden = true;
     }

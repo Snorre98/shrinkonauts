@@ -18,14 +18,6 @@ type ShrinkonautsWindow = Window & {
   };
 };
 
-const GATE_ORDER = [
-  "Receptor",
-  "Sensory neuron",
-  "Spinal cord",
-  "Motor neuron",
-  "Muscle",
-] as const;
-
 async function boot(page: Page): Promise<string[]> {
   const consoleErrors: string[] = [];
   page.on("console", (message) => {
@@ -78,7 +70,7 @@ async function closeOverlay(page: Page, overlay: string): Promise<void> {
   await expect(page.locator(`.${overlay}`)).toHaveCount(0);
 }
 
-test("boots into the vertical slice and finishes dialogue, scan, gate, debrief", async ({
+test("boots into the vertical slice and finishes dialogue, scan, Signal Ferry, debrief", async ({
   page,
 }) => {
   const consoleErrors = await boot(page);
@@ -116,35 +108,39 @@ test("boots into the vertical slice and finishes dialogue, scan, gate, debrief",
   await expect(page.locator(".concept__term", { hasText: "Muscle effector" })).toBeVisible();
   await closeOverlay(page, "overlay--concept-log");
 
-  // Gate: the player must reorder the sequence through the DOM controls.
+  // Signal Ferry: P2 carries and places the tracer; P1 pulses the terminal.
+  await teleport(page, "agent-neuron", "tracer-prop");
+  await page.keyboard.press("'");
+  await expect(page.locator(".hud__toast")).toContainText("Tracer picked up");
+
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
-    runtime.placePlayer("p1", 1160, 640);
-    // Outside both the approach trigger (x 1024–1120) and the exit (x 1184+).
-    runtime.placePlayer("p2", 1170, 640);
+    const receptor = runtime.entityPixel("receptor-a");
+    if (!receptor) throw new Error("receptor-a is missing");
+    runtime.placePlayer("p2", receptor.x, receptor.y);
   });
-  await expect(page.locator(".hud__prompt")).toContainText("Open Signal Gate");
-  await page.keyboard.press("e");
-  await expect(page.getByRole("dialog", { name: "Concept gate" })).toBeVisible();
-  await expect(page.locator(".gate__prompt")).toContainText("Put the reflex pathway");
+  await page.waitForTimeout(120);
+  await page.keyboard.press("'");
+  await expect(page.locator(".hud__toast")).toContainText("Tracer placed");
 
-  await page.getByRole("button", { name: "Move Receptor earlier" }).click();
-  await page.getByRole("button", { name: "Move Sensory neuron earlier" }).click();
-  await page.getByRole("button", { name: "Move Sensory neuron earlier" }).click();
-  await page.getByRole("button", { name: "Move Motor neuron earlier" }).click();
-  await expect(page.locator(".gate__sequence-label")).toHaveText([...GATE_ORDER]);
-  await page.getByRole("button", { name: "Submit order" }).click();
-  await expect(page.locator(".gate__feedback")).toContainText("signal snaps into place");
-  await expect(page.locator(".gate__status")).toContainText("Solved");
-
-  const unlocked = await page.evaluate(
-    () => (window as ShrinkonautsWindow).__shrinkonauts?.runtime.snapshot().abilities ?? [],
-  );
-  expect(unlocked).toContain("signal-dash");
-
-  await page.getByRole("button", { name: "Leave gate" }).click();
-  await expect(page.locator(".overlay--gate")).toHaveCount(0);
+  await page.evaluate(() => {
+    const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
+    if (!runtime) throw new Error("runtime bridge is missing");
+    const terminal = runtime.entityPixel("pulse-terminal");
+    if (!terminal) throw new Error("pulse-terminal is missing");
+    runtime.placePlayer("p1", terminal.x, terminal.y);
+  });
+  await page.waitForTimeout(120);
+  await page.keyboard.press("f");
+  await expect(page.locator(".hud__toast")).toContainText("Signal pulse sent");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as ShrinkonautsWindow).__shrinkonauts?.runtime.snapshot().abilities ?? [],
+      ),
+    )
+    .toContain("signal-dash");
 
   // Exit together so the co-op tether cannot split the pair.
   await page.evaluate(() => {
@@ -173,7 +169,9 @@ test("boots into the vertical slice and finishes dialogue, scan, gate, debrief",
   );
   expect(
     evidence.events.some(
-      (event) => event.type === "gate_solved" && event.gateId === "gate-nerve-01",
+      (event) =>
+        event.type === "puzzle_solved" &&
+        (event as { puzzleId?: string }).puzzleId === "puzzle-ferry-01",
     ),
   ).toBe(true);
   expect(evidence.events.some((event) => event.type === "debrief_completed")).toBe(
@@ -204,6 +202,9 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
 
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Reset puzzle" }).click();
+  await expect(page.locator(".hud__toast")).toContainText("Puzzle reset");
 
   await page.getByRole("button", { name: "130%" }).click();
   await expect

@@ -82,6 +82,17 @@ describe("module boundaries", () => {
     expect(offenders.map(relativeToSrc)).toEqual([]);
   });
 
+  it("confines Matter.js imports to the world physics boundary", () => {
+    const offenders = sourceFiles(SRC).filter((file) => {
+      if (file.includes("/world/")) {
+        return false;
+      }
+      return /from\s+["']matter-js["']/.test(read(file));
+    });
+
+    expect(offenders.map(relativeToSrc)).toEqual([]);
+  });
+
   it("keeps module dependencies acyclic and directionally ordered", () => {
     // ADR-0002: domain modules never depend on adapters, and adapters only
     // depend downwards. A module may always import from itself.
@@ -89,14 +100,15 @@ describe("module boundaries", () => {
       core: [],
       syllabus: ["core"],
       assets: ["core"],
-      pack: ["assets", "core", "syllabus"],
+      puzzle: [],
+      pack: ["assets", "core", "puzzle", "syllabus"],
       progression: ["pack"],
       narrative: ["pack"],
       curriculum: ["core", "pack", "syllabus"],
-      save: ["curriculum", "progression"],
+      save: ["curriculum", "progression", "puzzle"],
       audio: ["assets", "core"],
-      ui: ["assets", "core", "curriculum", "pack"],
-      world: ["assets", "core", "pack"],
+      ui: ["assets", "core", "curriculum", "pack", "puzzle"],
+      world: ["assets", "core", "pack", "puzzle"],
       game: [
         "assets",
         "audio",
@@ -105,6 +117,7 @@ describe("module boundaries", () => {
         "narrative",
         "pack",
         "progression",
+        "puzzle",
         "save",
         "syllabus",
         "ui",
