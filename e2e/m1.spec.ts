@@ -1,0 +1,237 @@
+import { expect, test, type Page } from "@playwright/test";
+
+interface RuntimeBridge {
+  entityPixel(id: string): { x: number; y: number } | null;
+  placePlayer(id: "p1" | "p2", x: number, y: number): void;
+  exportEvidence(): {
+    sessionId: string;
+    objectives: Array<{ id: string; requiredMet: boolean }>;
+    events: Array<{ type: string; gateId?: string }>;
+  };
+  snapshot(): { state: string; abilities: string[]; mode: string };
+}
+
+type ShrinkonautsWindow = Window & {
+  __shrinkonauts?: {
+    runtime: RuntimeBridge;
+    game: { scene: { isActive(key: string): boolean } };
+  };
+};
+
+const GATE_ORDER = [
+  "Receptor",
+  "Sensory neuron",
+  "Spinal cord",
+  "Motor neuron",
+  "Muscle",
+] as const;
+
+async function boot(page: Page): Promise<string[]> {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => consoleErrors.push(error.message));
+
+  await page.goto("/");
+  // Wait for the Phaser scene, not only the boot bridge: key presses sent
+  // before `create()` are consumed by no one and would be lost.
+  await page.waitForFunction(() => {
+    const app = (window as ShrinkonautsWindow).__shrinkonauts;
+    return Boolean(app?.runtime) && app?.game.scene.isActive("room") === true;
+  });
+  await expect(page.locator(".hud__title")).toHaveText("Nerve Forest");
+  await expect(page.locator(".overlay--error")).toHaveCount(0);
+  return consoleErrors;
+}
+
+async function teleport(
+  page: Page,
+  p1: { x: number; y: number } | string,
+  p2?: { x: number; y: number } | string,
+): Promise<void> {
+  await page.evaluate(
+    ({ first, second }) => {
+      const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
+      if (!runtime) throw new Error("runtime bridge is missing");
+
+      const resolve = (point: { x: number; y: number } | string) => {
+        if (typeof point !== "string") return point;
+        const resolved = runtime.entityPixel(point);
+        if (!resolved) throw new Error(`missing entity ${point}`);
+        return resolved;
+      };
+
+      const p1Point = resolve(first);
+      runtime.placePlayer("p1", p1Point.x, p1Point.y);
+      const p2Point = second ? resolve(second) : { x: p1Point.x + 36, y: p1Point.y };
+      runtime.placePlayer("p2", p2Point.x, p2Point.y);
+    },
+    { first: p1, second: p2 ?? null },
+  );
+  // Let the fixed-step scene publish the new interaction target.
+  await page.waitForTimeout(120);
+}
+
+async function closeOverlay(page: Page, overlay: string): Promise<void> {
+  await page.keyboard.press("Escape");
+  await expect(page.locator(`.${overlay}`)).toHaveCount(0);
+}
+
+test("boots into the vertical slice and finishes dialogue, scan, gate, debrief", async ({
+  page,
+}) => {
+  const consoleErrors = await boot(page);
+
+  // Boot state: direct into level 03, co-op, two players.
+  await expect(page.locator(".hud__eyebrow")).toContainText("03-nerve-forest");
+  await expect(page.locator(".hud__meta")).toContainText("co-op");
+
+  // Dialogue.
+  await teleport(page, "agent-neuron");
+  await expect(page.locator(".hud__prompt")).toContainText("Talk to Neuron Keeper");
+  await page.keyboard.press("e");
+  await expect(page.getByRole("dialog", { name: "Dialogue" })).toBeVisible();
+  await expect(page.locator(".overlay__title")).toHaveText("Neuron Keeper");
+
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".dialogue__text")).toContainText("A receptor fires");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".dialogue__text")).toContainText("Follow one message");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".dialogue__text")).toContainText("Quick check");
+  await page
+    .getByRole("button", { name: "Dendrites → soma → axon → terminals" })
+    .click();
+  await expect(page.locator(".overlay--dialogue")).toHaveCount(0);
+
+  // Scan one structure and read it in the concept log.
+  await teleport(page, "scan-muscle");
+  await page.keyboard.press("q");
+  // Wait for the scan to be applied before opening the log; otherwise both
+  // actions land in the same frame and the log transition consumes the scan.
+  await expect(page.locator(".hud__toast")).toContainText("Muscle effector");
+  await page.keyboard.press("c");
+  await expect(page.getByRole("dialog", { name: "Concept log" })).toBeVisible();
+  await expect(page.locator(".concept__term", { hasText: "Muscle effector" })).toBeVisible();
+  await closeOverlay(page, "overlay--concept-log");
+
+  // Gate: the player must reorder the sequence through the DOM controls.
+  await page.evaluate(() => {
+    const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
+    if (!runtime) throw new Error("runtime bridge is missing");
+    runtime.placePlayer("p1", 1160, 640);
+    // Outside both the approach trigger (x 1024–1120) and the exit (x 1184+).
+    runtime.placePlayer("p2", 1170, 640);
+  });
+  await expect(page.locator(".hud__prompt")).toContainText("Open Signal Gate");
+  await page.keyboard.press("e");
+  await expect(page.getByRole("dialog", { name: "Concept gate" })).toBeVisible();
+  await expect(page.locator(".gate__prompt")).toContainText("Put the reflex pathway");
+
+  await page.getByRole("button", { name: "Move Receptor earlier" }).click();
+  await page.getByRole("button", { name: "Move Sensory neuron earlier" }).click();
+  await page.getByRole("button", { name: "Move Sensory neuron earlier" }).click();
+  await page.getByRole("button", { name: "Move Motor neuron earlier" }).click();
+  await expect(page.locator(".gate__sequence-label")).toHaveText([...GATE_ORDER]);
+  await page.getByRole("button", { name: "Submit order" }).click();
+  await expect(page.locator(".gate__feedback")).toContainText("signal snaps into place");
+  await expect(page.locator(".gate__status")).toContainText("Solved");
+
+  const unlocked = await page.evaluate(
+    () => (window as ShrinkonautsWindow).__shrinkonauts?.runtime.snapshot().abilities ?? [],
+  );
+  expect(unlocked).toContain("signal-dash");
+
+  await page.getByRole("button", { name: "Leave gate" }).click();
+  await expect(page.locator(".overlay--gate")).toHaveCount(0);
+
+  // Exit together so the co-op tether cannot split the pair.
+  await page.evaluate(() => {
+    const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
+    if (!runtime) throw new Error("runtime bridge is missing");
+    runtime.placePlayer("p1", 1200, 640);
+    runtime.placePlayer("p2", 1180, 640);
+  });
+  await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
+
+  await page
+    .getByRole("textbox")
+    .fill(
+      "The receptor fires, the sensory neuron reaches the spinal cord, and the motor neuron drives the muscle.",
+    );
+  await page.getByRole("button", { name: "Record answer" }).click();
+  await page.getByRole("button", { name: "Finish level" }).click();
+  await expect(page.getByRole("dialog", { name: "Level complete" })).toBeVisible();
+  await expect(page.locator(".overlay__title")).toHaveText("Signal restored");
+
+  const evidence = await page.evaluate(
+    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime.exportEvidence(),
+  );
+  expect(evidence.objectives.find((item) => item.id === "OBJ-2")?.requiredMet).toBe(
+    true,
+  );
+  expect(
+    evidence.events.some(
+      (event) => event.type === "gate_solved" && event.gateId === "gate-nerve-01",
+    ),
+  ).toBe(true);
+  expect(evidence.events.some((event) => event.type === "debrief_completed")).toBe(
+    true,
+  );
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export evidence" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(
+    /^shrinkonauts-evidence-.*\.json$/,
+  );
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test("pause settings, checkpoint player toggle, map and mute work from the keyboard", async ({
+  page,
+}) => {
+  const consoleErrors = await boot(page);
+
+  // The default spawn is the entry checkpoint, so P can change players.
+  await page.locator("#game-root canvas").click({ position: { x: 60, y: 60 } });
+  await page.keyboard.press("p");
+  await expect(page.locator(".hud__meta")).toContainText("solo");
+  await page.keyboard.press("p");
+  await expect(page.locator(".hud__meta")).toContainText("co-op");
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
+
+  await page.getByRole("button", { name: "130%" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--ui-font-scale").trim(),
+      ),
+    )
+    .toBe("1.3");
+
+  await page.getByRole("button", { name: "Off", exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.dataset.reducedMotion))
+    .toBe("true");
+
+  await page.getByRole("button", { name: "Mute (M)" }).click();
+  await expect(page.locator(".hud__audio")).toHaveText("Muted");
+  // M is shared, so it must also work while an overlay owns focus.
+  await page.keyboard.press("m");
+  await expect(page.locator(".hud__audio")).toHaveText("Audio on");
+
+  await page.getByRole("button", { name: "Resume" }).click();
+  await expect(page.locator(".overlay--pause")).toHaveCount(0);
+
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("dialog", { name: "System map" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".overlay--map")).toHaveCount(0);
+
+  expect(consoleErrors).toEqual([]);
+});

@@ -3,20 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Shrinkonauts base game — M0.1 placeholder foundation",
+  "description": "Shrinkonauts base game — M1 runtime and Nerve Forest vertical slice",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "smoke": "vitest run tests/room-boot.test.ts tests/boundaries.test.ts"
+    "smoke": "vitest run tests/room-boot.test.ts tests/boundaries.test.ts",
+    "pack:validate": "tsx scripts/pack-validate.ts",
+    "pack:map": "tsx scripts/pack-map.ts",
+    "pack:smoke": "tsx scripts/pack-smoke.ts",
+    "smoke:e2e": "playwright test"
   },
   "dependencies": {
     "phaser": "4.2.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "vite": "^7.3.7",
     "vitest": "^4.1.12"
