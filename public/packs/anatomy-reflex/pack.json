@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "id": "anatomy-reflex",
+  "title": "Anatomy: The Reflex Arc",
+  "domain": "anatomy",
+  "version": "0.1.0",
+  "syllabusId": "anatomy-reflex",
+  "startLevelId": "03-nerve-forest",
+  "endLevelId": "03-nerve-forest",
+  "levels": ["03-nerve-forest"],
+  "theme": "theme.json",
+  "mapping": "mapping.json",
+  "licenses": "licenses.json",
+  "assetManifests": {
+    "placeholder": "assets.placeholder.json",
+    "final": "assets.final.json"
+  },
+  "assets": {
+    "tilesets": ["tileset.anatomy"],
+    "sprites": [
+      "sprite.agent.neuron",
+      "sprite.gate.nerve",
+      "sprite.scan.neuron",
+      "sprite.scan.synapse",
+      "sprite.scan.pathway",
+      "sprite.scan.muscle",
+      "sprite.scan.reflex",
+      "sprite.checkpoint",
+      "sprite.exit"
+    ],
+    "audio": [
+      "audio.cue.boot",
+      "audio.cue.dialogue",
+      "audio.cue.scan",
+      "audio.cue.dash",
+      "audio.cue.gate",
+      "audio.cue.map",
+      "audio.cue.debrief",
+      "audio.cue.checkpoint",
+      "audio.cue.unlock",
+      "audio.cue.jump",
+      "audio.cue.land"
+    ]
+  },
+  "ageRating": "12+",
+  "description": "Shrink into the nerve forest and repair a reflex signal that is running backwards.",
+  "metadata": {
+    "author": "Snorre",
+    "created": "2026-10-26",
+    "updated": "2026-10-26",
+    "stage": "M1 vertical slice"
+  }
+}

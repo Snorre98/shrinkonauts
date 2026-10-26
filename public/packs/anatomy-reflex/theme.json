@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "id": "anatomy-atlas",
+  "palette": {
+    "bg": "#101a20",
+    "bone": "#f2e8d5",
+    "boneShadow": "#7a8f8a",
+    "nerve": "#ffd166",
+    "nerveGlow": "#fff3b0",
+    "joint": "#7bdff2",
+    "muscle": "#ef476f",
+    "text": "#f7f3ea",
+    "muted": "#9db4ad",
+    "accent": "#7bdff2",
+    "danger": "#ef476f"
+  },
+  "fonts": {
+    "ui": "Inter, system-ui, sans-serif",
+    "display": "Space Grotesk, Inter, system-ui, sans-serif"
+  },
+  "ui": {
+    "radius": 12,
+    "border": 2,
+    "fontScale": 1,
+    "reducedMotion": false,
+    "assets": {
+      "badge": "ui.icon.badge",
+      "icon.scan": "ui.icon.scan",
+      "icon.map": "ui.icon.map",
+      "icon.log": "ui.icon.log",
+      "portrait.neuron": "ui.portrait.neuron",
+      "panel.dialogue": "ui.panel.dialogue",
+      "panel.gate": "ui.panel.gate",
+      "panel.debrief": "ui.panel.debrief",
+      "panel.map": "ui.panel.map"
+    }
+  },
+  "audio": {
+    "cues": {
+      "boot": "audio.cue.boot",
+      "dialogue": "audio.cue.dialogue",
+      "scan": "audio.cue.scan",
+      "dash": "audio.cue.dash",
+      "gate": "audio.cue.gate",
+      "map": "audio.cue.map",
+      "debrief": "audio.cue.debrief",
+      "checkpoint": "audio.cue.checkpoint",
+      "unlock": "audio.cue.unlock",
+      "jump": "audio.cue.jump",
+      "land": "audio.cue.land"
+    }
+  }
+}

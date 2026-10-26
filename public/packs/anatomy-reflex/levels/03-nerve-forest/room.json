@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "1.0",
+  "id": "room-nerve-forest",
+  "title": "Nerve Forest",
+  "width": 40,
+  "height": 23,
+  "tileSize": 32,
+  "tileset": "tileset.anatomy",
+  "layers": {
+    "tiles": [
+      "########################################",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                   ######             #",
+      "#                                      #",
+      "#                                      #",
+      "#       ######               #####     #",
+      "#                                      #",
+      "#                                      #",
+      "########################################",
+      "########################################",
+      "########################################"
+    ]
+  },
+  "background": {
+    "id": "bg.nerve_forest",
+    "layers": [
+      { "assetId": "bg.nerve_forest.sky", "depth": -40, "parallaxX": 0.05, "parallaxY": 0.02, "fit": "cover" },
+      { "assetId": "bg.nerve_forest.far", "depth": -30, "parallaxX": 0.2, "parallaxY": 0.1, "fit": "tile" },
+      { "assetId": "bg.nerve_forest.mid", "depth": -20, "parallaxX": 0.45, "parallaxY": 0.2, "fit": "tile" },
+      { "assetId": "bg.nerve_forest.near", "depth": -10, "parallaxX": 0.75, "parallaxY": 0.35, "fit": "tile", "opacity": 0.9 }
+    ]
+  },
+  "spawns": {
+    "player1": { "x": 3, "y": 20 },
+    "player2": { "x": 5, "y": 20 }
+  },
+  "checkpoints": [
+    { "id": "checkpoint-entry", "x": 4, "y": 20 }
+  ],
+  "entities": [
+    {
+      "id": "agent-neuron",
+      "type": "agent",
+      "x": 9,
+      "y": 20,
+      "sprite": "sprite.agent.neuron",
+      "dialogueId": "dlg-neuron-01",
+      "label": "Neuron Keeper"
+    },
+    {
+      "id": "scan-neuron",
+      "type": "scanTarget",
+      "x": 11,
+      "y": 17,
+      "sprite": "sprite.scan.neuron",
+      "conceptId": "CON-3",
+      "label": "Neuron"
+    },
+    {
+      "id": "scan-synapse",
+      "type": "scanTarget",
+      "x": 22,
+      "y": 14,
+      "sprite": "sprite.scan.synapse",
+      "conceptId": "CON-4",
+      "label": "Synapse"
+    },
+    {
+      "id": "scan-pathway",
+      "type": "scanTarget",
+      "x": 17,
+      "y": 20,
+      "sprite": "sprite.scan.pathway",
+      "conceptId": "CON-5",
+      "label": "Sensory and motor pathways"
+    },
+    {
+      "id": "scan-muscle",
+      "type": "scanTarget",
+      "x": 31,
+      "y": 17,
+      "sprite": "sprite.scan.muscle",
+      "conceptId": "CON-6",
+      "label": "Muscle effector"
+    },
+    {
+      "id": "scan-reflex",
+      "type": "scanTarget",
+      "x": 28,
+      "y": 20,
+      "sprite": "sprite.scan.reflex",
+      "conceptId": "CON-7",
+      "label": "Reflex arc"
+    },
+    {
+      "id": "gate-nerve",
+      "type": "gate",
+      "x": 34,
+      "y": 20,
+      "sprite": "sprite.gate.nerve",
+      "gateId": "gate-nerve-01",
+      "label": "Signal Gate"
+    },
+    {
+      "id": "exit-nerve",
+      "type": "decor",
+      "x": 37,
+      "y": 19,
+      "sprite": "sprite.exit",
+      "label": "Muscle Effector exit"
+    }
+  ],
+  "exits": [
+    {
+      "id": "exit-to-muscle",
+      "x": 37,
+      "y": 19,
+      "width": 1,
+      "height": 1,
+      "toLevelId": "04-muscle-effector",
+      "gateId": "gate-nerve-01"
+    }
+  ],
+  "triggers": [
+    {
+      "id": "trigger-approach-gate",
+      "type": "enter",
+      "x": 32,
+      "y": 18,
+      "width": 3,
+      "height": 2,
+      "gateId": "gate-nerve-01"
+    }
+  ]
+}

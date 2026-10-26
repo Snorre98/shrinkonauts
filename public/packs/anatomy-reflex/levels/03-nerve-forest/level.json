@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0",
+  "id": "03-nerve-forest",
+  "title": "Nerve Forest",
+  "order": 3,
+  "status": "draft",
+  "syllabusObjectiveIds": ["OBJ-2"],
+  "conceptIds": ["CON-3", "CON-4", "CON-5", "CON-6", "CON-7"],
+  "roomId": "room-nerve-forest",
+  "backgroundId": "bg.nerve_forest",
+  "dialogueIds": ["dlg-neuron-01"],
+  "gateIds": ["gate-nerve-01"],
+  "map": {
+    "nodeId": "map-nerve-forest",
+    "label": "Nerve Forest",
+    "x": 2,
+    "y": 1,
+    "edges": [
+      { "to": "map-joint-chamber", "type": "door" },
+      { "to": "map-muscle-effector", "type": "gate", "gateId": "gate-nerve-01" }
+    ]
+  },
+  "evidence": [
+    {
+      "objectiveId": "OBJ-2",
+      "event": "gate_solved",
+      "filter": { "gateId": "gate-nerve-01" },
+      "required": true
+    }
+  ],
+  "unlocks": [{ "type": "ability", "id": "signal-dash" }],
+  "nextLevelIds": ["04-muscle-effector"],
+  "coop": {
+    "supported": true,
+    "notes": "Both players can scan and dash; either can interact. Solo is possible."
+  },
+  "authoring": {
+    "levelSpec": "README.md",
+    "playtestedSolo": false,
+    "playtestedCoop": false,
+    "notes": "M1 vertical slice: placeholder assets, gate at the east exit."
+  }
+}

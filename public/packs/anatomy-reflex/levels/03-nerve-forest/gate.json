@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "id": "gate-nerve-01",
+  "type": "concept",
+  "objectiveId": "OBJ-2",
+  "conceptIds": ["CON-3", "CON-4", "CON-5", "CON-6", "CON-7"],
+  "prompt": "The signal is scrambled. Put the reflex pathway in the order a real signal travels.",
+  "puzzle": {
+    "type": "sequence",
+    "items": ["Spinal cord", "Receptor", "Muscle", "Sensory neuron", "Motor neuron"],
+    "answer": ["Receptor", "Sensory neuron", "Spinal cord", "Motor neuron", "Muscle"]
+  },
+  "hints": [
+    "The receptor is where the change is detected; it fires first.",
+    "Sensory neurons travel toward the spinal cord, motor neurons travel away from it."
+  ],
+  "onSolve": [
+    { "type": "unlockAbility", "id": "signal-dash" },
+    { "type": "revealMap", "nodeId": "map-muscle-effector" },
+    { "type": "recordEvidence", "event": "gate_solved", "gateId": "gate-nerve-01" },
+    { "type": "playCue", "cue": "unlock" }
+  ],
+  "onFail": [
+    { "type": "recordEvidence", "event": "gate_failed", "gateId": "gate-nerve-01" }
+  ]
+}

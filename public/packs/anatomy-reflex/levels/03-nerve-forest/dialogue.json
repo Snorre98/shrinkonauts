@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "id": "dlg-neuron-01",
+  "speaker": "Neuron Keeper",
+  "portrait": "neuron",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "text": "You shrank in at a good time. The reflex signal in this forest is running backwards.",
+      "next": "problem"
+    },
+    "problem": {
+      "text": "A receptor fires, but the muscle twitches before the message ever reaches the spinal cord. Find the break and put the signal back in order.",
+      "next": "clue"
+    },
+    "clue": {
+      "text": "Follow one message. A neuron carries it one way: dendrites receive, the soma keeps the cell alive, the axon carries the impulse, and the terminals release it. Across a synapse, neurotransmitters jump the gap.",
+      "next": "check"
+    },
+    "check": {
+      "text": "Quick check: which way does a nerve signal travel?",
+      "choices": [
+        { "id": "wrong", "text": "Both ways along the axon", "next": "retry" },
+        { "id": "right", "text": "Dendrites → soma → axon → terminals", "next": "right" }
+      ]
+    },
+    "retry": {
+      "text": "Not quite. The axon carries the impulse away from the soma, not back toward the dendrites. Try the other answer.",
+      "next": "check"
+    },
+    "right": {
+      "text": "Exactly. Scan the glowing structures for the details, then open the gate at the far end. It will ask you to order the whole reflex pathway.",
+      "effects": [
+        { "type": "revealConcept", "conceptId": "CON-3" },
+        { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-3" },
+        { "type": "revealConcept", "conceptId": "CON-4" },
+        { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-4" },
+        { "type": "revealConcept", "conceptId": "CON-5" },
+        { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-5" },
+        { "type": "revealMap", "nodeId": "map-nerve-forest" }
+      ],
+      "next": null
+    }
+  }
+}

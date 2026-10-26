@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "1.0",
+  "syllabusId": "anatomy-reflex",
+  "packId": "anatomy-reflex",
+  "objectives": {
+    "OBJ-1": {
+      "levels": [],
+      "dialogues": [],
+      "gates": [],
+      "evidence": [
+        "EV-1"
+      ],
+      "debrief": "debrief-obj-1"
+    },
+    "OBJ-2": {
+      "levels": [
+        "03-nerve-forest"
+      ],
+      "dialogues": [
+        "dlg-neuron-01"
+      ],
+      "gates": [
+        "gate-nerve-01"
+      ],
+      "evidence": [
+        "EV-2"
+      ],
+      "debrief": "debrief-obj-2"
+    },
+    "OBJ-3": {
+      "levels": [],
+      "dialogues": [],
+      "gates": [],
+      "evidence": [
+        "EV-3"
+      ],
+      "debrief": "debrief-obj-3"
+    },
+    "OBJ-4": {
+      "levels": [],
+      "dialogues": [],
+      "gates": [],
+      "evidence": [
+        "EV-4"
+      ],
+      "debrief": "debrief-obj-4"
+    },
+    "OBJ-5": {
+      "levels": [],
+      "dialogues": [],
+      "gates": [],
+      "evidence": [
+        "EV-5"
+      ],
+      "debrief": "debrief-obj-5"
+    }
+  },
+  "concepts": {
+    "CON-1": {
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
+    },
+    "CON-2": {
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
+    },
+    "CON-3": {
+      "levels": [
+        "03-nerve-forest"
+      ],
+      "dialogues": [
+        "dlg-neuron-01"
+      ],
+      "scanTargets": [
+        "scan-neuron"
+      ],
+      "mapLabels": [
+        "Nerve Forest"
+      ]
+    },
+    "CON-4": {
+      "levels": [
+        "03-nerve-forest"
+      ],
+      "dialogues": [
+        "dlg-neuron-01"
+      ],
+      "scanTargets": [
+        "scan-synapse"
+      ],
+      "mapLabels": [
+        "Nerve Forest"
+      ]
+    },
+    "CON-5": {
+      "levels": [
+        "03-nerve-forest"
+      ],
+      "dialogues": [
+        "dlg-neuron-01"
+      ],
+      "scanTargets": [
+        "scan-pathway"
+      ],
+      "mapLabels": [
+        "Nerve Forest"
+      ]
+    },
+    "CON-6": {
+      "levels": [
+        "03-nerve-forest"
+      ],
+      "dialogues": [
+        "dlg-neuron-01"
+      ],
+      "scanTargets": [
+        "scan-muscle"
+      ],
+      "mapLabels": [
+        "Nerve Forest"
+      ]
+    },
+    "CON-7": {
+      "levels": [
+        "03-nerve-forest"
+      ],
+      "dialogues": [
+        "dlg-neuron-01"
+      ],
+      "scanTargets": [
+        "scan-reflex"
+      ],
+      "mapLabels": [
+        "Nerve Forest"
+      ]
+    },
+    "CON-8": {
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
+    }
+  }
+}
