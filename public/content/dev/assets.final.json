@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "id": "assets.final.dev",
+  "assets": {
+    "sprite.player.p1": {
+      "type": "sprite",
+      "placeholder": true,
+      "license": "TBD — final art not delivered in M0.1"
+    },
+    "sprite.player.p2": {
+      "type": "sprite",
+      "placeholder": true,
+      "license": "TBD — final art not delivered in M0.1"
+    },
+    "bg.placeholder.sky": {
+      "type": "background",
+      "placeholder": true
+    },
+    "bg.placeholder.far": {
+      "type": "background",
+      "placeholder": true
+    },
+    "bg.placeholder.mid": {
+      "type": "background",
+      "placeholder": true
+    },
+    "bg.placeholder.near": {
+      "type": "background",
+      "placeholder": true
+    },
+    "tileset.placeholder": {
+      "type": "image",
+      "placeholder": true
+    },
+    "ui.icon.badge": {
+      "type": "image",
+      "placeholder": true
+    },
+    "audio.cue.jump": {
+      "type": "audio",
+      "placeholder": true
+    },
+    "audio.cue.land": {
+      "type": "audio",
+      "placeholder": true
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "shrinkonauts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shrinkonauts base game — M0.1 placeholder foundation",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "smoke": "vitest run tests/room-boot.test.ts tests/boundaries.test.ts"
+  },
+  "dependencies": {
+    "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "^6.0.3",
+    "vite": "^7.3.7",
+    "vitest": "^4.1.12"
+  }
+}

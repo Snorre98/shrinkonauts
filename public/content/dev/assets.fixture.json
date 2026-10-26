@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "id": "assets.fixture.dev",
+  "assets": {
+    "sprite.player.p1": {
+      "type": "sprite",
+      "src": "fixtures/player-p1.svg",
+      "license": "Test fixture — not shipped content"
+    },
+    "sprite.player.p2": {
+      "type": "sprite",
+      "src": "fixtures/player-p2.svg",
+      "license": "Test fixture — not shipped content"
+    },
+    "bg.placeholder.near": {
+      "type": "background",
+      "src": "fixtures/bg-near.svg",
+      "license": "Test fixture — not shipped content"
+    }
+  }
+}

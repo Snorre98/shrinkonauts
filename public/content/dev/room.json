@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "1.0",
+  "id": "room.dev.foyer",
+  "title": "Synaptic Foyer",
+  "width": 60,
+  "height": 34,
+  "tileSize": 32,
+  "tileset": "tileset.placeholder",
+  "layers": {
+    "tiles": [
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#                 ########               ########          #",
+      "#                                                          #",
+      "#                                                          #",
+      "#      ########               ########             ######  #",
+      "#                                                          #",
+      "#                                                          #",
+      "############################################################",
+      "############################################################",
+      "############################################################",
+      "############################################################"
+    ]
+  },
+  "background": {
+    "id": "bg.placeholder",
+    "layers": [
+      {
+        "assetId": "bg.placeholder.sky",
+        "depth": -100,
+        "parallaxX": 0,
+        "parallaxY": 0,
+        "fit": "cover",
+        "opacity": 1
+      },
+      {
+        "assetId": "bg.placeholder.far",
+        "depth": -90,
+        "parallaxX": 0.08,
+        "parallaxY": 0.02,
+        "fit": "cover",
+        "opacity": 0.7
+      },
+      {
+        "assetId": "bg.placeholder.mid",
+        "depth": -80,
+        "parallaxX": 0.18,
+        "parallaxY": 0.05,
+        "fit": "cover",
+        "opacity": 0.6
+      },
+      {
+        "assetId": "bg.placeholder.near",
+        "depth": -70,
+        "parallaxX": 0.32,
+        "parallaxY": 0.08,
+        "fit": "cover",
+        "opacity": 0.62
+      }
+    ]
+  },
+  "spawns": {
+    "player1": {
+      "x": 5,
+      "y": 30
+    },
+    "player2": {
+      "x": 8,
+      "y": 30
+    }
+  }
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="88" viewBox="0 0 56 88" role="img" aria-label="Fixture player one">
+  <defs>
+    <pattern id="p1-stripes" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="14" height="14" fill="#ffd166"/>
+      <rect width="7" height="14" fill="#1b1414"/>
+    </pattern>
+  </defs>
+  <rect x="1" y="1" width="54" height="86" rx="12" fill="url(#p1-stripes)" stroke="#7bdff2" stroke-width="3"/>
+  <rect x="7" y="7" width="42" height="74" rx="8" fill="#1b1414" fill-opacity="0.82"/>
+  <circle cx="28" cy="32" r="11" fill="#7bdff2"/>
+  <rect x="17" y="48" width="22" height="5" rx="2.5" fill="#ffd166"/>
+  <rect x="17" y="58" width="22" height="5" rx="2.5" fill="#ffd166"/>
+  <text x="28" y="76" text-anchor="middle" font-family="monospace" font-size="13" font-weight="700" fill="#f7f3ea">P1</text>
+</svg>

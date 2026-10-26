@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "id": "theme.placeholder",
+  "palette": {
+    "bg": "#1b1414",
+    "bone": "#f2e8d5",
+    "boneShadow": "#c9b79a",
+    "nerve": "#ffd166",
+    "nerveGlow": "#fff3b0",
+    "joint": "#7bdff2",
+    "muscle": "#ef476f",
+    "text": "#f7f3ea",
+    "muted": "#b8a99a",
+    "accent": "#ffd166",
+    "danger": "#ef476f"
+  },
+  "fonts": {
+    "ui": "Inter, system-ui, sans-serif",
+    "display": "Space Grotesk, Inter, system-ui, sans-serif"
+  },
+  "ui": {
+    "radius": 14,
+    "border": 1,
+    "fontScale": 1,
+    "reducedMotion": false,
+    "assets": {
+      "badge": "ui.icon.badge"
+    }
+  },
+  "audio": {
+    "cues": {
+      "jump": "audio.cue.jump",
+      "land": "audio.cue.land"
+    }
+  }
+}
