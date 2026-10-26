@@ -1,10 +1,17 @@
 import Phaser from "phaser";
-import type { Intents, PlayerId, PlayerIntent } from "./simulation";
+import type { PlayerId, PlayerIntent } from "./simulation";
+import type { RuntimeInput } from "./runtime-port";
+
+export type FrameInput = RuntimeInput;
 
 interface PlayerKeys {
   left: Phaser.Input.Keyboard.Key;
   right: Phaser.Input.Keyboard.Key;
+  up: Phaser.Input.Keyboard.Key;
   jumps: Phaser.Input.Keyboard.Key[];
+  dash: Phaser.Input.Keyboard.Key;
+  interact: Phaser.Input.Keyboard.Key;
+  scan: Phaser.Input.Keyboard.Key;
 }
 
 function axis(left: Phaser.Input.Keyboard.Key, right: Phaser.Input.Keyboard.Key): -1 | 0 | 1 {
@@ -14,18 +21,30 @@ function axis(left: Phaser.Input.Keyboard.Key, right: Phaser.Input.Keyboard.Key)
   return left.isDown ? -1 : 1;
 }
 
-function jumpPressed(keys: PlayerKeys): boolean {
-  let pressed = false;
-  for (const jump of keys.jumps) {
-    if (Phaser.Input.Keyboard.JustDown(jump)) {
-      pressed = true;
+function pressed(keys: readonly Phaser.Input.Keyboard.Key[]): boolean {
+  let down = false;
+  for (const key of keys) {
+    if (Phaser.Input.Keyboard.JustDown(key)) {
+      down = true;
     }
   }
-  return pressed;
+  return down;
 }
 
 export class KeyboardIntentSource {
   private readonly keys: Record<PlayerId, PlayerKeys>;
+  private readonly mapKey: Phaser.Input.Keyboard.Key;
+  private readonly logKey: Phaser.Input.Keyboard.Key;
+  private readonly pauseKey: Phaser.Input.Keyboard.Key;
+  private readonly muteKey: Phaser.Input.Keyboard.Key;
+  private readonly toggleP2Key: Phaser.Input.Keyboard.Key;
+  private readonly confirmKeys: Phaser.Input.Keyboard.Key[];
+  /**
+   * Phaser clears `_justDown` on keyup, so a tap shorter than one frame would
+   * disappear. Latching keydown events makes every press visible exactly once
+   * to the next fixed step.
+   */
+  private readonly latched = new Set<Phaser.Input.Keyboard.Key>();
 
   constructor(scene: Phaser.Scene) {
     const keyboard = scene.input.keyboard;
@@ -33,37 +52,101 @@ export class KeyboardIntentSource {
       throw new Error("Keyboard input is unavailable");
     }
 
-    const key = (code: number): Phaser.Input.Keyboard.Key =>
+    const captured = (code: number): Phaser.Input.Keyboard.Key =>
       keyboard.addKey(code, true, false);
+    const plain = (code: number): Phaser.Input.Keyboard.Key =>
+      keyboard.addKey(code, false, false);
+    const latch = (key: Phaser.Input.Keyboard.Key): Phaser.Input.Keyboard.Key => {
+      key.on(Phaser.Input.Keyboard.Events.DOWN, () => {
+        this.latched.add(key);
+      });
+      return key;
+    };
 
     this.keys = {
       p1: {
-        left: key(Phaser.Input.Keyboard.KeyCodes.A),
-        right: key(Phaser.Input.Keyboard.KeyCodes.D),
+        left: captured(Phaser.Input.Keyboard.KeyCodes.A),
+        right: captured(Phaser.Input.Keyboard.KeyCodes.D),
+        up: captured(Phaser.Input.Keyboard.KeyCodes.W),
         jumps: [
-          key(Phaser.Input.Keyboard.KeyCodes.W),
-          key(Phaser.Input.Keyboard.KeyCodes.SPACE),
+          latch(captured(Phaser.Input.Keyboard.KeyCodes.W)),
+          latch(captured(Phaser.Input.Keyboard.KeyCodes.SPACE)),
         ],
+        dash: latch(captured(Phaser.Input.Keyboard.KeyCodes.SHIFT)),
+        interact: latch(captured(Phaser.Input.Keyboard.KeyCodes.E)),
+        scan: latch(captured(Phaser.Input.Keyboard.KeyCodes.Q)),
       },
       p2: {
-        left: key(Phaser.Input.Keyboard.KeyCodes.LEFT),
-        right: key(Phaser.Input.Keyboard.KeyCodes.RIGHT),
-        jumps: [key(Phaser.Input.Keyboard.KeyCodes.UP)],
+        left: captured(Phaser.Input.Keyboard.KeyCodes.LEFT),
+        right: captured(Phaser.Input.Keyboard.KeyCodes.RIGHT),
+        up: captured(Phaser.Input.Keyboard.KeyCodes.UP),
+        jumps: [latch(captured(Phaser.Input.Keyboard.KeyCodes.UP))],
+        dash: latch(captured(Phaser.Input.Keyboard.KeyCodes.FORWARD_SLASH)),
+        interact: latch(captured(Phaser.Input.Keyboard.KeyCodes.COMMA)),
+        scan: latch(captured(Phaser.Input.Keyboard.KeyCodes.PERIOD)),
       },
     };
+
+    // Tab must be captured; otherwise the browser moves focus out of the game
+    // before the map overlay can take over focus management.
+    this.mapKey = latch(captured(Phaser.Input.Keyboard.KeyCodes.TAB));
+    this.logKey = latch(plain(Phaser.Input.Keyboard.KeyCodes.C));
+    this.pauseKey = latch(plain(Phaser.Input.Keyboard.KeyCodes.ESC));
+    this.muteKey = latch(plain(Phaser.Input.Keyboard.KeyCodes.M));
+    this.toggleP2Key = latch(plain(Phaser.Input.Keyboard.KeyCodes.P));
+    this.confirmKeys = [
+      plain(Phaser.Input.Keyboard.KeyCodes.ENTER),
+      plain(Phaser.Input.Keyboard.KeyCodes.SPACE),
+    ];
   }
 
-  sample(): Intents {
+  /** Drops latched actions when a text field takes focus. */
+  discard(): void {
+    this.latched.clear();
+  }
+
+  private consume(key: Phaser.Input.Keyboard.Key): boolean {
+    return this.latched.delete(key);
+  }
+
+  private consumeAny(keys: readonly Phaser.Input.Keyboard.Key[]): boolean {
+    let fired = false;
+    for (const key of keys) {
+      if (this.latched.delete(key)) fired = true;
+    }
+    return fired;
+  }
+
+  sample(): FrameInput {
     return {
-      p1: this.samplePlayer(this.keys.p1),
-      p2: this.samplePlayer(this.keys.p2),
+      intents: {
+        p1: this.samplePlayer(this.keys.p1),
+        p2: this.samplePlayer(this.keys.p2),
+      },
+      actions: {
+        p1: {
+          interact: this.consume(this.keys.p1.interact),
+          scan: this.consume(this.keys.p1.scan),
+        },
+        p2: {
+          interact: this.consume(this.keys.p2.interact),
+          scan: this.consume(this.keys.p2.scan),
+        },
+        map: this.consume(this.mapKey),
+        log: this.consume(this.logKey),
+        pause: this.consume(this.pauseKey),
+        mute: this.consume(this.muteKey),
+        toggleP2: this.consume(this.toggleP2Key),
+        confirm: pressed(this.confirmKeys),
+      },
     };
   }
 
   private samplePlayer(keys: PlayerKeys): PlayerIntent {
     return {
       moveX: axis(keys.left, keys.right),
-      jump: jumpPressed(keys),
+      jump: this.consumeAny(keys.jumps),
+      dash: this.consume(keys.dash),
     };
   }
 }
