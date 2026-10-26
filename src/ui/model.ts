@@ -30,7 +30,7 @@ export interface CameraView {
 }
 
 export interface InteractionView {
-  kind: "dialogue" | "gate" | "prop" | "pulse";
+  kind: "dialogue" | "gate" | "prop" | "pulse" | "puzzle";
   id: string;
   label: string;
   key?: string;
@@ -116,6 +116,13 @@ export interface PuzzleView {
   canReset: boolean;
   tether: string;
   counters: Record<string, number>;
+  hint: string | null;
+  canHint: boolean;
+  pulse: {
+    nodeId: string;
+    remainingTicks: number;
+    cooldownTicks: number;
+  } | null;
 }
 
 export interface SettingsView {

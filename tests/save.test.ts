@@ -86,6 +86,38 @@ describe("save", () => {
     expect(storage.getItem(RUN_STORAGE_KEY)).toContain("anatomy-reflex");
   });
 
+  it("returns the parsed run for a content-version mismatch", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+
+    save.saveRun({
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: "anatomy-reflex",
+      packVersion: "0.1.0",
+      contentVersion: "0.1.0",
+      levelId: "03-nerve-forest",
+      roomId: "room-nerve-forest",
+      checkpointId: "checkpoint-entry",
+      progression: createProgression({ abilities: ["scan", "signal-dash"] }),
+      events: [],
+      elapsed: 20,
+      players: {
+        activeP2: true,
+        bodies: { p1: body(112, 618), p2: body(176, 618) },
+      },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
+      status: "playing",
+    });
+
+    const loaded = save.loadRun("anatomy-reflex", "0.1.0", "9.9.9");
+    expect(loaded).toMatchObject({ ok: false, reason: "VERSION_MISMATCH" });
+    if (!loaded.ok && loaded.reason === "VERSION_MISMATCH") {
+      expect(loaded.run?.contentVersion).toBe("0.1.0");
+      expect(loaded.run?.progression.abilities).toContain("signal-dash");
+    }
+  });
+
   it("rejects saves from another pack or version and invalid JSON", () => {
     const storage = new MemorySaveStorage();
     const save = createSave({ storage });

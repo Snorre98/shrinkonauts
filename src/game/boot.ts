@@ -240,6 +240,7 @@ export async function bootGame(options: BootOptions = {}): Promise<BootResult> {
         onResume: () => runtime?.togglePause(),
         onEscape: () => runtime?.togglePause(),
         onResetPuzzle: () => runtime?.resetPuzzle(),
+        onPuzzleHint: () => runtime?.puzzleHint(),
         onMute: () => runtime?.toggleMute(),
         onTextScale: (scale) => runtime?.setTextScale(scale),
         onToggleReducedMotion: () => runtime?.toggleReducedMotion(),

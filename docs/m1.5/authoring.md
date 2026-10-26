@@ -50,8 +50,34 @@ A minimal shape:
 }
 ```
 
-`activation.mode` is `roomStart`, `zoneEnter`, or `interact`. M1.5 activates
-room-start puzzles automatically. `tether` is `normal`, `stretch`, or `off`.
+`activation.mode` is `roomStart`, `zoneEnter`, or `interact`.
+
+- `roomStart` activates when the level loads.
+- `zoneEnter` needs `activation.zoneId` naming a `zone` node in the same
+  document; it activates when an active player enters that rect.
+- `interact` needs `activation.entityId` naming a room entity; it activates
+  when an active player uses E or `,` within interaction range.
+
+Only activated puzzles tick, save, reset, and appear in the HUD. Activation
+autosaves. `tether` is `normal`, `stretch`, or `off`; the first activated puzzle
+supplies the room's tether policy. `off` is valid only when the puzzle geometry
+fits inside one 1280 × 720 viewport.
+
+```json
+{ "activation": { "mode": "zoneEnter", "zoneId": "entry-zone" } }
+```
+
+```json
+{ "activation": { "mode": "interact", "entityId": "pulse-terminal" } }
+```
+
+`zoneId` must name a `zone` node in the same document. `entityId` must name a
+room entity. An `interact` puzzle shows `Start <title>` in the interaction
+prompt and activates on E or `,` before dialogue or carry actions.
+
+The `off` guard measures the bounding box of referenced entity anchors,
+receptor/plate/zone rects, snap points, and prop spawns. A room-size check is not
+used because `03-nerve-forest` is 1280 × 736 px at 32 px tiles.
 
 ## Nodes
 
@@ -139,6 +165,37 @@ Props use two entities:
 Other new entity types: `receptor` (`components.receptor`), `pulseSource`
 (`components.pulseSource`), and `puzzleGate` (`components.gate`). The puzzle
 document references the **prop entity id**, never the body id.
+
+## Hints and cooldown
+
+`hints` are authored text, revealed one at a time by the pause-menu
+**Show puzzle hint** button. The latest hint stays in the HUD and each use
+records `hint_used` with `puzzleId` and `hintIndex`. The hint index is UI state;
+it is not saved.
+
+The HUD also shows the first active `pulseSource` cooldown as `Pulse: ready` or
+a remaining time in seconds.
+
+## Hazards
+
+A hazard is a static sensor that respawns a player at the checkpoint:
+
+```json
+{
+  "id": "hazard-cleft",
+  "type": "hazard",
+  "x": 18,
+  "y": 20,
+  "components": {
+    "body": { "width": 32, "height": 24 }
+  }
+}
+```
+
+The body component is optional; without it the hazard is one tile. Hazards use
+the `HAZARD` collision category and only collide with players. Props and solids
+pass through. Puzzle state, evidence, and prop positions persist after a hazard
+respawn. Do not place a hazard on a checkpoint or spawn tile.
 
 ## Evidence
 

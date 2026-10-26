@@ -1,6 +1,6 @@
 # M1.5 Architecture Decision Records
 
-**Status:** Proposed for implementation, 26 October 2026  
+**Status:** Accepted, 26 October 2026
 **Scope:** M1.5 puzzle-authoring foundation and the Signal Ferry proof  
 **Format:** Nygard-style, matching the ADR set under
 `docs/shrinkonauts/base-game/adr/`.
@@ -33,6 +33,13 @@ records, not amendments or edits to the existing files.
 | [0039](0039-puzzle-as-assessment-source.md) | Puzzle as the assessment source | Accepted |
 | [0040](0040-dynamic-prop-state-softlock-contract.md) | Dynamic prop state and softlock contract | Accepted |
 | [0041](0041-save-schema-v2.md) | Save schema v2 | Accepted |
+| [0042](0042-puzzle-activation-lifecycle.md) | Puzzle activation lifecycle and scoped tether resolution | Accepted |
+| [0043](0043-puzzle-feedback-hints-cooldown.md) | Puzzle feedback surfaces for hints and pulse cooldown | Accepted |
+| [0044](0044-hazard-sensors-checkpoint-respawn.md) | Hazard sensors and checkpoint respawn | Accepted |
+| [0045](0045-recoverable-save-version-mismatch.md) | Recoverable save version mismatch | Accepted |
+
+ADR-0034–0041 are unchanged close-out records from the original M1.5 pass.
+ADR-0042–0045 record the decisions made while closing the verified gaps.
 
 ## Related accepted records
 

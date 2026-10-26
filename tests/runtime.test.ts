@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { GameRuntime, type AudioPort, type RuntimeInput } from "../src/game/runtime";
-import { createSave, MemorySaveStorage, RUN_STORAGE_KEY } from "../src/save";
+import { createProgression } from "../src/progression";
+import {
+  createSave,
+  MemorySaveStorage,
+  RUN_SCHEMA_VERSION,
+  RUN_STORAGE_KEY,
+} from "../src/save";
 import { loadContent, packDirectory } from "../scripts/content-loader";
 
 const content = loadContent(packDirectory("anatomy-reflex"));
@@ -40,6 +46,85 @@ function makeRuntime(storage = new MemorySaveStorage()): {
   });
   runtime.start();
   return { runtime, audio, save, storage };
+}
+
+function makeRuntimeWithContent(
+  packContent: typeof content,
+  storage = new MemorySaveStorage(),
+): { runtime: GameRuntime; audio: FakeAudio; storage: MemorySaveStorage } {
+  const audio = new FakeAudio();
+  const save = createSave({ storage });
+  const runtime = new GameRuntime({
+    content: packContent,
+    save,
+    audio,
+    now: () => new Date("2026-10-26T12:00:00.000Z"),
+    sessionId: "session-runtime-test-custom",
+  });
+  runtime.start();
+  return { runtime, audio, storage };
+}
+
+function contentWithActivation(mode: "zoneEnter" | "interact") {
+  const copy = structuredClone(content);
+  const puzzle = copy.puzzles["puzzle-ferry-01"];
+  if (!puzzle) throw new Error("ferry puzzle missing");
+  if (mode === "zoneEnter") {
+    puzzle.activation = { mode: "zoneEnter", zoneId: "activation-zone" };
+    puzzle.nodes.push({
+      id: "activation-zone",
+      type: "zone",
+      rect: { x: 300, y: 600, width: 100, height: 80 },
+      detects: ["player"],
+      minimum: 1,
+      countCarried: false,
+    });
+  } else {
+    puzzle.activation = { mode: "interact", entityId: "pulse-terminal" };
+  }
+  return copy;
+}
+
+function contentWithHazard() {
+  const copy = structuredClone(content);
+  const room = copy.rooms["room-nerve-forest"];
+  if (!room) throw new Error("nerve room missing");
+  room.entities = [
+    ...(room.entities ?? []),
+    {
+      id: "hazard-runtime-test",
+      type: "hazard",
+      x: 6,
+      y: 20,
+      components: { body: { width: 32, height: 32 } },
+    },
+  ];
+  return copy;
+}
+
+function body(
+  x: number,
+  y: number,
+  overrides: Partial<{
+    vx: number;
+    vy: number;
+    angle: number;
+    angularVelocity: number;
+    sleeping: boolean;
+    dashTime: number;
+    dashCooldown: number;
+  }> = {},
+) {
+  return {
+    x,
+    y,
+    vx: 0,
+    vy: 0,
+    angle: 0,
+    angularVelocity: 0,
+    sleeping: false,
+    ...overrides,
+  };
 }
 
 function walkTo(runtime: GameRuntime, entityId: string): void {
@@ -118,6 +203,217 @@ describe("game runtime", () => {
     expect(snapshot.map.nodes.find((node) => node.current)?.visited).toBe(true);
     expect(snapshot.checkpointId).toBe("checkpoint-entry");
     expect(storage.getItem(RUN_STORAGE_KEY)).toContain("03-nerve-forest");
+  });
+
+  it("waits for a zoneEnter activation before ticking the puzzle", () => {
+    const { runtime } = makeRuntimeWithContent(contentWithActivation("zoneEnter"));
+    expect(runtime.snapshot().puzzle).toBeNull();
+    expect(runtime.simulation.tetherPolicy).toBe("normal");
+
+    stepWith(runtime);
+    expect(runtime.snapshot().puzzle).toBeNull();
+
+    runtime.placePlayer("p1", 350, 640);
+    stepWith(runtime);
+    expect(runtime.snapshot().puzzle?.id).toBe("puzzle-ferry-01");
+    expect(runtime.simulation.tetherPolicy).toBe("off");
+  });
+
+  it("activates an interact puzzle from its authored entity", () => {
+    const { runtime } = makeRuntimeWithContent(contentWithActivation("interact"));
+    expect(runtime.snapshot().puzzle).toBeNull();
+
+    const terminal = runtime.entityPixel("pulse-terminal");
+    if (!terminal) throw new Error("pulse-terminal missing");
+    runtime.placePlayer("p1", terminal.x, 20 * 32);
+    expect(runtime.snapshot().interaction).toMatchObject({
+      kind: "puzzle",
+      label: "Start Signal Ferry",
+    });
+
+    stepWith(runtime, playerActions({ interact: true }));
+    expect(runtime.snapshot().puzzle?.id).toBe("puzzle-ferry-01");
+    expect(runtime.simulation.tetherPolicy).toBe("off");
+  });
+
+  it("shows authored hints and pulse cooldown", () => {
+    const { runtime } = makeRuntime();
+    expect(runtime.snapshot().puzzle?.canHint).toBe(true);
+    expect(runtime.snapshot().puzzle?.pulse).toMatchObject({
+      nodeId: "pulse-terminal",
+      remainingTicks: 0,
+      cooldownTicks: 24,
+    });
+
+    runtime.puzzleHint();
+    expect(runtime.snapshot().puzzle?.hint).toBe(
+      "The tracer fits only one receptor shape.",
+    );
+    expect(runtime.snapshot().toast).toContain("Hint:");
+    expect(runtime.snapshot().puzzle?.canHint).toBe(true);
+
+    runtime.puzzleHint();
+    expect(runtime.snapshot().puzzle?.hint).toBe(
+      "One player can hold the terminal while the other carries the tracer.",
+    );
+    expect(runtime.snapshot().puzzle?.canHint).toBe(false);
+    expect(
+      runtime
+        .exportEvidence()
+        .events.filter((event) => event.type === "hint_used"),
+    ).toHaveLength(2);
+
+    const terminal = runtime.entityPixel("pulse-terminal");
+    if (!terminal) throw new Error("pulse-terminal missing");
+    runtime.placePlayer("p1", terminal.x, 20 * 32);
+    stepWith(runtime, playerActions({ pulse: true }));
+    expect(
+      runtime.snapshot().puzzle?.pulse?.remainingTicks ?? 0,
+    ).toBeGreaterThan(0);
+    for (let frame = 0; frame < 30; frame += 1) stepWith(runtime);
+    expect(runtime.snapshot().puzzle?.pulse?.remainingTicks).toBe(0);
+  });
+
+  it("records wrong-side feedback in the exported puzzle counters", () => {
+    const { runtime } = makeRuntime();
+    const tracer = runtime.entityPixel("tracer-prop");
+    if (!tracer) throw new Error("tracer missing");
+    runtime.placePlayer("p2", tracer.x, 20 * 32);
+    stepWith(runtime, playerActions(), playerActions({ carry: true }));
+    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("carried");
+
+    runtime.placePlayer("p2", 700, 20 * 32);
+    stepWith(runtime, playerActions(), playerActions({ carry: true }));
+    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("free");
+    expect(runtime.snapshot().puzzle?.counters.wrongSide).toBe(1);
+
+    runtime.resetPuzzle();
+    solveFerry(runtime);
+    const solved = runtime
+      .exportEvidence()
+      .events.find((event) => event.type === "puzzle_solved");
+    expect(
+      (solved?.counters as Record<string, number> | undefined)?.wrongSide,
+    ).toBeGreaterThanOrEqual(1);
+  });
+
+  it("respawns a player at the checkpoint after a hazard", () => {
+    const { runtime } = makeRuntimeWithContent(contentWithHazard());
+    const spawn = {
+      x: runtime.simulation.players.p1.spawnX,
+      y: runtime.simulation.players.p1.spawnY,
+    };
+    runtime.placePlayer("p1", 6.5 * 32, 20 * 32);
+    stepWith(runtime);
+    expect(runtime.snapshot().toast).toBe("Back to the checkpoint");
+    expect(runtime.simulation.players.p1.x).toBeCloseTo(spawn.x, 0);
+    expect(runtime.simulation.players.p1.y).toBeCloseTo(spawn.y, 0);
+  });
+
+  it("restores a mid-air body with velocity and dash timers", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+    save.saveRun({
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: content.pack.id,
+      packVersion: content.pack.version,
+      contentVersion: content.pack.version,
+      levelId: "03-nerve-forest",
+      roomId: "room-nerve-forest",
+      checkpointId: "checkpoint-entry",
+      progression: createProgression({ abilities: ["scan", "signal-dash"] }),
+      events: [],
+      elapsed: 12,
+      players: {
+        activeP2: true,
+        bodies: {
+          p1: body(600, 400, {
+            vx: 120,
+            vy: -80,
+            angle: 0.2,
+            angularVelocity: 0.3,
+            dashTime: 0.1,
+            dashCooldown: 0.4,
+          }),
+          p2: body(176, 618),
+        },
+      },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
+      status: "playing",
+    });
+
+    const runtime = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:10:00.000Z"),
+    });
+    runtime.start();
+
+    const p1 = runtime.simulation.players.p1;
+    expect(p1.x).toBeCloseTo(600, 0);
+    expect(p1.y).toBeCloseTo(400 + 22, 0);
+    expect(p1.vx).toBeCloseTo(120, 0);
+    expect(p1.vy).toBeCloseTo(-80, 0);
+    expect(p1.dashTime).toBeCloseTo(0.1, 5);
+    expect(p1.dashCooldown).toBeCloseTo(0.4, 5);
+  });
+
+  it("restores a docked prop with the solved gate latched", () => {
+    const storage = new MemorySaveStorage();
+    const first = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:00:00.000Z"),
+    });
+    first.start();
+    solveFerry(first);
+
+    const restored = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:10:00.000Z"),
+    });
+    restored.start();
+
+    expect(restored.snapshot().puzzle?.solved).toBe(true);
+    expect(restored.simulation.props["tracer-prop"]?.state).toBe("docked");
+    expect(restored.simulation.props["tracer-prop"]?.placedOn).toBe(
+      "receptor-a",
+    );
+  });
+
+  it("resets to checkpoint on a content-version change while keeping progression", () => {
+    const { runtime, storage } = makeRuntime();
+    solveFerry(runtime);
+
+    const saved = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    saved.contentVersion = "0.0.0";
+    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(saved));
+
+    const restored = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:10:00.000Z"),
+    });
+    restored.start();
+
+    expect(restored.snapshot().toast).toContain("resumed from checkpoint");
+    expect(restored.snapshot().abilities).toContain("signal-dash");
+    expect(restored.snapshot().puzzle?.solved).toBe(false);
+    expect(restored.simulation.props["tracer-prop"]?.state).toBe("free");
+    expect(restored.simulation.players.p1.x).toBeCloseTo(4.5 * 32, 0);
+    expect(
+      restored
+        .exportEvidence()
+        .events.some((event) => event.type === "puzzle_solved"),
+    ).toBe(true);
+    const resaved = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    expect(resaved.contentVersion).toBe(content.pack.version);
   });
 
   it("resets a v1 run with a format-updated notice", () => {

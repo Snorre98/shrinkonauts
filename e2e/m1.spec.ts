@@ -78,6 +78,7 @@ test("boots into the vertical slice and finishes dialogue, scan, Signal Ferry, d
   // Boot state: direct into level 03, co-op, two players.
   await expect(page.locator(".hud__eyebrow")).toContainText("03-nerve-forest");
   await expect(page.locator(".hud__meta")).toContainText("co-op");
+  await expect(page.locator(".hud__abilities")).toContainText("Pulse: ready");
 
   // Dialogue.
   await teleport(page, "agent-neuron");
@@ -202,6 +203,11 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
 
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Show puzzle hint" }).click();
+  await expect(page.locator(".pause__hint")).toContainText(
+    "The tracer fits only one receptor shape.",
+  );
 
   await page.getByRole("button", { name: "Reset puzzle" }).click();
   await expect(page.locator(".hud__toast")).toContainText("Puzzle reset");

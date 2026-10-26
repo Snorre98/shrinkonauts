@@ -27,6 +27,7 @@ export interface GameUiCallbacks {
   onResume(): void;
   onEscape(): void;
   onResetPuzzle(): void;
+  onPuzzleHint(): void;
   onMute(): void;
   onTextScale(scale: number): void;
   onToggleReducedMotion(): void;
@@ -112,7 +113,9 @@ export function mountGameUi(
   const title = el("h1", "hud__title", "Nerve Forest");
   const objectiveRow = el("p", "hud__meta");
   const abilityRow = el("p", "hud__abilities");
-  identity.append(eyebrow, title, objectiveRow, abilityRow);
+  const hintRow = el("p", "hud__hint");
+  hintRow.hidden = true;
+  identity.append(eyebrow, title, objectiveRow, abilityRow, hintRow);
 
   const badgeRow = el("div", "hud__badges");
   const modeBadge = el("span", "hud__mode-badge", options.diagnostics.modeLabel);
@@ -765,6 +768,17 @@ export function mountGameUi(
     }
     controls.append(list);
 
+    const hintSection = el("section", "pause__hint");
+    hintSection.append(el("h3", "overlay__subheading", "Puzzle hint"));
+    const hintText = el("p", "overlay__hint", "No hint requested yet.");
+    const hintButton = button(
+      "Show puzzle hint",
+      "button button--small",
+      () => callbacks.onPuzzleHint(),
+    );
+    hintButton.disabled = !snapshot?.puzzle?.canHint;
+    hintSection.append(hintText, hintButton);
+
     const diag = el("section", "pause__diagnostics");
     diag.append(el("h3", "overlay__subheading", "Asset diagnostics"));
     diag.append(
@@ -783,7 +797,7 @@ export function mountGameUi(
     );
     diag.append(warnings);
 
-    body.append(settingsBlock, controls, diag);
+    body.append(settingsBlock, controls, hintSection, diag);
 
     const actions = el("div", "overlay__actions");
     actions.append(
@@ -807,6 +821,9 @@ export function mountGameUi(
       motion.textContent = reduced ? "On" : "Off";
       motion.setAttribute("aria-pressed", String(reduced));
       muteToggle.textContent = next.muted ? "Unmute (M)" : "Mute (M)";
+      hintText.textContent =
+        next.puzzle?.hint ?? "No hint requested yet.";
+      hintButton.disabled = !next.puzzle?.canHint;
     };
     update(snapshot);
 
@@ -860,12 +877,28 @@ export function mountGameUi(
       : next.mode;
     const p1 = next.players.p1;
     const p2 = next.players.p2;
-    abilityRow.textContent = [
+    const abilityLines = [
       `P1: ${p1.abilities.join(" · ")}${p1.carrying ? " (carrying)" : ""}`,
       p2.active
         ? `P2: ${p2.abilities.join(" · ")}${p2.carrying ? " (carrying)" : ""}`
         : "P2: resting · solo union",
-    ].join("  |  ");
+    ];
+    if (next.puzzle?.pulse) {
+      const pulse = next.puzzle.pulse;
+      abilityLines.push(
+        pulse.remainingTicks > 0
+          ? `Pulse: ${(Math.ceil(pulse.remainingTicks / 6) / 10).toFixed(1)}s`
+          : "Pulse: ready",
+      );
+    }
+    abilityRow.textContent = abilityLines.join("  |  ");
+    if (next.puzzle?.hint) {
+      hintRow.hidden = false;
+      hintRow.textContent = `Hint: ${next.puzzle.hint}`;
+    } else {
+      hintRow.hidden = true;
+      hintRow.textContent = "";
+    }
     modeBadge.textContent = diagnostics.modeLabel;
     audioStatus.textContent = next.muted ? "Muted" : "Audio on";
     audioStatus.dataset.muted = String(next.muted);

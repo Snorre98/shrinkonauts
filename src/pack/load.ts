@@ -460,6 +460,15 @@ function parseEntityComponents(
     return err(`${code}: entities[${index}].components must be an object`);
   }
 
+  const known = new Set(["body", "prop", "receptor", "pulseSource", "gate"]);
+  for (const key of Object.keys(value)) {
+    if (!known.has(key)) {
+      return err(
+        `${code}: entities[${index}].components.${key} is not supported`,
+      );
+    }
+  }
+
   const components: RoomEntityComponents = {};
   if (value.body !== undefined) {
     const body = parseBodyComponent(value.body, index, code);

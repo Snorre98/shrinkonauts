@@ -214,4 +214,25 @@ describe("validatePack", () => {
     expect(codes).toContain("ASSET_FORMAT_UNSUPPORTED");
     expect(codes).toContain("ASSET_FILE_MISSING");
   });
+
+  it("rejects unknown entity component keys", () => {
+    const raw = JSON.parse(
+      readFileSync(
+        new URL(
+          "../public/packs/anatomy-reflex/levels/03-nerve-forest/room.json",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+    );
+    const entity = raw.entities?.[0];
+    if (!entity) throw new Error("expected a room entity");
+    entity.components = { ...(entity.components ?? {}), mystery: {} };
+
+    const parsed = parseRoom(raw);
+    expect(parsed.ok).toBe(false);
+    if (!parsed.ok) {
+      expect(parsed.error).toContain("components.mystery is not supported");
+    }
+  });
 });

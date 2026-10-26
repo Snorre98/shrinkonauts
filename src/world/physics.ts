@@ -32,6 +32,14 @@ const SOLID_MASK = CATEGORY.PLAYER | CATEGORY.PROP;
 const PLAYER_MASK = CATEGORY.SOLID | CATEGORY.PROP | CATEGORY.HAZARD;
 const PROP_MASK = CATEGORY.SOLID | CATEGORY.PLAYER | CATEGORY.PROP;
 
+/** Exported so tests and documentation can assert the L1 layer contract. */
+export const COLLISION_LAYERS = {
+  solid: { category: CATEGORY.SOLID, mask: SOLID_MASK },
+  player: { category: CATEGORY.PLAYER, mask: PLAYER_MASK },
+  prop: { category: CATEGORY.PROP, mask: PROP_MASK },
+  hazard: { category: CATEGORY.HAZARD, mask: CATEGORY.PLAYER },
+} as const;
+
 export interface BodySnapshot {
   x: number;
   y: number;
@@ -115,6 +123,7 @@ export class RoomPhysics {
   readonly room: RoomDocument;
   readonly engine: Matter.Engine;
   readonly solids: Matter.Body[] = [];
+  readonly hazards: Matter.Body[] = [];
   readonly playerBodies: Record<PlayerId, Matter.Body>;
   readonly props = new Map<string, PropBody>();
 
@@ -140,6 +149,7 @@ export class RoomPhysics {
       p2: this.createPlayerBody(room, room.spawns.player2),
     };
     this.buildProps();
+    this.buildHazards();
   }
 
   get world(): Matter.World {
@@ -274,6 +284,35 @@ export class RoomPhysics {
           throwable: prop.throwable === true,
         },
       });
+    }
+  }
+
+  private buildHazards(): void {
+    const tile = this.room.tileSize;
+    for (const entity of this.room.entities ?? []) {
+      if (entity.type !== "hazard") continue;
+      const bodyData = bodyComponent(entity);
+      const width = bodyData?.width ?? tile;
+      const height = bodyData?.height ?? tile;
+      const point = tileToWorld(this.room, entity.x, entity.y);
+      const body = Matter.Bodies.rectangle(
+        point.x,
+        point.y - height / 2,
+        width,
+        height,
+        {
+          isStatic: true,
+          isSensor: true,
+          friction: 0,
+          restitution: 0,
+          collisionFilter: {
+            category: COLLISION_LAYERS.hazard.category,
+            mask: COLLISION_LAYERS.hazard.mask,
+          },
+        },
+      );
+      this.hazards.push(body);
+      Matter.Composite.add(this.engine.world, body);
     }
   }
 
@@ -460,6 +499,11 @@ export class RoomPhysics {
     if (player.y - PLAYER_HEIGHT > this.room.height * this.room.tileSize + 160) {
       this.respawn(id, player);
     }
+  }
+
+  playerTouchesHazard(id: PlayerId): boolean {
+    if (!this.activePlayers[id] || this.hazards.length === 0) return false;
+    return Matter.Query.collides(this.playerBodies[id], this.hazards).length > 0;
   }
 
   groundCheck(id: PlayerId): boolean {

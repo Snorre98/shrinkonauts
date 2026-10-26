@@ -192,6 +192,12 @@ body {
   font-size: 0.7rem;
 }
 
+.hud__hint {
+  margin: 0.2rem 0 0;
+  color: var(--color-accent, var(--color-muted));
+  font-size: 0.7rem;
+}
+
 .hud__room-id {
   margin: 0.15rem 0 0;
   color: color-mix(in srgb, var(--color-muted) 75%, transparent);
@@ -931,10 +937,15 @@ kbd {
 }
 
 .pause__controls,
-.pause__diagnostics {
+.pause__diagnostics,
+.pause__hint {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+}
+
+.pause__hint button {
+  align-self: flex-start;
 }
 
 .overlay--error {

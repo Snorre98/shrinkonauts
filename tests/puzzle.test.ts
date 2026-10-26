@@ -5,6 +5,7 @@ import {
   replaySolution,
   validatePuzzleDocument,
   type PuzzleDocument,
+  type PuzzleNode,
   type PuzzleWorldSnapshot,
 } from "../src/puzzle";
 
@@ -149,5 +150,95 @@ describe("puzzle validation", () => {
     expect(result.issues.some((issue) => issue.code === "PUZZLE_WIN_GATE")).toBe(
       true,
     );
+  });
+
+  it("rejects an unknown node type and link type", () => {
+    const unknownNode = load("relay-gate");
+    unknownNode.nodes.push({
+      id: "lever",
+      type: "lever",
+    } as unknown as PuzzleNode);
+    expect(
+      validatePuzzleDocument(unknownNode).issues.some(
+        (issue) => issue.code === "PUZZLE_NODE_TYPE",
+      ),
+    ).toBe(true);
+
+    const unknownLink = load("relay-gate");
+    unknownLink.links.push({
+      from: "zone-entry",
+      to: "gate-exit",
+      type: "lever" as never,
+    });
+    expect(
+      validatePuzzleDocument(unknownLink).issues.some(
+        (issue) => issue.code === "PUZZLE_LINK_TYPE",
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects an activation that does not reference a usable trigger", () => {
+    const missingZone = load("signal-ferry");
+    missingZone.activation = { mode: "zoneEnter" };
+    expect(
+      validatePuzzleDocument(missingZone).issues.some(
+        (issue) => issue.code === "PUZZLE_ACTIVATION_ZONE",
+      ),
+    ).toBe(true);
+
+    const unknownZone = load("signal-ferry");
+    unknownZone.activation = { mode: "zoneEnter", zoneId: "missing-zone" };
+    expect(
+      validatePuzzleDocument(unknownZone).issues.some(
+        (issue) => issue.code === "PUZZLE_ACTIVATION_ZONE",
+      ),
+    ).toBe(true);
+
+    const missingEntity = load("signal-ferry");
+    missingEntity.activation = { mode: "interact" };
+    expect(
+      validatePuzzleDocument(missingEntity).issues.some(
+        (issue) => issue.code === "PUZZLE_ACTIVATION_ENTITY",
+      ),
+    ).toBe(true);
+  });
+
+  it("checks the one-screen span for tether off", () => {
+    const document = load("signal-ferry");
+    const entityPoints = {
+      "tracer-prop": { x: 400, y: 592 },
+      "pulse-terminal": { x: 272, y: 624 },
+      "receptor-a": { x: 912, y: 624 },
+      "receptor-b": { x: 1040, y: 624 },
+      "gate-ferry": { x: 1136, y: 624 },
+    };
+    const context = {
+      entityPoints,
+      viewport: { width: 1280, height: 720 },
+    };
+
+    expect(validatePuzzleDocument(document, context).ok).toBe(true);
+
+    const tooWide = load("signal-ferry");
+    const receptor = tooWide.nodes.find(
+      (node) => node.id === "receptor-b",
+    );
+    if (!receptor || receptor.type !== "receptor") {
+      throw new Error("receptor-b missing");
+    }
+    receptor.rect.x = 2200;
+    expect(
+      validatePuzzleDocument(tooWide, context).issues.some(
+        (issue) => issue.code === "PUZZLE_TETHER_SPAN",
+      ),
+    ).toBe(true);
+  });
+
+  it("reports a solution trace that cannot reach the win predicate", () => {
+    const document = load("signal-ferry");
+    document.solution = [{ action: "wait", ticks: 1 }];
+    const result = replaySolution(document);
+    expect(result.ok).toBe(false);
+    expect(result.error).toBeTruthy();
   });
 });

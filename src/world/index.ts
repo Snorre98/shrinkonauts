@@ -43,7 +43,7 @@ export type {
   Solid,
   Viewport,
 } from "./simulation";
-export { RoomPhysics, TETHER_LENGTHS } from "./physics";
+export { COLLISION_LAYERS, RoomPhysics, TETHER_LENGTHS } from "./physics";
 export {
   ensurePlaceholderTexture,
   resolveTexture,

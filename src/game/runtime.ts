@@ -47,6 +47,7 @@ import {
   PuzzleRuntime,
   type PuzzleDocument,
   type PuzzleEvent,
+  type PuzzleRect,
   type PuzzleRewards,
   type PuzzleWorldSnapshot,
 } from "../puzzle";
@@ -58,6 +59,7 @@ import type {
   InteractionView,
   MapView,
   PlayerView,
+  PuzzleView,
   RuntimeSnapshot,
 } from "../ui/model";
 import type { GameSettings, RunLoadResult, RunSnapshot } from "../save";
@@ -107,7 +109,11 @@ export interface AudioPort {
 export interface RuntimeSavePort {
   readonly settings: GameSettings;
   saveRun(run: Omit<RunSnapshot, "savedAt"> & { savedAt?: string }): void;
-  loadRun(packId?: string, packVersion?: string): RunLoadResult;
+  loadRun(
+    packId?: string,
+    packVersion?: string,
+    contentVersion?: string,
+  ): RunLoadResult;
   clearRun(): void;
   updateAudio(patch: Partial<GameSettings["audio"]>): GameSettings;
   updateAccessibility(
@@ -145,6 +151,15 @@ function unique<T>(values: Iterable<T>): T[] {
 
 function distance(ax: number, ay: number, bx: number, by: number): number {
   return Math.hypot(ax - bx, ay - by);
+}
+
+function playerOverlapsRect(player: PlayerState, rect: PuzzleRect): boolean {
+  return (
+    player.x - PLAYER_WIDTH / 2 < rect.x + rect.width &&
+    player.x + PLAYER_WIDTH / 2 > rect.x &&
+    player.y - PLAYER_HEIGHT < rect.y + rect.height &&
+    player.y > rect.y
+  );
 }
 
 function entityPoint(entity: RoomEntity, tileSize: number): { x: number; y: number } {
@@ -224,6 +239,8 @@ export class GameRuntime implements WorldRuntime {
   private dialogueDocument: DialogueDocument | null = null;
   private activeGate: GateDocument | null = null;
   private puzzles = new Map<string, PuzzleRuntime>();
+  private activatedPuzzles = new Set<string>();
+  private puzzleHintIndex = 0;
   private gateFeedback: { correct: boolean; message: string } | null = null;
   private gateHintIndex = 0;
   private debriefAnswers: Record<string, string> = {};
@@ -263,9 +280,16 @@ export class GameRuntime implements WorldRuntime {
     const loaded = this.save.loadRun(
       this.content.pack.id,
       this.content.pack.version,
+      this.content.pack.version,
     );
     if (loaded.ok) {
       this.restoreRun(loaded.run);
+      return;
+    }
+    if (loaded.reason === "VERSION_MISMATCH" && loaded.run) {
+      this.restoreFromCheckpoint(loaded.run);
+      this.setToast(loaded.message);
+      this.emit();
       return;
     }
     this.newRun();
@@ -319,10 +343,39 @@ export class GameRuntime implements WorldRuntime {
     this.emit();
   }
 
+  /**
+   * A content or pack version change keeps progression and learning evidence
+   * but cannot trust serialised world state. Rebuild the level at the saved
+   * checkpoint instead of starting a new run.
+   */
+  private restoreFromCheckpoint(run: RunSnapshot): void {
+    this.progression = createProgression(run.progression);
+    this.curriculum = createCurriculum({ events: run.events });
+    this.activeP2 = run.players.activeP2;
+    this.debriefAnswers = {};
+
+    const level =
+      this.content.levels.find((item) => item.id === run.levelId) ??
+      this.content.levels.find(
+        (item) => item.id === this.content.pack.startLevelId,
+      ) ??
+      this.content.levels[0];
+    if (!level) {
+      this.newRun();
+      return;
+    }
+
+    this.enterLevel(level.id, undefined, {
+      fresh: false,
+      checkpointId: run.checkpointId,
+    });
+    this.saveNotice = "Content updated";
+  }
+
   private enterLevel(
     levelId: string,
     run: RunSnapshot | undefined,
-    options: { fresh: boolean },
+    options: { fresh: boolean; checkpointId?: string | null },
   ): void {
     const level =
       this.content.levels.find((item) => item.id === levelId) ??
@@ -335,12 +388,25 @@ export class GameRuntime implements WorldRuntime {
     this.room = room;
     this.world = createRoomSimulation(room);
     this.puzzles = new Map();
+    this.activatedPuzzles = new Set();
+    this.puzzleHintIndex = 0;
     for (const puzzleId of level.puzzleIds ?? []) {
       const document = this.content.puzzles[puzzleId];
       if (document) this.puzzles.set(puzzleId, new PuzzleRuntime(document));
     }
-    const puzzleDocument = [...this.puzzles.values()][0]?.document;
-    setTetherPolicy(this.world, puzzleDocument?.tether ?? "normal");
+    for (const [puzzleId, puzzle] of this.puzzles) {
+      if (puzzle.document.activation.mode === "roomStart") {
+        this.activatedPuzzles.add(puzzleId);
+      }
+    }
+    if (run) {
+      for (const puzzleId of Object.keys(run.world.puzzles)) {
+        if (this.puzzles.has(puzzleId)) {
+          this.activatedPuzzles.add(puzzleId);
+        }
+      }
+    }
+    this.syncPuzzleTether();
     this.dialogueSession = null;
     this.dialogueDocument = null;
     this.activeGate = null;
@@ -352,8 +418,11 @@ export class GameRuntime implements WorldRuntime {
     if (run) {
       this.restorePositions(run);
     } else {
-      this.checkpointId = this.room.checkpoints?.[0]?.id ?? null;
-      const checkpoint = this.room.checkpoints?.[0];
+      const checkpoint =
+        this.room.checkpoints?.find(
+          (item) => item.id === options.checkpointId,
+        ) ?? this.room.checkpoints?.[0];
+      this.checkpointId = checkpoint?.id ?? null;
       if (checkpoint) {
         const point = checkpointPoint(checkpoint, room.tileSize);
         for (const id of ["p1", "p2"] as const) {
@@ -481,13 +550,24 @@ export class GameRuntime implements WorldRuntime {
       dt,
       this.progression.abilities,
     );
+    let hazardRespawned = false;
     for (const cue of cues) {
+      if (cue === "hazard") {
+        hazardRespawned = true;
+        continue;
+      }
       this.playCue(cue);
       if (cue === "propReturned") {
         this.setToast("The tracer returned to its start");
       }
     }
+    if (hazardRespawned) {
+      this.playCue("checkpoint");
+      this.setToast("Back to the checkpoint");
+      this.autosave();
+    }
 
+    this.checkPuzzleActivations();
     this.tickPuzzles();
     this.checkCheckpoints();
     this.checkTriggers();
@@ -582,6 +662,8 @@ export class GameRuntime implements WorldRuntime {
 
   interact(): void {
     if (this.machine.state !== "level") return;
+    const actor = this.world.players.p1.active ? "p1" : "p2";
+    if (this.tryActivatePuzzle(actor)) return;
     const target = this.nearestEntity(["agent", "gate"], INTERACT_RANGE);
     if (!target) {
       this.setToast("Nothing to interact with");
@@ -601,6 +683,7 @@ export class GameRuntime implements WorldRuntime {
   }
 
   private interactFor(id: PlayerId): void {
+    if (this.tryActivatePuzzle(id)) return;
     const abilities = this.abilitiesFor(id);
     if (
       abilities.includes("carry") &&
@@ -751,7 +834,8 @@ export class GameRuntime implements WorldRuntime {
       distance: number;
     } | null = null;
 
-    for (const puzzle of this.puzzles.values()) {
+    for (const [puzzleId, puzzle] of this.puzzles) {
+      if (!this.activatedPuzzles.has(puzzleId)) continue;
       for (const node of puzzle.document.nodes) {
         if (node.type !== "receptor" || !node.entityId) continue;
         const point = this.entityPixel(node.entityId);
@@ -781,7 +865,8 @@ export class GameRuntime implements WorldRuntime {
       distance: number;
     } | null = null;
 
-    for (const puzzle of this.puzzles.values()) {
+    for (const [puzzleId, puzzle] of this.puzzles) {
+      if (!this.activatedPuzzles.has(puzzleId)) continue;
       for (const node of puzzle.document.nodes) {
         if (node.type !== "pulseSource" || !node.entityId) continue;
         const point = this.entityPixel(node.entityId);
@@ -801,9 +886,94 @@ export class GameRuntime implements WorldRuntime {
   }
 
   private notePuzzle(counter: string): void {
-    for (const puzzle of this.puzzles.values()) {
-      puzzle.note(counter);
+    for (const [id, puzzle] of this.puzzles) {
+      if (this.activatedPuzzles.has(id)) puzzle.note(counter);
     }
+  }
+
+  private syncPuzzleTether(): void {
+    const active = [...this.puzzles.entries()].find(([id]) =>
+      this.activatedPuzzles.has(id),
+    );
+    setTetherPolicy(this.world, active?.[1].document.tether ?? "normal");
+  }
+
+  private activatePuzzle(id: string): boolean {
+    const puzzle = this.puzzles.get(id);
+    if (!puzzle || this.activatedPuzzles.has(id)) return false;
+    this.activatedPuzzles.add(id);
+    this.syncPuzzleTether();
+    this.setToast(`${puzzle.document.title} started`);
+    this.autosave();
+    return true;
+  }
+
+  private checkPuzzleActivations(): void {
+    const players = [this.world.players.p1, this.world.players.p2].filter(
+      (player) => player.active,
+    );
+    for (const [id, puzzle] of this.puzzles) {
+      if (this.activatedPuzzles.has(id)) continue;
+      const activation = puzzle.document.activation;
+      if (activation.mode !== "zoneEnter" || !activation.zoneId) continue;
+      const zone = puzzle.document.nodes.find(
+        (node) => node.id === activation.zoneId && node.type === "zone",
+      );
+      if (!zone || zone.type !== "zone") continue;
+      if (players.some((player) => playerOverlapsRect(player, zone.rect))) {
+        this.activatePuzzle(id);
+      }
+    }
+  }
+
+  private nearestInactivePuzzle(actor?: PlayerId): {
+    id: string;
+    puzzle: PuzzleRuntime;
+    entityId: string;
+    distance: number;
+  } | null {
+    const players = actor
+      ? [this.world.players[actor]].filter((player) => player.active)
+      : [this.world.players.p1, this.world.players.p2].filter(
+          (player) => player.active,
+        );
+    let best: {
+      id: string;
+      puzzle: PuzzleRuntime;
+      entityId: string;
+      distance: number;
+    } | null = null;
+
+    for (const [id, puzzle] of this.puzzles) {
+      if (this.activatedPuzzles.has(id)) continue;
+      const activation = puzzle.document.activation;
+      if (activation.mode !== "interact" || !activation.entityId) continue;
+      const point = this.entityPixel(activation.entityId);
+      if (!point) continue;
+      for (const player of players) {
+        const distanceToTarget = distance(
+          player.x,
+          player.y - 20,
+          point.x,
+          point.y,
+        );
+        if (distanceToTarget > INTERACT_RANGE) continue;
+        if (!best || distanceToTarget < best.distance) {
+          best = {
+            id,
+            puzzle,
+            entityId: activation.entityId,
+            distance: distanceToTarget,
+          };
+        }
+      }
+    }
+    return best;
+  }
+
+  private tryActivatePuzzle(actor: PlayerId): boolean {
+    const nearest = this.nearestInactivePuzzle(actor);
+    return nearest ? this.activatePuzzle(nearest.id) : false;
   }
 
   private puzzleSnapshot(): PuzzleWorldSnapshot {
@@ -840,6 +1010,7 @@ export class GameRuntime implements WorldRuntime {
     if (this.puzzles.size === 0) return;
     const snapshot = this.puzzleSnapshot();
     for (const [id, puzzle] of this.puzzles) {
+      if (!this.activatedPuzzles.has(id)) continue;
       const result = puzzle.tickResult(snapshot);
       if (result.events.length > 0) {
         this.handlePuzzleEvents(puzzle.document, result.events);
@@ -1521,10 +1692,9 @@ export class GameRuntime implements WorldRuntime {
         bodies: this.world.physics.bodySnapshots(),
         props: this.world.physics.propSnapshots(),
         puzzles: Object.fromEntries(
-          [...this.puzzles.entries()].map(([puzzleId, puzzle]) => [
-            puzzleId,
-            puzzle.snapshot(),
-          ]),
+          [...this.puzzles.entries()]
+            .filter(([puzzleId]) => this.activatedPuzzles.has(puzzleId))
+            .map(([puzzleId, puzzle]) => [puzzleId, puzzle.snapshot()]),
         ),
       },
       audio: { muted: this.audio.muted },
@@ -1592,9 +1762,17 @@ export class GameRuntime implements WorldRuntime {
     };
   }
 
-  private puzzleView() {
-    const [id, puzzle] = [...this.puzzles.entries()][0] ?? [];
+  private puzzleView(): PuzzleView | null {
+    const [id, puzzle] =
+      [...this.puzzles.entries()].find(([puzzleId]) =>
+        this.activatedPuzzles.has(puzzleId),
+      ) ?? [];
     if (!id || !puzzle) return null;
+
+    const pulseNode = puzzle.document.nodes.find(
+      (node) => node.type === "pulseSource",
+    );
+    const pulseState = pulseNode ? puzzle.nodeState(pulseNode.id) : undefined;
     return {
       id,
       title: puzzle.document.title,
@@ -1602,14 +1780,56 @@ export class GameRuntime implements WorldRuntime {
       canReset: puzzle.canReset(),
       tether: puzzle.document.tether,
       counters: puzzle.evidenceCounters(),
+      hint:
+        this.puzzleHintIndex > 0
+          ? (puzzle.document.hints[this.puzzleHintIndex - 1] ?? null)
+          : null,
+      canHint:
+        !puzzle.isSolved() &&
+        this.puzzleHintIndex < puzzle.document.hints.length,
+      pulse:
+        pulseNode && pulseState
+          ? {
+              nodeId: pulseNode.id,
+              remainingTicks: pulseState.remaining,
+              cooldownTicks: pulseNode.cooldownTicks,
+            }
+          : null,
     };
+  }
+
+  puzzleHint(): void {
+    if (this.machine.state !== "level" && this.machine.state !== "pause") {
+      return;
+    }
+    const entry = [...this.puzzles.entries()].find(
+      ([id, puzzle]) =>
+        this.activatedPuzzles.has(id) &&
+        !puzzle.isSolved() &&
+        this.puzzleHintIndex < puzzle.document.hints.length,
+    );
+    if (!entry) return;
+
+    const [id, puzzle] = entry;
+    const hint = puzzle.document.hints[this.puzzleHintIndex];
+    if (!hint) return;
+    const hintIndex = this.puzzleHintIndex;
+    this.puzzleHintIndex += 1;
+    this.record({
+      type: "hint_used",
+      puzzleId: id,
+      hintIndex,
+      hint,
+    });
+    this.setToast(`Hint: ${hint}`);
+    this.autosave();
   }
 
   resetPuzzle(): void {
     if (this.machine.state !== "level" && this.machine.state !== "pause") return;
     let reset = false;
-    for (const puzzle of this.puzzles.values()) {
-      if (!puzzle.canReset()) continue;
+    for (const [id, puzzle] of this.puzzles) {
+      if (!this.activatedPuzzles.has(id) || !puzzle.canReset()) continue;
       puzzle.reset();
       puzzle.note("resets");
       for (const propId of puzzle.document.reset.props) {
@@ -1708,6 +1928,16 @@ export class GameRuntime implements WorldRuntime {
 
   private interactionView(): InteractionView | null {
     if (this.machine.state !== "level") return null;
+
+    const activation = this.nearestInactivePuzzle();
+    if (activation) {
+      return {
+        kind: "puzzle",
+        id: activation.id,
+        label: `Start ${activation.puzzle.document.title}`,
+        key: "E",
+      };
+    }
 
     const target = this.nearestEntity(["agent", "gate"], INTERACT_RANGE);
     if (target?.entity.type === "agent" && target.entity.dialogueId) {

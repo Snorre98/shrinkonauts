@@ -582,9 +582,34 @@ function checkContent(
         continue;
       }
 
-      const validation = validatePuzzleDocument(puzzle);
+      const validation = validatePuzzleDocument(puzzle, {
+        entityPoints: Object.fromEntries(
+          (room?.entities ?? []).map((entity) => [
+            entity.id,
+            {
+              x: (entity.x + 0.5) * (room?.tileSize ?? 32),
+              y: entity.y * (room?.tileSize ?? 32) -
+                (room?.tileSize ?? 32) / 2,
+            },
+          ]),
+        ),
+        viewport: { width: 1280, height: 720 },
+      });
       for (const issue of validation.issues) {
         addIssue("PUZZLE_INVALID", `${puzzle.id}: ${issue.message}`);
+      }
+      if (puzzle.activation.mode === "interact" && puzzle.activation.entityId) {
+        const roomEntities = room?.entities ?? [];
+        if (
+          !roomEntities.some(
+            (entity) => entity.id === puzzle.activation.entityId,
+          )
+        ) {
+          addIssue(
+            "PUZZLE_REFERENCE_MISSING",
+            `puzzle "${puzzle.id}" interact activation references missing entity "${puzzle.activation.entityId}"`,
+          );
+        }
       }
       const replay = replaySolution(puzzle);
       if (!replay.ok) {

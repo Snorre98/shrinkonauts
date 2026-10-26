@@ -228,11 +228,7 @@ function isPuzzleState(value: unknown): value is PuzzleRunState {
   );
 }
 
-function validRun(
-  value: unknown,
-  packId?: string,
-  packVersion?: string,
-): value is RunSnapshot {
+function isRunSnapshot(value: unknown): value is RunSnapshot {
   if (!isRecord(value)) return false;
   if (
     typeof value.schemaVersion !== "string" ||
@@ -247,10 +243,6 @@ function validRun(
     typeof value.levelId !== "string" ||
     typeof value.roomId !== "string"
   ) {
-    return false;
-  }
-  if (packId !== undefined && value.packId !== packId) return false;
-  if (packVersion !== undefined && value.packVersion !== packVersion) {
     return false;
   }
   if (!isValidProgression(value.progression)) return false;
@@ -297,12 +289,15 @@ export type RunLoadResult =
   | { ok: true; run: RunSnapshot }
   | {
       ok: false;
-      reason:
-        | "NO_SAVE"
-        | "INVALID_SAVE"
-        | "PACK_MISMATCH"
-        | "VERSION_MISMATCH";
+      reason: "NO_SAVE" | "INVALID_SAVE" | "PACK_MISMATCH";
       message: string;
+    }
+  | {
+      ok: false;
+      reason: "VERSION_MISMATCH";
+      message: string;
+      /** Present for a structurally valid v2 save that can reset to checkpoint. */
+      run?: RunSnapshot;
     };
 
 export interface SaveModule {
@@ -313,8 +308,16 @@ export interface SaveModule {
   updateAudio(patch: Partial<AudioSettingsSnapshot>): GameSettings;
   updateAccessibility(patch: Partial<AccessibilitySettings>): GameSettings;
   saveRun(run: Omit<RunSnapshot, "savedAt"> & { savedAt?: string }): void;
-  loadRun(packId?: string, packVersion?: string): RunLoadResult;
-  hasRun(packId?: string, packVersion?: string): boolean;
+  loadRun(
+    packId?: string,
+    packVersion?: string,
+    contentVersion?: string,
+  ): RunLoadResult;
+  hasRun(
+    packId?: string,
+    packVersion?: string,
+    contentVersion?: string,
+  ): boolean;
   clearRun(): void;
   loadSettings(): GameSettings;
 }
@@ -382,6 +385,7 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
   function loadRun(
     packId?: string,
     packVersion?: string,
+    contentVersion?: string,
   ): RunLoadResult {
     let raw: string | null;
     try {
@@ -408,7 +412,27 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
       };
     }
 
-    if (validRun(parsed, packId, packVersion)) {
+    if (isRunSnapshot(parsed)) {
+      if (packId !== undefined && parsed.packId !== packId) {
+        return {
+          ok: false,
+          reason: "PACK_MISMATCH",
+          message: `save belongs to pack "${parsed.packId}"`,
+        };
+      }
+      const packChanged =
+        packVersion !== undefined && parsed.packVersion !== packVersion;
+      const contentChanged =
+        contentVersion !== undefined &&
+        parsed.contentVersion !== contentVersion;
+      if (packChanged || contentChanged) {
+        return {
+          ok: false,
+          reason: "VERSION_MISMATCH",
+          message: "Content updated — resumed from checkpoint",
+          run: parsed,
+        };
+      }
       return { ok: true, run: parsed };
     }
 
@@ -421,6 +445,18 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
         ok: false,
         reason: "VERSION_MISMATCH",
         message: "Save format updated — level restarted",
+      };
+    }
+
+    if (
+      isRecord(parsed) &&
+      typeof parsed.schemaVersion === "string" &&
+      /^2\.\d+$/.test(parsed.schemaVersion)
+    ) {
+      return {
+        ok: false,
+        reason: "INVALID_SAVE",
+        message: "saved run does not match the save schema",
       };
     }
 
@@ -489,8 +525,8 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
       }
     },
     loadRun,
-    hasRun(packId, packVersion) {
-      return loadRun(packId, packVersion).ok;
+    hasRun(packId, packVersion, contentVersion) {
+      return loadRun(packId, packVersion, contentVersion).ok;
     },
     clearRun() {
       try {

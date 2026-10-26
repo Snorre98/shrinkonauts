@@ -294,6 +294,10 @@ function solveFerry(runtime: GameRuntime): void {
       p1: { interact: false, scan: false, pulse: true, carry: false, throw: false },
     }),
   );
+  assert(
+    (runtime.snapshot().puzzle?.pulse?.remainingTicks ?? 0) > 0,
+    "[anatomy] pulse cooldown did not start",
+  );
   for (let frame = 0; frame < 30; frame += 1) {
     runtime.step(1 / 60, frameInput());
   }
@@ -398,6 +402,18 @@ function runAnatomyRuntime(): RuntimeResult {
   assert(booted.activeP2, "[anatomy] player 2 should be active at boot");
   assert(booted.mode === "co-op", "[anatomy] expected co-op mode at boot");
   assert(booted.abilities.includes("scan"), "[anatomy] scan should be available");
+  assert(
+    booted.puzzle?.id === "puzzle-ferry-01",
+    "[anatomy] room-start puzzle is not active",
+  );
+  assert(
+    booted.puzzle?.pulse?.remainingTicks === 0,
+    "[anatomy] pulse should start ready",
+  );
+  assert(
+    runtime.simulation.tetherPolicy === "off",
+    "[anatomy] puzzle tether policy was not applied",
+  );
   assert(
     booted.checkpointId === "checkpoint-entry",
     "[anatomy] start checkpoint missing",

@@ -4,10 +4,22 @@ import type {
   PuzzleLinkType,
   PuzzleNode,
   PuzzleNodeType,
+  PuzzlePoint,
   PuzzlePredicate,
+  PuzzleRect,
   PuzzleValidationIssue,
   PuzzleValidationResult,
 } from "./types";
+
+/**
+ * Extra geometry the pack validator can supply. The pure puzzle contract does
+ * not own room entities, so the one-screen `off` guard is checked only when
+ * this context is present.
+ */
+export interface PuzzleValidationContext {
+  entityPoints?: Readonly<Record<string, PuzzlePoint>>;
+  viewport?: { width: number; height: number };
+}
 
 const NODE_TYPES: readonly PuzzleNodeType[] = [
   "prop",
@@ -439,8 +451,99 @@ function validateSolution(
   }
 }
 
+function validateActivation(
+  document: PuzzleDocument,
+  nodes: Map<string, PuzzleNode>,
+  issues: PuzzleValidationIssue[],
+): void {
+  const activation = document.activation;
+  if (!activation) {
+    issue(issues, "PUZZLE_ACTIVATION", "activation is required");
+    return;
+  }
+
+  if (activation.mode === "zoneEnter") {
+    if (!activation.zoneId) {
+      issue(
+        issues,
+        "PUZZLE_ACTIVATION_ZONE",
+        "zoneEnter activation needs a zoneId",
+      );
+      return;
+    }
+    if (nodes.get(activation.zoneId)?.type !== "zone") {
+      issue(
+        issues,
+        "PUZZLE_ACTIVATION_ZONE",
+        `zoneEnter activation references unknown zone ${activation.zoneId}`,
+      );
+    }
+  }
+
+  if (activation.mode === "interact" && !activation.entityId) {
+    issue(
+      issues,
+      "PUZZLE_ACTIVATION_ENTITY",
+      "interact activation needs an entityId",
+    );
+  }
+}
+
+function addRectPoints(points: PuzzlePoint[], rect: PuzzleRect): void {
+  points.push(
+    { x: rect.x, y: rect.y },
+    { x: rect.x + rect.width, y: rect.y + rect.height },
+  );
+}
+
+function validateTetherSpan(
+  document: PuzzleDocument,
+  context: PuzzleValidationContext | undefined,
+  issues: PuzzleValidationIssue[],
+): void {
+  if (document.tether !== "off" || !context?.viewport) return;
+
+  const points: PuzzlePoint[] = [];
+  for (const node of document.nodes) {
+    if (node.entityId) {
+      const point = context.entityPoints?.[node.entityId];
+      if (point) points.push(point);
+    }
+    switch (node.type) {
+      case "prop":
+        if (node.spawn) points.push(node.spawn);
+        break;
+      case "receptor":
+        addRectPoints(points, node.rect);
+        points.push(node.snap);
+        break;
+      case "plate":
+      case "zone":
+        addRectPoints(points, node.rect);
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (points.length === 0) return;
+
+  const xs = points.map((point) => point.x);
+  const ys = points.map((point) => point.y);
+  const width = Math.max(...xs) - Math.min(...xs);
+  const height = Math.max(...ys) - Math.min(...ys);
+  if (width > context.viewport.width || height > context.viewport.height) {
+    issue(
+      issues,
+      "PUZZLE_TETHER_SPAN",
+      `tether "off" spans ${Math.round(width)} × ${Math.round(height)} px, larger than the ${context.viewport.width} × ${context.viewport.height} viewport`,
+    );
+  }
+}
+
 export function validatePuzzleDocument(
   document: PuzzleDocument,
+  context?: PuzzleValidationContext,
 ): PuzzleValidationResult {
   const issues: PuzzleValidationIssue[] = [];
 
@@ -457,7 +560,10 @@ export function validatePuzzleDocument(
   if (!document.title || document.title.trim() === "") {
     issue(issues, "PUZZLE_TITLE", "puzzle title is required");
   }
-  if (!["roomStart", "zoneEnter", "interact"].includes(document.activation.mode)) {
+  if (
+    !document.activation ||
+    !["roomStart", "zoneEnter", "interact"].includes(document.activation.mode)
+  ) {
     issue(issues, "PUZZLE_ACTIVATION", "invalid activation mode");
   }
   if (!["normal", "stretch", "off"].includes(document.tether)) {
@@ -485,6 +591,9 @@ export function validatePuzzleDocument(
     nodes.set(node.id, node);
     validateNode(node, issues);
   }
+
+  validateActivation(document, nodes, issues);
+  validateTetherSpan(document, context, issues);
 
   const seenLinks = new Set<string>();
   for (const link of document.links) {

@@ -27,7 +27,8 @@ export type GameplayCue =
   | "jump"
   | "land"
   | "dash"
-  | "propReturned";
+  | "propReturned"
+  | "hazard";
 
 export interface PlayerState {
   id: PlayerId;
@@ -75,6 +76,8 @@ export interface RoomSimulation {
   physics: RoomPhysics;
   tetherPolicy: TetherPolicy;
   propReturnTimers: Record<string, number>;
+  /** Players respawned by a hazard during the most recent fixed step. */
+  hazardRespawns: PlayerId[];
 }
 
 const CAMERA_SMOOTHING = 8;
@@ -201,6 +204,7 @@ export function createRoomSimulation(
     physics,
     tetherPolicy: "normal",
     propReturnTimers: {},
+    hazardRespawns: [],
   };
 
   for (const id of ["p1", "p2"] as const) {
@@ -279,6 +283,7 @@ export function stepRoomSimulation(
 ): void {
   const safeDt = Math.max(0, Math.min(dt, 0.05));
   const canDash = abilities.includes("signal-dash");
+  simulation.hazardRespawns = [];
 
   for (const id of ["p1", "p2"] as const) {
     const player = simulation.players[id];
@@ -299,6 +304,10 @@ export function stepRoomSimulation(
     if (!player.active) continue;
     simulation.physics.syncPlayer(id, player);
     player.onGround = simulation.physics.groundCheck(id);
+    if (simulation.physics.playerTouchesHazard(id)) {
+      simulation.physics.respawn(id, player);
+      simulation.hazardRespawns.push(id);
+    }
   }
 
   simulation.props = simulation.physics.propStates();
@@ -400,6 +409,7 @@ export function stepRoomSimulationWithCues(
   if (landed) cues.push("land");
   if (dashed) cues.push("dash");
   if (propReturned) cues.push("propReturned");
+  if (simulation.hazardRespawns.length > 0) cues.push("hazard");
   return cues;
 }
 
