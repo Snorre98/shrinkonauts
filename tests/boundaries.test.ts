@@ -47,10 +47,11 @@ describe("module boundaries", () => {
     }
   });
 
-  it("keeps direct media imports out of gameplay, UI, and platform code", () => {
+  it("keeps direct media imports out of gameplay, UI, audio, and platform code", () => {
     const guarded = [
       fileURLToPath(new URL("../src/world/", import.meta.url)),
       fileURLToPath(new URL("../src/ui/", import.meta.url)),
+      fileURLToPath(new URL("../src/audio/", import.meta.url)),
       fileURLToPath(new URL("../src/game/", import.meta.url)),
       fileURLToPath(new URL("../src/platform/", import.meta.url)),
     ];
@@ -86,11 +87,29 @@ describe("module boundaries", () => {
     // depend downwards. A module may always import from itself.
     const allowed: Record<string, readonly string[]> = {
       core: [],
+      syllabus: ["core"],
       assets: ["core"],
-      pack: ["assets", "core"],
-      ui: ["assets", "core", "pack"],
+      pack: ["assets", "core", "syllabus"],
+      progression: ["pack"],
+      narrative: ["pack"],
+      curriculum: ["core", "pack", "syllabus"],
+      save: ["curriculum", "progression"],
+      audio: ["assets", "core"],
+      ui: ["assets", "core", "curriculum", "pack"],
       world: ["assets", "core", "pack"],
-      game: ["assets", "core", "pack", "ui", "world"],
+      game: [
+        "assets",
+        "audio",
+        "core",
+        "curriculum",
+        "narrative",
+        "pack",
+        "progression",
+        "save",
+        "syllabus",
+        "ui",
+        "world",
+      ],
       platform: ["core", "game", "ui"],
     };
 
