@@ -1,27 +1,45 @@
-# Shrinkonauts M0.1 — Implementation Notes
+# Shrinkonauts M1 — Implementation Notes
 
-M0.1 is a playable vertical slice of the foundation: one room, two local players,
-a shared camera, four parallax background layers, a DOM HUD, and an asset system
-that can swap placeholder art for fixtures through a query parameter.
+M1 delivers the runtime and the first vertical slice: the app boots directly
+into **03 — Nerve Forest**, loads the `anatomy-reflex` pack and syllabus, and
+plays one complete loop — dialogue, scan, concept gate, ability unlock, map and
+concept log, exit, debrief, evidence export — with autosave/restore and local
+co-op.
 
-Everything in this milestone is deliberately small. The goal is to prove the
-seams — module boundaries, logical asset IDs, the provider chain, and the fixed
-step — not to build content.
+The M0.2 foundation is preserved: placeholder-first assets, the provider chain,
+the audio cue layer, the fixed-step simulation, the DOM HUD, the pure validator,
+and every existing acceptance command. M1 adds content, orchestration, and a
+real browser smoke on top of it.
+
+No final art or audio is included. Every anatomy asset ID resolves to a
+procedural placeholder, and every cue resolves to a synth or silent fallback.
 
 ## Status
 
 | Area | State |
 | --- | --- |
-| Room boot | Working |
-| Two local players, move + jump | Working |
-| Shared camera | Working |
-| Four parallax layers | Working |
-| CSS HUD + theme tokens | Working |
-| Asset ID provider chain | Working |
-| Fixture hot-swap at boot | Working |
-| Audio playback | Not in M0.1 (IDs resolve, nothing plays) |
-| Live reload without restart | Not in M0.1 (`invalidate()` exists, not wired) |
-| Full pack/syllabus loading | Deferred to M1 |
+| Direct boot into `03-nerve-forest` | Working |
+| Pack + syllabus loading from `public/` | Working |
+| Dialogue graph (linear nodes, choices, effects) | Working |
+| Concept scan and concept log | Working |
+| Concept gate (`singleChoice`, `sequence`, `match`) | Working |
+| First level uses a `sequence` gate | Working |
+| Ability unlock (`signal-dash`) | Working |
+| Map reveal and node/edge traversal | Working |
+| Debrief, teach-back, evidence export | Working |
+| Autosave + restore (`shrinkonauts.run`) | Working |
+| Audio + accessibility settings (`shrinkonauts.settings`) | Working |
+| Local co-op, tether, checkpoint P2 toggle | Working |
+| Pause, text scale, reduced motion, mute, focus management | Working |
+| Placeholder asset pipeline (35/35 anatomy IDs) | Working |
+| Pure validator with advisory warnings | Working |
+| Headless runtime smoke | Working |
+| Playwright browser smoke on system Chrome | Working |
+| Final art/audio | Deferred |
+| Levels 2–5, second core gate, capture mode | Deferred |
+| Music and ambience loops | Deferred |
+| Full key rebinding | Deferred |
+| Conditional dialogue-node skipping | Deferred |
 
 ## Commands
 
@@ -29,243 +47,470 @@ Run from `shrinkonauts/`:
 
 ```bash
 npm install
-npm run dev        # http://127.0.0.1:5173/
-npm test           # 24 unit/integration tests
-npm run smoke      # room boot + module boundary tests
-npm run build      # tsc --noEmit + Vite production build
-npm run preview    # serve dist/
+npm run dev             # http://127.0.0.1:5173/
+npm test                # 13 files, 74 unit/integration tests
+npm run smoke           # room boot + module boundary tests
+npm run build           # tsc --noEmit + Vite production build
+npm run pack:validate   # dev fixture + anatomy pack validation
+npm run pack:map        # regenerate/check the mapping document
+npm run pack:smoke      # dev simulation + headless M1 runtime loop
+npm run smoke:e2e       # Playwright, system Chrome, port 4173
+npm run preview         # serve dist/
 ```
+
+`smoke:e2e` starts Vite on port 4173 and launches Playwright with
+`channel: "chrome"`. It uses the installed system Chrome and never downloads a
+bundled browser.
 
 Asset modes:
 
 ```text
-http://127.0.0.1:5173/                  # procedural placeholders
-http://127.0.0.1:5173/?assets=fixture   # fixture overrides for 3 IDs
-http://127.0.0.1:5173/?assets=final     # final manifest (all entries are placeholders in M0.1)
+/                  # anatomy pack, procedural placeholders
+/?assets=fixture   # anatomy fixture manifest if present, else warn + placeholders
+/?assets=final     # final manifest (current entries are placeholders)
 ```
 
-Unknown `?assets=` values fall back to `placeholder`, so a typo never produces a
-blank screen.
+Unknown `?assets=` values fall back to placeholder mode. The M1 app does not
+boot `public/content/dev`; that tree remains the regression fixture for scripts
+and tests.
 
 ## Architecture
 
 ```text
-platform ──> game ──> assets
+platform ──> game ──> audio ──> assets
+                  ├─> assets
+                  ├─> syllabus
                   ├─> pack
+                  ├─> progression
+                  ├─> narrative
+                  ├─> curriculum
+                  ├─> save
                   ├─> ui
                   └─> world ──> assets, pack
+
+pack ──> assets, core, syllabus
+progression, narrative ──> pack
+curriculum ──> core, pack, syllabus
+save ──> curriculum, progression
 ```
 
 | Module | Responsibility | May import |
 | --- | --- | --- |
-| `core` | `Result`, logger, event bus | — |
-| `assets` | Logical IDs, manifests, provider chain, preload plan, validation | `core` |
-| `pack` | Room/theme schemas, loaders, asset ID collection | `assets`, `core` |
-| `world` | Phaser scene, simulation, rendering, input | `assets`, `core`, `pack` |
-| `ui` | DOM HUD, theme-to-CSS variables, fatal/warning display | `assets`, `core`, `pack` |
-| `game` | Boot orchestration and asset-mode selection | `assets`, `core`, `pack`, `ui`, `world` |
+| `core` | `Result`, logger, event bus, shared event vocabulary | — |
+| `syllabus` | Syllabus schema, parser, objective/concept lookups | `core` |
+| `assets` | Logical IDs, manifests, providers, preload, placeholder fallback | `core` |
+| `pack` | Pack/level/room/dialogue/gate/mapping schemas, parsers, browser loader, pure validator | `assets`, `core`, `syllabus` |
+| `progression` | Abilities, flags, gates, map reveal, puzzle evaluation | `pack` |
+| `narrative` | Dialogue traversal, choices, effects | `pack` |
+| `curriculum` | Learning events, objective progress, debrief, evidence export | `core`, `pack`, `syllabus` |
+| `save` | Versioned run slot, audio/accessibility settings | `curriculum`, `progression` |
+| `audio` | Cue playback, Web Audio, unlock, mute/volume, providers | `assets`, `core` |
+| `ui` | HUD, overlays, theme tokens, focus management, settings controls | `assets`, `core`, `curriculum`, `pack` |
+| `world` | Phaser scene, fixed-step simulation, rendering, keyboard input, cues | `assets`, `core`, `pack` |
+| `game` | Pure runtime orchestrator and adapter-heavy browser boot | all domain/adapters |
 | `platform` | Browser entry point | `core`, `game`, `ui` |
 
-Two boundary rules are enforced by `tests/boundaries.test.ts`:
+`tests/boundaries.test.ts` enforces the graph: no Phaser outside `world`, no
+media paths outside `assets`, no direct media imports in gameplay/UI/audio/
+platform, and no upward or cyclic module dependencies.
 
-1. Phaser imports appear only under `src/world/`.
-2. Module imports follow the acyclic graph above. In particular, `ui` must not
-   import `game` or `world`, and `assets` must not import Phaser, DOM, or media
-   paths.
+Two deliberate seams keep the graph acyclic:
 
-`game/boot.ts` contains no rendering code. It loads content and manifests,
-constructs the asset module, builds the preload plan, updates the HUD, and hands
-the scene to `world/createGame.ts`.
+- `src/ui/model.ts` is the presentation contract. The runtime produces view
+  models; the DOM renderer renders them. `ui` never imports `game`.
+- `src/world/runtime-port.ts` defines `WorldRuntime`, `RuntimeInput`, and
+  `FrameActions`. `RoomScene` depends on that structural port, not on `game`.
+
+The one documented dependency exception is `pack/validate.ts` importing
+`../assets`. Validation must answer the same question the renderer asks — does
+this logical ID resolve, and to what? Reusing `createAssets` and the shared ID
+constants avoids a second resolver that could drift. The import is pure: no
+file, DOM, network, or Phaser APIs are involved, and `fileExists` is injected
+by the Node or browser caller (see `src/pack/validate.ts`).
+
+## Runtime lifecycle
+
+`src/game/runtime.ts` is a plain TypeScript orchestrator. It owns run state but
+never touches the DOM, Phaser, Web Audio, localStorage, or asset files.
+
+```text
+start()
+  └─ loadRun(packId, packVersion)
+       ├─ valid save  → restoreRun()
+       └─ none/invalid → newRun()
+
+newRun()
+  ├─ clearRun()
+  ├─ abilities = ["scan"]
+  ├─ clear curriculum, debrief answers, triggers
+  ├─ activeP2 = true
+  └─ enterLevel(startLevelId, fresh)
+
+enterLevel()
+  ├─ rebuild RoomSimulation
+  ├─ place both players at the entry checkpoint (or restore positions)
+  ├─ reveal the level's map node
+  ├─ record pack_loaded / level_started / room_entered
+  ├─ play the boot cue
+  └─ autosave
+
+restoreRun()
+  ├─ restore progression + learning events + checkpoint
+  ├─ restore both player positions
+  ├─ status "debrief"  → enterDebrief(false)
+  ├─ status "complete" → enterDebrief(false) + finish
+  └─ toast "Resumed from checkpoint"
+```
+
+`step(dt, input)` advances the simulation, drains one-shot actions, checks
+checkpoints/triggers/exits, and returns gameplay cues (`jump`, `land`, `dash`).
+Actions are latched by the input source, so an `E` tap is consumed exactly once
+by the next fixed step even when several render frames occur first.
+
+### State machine
+
+`src/game/state-machine.ts` defines the only legal transitions:
+
+```text
+boot → level
+level ↔ dialogue | gate | map | conceptLog | pause
+dialogue | gate | map | conceptLog | pause → level
+level → debrief → complete
+any → error
+```
+
+`Esc` is a shared close action: it closes the map, concept log, gate, dialogue,
+or debrief-as-pause before toggling the pause overlay. Overlays are blocking:
+the scene ignores movement while a non-level state owns input. The runtime emits
+a snapshot only when it changes (deduplicated), which keeps DOM updates cheap.
+
+### The vertical slice
+
+`03-nerve-forest` is temporarily both the start and end level. Flow:
+
+```text
+spawn (checkpoint-entry)
+  → Neuron Keeper dialogue (dlg-neuron-01)
+      ├─ correct choice reveals CON-3, CON-4, CON-5 and the map node
+      └─ wrong choice loops to the retry node
+  → optional scans (CON-3 … CON-7)
+  → Signal Gate (gate-nerve-01, sequence)
+      └─ solve: record gate_solved, unlock signal-dash, reveal map edge
+  → exit-to-muscle (requires the solved gate)
+      └─ record level_completed, then debrief
+  → debrief for OBJ-2 → record debrief_completed → complete
+  → export evidence JSON
+```
+
+Correct gate order:
+`Receptor → Sensory neuron → Spinal cord → Motor neuron → Muscle`.
+
+`scan` is available from the start. `signal-dash` is granted only by the gate.
+The exit is gated by `gate-nerve-01`, and walking into it before solving produces
+a throttled warning instead of completing the level. Solo play is the same
+level with P2 inactive.
+
+## Pack and syllabus loading
+
+`src/pack/load-pack.ts` is the browser loader. It fetches a pack directory,
+resolves referenced JSON files, parses every document, and returns a structured
+`PackContent` or a single error.
+
+```text
+public/packs/anatomy-reflex/
+  pack.json                 start/end level, manifests, assets
+  theme.json                palette, fonts, parallax, UI assets
+  mapping.json              concept → objective/level coverage
+  licenses.json             licence entries
+  assets.placeholder.json   placeholder manifest
+  assets.final.json         final manifest (currently placeholder entries)
+  levels/03-nerve-forest/
+    level.json              objectives, concepts, dialogue/gate ids, map, evidence
+    room.json               tiles, entities, checkpoints, triggers, exits
+    dialogue.json           graph, choices, effects
+    gate.json               puzzle, hints, onSolve/onFail effects
+public/syllabi/anatomy-reflex.json
+```
+
+Parsers reject unsupported schema versions, duplicate IDs, unknown references,
+malformed tiles, and cyclic prerequisites with a typed error. `PackContent`
+exposes lookups (`levels`, `rooms`, `dialogues`, `gates`) and the parsed
+`Syllabus`. The app boots only `anatomy-reflex`; `public/content/dev` is loaded
+by `scripts/content-loader.ts` for the M0 regression checks.
+
+The `pack` module also owns mapping generation and drift detection
+(`npm run pack:map`) so concept/objective/level coverage stays consistent with
+the authored JSON.
+
+## Gate types
+
+All three puzzle types are implemented and evaluated in
+`src/progression/index.ts`; the first level uses `sequence`.
+
+| Puzzle | Answer shape | Evaluation |
+| --- | --- | --- |
+| `singleChoice` | `string` | equals `answerId` |
+| `sequence` | `string[]` | exact ordered array equality |
+| `match` | `Record<string,string>` | same key set and every value equals |
+
+Gate state types (`ability`, `flag`, `concept`) are also implemented as state
+checks, so the contract is complete even though M1 authors a concept gate.
+Correct submissions record `gate_solved`, apply `onSolve` effects, and persist;
+incorrect submissions record `gate_failed`, apply `onFail`, and show feedback
+without closing the gate. Hints are stepped through with a bounded index.
+
+## Input and co-op
+
+`src/world/input.ts` samples P1, P2, and shared keys. Keydown events are latched
+into a set; the next fixed step drains each one exactly once. This replaces
+`Phaser.Input.Keyboard.JustDown`, which clears on keyup and silently drops taps
+shorter than a render frame (including Playwright's instant presses).
+
+| Player | Move | Jump | Interact | Scan | Dash |
+| --- | --- | --- | --- | --- | --- |
+| P1 | `A` / `D` | `W` or `Space` | `E` | `Q` | `Shift` |
+| P2 | `←` / `→` | `↑` | `,` | `.` | `/` |
+
+Shared: `P` join/rest P2 at a checkpoint, `Tab` map, `C` concept log, `Esc`
+pause/close, `M` mute. `Tab` is captured so focus cannot leave the game before
+the map overlay takes over. `RoomScene` buffers the sampled frame until a fixed
+step consumes it, so 120 Hz render loops cannot drop a press either. When a text
+field owns focus, `discard()` clears latched actions.
+
+Both players are active at boot. Co-op is not a separate mode: either player can
+talk, scan, open the gate, or cross the exit. The tether keeps the pair within
+560 px; when they separate further, P2 is pulled toward P1 so the shared camera
+cannot lose a player. `P` only changes P2 at a checkpoint, and rejoining places
+P2 beside P1 at that checkpoint.
+
+## Save format
+
+`src/save/index.ts` owns both localStorage slots and all persistence.
+
+```text
+shrinkonauts.run        one versioned run snapshot
+shrinkonauts.settings   audio + accessibility settings
+```
+
+```json
+{
+  "schemaVersion": "1.0",
+  "packId": "anatomy-reflex",
+  "packVersion": "0.1.0",
+  "levelId": "03-nerve-forest",
+  "roomId": "room-nerve-forest",
+  "checkpointId": "checkpoint-entry",
+  "progression": {
+    "abilities": ["scan", "signal-dash"],
+    "flags": {},
+    "solvedGates": ["gate-nerve-01"],
+    "revealedNodes": ["map-nerve-forest", "map-muscle-effector"],
+    "revealedEdges": ["..."]
+  },
+  "events": [],
+  "elapsed": 0,
+  "savedAt": "2026-10-26T12:00:00.000Z",
+  "players": {
+    "p1": { "x": 144, "y": 640 },
+    "p2": { "x": 176, "y": 640 },
+    "activeP2": true
+  },
+  "status": "playing",
+  "dialogue": { "dialogueId": "dlg-neuron-01", "nodeId": "check" }
+}
+```
+
+`status` is `playing`, `debrief`, or `complete`. Loading rejects malformed JSON,
+an unsupported schema version, a different pack ID, or a different pack version.
+Settings clamp volume to `0..1` and text scale to `0.8..1.6`, and fall back to
+defaults on corrupt data. Storage may be unavailable (private mode/no
+localStorage); the save module then keeps working in memory.
+
+Autosave runs at level start, checkpoint changes, gate solves, debrief updates,
+and the player-2 toggle. It does not run after completion. The audio module
+writes through `save.audioStorage`, so muting never invents a second settings
+store.
+
+## UI and accessibility
+
+`src/ui/game-ui.ts` mounts a DOM HUD and blocking overlays; Phaser renders only
+the room. The HUD shows level, objectives, mode, asset status, audio status, and
+autosave state. Overlays cover dialogue, gate, map, concept log, debrief, pause,
+completion, and fatal boot errors.
+
+The M1 accessibility baseline is:
+
+- `Esc` pause from gameplay, with a visible pause overlay.
+- Text scale presets (90–150%) applied through `--ui-font-scale`.
+- Reduced motion: sets `data-reduced-motion="true"` and disables CSS animation.
+- Mute toggle (`M`) from gameplay and from every overlay, with HUD status.
+- Focus management: overlays are `role="dialog"`, `aria-modal`, labelled,
+  autofocus the first meaningful control, trap `Tab`/`Shift+Tab`, and restore
+  focus to the previous element on close.
+- Live regions for toasts, gate feedback, and debrief status.
+- Semantic buttons and labels for gate reordering, choices, and debrief.
+
+Full key rebinding is deferred. Settings changes update the mounted pause
+overlay in place, so buttons reflect their new state without recreating the
+DOM or losing focus.
 
 ## Asset pipeline
 
-### IDs
-
-Content refers to media only through logical IDs. Prefix inference lives in
-`src/assets/types.ts`:
-
-| Prefix | Category |
-| --- | --- |
-| `sprite.` | sprite |
-| `bg.`, `ui.`, `tileset.` | image |
-| `audio.` | audio |
-| `font.` | font |
-
-The ten IDs used by the dev room are:
+M1 preserves placeholder-first IDs. Gameplay, UI, and audio ask for logical IDs
+such as `sprite.agent.neuron`, `bg.nerve_forest.mid`, or `audio.cue.scan`; only
+`src/assets/` knows media paths.
 
 ```text
-sprite.player.p1        sprite.player.p2
-bg.placeholder.sky      bg.placeholder.far
-bg.placeholder.mid      bg.placeholder.near
-tileset.placeholder     ui.icon.badge
-audio.cue.jump          audio.cue.land
+final manifest → fixture/pack manifest → placeholder provider
 ```
 
-### Provider chain
+The anatomy pack declares 35 IDs and resolves all 35 to placeholders, including
+the player sprites, tileset, four parallax layers, agent/gate/scene sprites,
+checkpoint, exit, and eleven audio cues. `?assets=fixture` looks for an anatomy
+fixture manifest; because none is authored for this slice, it warns and keeps
+placeholders. The dev fixture still resolves 10/10 placeholders, or 7/10 with
+its fixture manifest selected by the scripts.
 
-`DefaultAssetsModule` resolves each ID in order:
+The preload plan, validation, and boot fail loudly if an ID is unknown or a
+referenced file is missing. `applyTheme` maps pack palette/fonts to CSS
+variables, so placeholder art still respects the configured theme.
 
-1. **Final manifest** — shipped art/audio.
-2. **Pack/fixture manifest** — current level pack or the M0.1 fixture.
-3. **Placeholder provider** — procedural descriptor generated from the theme.
+## Audio
 
-An explicit `"placeholder": true` entry in the final manifest is treated as “no
-final file yet”; it does not stop the chain, so a fixture can still override it.
-That is how `?assets=fixture` replaces three IDs while the other seven remain
-procedural.
-
-The placeholder provider never guesses file paths. It returns typed specs
-(`shape`, `gradient`, `tile`, `css`, `font`, `silent`, `synth`). `world` renders
-the visual kinds to canvas textures; `ui` renders CSS kinds directly.
-
-`assets.preload(ids)` deduplicates IDs and returns the ordered descriptors plus
-lists of placeholders, missing IDs, and warnings. `world/RoomScene.preload()`
-loads only descriptors that have a real `src`; placeholders are generated at
-render time.
-
-### Validation and failures
-
-- Manifest parsing rejects unknown schema majors, unsupported asset types,
-  missing sheet frame metadata, and cross-origin sources.
-- `preload()` reports IDs with unknown prefixes as `missing`; boot fails with
-  `ASSET_IDS_UNRESOLVED` rather than silently rendering nothing.
-- `assets.validate()` returns issue codes such as `ASSET_MANIFEST_INVALID`,
-  `ASSET_FILE_MISSING`, and `ASSET_ID_INVALID`.
-- A failed file load (for example, a broken fixture) emits a HUD warning and the
-  renderer falls back to the procedural placeholder for that ID.
-
-## Content
-
-`public/content/dev/` holds the only content needed to boot:
-
-| File | Purpose |
-| --- | --- |
-| `room.json` | 60 × 34 tiles at 32 px; tile rows, four background layers, spawns |
-| `theme.json` | Palette, fonts, UI tokens, UI asset IDs, audio cue IDs |
-| `assets.final.json` | All ten final IDs, each marked `placeholder: true` |
-| `assets.fixture.json` | Overrides for both players and `bg.placeholder.near` |
-| `fixtures/*.svg` | Test-only art, clearly labeled “not shipped content” |
-
-The background stack uses independent layers with scroll factors 0, 0.08, 0.18,
-and 0.32, at depths −100 to −70. Each layer is a separate image, so a production
-layer can replace one ID without touching the room document.
-
-## Simulation
-
-`src/world/simulation.ts` is pure TypeScript and has no Phaser dependency, which
-is why it is directly testable in Node.
-
-- Fixed step: 1/60 s. The scene accumulates frame time, clamps a frame to 0.25 s,
-  and clamps each simulation step to 0.05 s.
-- Player body: 28 × 44 px. Move speed 260 px/s, jump 620 px/s, gravity 1900
-  px/s², terminal fall 1200 px/s.
-- Collision: axis-aligned tile solids from `#` cells; horizontal resolution
-  before vertical; ground and ceiling detection.
-- Respawn: a player more than 160 px below the room returns to their spawn.
-- Camera: target is the average player position (biased 40 px upward), smoothed
-  at 8/s and clamped to the room's pixel bounds.
-- State is plain data (`PlayerState`, `CameraFrame`) with no engine objects, so a
-  future save system can serialise it.
-
-`src/world/input.ts` samples keyboard state into `Intents`; the scene clears jump
-after the first fixed step of a frame so a held key cannot queue repeat jumps.
-
-## Rendering
-
-`RoomScene` creates, in order:
-
-1. The layered background (`LayeredBackground`).
-2. One image per `#` tile, depth 0.
-3. A shadow ellipse and player image per player, depths 9 and 10.
-
-Background layers are anchored around the initial camera view — not the room
-centre — and cover with 1.4× bleed. With parallax factors below 1 and a camera
-that starts scrolled down, anchoring to the room centre pushed the art out of
-view; anchoring to the camera keeps the frame filled while still allowing
-independent drift.
-
-Textures are resolved per ID:
-
-1. If a loaded file exists at `asset:<id>`, use it.
-2. Otherwise generate the placeholder canvas texture.
-
-SVG fixtures are loaded through Phaser's SVG loader. This keeps fixtures small
-and diffable without adding a binary asset pipeline to M0.1.
-
-The HUD is DOM, not canvas, per ADR-0019. `applyTheme()` maps the theme palette
-and UI scale to CSS custom properties; components read only tokens. The HUD
-reports room ID, mode, placeholder/override counts, each override with its
-source, and any warnings. Boot failures replace the play area with a readable
-fatal panel instead of a blank canvas.
-
-## Tests
+Audio remains a replaceable presentation layer. Gameplay never reads audio
+state; the runtime emits semantic cues and the boot adapter maps them to asset
+IDs. M1 uses short cues only:
 
 ```text
-tests/manifest.test.ts     6 tests   manifest parsing, URL resolution, rejection paths
-tests/assets.test.ts       7 tests   provider order, placeholder fallback, caching, plans, validation
-tests/room-boot.test.ts    7 tests   dev content, full ID coverage, fixture mode, simulation, camera
-tests/boundaries.test.ts   4 tests   media-import ban, Phaser confinement, acyclic module graph
+boot, dialogue, scan, dash, gate, map, debrief, checkpoint, unlock,
+jump, land, wrong
 ```
 
-The boot test reads the real JSON from `public/content/dev/`, so a content or
-manifest change that breaks asset resolution fails in CI-shaped `npm test` runs
-without launching a browser.
+Web Audio is unlocked on the first keydown/pointerdown, mute and volume persist
+through the save-owned storage seam, and missing/failed media warns and falls
+back to a synth or silence. Music and ambience loops are deferred.
 
-## Screenshots
+## Validation
 
-| File | Mode |
+`src/pack/validate.ts` is pure: filesystem access is injected via `fileExists`.
+It checks schema versions, duplicate IDs, missing level/room/dialogue/gate
+references, evidence rules, syllabus references, asset IDs and categories,
+manifest files, licences for non-placeholder final entries, background layers,
+audio/UI asset categories, theme tokens, and mapping drift.
+
+For the one-level slice, forward references are advisory warnings rather than
+failures:
+
+- an exit to `04-muscle-effector`;
+- the level's `nextLevelIds`;
+- map edges to `map-joint-chamber` / `map-muscle-effector`;
+- unattempted objectives and concepts.
+
+`npm run pack:validate` currently reports these expected warnings for
+`anatomy-reflex`, and passes both dev modes with no issues. `pack:map` checks
+generated mapping drift, and `pack:smoke` asserts that all referenced anatomy
+IDs resolve.
+
+## Simulation and rendering
+
+`src/world/simulation.ts` is the pure, fixed-step simulation: AABB tile
+collision, gravity, jump/land detection, dash, active players, spawn helpers,
+camera clamp, and the co-op tether. It has no Phaser dependency and is the same
+code exercised by `pack:smoke` and `tests/room-boot.test.ts`.
+
+`src/world/room-scene.ts` owns the Phaser scene: tile and parallax rendering,
+placeholder textures, entity sprites, interaction highlights, camera follow,
+and forwarding buffered keyboard frames to `WorldRuntime`. Phaser is imported
+only under `src/world/`.
+
+The room is 40 × 23 tiles at 32 px, with spawns at P1 `(3,20)` and P2 `(5,20)`,
+`checkpoint-entry` at `(4,20)`, and `exit-to-muscle` at `(37,19)`.
+
+## Test matrix
+
+| Suite | What it covers |
 | --- | --- |
-| `screenshots/m0.1-placeholder.png` | Default: 10 logical IDs, 10 placeholders |
-| `screenshots/m0.1-fixture.png` | `?assets=fixture`: 10 logical IDs, 7 placeholders, 3 overrides |
+| `tests/room-boot.test.ts` | Room parsing, simulation spawn/ground/camera/movement, jump/land cues |
+| `tests/assets.test.ts` | ID validation, provider precedence, preload, placeholder fallback |
+| `tests/manifest.test.ts` | Manifest parsing and malformed entries |
+| `tests/audio.test.ts` | Cue playback, mute/volume, unlock, provider fallback |
+| `tests/cue-emission.test.ts` | Jump/land cue emission from the simulation |
+| `tests/syllabus.test.ts` | Real syllabus parse, lookups, duplicate/cycle/evidence rejection |
+| `tests/validate.test.ts` | Dev content validation and failure modes |
+| `tests/progression.test.ts` | Abilities, gates, all three puzzles, map traversal |
+| `tests/narrative.test.ts` | Linear dialogue, choices, effects, unknown choice |
+| `tests/curriculum.test.ts` | Evidence matching, objective progress, debrief, export |
+| `tests/save.test.ts` | Settings/run persistence, version/pack rejection, clear |
+| `tests/runtime.test.ts` | Boot, full loop, restore, P2 toggle, overlays, dash unlock |
+| `tests/boundaries.test.ts` | Media paths, Phaser confinement, acyclic module graph |
+| `e2e/m1.spec.ts` | Real browser: boot, dialogue, scan, gate, debrief, export, pause/settings/map/mute |
 
-Both were captured at 1280 × 720 from the Vite dev server.
-
-## Deferred to M0.2 / M1
-
-These are intentional seams, not missing internals:
-
-| Deferred | Seam |
-| --- | --- |
-| Live asset reload preserving run state | `assets.invalidate()` is implemented and tested; no runtime subscription yet |
-| Pack and syllabus loading | `game/boot.ts` loads one dev room directly; `pack` already has room/theme schemas |
-| Dialogue, gates, curriculum, concept log | Not started |
-| Sprite animation and state machines | Players are single images; manifest already supports `sheet` metadata |
-| Audio playback and mixing | Cue IDs resolve to silent/synth placeholder specs; no Web Audio graph |
-| Save/load | Simulation state is plain data, but no serialiser or storage adapter |
-| Co-op tether, drop-in, capture mode | Not started |
-| Validator CLI and full smoke pipeline | Tests cover resolution and boot contracts; no separate content validator binary |
-| Final art and audio | `assets.final.json` is complete but every entry is marked placeholder |
-
-## Decisions and deviations
-
-- **`createGame` lives in `world`.** This confines every Phaser import to one
-  module and keeps `game` engine-agnostic. `BootResult.game` is typed as the
-  return type of `createGame`.
-- **Standalone dev room instead of a level pack.** M0.1 needs a runnable room,
-  not a syllabus. The room/theme documents use the same schemas a pack will use.
-- **Fixture as the “pack” tier.** `?assets=fixture` loads
-  `assets.fixture.json` as `packManifest`. This exercises the real middle tier
-  instead of adding a special-case override path.
-- **`?assets=final` still shows placeholders.** The final manifest exists and is
-  complete, but no final files have been delivered.
-- **Background anchoring.** Layers are positioned from the initial camera scroll
-  with extra cover bleed; without this, a camera that starts low in the room
-  pushed non-scrolling layers above the viewport.
-- **Screenshots live at `screenshots/`,** never under the `docs/` symlink to the
-  vault.
-- **Bundle size.** Phaser ships as one chunk; `vite.config.ts` raises the warning
-  limit rather than pretending code splitting exists. Splitting is a later
-  performance task.
+`npm run smoke` runs the room-boot and boundary suites. `pack:smoke` adds a
+headless full-loop runtime run plus the M0 placeholder/fixture simulation
+regression. `smoke:e2e` runs two Playwright tests against the dev server using
+system Chrome.
 
 ## Verification performed
 
+On 26 October 2026, after the M1 changes:
+
 ```text
-npx tsc --noEmit                 clean
-npm test                         4 files, 24 tests passed
-npm run build                    Vite production build succeeded
-headless Chrome, default         "10 logical IDs · 10 placeholders", no fatal overlay
-headless Chrome, fixture         "10 logical IDs · 7 placeholders · 3 overrides", fixture art visible
+npm test            13 files, 74 tests passed
+npm run build       tsc clean + Vite production build
+npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (35 IDs, 35 placeholders)
+npm run smoke:e2e      2/2 passed (system Chrome, port 4173)
+npx tsc --noEmit       clean
 ```
 
-The repo has no backend, network calls, or save state. `npm run preview` serves
-the same static build that would be deployed.
+### Screenshots
+
+Captured from the M1 build with system Chrome at 1280 × 720; every asset is a
+procedural placeholder:
+
+| Nerve Forest | Dialogue | Signal gate |
+| --- | --- | --- |
+| ![Nerve Forest](screenshots/m1-nerve-forest.png) | ![Neuron Keeper dialogue](screenshots/m1-dialogue.png) | ![Sequence gate](screenshots/m1-gate.png) |
+
+## Deferred
+
+- Final art and final audio; only procedural placeholders exist.
+- The Silicon fixture.
+- Levels 2–5 and the second core gate.
+- Capture mode.
+- Music and ambience loops.
+- Full key rebinding.
+- Conditional dialogue-node skipping; M1 supports linear nodes, choices, and
+  effects only.
+- A dedicated pack-select or intro screen (M1 boots straight into the level).
+
+## Decisions and deviations
+
+- **Direct boot.** No PackSelect or Intro in M1; the runtime enters the start
+  level immediately.
+- **One level as start and end.** `03-nerve-forest` is temporarily both
+  `startLevelId` and `endLevelId`, so the debrief and evidence export can be
+  exercised end to end without levels 2–5.
+- **One gate, no core gate.** The concept gate opens the exit; the exit leads to
+  the debrief. A separate core gate is out of scope.
+- **Forward references are warnings.** Exit `04-muscle-effector`, the next
+  level, and map edges beyond this slice are authored now but reported as
+  advisory warnings so the one-level pack still validates.
+- **Pure runtime, adapter-heavy boot.** `game/runtime.ts` is testable headlessly;
+  `game/boot.ts` is the only place that wires DOM, Phaser, fetch, audio, and
+  localStorage.
+- **Presentation contract in `ui`.** `src/ui/model.ts` prevents a
+  `game → ui → game` cycle while keeping the runtime free of DOM types.
+- **Structural world port.** `WorldRuntime` keeps `world` from importing
+  `game`.
+- **Validator imports `assets`.** Documented exception; see Architecture.
+- **Anchored dialogue only.** Dialogue advances on explicit input; there is no
+  conditional skipping in M1.
+- **Input latching.** Keydown events are latched and drained by fixed steps.
+  Phaser's `JustDown` alone dropped short taps and made keyboard tests flaky.
+- **Dev fixture retained.** `public/content/dev` is no longer booted by the app
+  but is still validated and simulated by scripts/tests, preserving the M0
+  regression surface.
+- **Vault untouched.** `docs/shrinkonauts` is a symlink into the project vault;
+  this implementation does not write through it. Architecture deviations are
+  recorded here and in `README.md`.
