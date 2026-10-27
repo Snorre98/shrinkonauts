@@ -3,7 +3,7 @@
   "id": "anatomy-reflex",
   "title": "Anatomy: The Reflex Arc",
   "domain": "anatomy",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "syllabusId": "anatomy-reflex",
   "startLevelId": "03-nerve-forest",
   "endLevelId": "03-nerve-forest",
@@ -52,11 +52,11 @@
     ]
   },
   "ageRating": "12+",
-  "description": "Shrink into the nerve forest and repair a reflex signal that is running backwards.",
+  "description": "Shrink into the nerve forest, drive a signal past threshold, and run the axon to the terminal.",
   "metadata": {
     "author": "Snorre",
     "created": "2026-10-26",
-    "updated": "2026-10-26",
-    "stage": "M1 vertical slice"
+    "updated": "2026-10-27",
+    "stage": "M2 level factory"
   }
 }

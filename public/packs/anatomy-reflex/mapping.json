@@ -75,6 +75,9 @@
         "dlg-neuron-01"
       ],
       "scanTargets": [
+        "pad-input-a",
+        "pad-input-b",
+        "scan-myelin",
         "scan-neuron"
       ],
       "mapLabels": [
@@ -82,18 +85,10 @@
       ]
     },
     "CON-4": {
-      "levels": [
-        "03-nerve-forest"
-      ],
-      "dialogues": [
-        "dlg-neuron-01"
-      ],
-      "scanTargets": [
-        "scan-synapse"
-      ],
-      "mapLabels": [
-        "Nerve Forest"
-      ]
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
     },
     "CON-5": {
       "levels": [
@@ -103,6 +98,7 @@
         "dlg-neuron-01"
       ],
       "scanTargets": [
+        "pad-terminal",
         "scan-pathway"
       ],
       "mapLabels": [
@@ -110,32 +106,16 @@
       ]
     },
     "CON-6": {
-      "levels": [
-        "03-nerve-forest"
-      ],
-      "dialogues": [
-        "dlg-neuron-01"
-      ],
-      "scanTargets": [
-        "scan-muscle"
-      ],
-      "mapLabels": [
-        "Nerve Forest"
-      ]
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
     },
     "CON-7": {
-      "levels": [
-        "03-nerve-forest"
-      ],
-      "dialogues": [
-        "dlg-neuron-01"
-      ],
-      "scanTargets": [
-        "scan-reflex"
-      ],
-      "mapLabels": [
-        "Nerve Forest"
-      ]
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
     },
     "CON-8": {
       "levels": [],

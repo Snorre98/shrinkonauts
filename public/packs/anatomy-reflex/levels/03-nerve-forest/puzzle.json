@@ -1,88 +1,128 @@
 {
   "schemaVersion": "1.0",
-  "id": "puzzle-ferry-01",
-  "title": "Signal Ferry",
+  "id": "puzzle-node-run",
+  "title": "Node Run",
   "objectiveIds": ["OBJ-2"],
-  "conceptIds": ["CON-3", "CON-4", "CON-5", "CON-6", "CON-7"],
+  "conceptIds": ["CON-3", "CON-5"],
   "activation": { "mode": "roomStart" },
   "tether": "off",
   "nodes": [
     {
-      "id": "tracer-prop",
-      "type": "prop",
-      "entityId": "tracer-prop",
-      "tags": ["tracer"],
-      "shape": "triangle",
-      "spawn": { "x": 400, "y": 630 }
+      "id": "input-a",
+      "type": "plate",
+      "rect": { "x": 224, "y": 600, "width": 64, "height": 48 },
+      "detects": ["player"],
+      "minimum": 1,
+      "countCarried": false
     },
     {
-      "id": "pulse-terminal",
-      "type": "pulseSource",
-      "entityId": "pulse-terminal",
-      "ability": "pulse",
-      "cooldownTicks": 24,
-      "travelTicks": 18,
-      "range": 96
+      "id": "input-a-trigger",
+      "type": "trigger",
+      "once": true
     },
     {
-      "id": "receptor-a",
-      "type": "receptor",
-      "entityId": "receptor-a",
-      "accepts": { "tag": "tracer", "shape": "triangle" },
-      "rect": { "x": 880, "y": 548, "width": 64, "height": 96 },
-      "snap": { "x": 912, "y": 596 }
+      "id": "input-b",
+      "type": "plate",
+      "rect": { "x": 320, "y": 600, "width": 64, "height": 48 },
+      "detects": ["player"],
+      "minimum": 1,
+      "countCarried": false
     },
     {
-      "id": "receptor-b",
-      "type": "receptor",
-      "entityId": "receptor-b",
-      "accepts": { "tag": "tracer", "shape": "circle" },
-      "rect": { "x": 1008, "y": 548, "width": 64, "height": 96 },
-      "snap": { "x": 1040, "y": 596 }
+      "id": "input-b-trigger",
+      "type": "trigger",
+      "once": true
     },
     {
-      "id": "gate-ferry",
+      "id": "stimulus-counter",
+      "type": "counter",
+      "target": 2,
+      "comparison": ">="
+    },
+    {
+      "id": "threshold-gate",
       "type": "gate",
-      "entityId": "gate-ferry",
+      "entityId": "gate-threshold",
+      "initial": "closed",
+      "latched": true
+    },
+    {
+      "id": "axon-entry",
+      "type": "zone",
+      "rect": { "x": 544, "y": 552, "width": 128, "height": 104 },
+      "detects": ["player"],
+      "minimum": 1,
+      "countCarried": false
+    },
+    {
+      "id": "behind-gate",
+      "type": "gate",
+      "entityId": "gate-behind",
+      "initial": "open",
+      "latched": false
+    },
+    {
+      "id": "terminal-zone",
+      "type": "zone",
+      "rect": { "x": 1088, "y": 600, "width": 96, "height": 48 },
+      "detects": ["player"],
+      "minimum": 1,
+      "countCarried": false
+    },
+    {
+      "id": "spike-relay",
+      "type": "relay",
+      "mode": "allOf"
+    },
+    {
+      "id": "gate-exit",
+      "type": "gate",
+      "entityId": "gate-exit",
       "initial": "closed",
       "latched": true
     }
   ],
   "links": [
-    { "from": "pulse-terminal", "to": "receptor-a", "type": "pulse" },
-    { "from": "pulse-terminal", "to": "receptor-b", "type": "pulse" },
-    { "from": "receptor-a", "to": "gate-ferry", "type": "open" }
+    { "from": "input-a", "to": "input-a-trigger", "type": "press" },
+    { "from": "input-a-trigger", "to": "stimulus-counter", "type": "increment" },
+    { "from": "input-b", "to": "input-b-trigger", "type": "press" },
+    { "from": "input-b-trigger", "to": "stimulus-counter", "type": "increment" },
+    { "from": "stimulus-counter", "to": "threshold-gate", "type": "reached" },
+    { "from": "axon-entry", "to": "behind-gate", "type": "close" },
+    { "from": "stimulus-counter", "to": "spike-relay", "type": "activate" },
+    { "from": "terminal-zone", "to": "spike-relay", "type": "activate" },
+    { "from": "spike-relay", "to": "gate-exit", "type": "open" }
   ],
-  "win": { "type": "gateOpen", "gateId": "gate-ferry" },
-  "reset": { "props": ["tracer-prop"], "nodes": [] },
+  "win": { "type": "gateOpen", "gateId": "gate-exit" },
+  "reset": {
+    "props": [],
+    "nodes": [
+      "input-a-trigger",
+      "input-b-trigger",
+      "stimulus-counter",
+      "threshold-gate",
+      "behind-gate",
+      "gate-exit"
+    ]
+  },
   "evidence": {
     "onSolve": ["puzzle_solved"],
-    "counters": [
-      "pickups",
-      "drops",
-      "placements",
-      "throws",
-      "pulses",
-      "wrongReceptor",
-      "wrongSide",
-      "resets"
-    ]
+    "counters": ["resets"]
   },
   "rewards": {
     "abilities": ["signal-dash"],
     "mapNodes": ["map-muscle-effector"]
   },
   "solution": [
-    { "action": "move", "actor": "p2", "x": 400, "y": 630 },
-    { "action": "pickup", "actor": "p2", "target": "tracer-prop" },
-    { "action": "move", "actor": "p2", "x": 912, "y": 596 },
-    { "action": "place", "actor": "p2", "target": "receptor-a" },
-    { "action": "move", "actor": "p1", "x": 272, "y": 620 },
-    { "action": "pulse", "actor": "p1", "target": "pulse-terminal" },
-    { "action": "wait", "ticks": 22 }
+    { "action": "move", "actor": "p1", "x": 256, "y": 620 },
+    { "action": "move", "actor": "p1", "x": 352, "y": 620 },
+    { "action": "move", "actor": "p1", "x": 608, "y": 576 },
+    { "action": "move", "actor": "p1", "x": 1136, "y": 620 },
+    { "action": "wait", "ticks": 2 }
   ],
   "hints": [
-    "The tracer fits only one receptor shape.",
-    "One player can hold the terminal while the other carries the tracer."
+    "One input is below threshold. The trigger gate needs a second dendrite input.",
+    "Once threshold is crossed, the spike is all-or-none. Extra presses do not increase it.",
+    "The axon is one-way: dendrite → trigger zone → axon → terminal."
   ]
 }

@@ -251,64 +251,45 @@ function walkTo(runtime: GameRuntime, entityId: string): void {
   runtime.placePlayer("p1", point.x, point.y);
 }
 
-function propState(runtime: GameRuntime, id: string): string | undefined {
-  return runtime.simulation.props[id]?.state;
+function sensorCenter(
+  content: ReturnType<typeof loadContent>,
+  nodeId: string,
+): { x: number; y: number } {
+  const puzzle = content.puzzles["puzzle-node-run"];
+  assert(puzzle, "node-run puzzle is missing");
+  const node = puzzle.nodes.find((entry) => entry.id === nodeId);
+  assert(
+    node && (node.type === "plate" || node.type === "zone"),
+    `node-run sensor "${nodeId}" is missing`,
+  );
+  return {
+    x: node.rect.x + node.rect.width / 2,
+    y: node.rect.y + node.rect.height / 2,
+  };
 }
 
-function solveFerry(runtime: GameRuntime): void {
-  const tracer = runtime.entityPixel("tracer-prop");
-  const receptor = runtime.entityPixel("receptor-a");
-  const terminal = runtime.entityPixel("pulse-terminal");
-  assert(tracer, "ferry tracer is missing");
-  assert(receptor, "ferry receptor is missing");
-  assert(terminal, "ferry terminal is missing");
-
-  runtime.placePlayer("p2", tracer.x, 20 * 32);
-  runtime.step(
-    1 / 60,
-    frameInput({
-      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false },
-    }),
-  );
-  assert(
-    propState(runtime, "tracer-prop") === "carried",
-    "[anatomy] P2 did not pick up the tracer",
-  );
-
-  runtime.placePlayer("p2", receptor.x, 20 * 32);
-  runtime.step(
-    1 / 60,
-    frameInput({
-      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false },
-    }),
-  );
-  assert(
-    propState(runtime, "tracer-prop") === "placed",
-    "[anatomy] P2 did not place the tracer",
-  );
-
-  runtime.placePlayer("p1", terminal.x, 20 * 32);
-  runtime.step(
-    1 / 60,
-    frameInput({
-      p1: { interact: false, scan: false, pulse: true, carry: false, throw: false },
-    }),
-  );
-  assert(
-    (runtime.snapshot().puzzle?.pulse?.remainingTicks ?? 0) > 0,
-    "[anatomy] pulse cooldown did not start",
-  );
-  for (let frame = 0; frame < 30; frame += 1) {
+function solveNodeRun(
+  runtime: GameRuntime,
+  content: ReturnType<typeof loadContent>,
+): void {
+  for (const nodeId of ["input-a", "input-b", "terminal-zone"]) {
+    const point = sensorCenter(content, nodeId);
+    runtime.placePlayer("p1", point.x, 20 * 32);
     runtime.step(1 / 60, frameInput());
   }
+  runtime.step(1 / 60, frameInput());
+  assert(
+    runtime.snapshot().puzzle?.solved === true,
+    "[anatomy] Node Run did not latch as solved",
+  );
   assert(
     runtime.snapshot().abilities.includes("signal-dash"),
-    "[anatomy] solving the Signal Ferry did not unlock signal-dash",
+    "[anatomy] solving Node Run did not unlock signal-dash",
   );
   assert(
     runtime.snapshot().map.nodes.find((node) => node.id === "map-muscle-effector")
       ?.visited === true,
-    "[anatomy] the Signal Ferry did not reveal the muscle-effector map node",
+    "[anatomy] Node Run did not reveal the muscle-effector map node",
   );
 }
 
@@ -403,12 +384,12 @@ function runAnatomyRuntime(): RuntimeResult {
   assert(booted.mode === "co-op", "[anatomy] expected co-op mode at boot");
   assert(booted.abilities.includes("scan"), "[anatomy] scan should be available");
   assert(
-    booted.puzzle?.id === "puzzle-ferry-01",
+    booted.puzzle?.id === "puzzle-node-run",
     "[anatomy] room-start puzzle is not active",
   );
   assert(
-    booted.puzzle?.pulse?.remainingTicks === 0,
-    "[anatomy] pulse should start ready",
+    booted.puzzle?.pulse === null,
+    "[anatomy] Node Run should not expose a pulse cooldown",
   );
   assert(
     runtime.simulation.tetherPolicy === "off",
@@ -471,14 +452,12 @@ function runAnatomyRuntime(): RuntimeResult {
   runtime.chooseDialogue("right");
   assert(runtime.snapshot().state === "level", "[anatomy] choice did not close dialogue");
   assert(
-    runtime.snapshot().knownConceptIds.includes("CON-3") &&
-      runtime.snapshot().knownConceptIds.includes("CON-4") &&
-      runtime.snapshot().knownConceptIds.includes("CON-5"),
-    "[anatomy] dialogue did not reveal the introductory concepts",
+    runtime.snapshot().knownConceptIds.includes("CON-3"),
+    "[anatomy] dialogue did not reveal the neuron concept",
   );
 
   // Scan.
-  walkTo(runtime, "scan-synapse");
+  walkTo(runtime, "scan-pathway");
   runtime.step(
     1 / 60,
     frameInput({
@@ -486,16 +465,16 @@ function runAnatomyRuntime(): RuntimeResult {
     }),
   );
   assert(
-    runtime.snapshot().knownConceptIds.includes("CON-4"),
-    "[anatomy] Q did not reveal the synapse concept",
+    runtime.snapshot().knownConceptIds.includes("CON-5"),
+    "[anatomy] Q did not reveal the pathway concept",
   );
   assert(audio.played.length > 0, "[anatomy] no audio cues fired");
 
-  // Signal Ferry puzzle.
-  solveFerry(runtime);
+  // Node Run puzzle.
+  solveNodeRun(runtime, content);
   assert(
     runtime.snapshot().puzzle?.solved === true,
-    "[anatomy] the Signal Ferry did not latch as solved",
+    "[anatomy] Node Run did not latch as solved",
   );
 
   // Dash only works after the unlock.
@@ -529,7 +508,7 @@ function runAnatomyRuntime(): RuntimeResult {
   assert(runtime.snapshot().state === "debrief", "[anatomy] empty answer finished debrief");
   runtime.submitDebrief(
     prompt.id,
-    "The receptor fires, the sensory neuron carries the signal to the spinal cord, and the motor neuron drives the muscle.",
+    "One input is below threshold, so no spike fires. Two inputs reach threshold and the spike is all-or-none; it travels one way along the axon to the terminal.",
   );
   runtime.finishDebrief();
   assert(runtime.snapshot().state === "complete", "[anatomy] debrief did not complete");
@@ -545,7 +524,7 @@ function runAnatomyRuntime(): RuntimeResult {
     evidence.events.some(
       (event) =>
         event.type === "puzzle_solved" &&
-        event.puzzleId === "puzzle-ferry-01",
+        event.puzzleId === "puzzle-node-run",
     ),
     "[anatomy] puzzle_solved event is missing from evidence",
   );
@@ -567,7 +546,7 @@ function runAnatomyRuntime(): RuntimeResult {
     sessionId: "smoke-restore-a",
   });
   first.start();
-  solveFerry(first);
+  solveNodeRun(first, content);
   first.step(1 / 60, frameInput());
 
   const restored = new GameRuntime({

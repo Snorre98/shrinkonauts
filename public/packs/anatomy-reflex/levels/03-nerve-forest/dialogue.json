@@ -6,37 +6,33 @@
   "start": "intro",
   "nodes": {
     "intro": {
-      "text": "You shrank in at a good time. The reflex signal in this forest is running backwards.",
+      "text": "You are inside a neuron. The signal is stuck below threshold, so the exit to the terminal is closed.",
       "next": "problem"
     },
     "problem": {
-      "text": "A receptor fires, but the muscle twitches before the message ever reaches the spinal cord. Find the break and put the signal back in order.",
+      "text": "A neuron does not fire for every nudge. The input has to reach threshold. Once it does, the spike is full-size and travels one way.",
       "next": "clue"
     },
     "clue": {
-      "text": "Follow one message. A neuron carries it one way: dendrites receive, the soma keeps the cell alive, the axon carries the impulse, and the terminals release it. Across a synapse, neurotransmitters jump the gap.",
+      "text": "Two inputs are enough here; one is not. Press both dendrite inputs, then run the axon to the terminal. The route is dendrite → trigger zone → axon → terminal. Myelin speeds conduction; it does not make the spike bigger.",
       "next": "check"
     },
     "check": {
-      "text": "Quick check: which way does a nerve signal travel?",
+      "text": "Quick check: what happens once the input reaches threshold?",
       "choices": [
-        { "id": "wrong", "text": "Both ways along the axon", "next": "retry" },
-        { "id": "right", "text": "Dendrites → soma → axon → terminals", "next": "right" }
+        { "id": "wrong", "text": "The spike gets bigger with more input", "next": "retry" },
+        { "id": "right", "text": "A full-size spike fires and travels one way", "next": "right" }
       ]
     },
     "retry": {
-      "text": "Not quite. The axon carries the impulse away from the soma, not back toward the dendrites. Try the other answer.",
+      "text": "No — stronger or extra input increases the frequency of spikes, not the amplitude of one spike. Try again.",
       "next": "check"
     },
     "right": {
-      "text": "Exactly. Scan the glowing structures for the details. Then carry the tracer across the cleft, place it in the receptor that matches its shape, and pulse from the presynaptic terminal. The gate opens only when the signal finds its match.",
+      "text": "Exactly. Press both dendrite inputs to reach threshold, then follow the axon to the terminal. Scan the neuron, myelin, and pathway labels if you want the details.",
       "effects": [
         { "type": "revealConcept", "conceptId": "CON-3" },
         { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-3" },
-        { "type": "revealConcept", "conceptId": "CON-4" },
-        { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-4" },
-        { "type": "revealConcept", "conceptId": "CON-5" },
-        { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-5" },
         { "type": "revealMap", "nodeId": "map-nerve-forest" }
       ],
       "next": null

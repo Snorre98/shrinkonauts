@@ -3,14 +3,14 @@
   "id": "03-nerve-forest",
   "title": "Nerve Forest",
   "order": 3,
-  "status": "draft",
+  "status": "validated",
   "syllabusObjectiveIds": ["OBJ-2"],
-  "conceptIds": ["CON-3", "CON-4", "CON-5", "CON-6", "CON-7"],
+  "conceptIds": ["CON-3", "CON-5"],
   "roomId": "room-nerve-forest",
   "backgroundId": "bg.nerve_forest",
   "dialogueIds": ["dlg-neuron-01"],
   "gateIds": [],
-  "puzzleIds": ["puzzle-ferry-01"],
+  "puzzleIds": ["puzzle-node-run"],
   "map": {
     "nodeId": "map-nerve-forest",
     "label": "Nerve Forest",
@@ -18,14 +18,14 @@
     "y": 1,
     "edges": [
       { "to": "map-joint-chamber", "type": "door" },
-      { "to": "map-muscle-effector", "type": "gate", "puzzleId": "puzzle-ferry-01" }
+      { "to": "map-muscle-effector", "type": "gate", "puzzleId": "puzzle-node-run" }
     ]
   },
   "evidence": [
     {
       "objectiveId": "OBJ-2",
       "event": "puzzle_solved",
-      "filter": { "puzzleId": "puzzle-ferry-01" },
+      "filter": { "puzzleId": "puzzle-node-run" },
       "required": true
     },
     {
@@ -39,12 +39,12 @@
   "nextLevelIds": ["04-muscle-effector"],
   "coop": {
     "supported": true,
-    "notes": "P1 pulses; P2 carries and places. Solo uses the union of both roles."
+    "notes": "P1 and P2 can each press one dendrite input; either player can scan and run the axon. Solo presses both inputs and runs the axon; the one-shot input triggers latch, so no second body is required."
   },
   "authoring": {
     "levelSpec": "README.md",
     "playtestedSolo": false,
     "playtestedCoop": false,
-    "notes": "M1.5 Signal Ferry: carry the tracer across the cleft, place it on the matching receptor, and pulse from the presynaptic terminal."
+    "notes": "M2 Node Run: two dendrite inputs raise the stimulus counter to threshold, the threshold gate latches, and the terminal relay opens the exit. Automated unit, pack validation, smoke, and browser checks passed; human solo/co-op playtesting is pending. Uses prompt-obj-2 because per-level debrief prompts are not authored."
   }
 }

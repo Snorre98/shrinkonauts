@@ -81,7 +81,7 @@
         "EV-2",
         "EV-7"
       ],
-      "successCriterion": "The player matches the tracer to the correct receptor and explains the one-way signal.",
+      "successCriterion": "The player reaches threshold with two inputs, explains why the spike is all-or-none and one-way, and traces the signal to the terminal.",
       "assessment": "puzzle",
       "levelHint": "nerve-forest"
     },
@@ -421,10 +421,10 @@
     },
     {
       "id": "EV-2",
-      "description": "Signal Ferry puzzle solve and diagnostic counters.",
+      "description": "Node Run puzzle solve and diagnostic counters.",
       "event": "puzzle_solved",
       "filter": {
-        "puzzleId": "puzzle-ferry-01"
+        "puzzleId": "puzzle-node-run"
       },
       "required": true,
       "weight": 1,
@@ -512,7 +512,7 @@
     },
     {
       "id": "EV-7",
-      "description": "Signal Ferry debrief teach-back answer.",
+      "description": "Nerve Forest debrief teach-back answer.",
       "event": "debrief_answered",
       "filter": {
         "promptId": "prompt-obj-2"

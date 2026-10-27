@@ -88,7 +88,7 @@
     {
       "id": "agent-neuron",
       "type": "agent",
-      "x": 9,
+      "x": 6,
       "y": 20,
       "sprite": "sprite.agent.neuron",
       "dialogueId": "dlg-neuron-01",
@@ -104,137 +104,86 @@
       "label": "Neuron"
     },
     {
-      "id": "scan-synapse",
+      "id": "scan-myelin",
       "type": "scanTarget",
-      "x": 20,
-      "y": 16,
-      "sprite": "sprite.scan.synapse",
-      "conceptId": "CON-4",
-      "label": "Synapse"
+      "x": 19,
+      "y": 18,
+      "sprite": "sprite.scan.neuron",
+      "conceptId": "CON-3",
+      "label": "Myelin sheath"
     },
     {
       "id": "scan-pathway",
       "type": "scanTarget",
-      "x": 14,
+      "x": 25,
       "y": 19,
       "sprite": "sprite.scan.pathway",
       "conceptId": "CON-5",
-      "label": "Sensory and motor pathways"
+      "label": "One-way pathway"
     },
     {
-      "id": "scan-muscle",
+      "id": "pad-input-a",
       "type": "scanTarget",
-      "x": 30,
-      "y": 19,
-      "sprite": "sprite.scan.muscle",
-      "conceptId": "CON-6",
-      "label": "Muscle effector"
+      "x": 7,
+      "y": 20,
+      "sprite": "sprite.scan.neuron",
+      "conceptId": "CON-3",
+      "label": "Dendrite input A"
     },
     {
-      "id": "scan-reflex",
+      "id": "pad-input-b",
       "type": "scanTarget",
-      "x": 27,
-      "y": 19,
-      "sprite": "sprite.scan.reflex",
-      "conceptId": "CON-7",
-      "label": "Reflex arc"
-    },
-    {
-      "id": "body-tracer",
-      "type": "body",
-      "x": 12,
-      "y": 19,
-      "components": {
-        "body": {
-          "width": 20,
-          "height": 20,
-          "dynamic": true,
-          "mass": 0.2,
-          "fixedRotation": true,
-          "friction": 0.4
-        }
-      }
-    },
-    {
-      "id": "tracer-prop",
-      "type": "prop",
-      "x": 12,
-      "y": 19,
-      "sprite": "sprite.prop.tracer",
-      "label": "Tracer",
-      "components": {
-        "prop": {
-          "bodyId": "body-tracer",
-          "tags": [
-            "tracer"
-          ],
-          "shape": "triangle",
-          "carryable": true,
-          "placeable": true,
-          "pushable": true,
-          "throwable": true
-        }
-      }
-    },
-    {
-      "id": "pulse-terminal",
-      "type": "pulseSource",
-      "x": 8,
+      "x": 10,
       "y": 20,
-      "sprite": "sprite.pulse.terminal",
-      "label": "Presynaptic terminal",
-      "components": {
-        "pulseSource": {
-          "ability": "pulse"
-        }
-      }
+      "sprite": "sprite.scan.neuron",
+      "conceptId": "CON-3",
+      "label": "Dendrite input B"
     },
     {
-      "id": "receptor-a",
-      "type": "receptor",
-      "x": 28,
+      "id": "pad-terminal",
+      "type": "scanTarget",
+      "x": 34,
       "y": 20,
-      "sprite": "sprite.receptor.triangle",
-      "label": "Matching receptor",
-      "components": {
-        "receptor": {
-          "acceptsTag": "tracer",
-          "acceptsShape": "triangle",
-          "snap": {
-            "x": 912,
-            "y": 596
-          }
-        }
-      }
+      "sprite": "sprite.scan.pathway",
+      "conceptId": "CON-5",
+      "label": "Axon terminal"
     },
     {
-      "id": "receptor-b",
-      "type": "receptor",
-      "x": 32,
-      "y": 20,
-      "sprite": "sprite.receptor.circle",
-      "label": "Mismatched receptor",
-      "components": {
-        "receptor": {
-          "acceptsTag": "tracer",
-          "acceptsShape": "circle",
-          "snap": {
-            "x": 1040,
-            "y": 596
-          }
-        }
-      }
-    },
-    {
-      "id": "gate-ferry",
+      "id": "gate-threshold",
       "type": "puzzleGate",
-      "x": 35,
+      "x": 14,
       "y": 20,
       "sprite": "sprite.gate.ferry",
-      "label": "Signal gate",
+      "label": "Threshold gate",
       "components": {
         "gate": {
-          "gateId": "gate-ferry"
+          "gateId": "gate-threshold"
+        }
+      }
+    },
+    {
+      "id": "gate-behind",
+      "type": "puzzleGate",
+      "x": 18,
+      "y": 18,
+      "sprite": "sprite.gate.ferry",
+      "label": "One-way gate",
+      "components": {
+        "gate": {
+          "gateId": "gate-behind"
+        }
+      }
+    },
+    {
+      "id": "gate-exit",
+      "type": "puzzleGate",
+      "x": 36,
+      "y": 20,
+      "sprite": "sprite.gate.ferry",
+      "label": "Axon exit gate",
+      "components": {
+        "gate": {
+          "gateId": "gate-exit"
         }
       }
     },
@@ -255,7 +204,7 @@
       "width": 1,
       "height": 1,
       "toLevelId": "04-muscle-effector",
-      "puzzleId": "puzzle-ferry-01"
+      "puzzleId": "puzzle-node-run"
     }
   ],
   "triggers": []

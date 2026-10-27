@@ -67,8 +67,8 @@ function makeRuntimeWithContent(
 
 function contentWithActivation(mode: "zoneEnter" | "interact") {
   const copy = structuredClone(content);
-  const puzzle = copy.puzzles["puzzle-ferry-01"];
-  if (!puzzle) throw new Error("ferry puzzle missing");
+  const puzzle = copy.puzzles["puzzle-node-run"];
+  if (!puzzle) throw new Error("node-run puzzle missing");
   if (mode === "zoneEnter") {
     puzzle.activation = { mode: "zoneEnter", zoneId: "activation-zone" };
     puzzle.nodes.push({
@@ -80,7 +80,7 @@ function contentWithActivation(mode: "zoneEnter" | "interact") {
       countCarried: false,
     });
   } else {
-    puzzle.activation = { mode: "interact", entityId: "pulse-terminal" };
+    puzzle.activation = { mode: "interact", entityId: "agent-neuron" };
   }
   return copy;
 }
@@ -167,26 +167,31 @@ function stepWith(
   });
 }
 
-function solveFerry(runtime: GameRuntime): void {
-  const tracer = runtime.entityPixel("tracer-prop");
-  const receptor = runtime.entityPixel("receptor-a");
-  const terminal = runtime.entityPixel("pulse-terminal");
-  if (!tracer || !receptor || !terminal) throw new Error("ferry entities missing");
-
-  runtime.placePlayer("p2", tracer.x, 20 * 32);
-  stepWith(runtime, playerActions(), playerActions({ carry: true }));
-  expect(runtime.simulation.props["tracer-prop"]?.state).toBe("carried");
-
-  runtime.placePlayer("p2", receptor.x, 20 * 32);
-  stepWith(runtime, playerActions(), playerActions({ carry: true }));
-  expect(runtime.simulation.props["tracer-prop"]?.state).toBe("placed");
-
-  runtime.placePlayer("p1", terminal.x, 20 * 32);
-  stepWith(runtime, playerActions({ pulse: true }), playerActions());
-  for (let frame = 0; frame < 30; frame += 1) {
-    stepWith(runtime);
+function sensorCenter(nodeId: string): { x: number; y: number } {
+  const puzzle = content.puzzles["puzzle-node-run"];
+  if (!puzzle) throw new Error("node-run puzzle missing");
+  const node = puzzle.nodes.find((entry) => entry.id === nodeId);
+  if (!node || (node.type !== "plate" && node.type !== "zone")) {
+    throw new Error(`node-run sensor ${nodeId} missing`);
   }
-  expect(runtime.snapshot().abilities).toContain("signal-dash");
+  return {
+    x: node.rect.x + node.rect.width / 2,
+    y: node.rect.y + node.rect.height / 2,
+  };
+}
+
+function pressSensor(runtime: GameRuntime, nodeId: string, actor: "p1" | "p2" = "p1"): void {
+  const point = sensorCenter(nodeId);
+  runtime.placePlayer(actor, point.x, 20 * 32);
+  stepWith(runtime);
+}
+
+function solveNodeRun(runtime: GameRuntime): void {
+  pressSensor(runtime, "input-a");
+  pressSensor(runtime, "input-b");
+  pressSensor(runtime, "terminal-zone");
+  stepWith(runtime);
+  expect(runtime.snapshot().puzzle?.solved).toBe(true);
 }
 
 describe("game runtime", () => {
@@ -200,6 +205,8 @@ describe("game runtime", () => {
     expect(snapshot.activeP2).toBe(true);
     expect(snapshot.mode).toBe("co-op");
     expect(snapshot.abilities).toContain("scan");
+    expect(snapshot.puzzle?.id).toBe("puzzle-node-run");
+    expect(snapshot.puzzle?.pulse).toBeNull();
     expect(snapshot.map.nodes.find((node) => node.current)?.visited).toBe(true);
     expect(snapshot.checkpointId).toBe("checkpoint-entry");
     expect(storage.getItem(RUN_STORAGE_KEY)).toContain("03-nerve-forest");
@@ -215,7 +222,7 @@ describe("game runtime", () => {
 
     runtime.placePlayer("p1", 350, 640);
     stepWith(runtime);
-    expect(runtime.snapshot().puzzle?.id).toBe("puzzle-ferry-01");
+    expect(runtime.snapshot().puzzle?.id).toBe("puzzle-node-run");
     expect(runtime.simulation.tetherPolicy).toBe("off");
   });
 
@@ -223,78 +230,59 @@ describe("game runtime", () => {
     const { runtime } = makeRuntimeWithContent(contentWithActivation("interact"));
     expect(runtime.snapshot().puzzle).toBeNull();
 
-    const terminal = runtime.entityPixel("pulse-terminal");
-    if (!terminal) throw new Error("pulse-terminal missing");
-    runtime.placePlayer("p1", terminal.x, 20 * 32);
+    const agent = runtime.entityPixel("agent-neuron");
+    if (!agent) throw new Error("agent-neuron missing");
+    runtime.placePlayer("p1", agent.x, 20 * 32);
     expect(runtime.snapshot().interaction).toMatchObject({
       kind: "puzzle",
-      label: "Start Signal Ferry",
+      label: "Start Node Run",
     });
 
     stepWith(runtime, playerActions({ interact: true }));
-    expect(runtime.snapshot().puzzle?.id).toBe("puzzle-ferry-01");
+    expect(runtime.snapshot().puzzle?.id).toBe("puzzle-node-run");
     expect(runtime.simulation.tetherPolicy).toBe("off");
   });
 
-  it("shows authored hints and pulse cooldown", () => {
+  it("shows authored hints without a pulse cooldown", () => {
     const { runtime } = makeRuntime();
     expect(runtime.snapshot().puzzle?.canHint).toBe(true);
-    expect(runtime.snapshot().puzzle?.pulse).toMatchObject({
-      nodeId: "pulse-terminal",
-      remainingTicks: 0,
-      cooldownTicks: 24,
-    });
+    expect(runtime.snapshot().puzzle?.pulse).toBeNull();
 
     runtime.puzzleHint();
     expect(runtime.snapshot().puzzle?.hint).toBe(
-      "The tracer fits only one receptor shape.",
+      "One input is below threshold. The trigger gate needs a second dendrite input.",
     );
     expect(runtime.snapshot().toast).toContain("Hint:");
     expect(runtime.snapshot().puzzle?.canHint).toBe(true);
 
     runtime.puzzleHint();
     expect(runtime.snapshot().puzzle?.hint).toBe(
-      "One player can hold the terminal while the other carries the tracer.",
+      "Once threshold is crossed, the spike is all-or-none. Extra presses do not increase it.",
+    );
+    expect(runtime.snapshot().puzzle?.canHint).toBe(true);
+
+    runtime.puzzleHint();
+    expect(runtime.snapshot().puzzle?.hint).toBe(
+      "The axon is one-way: dendrite → trigger zone → axon → terminal.",
     );
     expect(runtime.snapshot().puzzle?.canHint).toBe(false);
     expect(
       runtime
         .exportEvidence()
         .events.filter((event) => event.type === "hint_used"),
-    ).toHaveLength(2);
-
-    const terminal = runtime.entityPixel("pulse-terminal");
-    if (!terminal) throw new Error("pulse-terminal missing");
-    runtime.placePlayer("p1", terminal.x, 20 * 32);
-    stepWith(runtime, playerActions({ pulse: true }));
-    expect(
-      runtime.snapshot().puzzle?.pulse?.remainingTicks ?? 0,
-    ).toBeGreaterThan(0);
-    for (let frame = 0; frame < 30; frame += 1) stepWith(runtime);
-    expect(runtime.snapshot().puzzle?.pulse?.remainingTicks).toBe(0);
+    ).toHaveLength(3);
   });
 
-  it("records wrong-side feedback in the exported puzzle counters", () => {
+  it("does not solve on one input and resets the counter", () => {
     const { runtime } = makeRuntime();
-    const tracer = runtime.entityPixel("tracer-prop");
-    if (!tracer) throw new Error("tracer missing");
-    runtime.placePlayer("p2", tracer.x, 20 * 32);
-    stepWith(runtime, playerActions(), playerActions({ carry: true }));
-    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("carried");
+    pressSensor(runtime, "input-a");
 
-    runtime.placePlayer("p2", 700, 20 * 32);
-    stepWith(runtime, playerActions(), playerActions({ carry: true }));
-    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("free");
-    expect(runtime.snapshot().puzzle?.counters.wrongSide).toBe(1);
+    expect(runtime.snapshot().puzzle?.solved).toBe(false);
+    expect(runtime.snapshot().puzzle?.counters.resets ?? 0).toBe(0);
 
     runtime.resetPuzzle();
-    solveFerry(runtime);
-    const solved = runtime
-      .exportEvidence()
-      .events.find((event) => event.type === "puzzle_solved");
-    expect(
-      (solved?.counters as Record<string, number> | undefined)?.wrongSide,
-    ).toBeGreaterThanOrEqual(1);
+    expect(runtime.snapshot().puzzle?.solved).toBe(false);
+    expect(runtime.snapshot().puzzle?.counters.resets).toBe(1);
   });
 
   it("respawns a player at the checkpoint after a hazard", () => {
@@ -360,7 +348,7 @@ describe("game runtime", () => {
     expect(p1.dashCooldown).toBeCloseTo(0.4, 5);
   });
 
-  it("restores a docked prop with the solved gate latched", () => {
+  it("restores a solved Node Run with the exit latched", () => {
     const storage = new MemorySaveStorage();
     const first = new GameRuntime({
       content,
@@ -369,7 +357,7 @@ describe("game runtime", () => {
       now: () => new Date("2026-10-26T12:00:00.000Z"),
     });
     first.start();
-    solveFerry(first);
+    solveNodeRun(first);
 
     const restored = new GameRuntime({
       content,
@@ -380,15 +368,16 @@ describe("game runtime", () => {
     restored.start();
 
     expect(restored.snapshot().puzzle?.solved).toBe(true);
-    expect(restored.simulation.props["tracer-prop"]?.state).toBe("docked");
-    expect(restored.simulation.props["tracer-prop"]?.placedOn).toBe(
-      "receptor-a",
-    );
+    expect(restored.snapshot().abilities).toContain("signal-dash");
+    expect(
+      restored.snapshot().map.nodes.find((node) => node.id === "map-muscle-effector")
+        ?.visited,
+    ).toBe(true);
   });
 
   it("resets to checkpoint on a content-version change while keeping progression", () => {
     const { runtime, storage } = makeRuntime();
-    solveFerry(runtime);
+    solveNodeRun(runtime);
 
     const saved = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
     saved.contentVersion = "0.0.0";
@@ -405,7 +394,6 @@ describe("game runtime", () => {
     expect(restored.snapshot().toast).toContain("resumed from checkpoint");
     expect(restored.snapshot().abilities).toContain("signal-dash");
     expect(restored.snapshot().puzzle?.solved).toBe(false);
-    expect(restored.simulation.props["tracer-prop"]?.state).toBe("free");
     expect(restored.simulation.players.p1.x).toBeCloseTo(4.5 * 32, 0);
     expect(
       restored
@@ -431,7 +419,7 @@ describe("game runtime", () => {
     expect(runtime.snapshot().toast).toContain("Save format updated");
   });
 
-  it("runs dialogue, scan, the Signal Ferry puzzle, exit, debrief, and evidence export", () => {
+  it("runs dialogue, scan, the Node Run puzzle, exit, debrief, and evidence export", () => {
     const { runtime, audio } = makeRuntime();
 
     walkTo(runtime, "agent-neuron");
@@ -447,15 +435,15 @@ describe("game runtime", () => {
     runtime.chooseDialogue("right");
     expect(runtime.state).toBe("level");
     expect(runtime.snapshot().knownConceptIds).toEqual(
-      expect.arrayContaining(["CON-3", "CON-4", "CON-5"]),
+      expect.arrayContaining(["CON-3"]),
     );
 
-    walkTo(runtime, "scan-synapse");
+    walkTo(runtime, "scan-pathway");
     runtime.scan();
-    expect(runtime.snapshot().knownConceptIds).toContain("CON-4");
+    expect(runtime.snapshot().knownConceptIds).toContain("CON-5");
     expect(audio.played.length).toBeGreaterThan(0);
 
-    solveFerry(runtime);
+    solveNodeRun(runtime);
     expect(
       runtime.snapshot().map.nodes.find((node) => node.id === "map-muscle-effector")
         ?.visited,
@@ -474,7 +462,7 @@ describe("game runtime", () => {
     expect(runtime.state).toBe("debrief");
     runtime.submitDebrief(
       "prompt-obj-2",
-      "The receptor fires, the sensory neuron reaches the spinal cord, and the motor neuron drives the muscle.",
+      "One input is below threshold, so no spike fires. Two inputs reach threshold and the spike is all-or-none. It travels one way along the axon to the terminal.",
     );
     runtime.finishDebrief();
     expect(runtime.state).toBe("complete");
@@ -489,7 +477,7 @@ describe("game runtime", () => {
       exported.events.some(
         (event) =>
           event.type === "puzzle_solved" &&
-          event.puzzleId === "puzzle-ferry-01",
+          event.puzzleId === "puzzle-node-run",
       ),
     ).toBe(true);
     expect(
@@ -500,7 +488,7 @@ describe("game runtime", () => {
   it("restores progression and positions from the autosave", () => {
     const { runtime, storage } = makeRuntime();
 
-    solveFerry(runtime);
+    solveNodeRun(runtime);
     runtime.placePlayer("p1", 700, 640);
     stepWith(runtime);
     runtime.placePlayer("p1", 4.5 * 32, 20 * 32);
@@ -520,7 +508,6 @@ describe("game runtime", () => {
     expect(snapshot.state).toBe("level");
     expect(snapshot.abilities).toContain("signal-dash");
     expect(snapshot.puzzle?.solved).toBe(true);
-    expect(restored.simulation.props["tracer-prop"]?.state).toBe("docked");
     expect(
       snapshot.map.nodes.find((node) => node.id === "map-muscle-effector")
         ?.visited,
@@ -528,7 +515,7 @@ describe("game runtime", () => {
     expect(restored.snapshot().toast).toBe("Resumed from checkpoint");
   });
 
-  it("solves the Signal Ferry in solo mode with the union of both abilities", () => {
+  it("solves Node Run in solo mode with the union of both abilities", () => {
     const { runtime } = makeRuntime();
     runtime.togglePlayer2();
     expect(runtime.snapshot().mode).toBe("solo");
@@ -536,102 +523,33 @@ describe("game runtime", () => {
       expect.arrayContaining(["pulse", "carry"]),
     );
 
-    const tracer = runtime.entityPixel("tracer-prop");
-    const receptor = runtime.entityPixel("receptor-a");
-    const terminal = runtime.entityPixel("pulse-terminal");
-    if (!tracer || !receptor || !terminal) throw new Error("ferry entities missing");
-
-    runtime.placePlayer("p1", tracer.x, 20 * 32);
-    stepWith(runtime, playerActions({ carry: true }));
-    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("carried");
-
-    runtime.placePlayer("p1", receptor.x, 20 * 32);
-    stepWith(runtime, playerActions({ carry: true }));
-    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("placed");
-
-    runtime.placePlayer("p1", terminal.x, 20 * 32);
-    stepWith(runtime, playerActions({ pulse: true }));
-    for (let frame = 0; frame < 30; frame += 1) stepWith(runtime);
+    pressSensor(runtime, "input-a");
+    pressSensor(runtime, "input-b");
+    pressSensor(runtime, "terminal-zone");
+    stepWith(runtime);
 
     expect(runtime.snapshot().abilities).toContain("signal-dash");
     expect(runtime.snapshot().puzzle?.solved).toBe(true);
   });
 
-  it("restores a carried prop and then completes the puzzle after loading", () => {
-    const storage = new MemorySaveStorage();
-    const save = createSave({ storage });
-    const first = new GameRuntime({
-      content,
-      save,
-      audio: new FakeAudio(),
-      now: () => new Date("2026-10-26T12:00:00.000Z"),
-    });
-    first.start();
-
-    const tracer = first.entityPixel("tracer-prop");
-    if (!tracer) throw new Error("tracer missing");
-    first.placePlayer("p2", tracer.x, 20 * 32);
-    stepWith(first, playerActions(), playerActions({ carry: true }));
-    expect(first.simulation.props["tracer-prop"]?.state).toBe("carried");
-
-    const restored = new GameRuntime({
-      content,
-      save: createSave({ storage }),
-      audio: new FakeAudio(),
-      now: () => new Date("2026-10-26T12:10:00.000Z"),
-    });
-    restored.start();
-    expect(restored.simulation.props["tracer-prop"]?.state).toBe("carried");
-    expect(restored.simulation.props["tracer-prop"]?.carriedBy).toBe("p2");
-
-    const receptor = restored.entityPixel("receptor-a");
-    const terminal = restored.entityPixel("pulse-terminal");
-    if (!receptor || !terminal) throw new Error("ferry entities missing");
-    restored.placePlayer("p2", receptor.x, 20 * 32);
-    for (let frame = 0; frame < 5; frame += 1) stepWith(restored);
-    stepWith(restored, playerActions(), playerActions({ carry: true }));
-    expect(restored.simulation.props["tracer-prop"]?.state).toBe("placed");
-
-    restored.placePlayer("p1", terminal.x, 20 * 32);
-    stepWith(restored, playerActions({ pulse: true }));
-    for (let frame = 0; frame < 30; frame += 1) stepWith(restored);
-    expect(restored.snapshot().puzzle?.solved).toBe(true);
-  });
-
-  it("rejects a mismatched receptor and lets the player retry", () => {
+  it("splits the two dendrite inputs across co-op players", () => {
     const { runtime } = makeRuntime();
-    const tracer = runtime.entityPixel("tracer-prop");
-    const wrong = runtime.entityPixel("receptor-b");
-    const terminal = runtime.entityPixel("pulse-terminal");
-    if (!tracer || !wrong || !terminal) throw new Error("ferry entities missing");
+    const inputA = sensorCenter("input-a");
+    const inputB = sensorCenter("input-b");
+    const terminal = sensorCenter("terminal-zone");
 
-    runtime.placePlayer("p2", tracer.x, 20 * 32);
-    stepWith(runtime, playerActions(), playerActions({ carry: true }));
-    runtime.placePlayer("p2", wrong.x, 20 * 32);
-    stepWith(runtime, playerActions(), playerActions({ carry: true }));
-    expect(runtime.simulation.props["tracer-prop"]?.placedOn).toBe("receptor-b");
+    runtime.placePlayer("p1", inputA.x, 20 * 32);
+    runtime.placePlayer("p2", inputB.x, 20 * 32);
+    stepWith(runtime);
+    expect(runtime.snapshot().puzzle?.solved).toBe(false);
 
     runtime.placePlayer("p1", terminal.x, 20 * 32);
-    stepWith(runtime, playerActions({ pulse: true }));
-    for (let frame = 0; frame < 30; frame += 1) stepWith(runtime);
-
-    expect(runtime.snapshot().puzzle?.solved).toBe(false);
-    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("placed");
-    expect(
-      runtime.snapshot().puzzle?.counters.wrongReceptor ?? 0,
-    ).toBeGreaterThanOrEqual(1);
-
-    // The tracer remains retrievable; move it to the matching receptor.
-    runtime.placePlayer("p2", wrong.x, 20 * 32);
-    stepWith(runtime, playerActions(), playerActions({ carry: true }));
-    const right = runtime.entityPixel("receptor-a");
-    if (!right) throw new Error("receptor-a missing");
-    runtime.placePlayer("p2", right.x, 20 * 32);
-    stepWith(runtime, playerActions(), playerActions({ carry: true }));
-    expect(runtime.simulation.props["tracer-prop"]?.placedOn).toBe("receptor-a");
+    stepWith(runtime);
+    expect(runtime.snapshot().puzzle?.solved).toBe(true);
+    expect(runtime.snapshot().abilities).toContain("signal-dash");
   });
 
-  it("restores a placed tracer and continues the pulse", () => {
+  it("restores a partial threshold count from the autosave", () => {
     const storage = new MemorySaveStorage();
     const first = new GameRuntime({
       content,
@@ -640,14 +558,9 @@ describe("game runtime", () => {
       now: () => new Date("2026-10-26T12:00:00.000Z"),
     });
     first.start();
-    const tracer = first.entityPixel("tracer-prop");
-    const receptor = first.entityPixel("receptor-a");
-    if (!tracer || !receptor) throw new Error("ferry entities missing");
-    first.placePlayer("p2", tracer.x, 20 * 32);
-    stepWith(first, playerActions(), playerActions({ carry: true }));
-    first.placePlayer("p2", receptor.x, 20 * 32);
-    stepWith(first, playerActions(), playerActions({ carry: true }));
-    expect(first.simulation.props["tracer-prop"]?.state).toBe("placed");
+    pressSensor(first, "input-a");
+    expect(first.snapshot().puzzle?.solved).toBe(false);
+    first.puzzleHint();
 
     const restored = new GameRuntime({
       content,
@@ -656,43 +569,12 @@ describe("game runtime", () => {
       now: () => new Date("2026-10-26T12:10:00.000Z"),
     });
     restored.start();
-    expect(restored.simulation.props["tracer-prop"]?.state).toBe("placed");
-    expect(restored.simulation.props["tracer-prop"]?.placedOn).toBe("receptor-a");
+    expect(restored.snapshot().puzzle?.solved).toBe(false);
 
-    const terminal = restored.entityPixel("pulse-terminal");
-    if (!terminal) throw new Error("terminal missing");
-    restored.placePlayer("p1", terminal.x, 20 * 32);
-    stepWith(restored, playerActions({ pulse: true }));
-    for (let frame = 0; frame < 30; frame += 1) stepWith(restored);
+    pressSensor(restored, "input-b");
+    pressSensor(restored, "terminal-zone");
+    stepWith(restored);
     expect(restored.snapshot().puzzle?.solved).toBe(true);
-  });
-
-  it("resets an unsolved puzzle and returns the tracer to its spawn", () => {
-    const { runtime } = makeRuntime();
-    const tracer = runtime.entityPixel("tracer-prop");
-    if (!tracer) throw new Error("tracer missing");
-    runtime.placePlayer("p2", tracer.x, 20 * 32);
-    stepWith(runtime, playerActions(), playerActions({ carry: true }));
-    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("carried");
-
-    runtime.resetPuzzle();
-    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("free");
-    expect(runtime.snapshot().puzzle?.solved).toBe(false);
-    expect(runtime.snapshot().puzzle?.counters.resets).toBe(1);
-  });
-
-  it("drops a carried prop when P2 leaves at a checkpoint", () => {
-    const { runtime } = makeRuntime();
-    const tracer = runtime.entityPixel("tracer-prop");
-    if (!tracer) throw new Error("tracer missing");
-    runtime.placePlayer("p2", tracer.x, 20 * 32);
-    stepWith(runtime, playerActions(), playerActions({ carry: true }));
-    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("carried");
-
-    runtime.placePlayer("p1", 4.5 * 32, 20 * 32);
-    runtime.togglePlayer2();
-    expect(runtime.snapshot().mode).toBe("solo");
-    expect(runtime.simulation.props["tracer-prop"]?.state).toBe("free");
   });
 
   it("toggles P2 only at a checkpoint and persists settings", () => {
@@ -745,7 +627,7 @@ describe("game runtime", () => {
     expect(runtime.state).toBe("level");
   });
 
-  it("dashes only after the Signal Ferry unlocks signal-dash", () => {
+  it("dashes only after Node Run unlocks signal-dash", () => {
     const { runtime } = makeRuntime();
     const startX = runtime.simulation.players.p1.x;
 
@@ -755,7 +637,7 @@ describe("game runtime", () => {
     });
     expect(runtime.simulation.players.p1.x).toBe(startX);
 
-    solveFerry(runtime);
+    solveNodeRun(runtime);
     const before = runtime.simulation.players.p1.x;
     runtime.step(1 / 60, {
       ...input(),

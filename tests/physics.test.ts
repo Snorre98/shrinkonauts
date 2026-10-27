@@ -91,42 +91,52 @@ function settledWith(extra: RoomEntity[]) {
 }
 
 describe("Matter prop lifecycle", () => {
-  it("carries, places, docks, and resets the tracer", () => {
-    const simulation = settled();
-    const prop = simulation.physics.props.get("tracer-prop");
+  it("carries, places, docks, and resets a prop", () => {
+    const simulation = settledWith([
+      bodyEntity("body-lifecycle", 6, 19, 20, 20),
+      propEntity("prop-lifecycle", "body-lifecycle", 6, 19),
+    ]);
+    const prop = simulation.physics.props.get("prop-lifecycle");
     expect(prop).toBeDefined();
     if (!prop) return;
 
     expect(prop.state.state).toBe("free");
-    expect(simulation.physics.pickUp("p2", "tracer-prop")).toBe(true);
-    expect(simulation.physics.propState("tracer-prop")?.state).toBe("carried");
+    expect(simulation.physics.pickUp("p2", "prop-lifecycle")).toBe(true);
+    expect(simulation.physics.propState("prop-lifecycle")?.state).toBe("carried");
 
     for (let frame = 0; frame < 10; frame += 1) {
       stepRoomSimulation(simulation, emptyIntents(), 1 / 60);
     }
-    expect(simulation.props["tracer-prop"]?.state).toBe("carried");
-    expect(simulation.props["tracer-prop"]?.carriedBy).toBe("p2");
+    expect(simulation.props["prop-lifecycle"]?.state).toBe("carried");
+    expect(simulation.props["prop-lifecycle"]?.carriedBy).toBe("p2");
 
     expect(
-      simulation.physics.placeProp("tracer-prop", "receptor-a", {
-        x: 912,
-        y: 596,
+      simulation.physics.placeProp("prop-lifecycle", "receptor-test", {
+        x: 240,
+        y: 600,
       }),
     ).toBe(true);
-    expect(simulation.physics.propState("tracer-prop")?.state).toBe("placed");
-    expect(simulation.physics.propState("tracer-prop")?.placedOn).toBe("receptor-a");
+    expect(simulation.physics.propState("prop-lifecycle")?.state).toBe("placed");
+    expect(simulation.physics.propState("prop-lifecycle")?.placedOn).toBe(
+      "receptor-test",
+    );
 
-    expect(simulation.physics.dockProp("tracer-prop", "receptor-a")).toBe(true);
-    expect(simulation.physics.propState("tracer-prop")?.state).toBe("docked");
+    expect(simulation.physics.dockProp("prop-lifecycle", "receptor-test")).toBe(
+      true,
+    );
+    expect(simulation.physics.propState("prop-lifecycle")?.state).toBe("docked");
 
-    expect(simulation.physics.resetProp("tracer-prop")).toBe(true);
-    expect(simulation.physics.propState("tracer-prop")?.state).toBe("free");
-    expect(simulation.physics.propState("tracer-prop")?.placedOn).toBeNull();
+    expect(simulation.physics.resetProp("prop-lifecycle")).toBe(true);
+    expect(simulation.physics.propState("prop-lifecycle")?.state).toBe("free");
+    expect(simulation.physics.propState("prop-lifecycle")?.placedOn).toBeNull();
   });
 
   it("returns an out-of-bounds prop to its spawn", () => {
-    const simulation = settled();
-    const prop = simulation.physics.props.get("tracer-prop");
+    const simulation = settledWith([
+      bodyEntity("body-out-of-bounds", 6, 19, 20, 20),
+      propEntity("prop-out-of-bounds", "body-out-of-bounds", 6, 19),
+    ]);
+    const prop = simulation.physics.props.get("prop-out-of-bounds");
     expect(prop).toBeDefined();
     if (!prop) return;
 
@@ -135,9 +145,9 @@ describe("Matter prop lifecycle", () => {
       stepRoomSimulation(simulation, emptyIntents(), 1 / 60);
     }
 
-    expect(simulation.props["tracer-prop"]?.state).toBe("free");
-    expect(simulation.props["tracer-prop"]?.x).toBeGreaterThan(0);
-    expect(simulation.props["tracer-prop"]?.y).toBeGreaterThan(0);
+    expect(simulation.props["prop-out-of-bounds"]?.state).toBe("free");
+    expect(simulation.props["prop-out-of-bounds"]?.x).toBeGreaterThan(0);
+    expect(simulation.props["prop-out-of-bounds"]?.y).toBeGreaterThan(0);
   });
 
   it("applies the puzzle-scoped tether policy", () => {
@@ -275,10 +285,13 @@ describe("Matter physics coverage", () => {
   });
 
   it("throws a carried prop with an impulse", () => {
-    const simulation = settled();
-    expect(simulation.physics.pickUp("p2", "tracer-prop")).toBe(true);
-    expect(simulation.physics.throwProp("tracer-prop", 1)).toBe(true);
-    const prop = simulation.physics.props.get("tracer-prop");
+    const simulation = settledWith([
+      bodyEntity("body-throw", 6, 19, 20, 20),
+      propEntity("prop-throw", "body-throw", 6, 19),
+    ]);
+    expect(simulation.physics.pickUp("p2", "prop-throw")).toBe(true);
+    expect(simulation.physics.throwProp("prop-throw", 1)).toBe(true);
+    const prop = simulation.physics.props.get("prop-throw");
     expect(prop?.state.state).toBe("free");
     expect(prop?.body.velocity.x).toBeGreaterThan(0);
     expect(prop?.body.velocity.y).toBeLessThan(0);
@@ -286,6 +299,8 @@ describe("Matter physics coverage", () => {
 
   it("keeps the L1 collision layers explicit", () => {
     const simulation = settledWith([
+      bodyEntity("body-layer", 6, 19, 20, 20),
+      propEntity("prop-layer", "body-layer", 6, 19),
       {
         id: "hazard-layer",
         type: "hazard",
@@ -298,7 +313,7 @@ describe("Matter physics coverage", () => {
     expect(simulation.physics.playerBodies.p1.collisionFilter).toMatchObject(
       COLLISION_LAYERS.player,
     );
-    const prop = simulation.physics.props.get("tracer-prop");
+    const prop = simulation.physics.props.get("prop-layer");
     expect(prop?.body.collisionFilter).toMatchObject(COLLISION_LAYERS.prop);
     expect(simulation.physics.solids[0]?.collisionFilter).toMatchObject(
       COLLISION_LAYERS.solid,

@@ -70,7 +70,7 @@ async function closeOverlay(page: Page, overlay: string): Promise<void> {
   await expect(page.locator(`.${overlay}`)).toHaveCount(0);
 }
 
-test("boots into the vertical slice and finishes dialogue, scan, Signal Ferry, debrief", async ({
+test("boots into the vertical slice and finishes dialogue, scan, Node Run, debrief", async ({
   page,
 }) => {
   const consoleErrors = await boot(page);
@@ -78,7 +78,7 @@ test("boots into the vertical slice and finishes dialogue, scan, Signal Ferry, d
   // Boot state: direct into level 03, co-op, two players.
   await expect(page.locator(".hud__eyebrow")).toContainText("03-nerve-forest");
   await expect(page.locator(".hud__meta")).toContainText("co-op");
-  await expect(page.locator(".hud__abilities")).toContainText("Pulse: ready");
+  await expect(page.locator(".hud__meta")).toContainText("Node Run");
 
   // Dialogue.
   await teleport(page, "agent-neuron");
@@ -88,53 +88,40 @@ test("boots into the vertical slice and finishes dialogue, scan, Signal Ferry, d
   await expect(page.locator(".overlay__title")).toHaveText("Neuron Keeper");
 
   await page.keyboard.press("Enter");
-  await expect(page.locator(".dialogue__text")).toContainText("A receptor fires");
+  await expect(page.locator(".dialogue__text")).toContainText(
+    "A neuron does not fire for every nudge",
+  );
   await page.keyboard.press("Enter");
-  await expect(page.locator(".dialogue__text")).toContainText("Follow one message");
+  await expect(page.locator(".dialogue__text")).toContainText(
+    "Two inputs are enough here",
+  );
   await page.keyboard.press("Enter");
   await expect(page.locator(".dialogue__text")).toContainText("Quick check");
   await page
-    .getByRole("button", { name: "Dendrites → soma → axon → terminals" })
+    .getByRole("button", { name: "A full-size spike fires and travels one way" })
     .click();
   await expect(page.locator(".overlay--dialogue")).toHaveCount(0);
 
   // Scan one structure and read it in the concept log.
-  await teleport(page, "scan-muscle");
+  await teleport(page, "scan-pathway");
   await page.keyboard.press("q");
   // Wait for the scan to be applied before opening the log; otherwise both
   // actions land in the same frame and the log transition consumes the scan.
-  await expect(page.locator(".hud__toast")).toContainText("Muscle effector");
+  await expect(page.locator(".hud__toast")).toContainText(
+    "Sensory and motor pathways",
+  );
   await page.keyboard.press("c");
   await expect(page.getByRole("dialog", { name: "Concept log" })).toBeVisible();
-  await expect(page.locator(".concept__term", { hasText: "Muscle effector" })).toBeVisible();
+  await expect(
+    page.locator(".concept__term", { hasText: "Sensory and motor pathways" }),
+  ).toBeVisible();
   await closeOverlay(page, "overlay--concept-log");
 
-  // Signal Ferry: P2 carries and places the tracer; P1 pulses the terminal.
-  await teleport(page, "agent-neuron", "tracer-prop");
-  await page.keyboard.press("'");
-  await expect(page.locator(".hud__toast")).toContainText("Tracer picked up");
-
-  await page.evaluate(() => {
-    const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
-    if (!runtime) throw new Error("runtime bridge is missing");
-    const receptor = runtime.entityPixel("receptor-a");
-    if (!receptor) throw new Error("receptor-a is missing");
-    runtime.placePlayer("p2", receptor.x, receptor.y);
-  });
-  await page.waitForTimeout(120);
-  await page.keyboard.press("'");
-  await expect(page.locator(".hud__toast")).toContainText("Tracer placed");
-
-  await page.evaluate(() => {
-    const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
-    if (!runtime) throw new Error("runtime bridge is missing");
-    const terminal = runtime.entityPixel("pulse-terminal");
-    if (!terminal) throw new Error("pulse-terminal is missing");
-    runtime.placePlayer("p1", terminal.x, terminal.y);
-  });
-  await page.waitForTimeout(120);
-  await page.keyboard.press("f");
-  await expect(page.locator(".hud__toast")).toContainText("Signal pulse sent");
+  // Node Run: P1 and P2 press one dendrite input each, then P1 reaches the
+  // terminal. The threshold counter and terminal relay open the exit gate.
+  await teleport(page, "pad-input-a", "pad-input-b");
+  await teleport(page, "pad-terminal");
+  await expect(page.locator(".hud__toast")).toContainText("Signal restored");
   await expect
     .poll(() =>
       page.evaluate(
@@ -155,7 +142,7 @@ test("boots into the vertical slice and finishes dialogue, scan, Signal Ferry, d
   await page
     .getByRole("textbox")
     .fill(
-      "The receptor fires, the sensory neuron reaches the spinal cord, and the motor neuron drives the muscle.",
+      "One input is below threshold, so no spike fires. Two inputs reach threshold and the spike is all-or-none; it travels one way along the axon to the terminal.",
     );
   await page.getByRole("button", { name: "Record answer" }).click();
   await page.getByRole("button", { name: "Finish level" }).click();
@@ -172,7 +159,7 @@ test("boots into the vertical slice and finishes dialogue, scan, Signal Ferry, d
     evidence.events.some(
       (event) =>
         event.type === "puzzle_solved" &&
-        (event as { puzzleId?: string }).puzzleId === "puzzle-ferry-01",
+        (event as { puzzleId?: string }).puzzleId === "puzzle-node-run",
     ),
   ).toBe(true);
   expect(evidence.events.some((event) => event.type === "debrief_completed")).toBe(
@@ -206,7 +193,7 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
 
   await page.getByRole("button", { name: "Show puzzle hint" }).click();
   await expect(page.locator(".pause__hint")).toContainText(
-    "The tracer fits only one receptor shape.",
+    "One input is below threshold. The trigger gate needs a second dendrite input.",
   );
 
   await page.getByRole("button", { name: "Reset puzzle" }).click();
