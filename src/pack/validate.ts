@@ -444,6 +444,7 @@ function checkContent(
   const { pack, syllabus, mapping, levels, rooms, dialogues, gates, puzzles } = content;
   const levelIds = new Set(pack.levels);
   const levelById = new Map(levels.map((level) => [level.id, level]));
+  const mapNodeIds = new Set(levels.map((level) => level.map.nodeId));
 
   if (pack.assetManifests.final && !finalManifest) {
     addIssue(
@@ -679,7 +680,7 @@ function checkContent(
     }
 
     for (const edge of level.map.edges) {
-      if (!levelIds.has(edge.to)) {
+      if (!mapNodeIds.has(edge.to)) {
         // Map edges point at map nodes, which may belong to a future level.
         addWarning(
           `REACHABILITY_FORWARD: level "${level.id}" map edge targets map node "${edge.to}" which is not authored in this slice`,

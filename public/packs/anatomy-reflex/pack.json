@@ -3,12 +3,13 @@
   "id": "anatomy-reflex",
   "title": "Anatomy: The Reflex Arc",
   "domain": "anatomy",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "syllabusId": "anatomy-reflex",
   "startLevelId": "03-nerve-forest",
-  "endLevelId": "03-nerve-forest",
+  "endLevelId": "04-muscle-effector",
   "levels": [
-    "03-nerve-forest"
+    "03-nerve-forest",
+    "04-muscle-effector"
   ],
   "theme": "theme.json",
   "mapping": "mapping.json",
@@ -52,7 +53,7 @@
     ]
   },
   "ageRating": "12+",
-  "description": "Shrink into the nerve forest, drive a signal past threshold, and run the axon to the terminal.",
+  "description": "Shrink into the nerve forest, drive a signal past threshold, cross the neuromuscular junction, and reach the muscle.",
   "metadata": {
     "author": "Snorre",
     "created": "2026-10-26",

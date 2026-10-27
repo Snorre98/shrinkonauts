@@ -37,9 +37,11 @@ records, not amendments or edits to the existing files.
 | [0043](0043-puzzle-feedback-hints-cooldown.md) | Puzzle feedback surfaces for hints and pulse cooldown | Accepted |
 | [0044](0044-hazard-sensors-checkpoint-respawn.md) | Hazard sensors and checkpoint respawn | Accepted |
 | [0045](0045-recoverable-save-version-mismatch.md) | Recoverable save version mismatch | Accepted |
+| [0046](0046-level-transitions.md) | Level transitions after the debrief | Accepted |
 
 ADR-0034–0041 are unchanged close-out records from the original M1.5 pass.
 ADR-0042–0045 record the decisions made while closing the verified gaps.
+ADR-0046 records the M2 multi-level transition and room-scene rebuild.
 
 ## Related accepted records
 
@@ -55,3 +57,11 @@ ADR-0042–0045 record the decisions made while closing the verified gaps.
 
 The new records extend those decisions. Where they narrow an existing rule,
 the newer record wins for M1.5.
+
+## M2 puzzle-engine upgrade
+
+The M2 engine upgrade is documented separately in
+[`../puzzle-engine/`](../puzzle-engine/README.md). It has its own ADR-0001–0008
+for physical gates, prop lifecycle, conditional links, per-level debrief
+prompts, side-level map travel, and schema compatibility. ADR-0046 remains the
+main-path level-transition decision.

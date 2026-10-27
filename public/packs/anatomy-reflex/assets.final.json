@@ -33,6 +33,22 @@
       "type": "background",
       "placeholder": true
     },
+    "bg.muscle_endplate.sky": {
+      "type": "background",
+      "placeholder": true
+    },
+    "bg.muscle_endplate.far": {
+      "type": "background",
+      "placeholder": true
+    },
+    "bg.muscle_endplate.mid": {
+      "type": "background",
+      "placeholder": true
+    },
+    "bg.muscle_endplate.near": {
+      "type": "background",
+      "placeholder": true
+    },
     "sprite.agent.neuron": {
       "type": "sprite",
       "placeholder": true

@@ -223,6 +223,7 @@ export async function bootGame(options: BootOptions = {}): Promise<BootResult> {
     };
 
     let runtime: GameRuntime | undefined;
+    let roomScene: RoomScene | null = null;
 
     ui = mountGameUi(uiRoot, {
       badge: content.theme.ui.assets.badge
@@ -273,6 +274,9 @@ export async function bootGame(options: BootOptions = {}): Promise<BootResult> {
       onCue: (cue) => {
         consoleLogger.debug(`[cue] ${cue}`);
       },
+      onLevelChange: () => {
+        roomScene?.scene.restart();
+      },
     });
     runtime = created;
 
@@ -318,6 +322,7 @@ export async function bootGame(options: BootOptions = {}): Promise<BootResult> {
           `#${parent} canvas`,
         );
         if (canvas) {
+          canvas.dataset.roomId = created.roomDocument.id;
           canvas.tabIndex = 0;
           canvas.setAttribute(
             "aria-label",
@@ -326,6 +331,7 @@ export async function bootGame(options: BootOptions = {}): Promise<BootResult> {
         }
       },
     });
+    roomScene = scene;
 
     const game = createGame(scene, {
       parent,

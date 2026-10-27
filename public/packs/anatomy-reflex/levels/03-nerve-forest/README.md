@@ -8,6 +8,14 @@
 **Puzzle:** `puzzle-node-run`
 **Win:** `gateOpen gate-exit`
 
+> **Cross-level update (2026-10-27):** `04-muscle-effector` is now authored as
+> Endplate Ferry under [`ADR-0046`](../../../../../docs/adr-m1.5/0046-level-transitions.md).
+> OBJ-2 now also requires **EV-8** (`puzzle_solved` for
+> `puzzle-endplate-ferry`), so 03 alone no longer meets the objective and the
+> 03 debrief shows it as partial until 04 is solved. The 03-only evidence text
+> below is the historical chunk record; the 03 → 04 transition and the
+> remaining 04→05 warnings are current.
+
 ## Player-facing goal
 
 The signal is stuck below threshold, so the exit to the terminal is closed. Talk

@@ -253,14 +253,15 @@ function walkTo(runtime: GameRuntime, entityId: string): void {
 
 function sensorCenter(
   content: ReturnType<typeof loadContent>,
+  puzzleId: string,
   nodeId: string,
 ): { x: number; y: number } {
-  const puzzle = content.puzzles["puzzle-node-run"];
-  assert(puzzle, "node-run puzzle is missing");
+  const puzzle = content.puzzles[puzzleId];
+  assert(puzzle, `${puzzleId} puzzle is missing`);
   const node = puzzle.nodes.find((entry) => entry.id === nodeId);
   assert(
     node && (node.type === "plate" || node.type === "zone"),
-    `node-run sensor "${nodeId}" is missing`,
+    `${puzzleId} sensor "${nodeId}" is missing`,
   );
   return {
     x: node.rect.x + node.rect.width / 2,
@@ -268,12 +269,22 @@ function sensorCenter(
   };
 }
 
+function walkPlayerTo(
+  runtime: GameRuntime,
+  playerId: "p1" | "p2",
+  entityId: string,
+): void {
+  const point = runtime.entityPixel(entityId);
+  assert(point, `room entity "${entityId}" is missing`);
+  runtime.placePlayer(playerId, point.x, point.y);
+}
+
 function solveNodeRun(
   runtime: GameRuntime,
   content: ReturnType<typeof loadContent>,
 ): void {
   for (const nodeId of ["input-a", "input-b", "terminal-zone"]) {
-    const point = sensorCenter(content, nodeId);
+    const point = sensorCenter(content, "puzzle-node-run", nodeId);
     runtime.placePlayer("p1", point.x, 20 * 32);
     runtime.step(1 / 60, frameInput());
   }
@@ -290,6 +301,113 @@ function solveNodeRun(
     runtime.snapshot().map.nodes.find((node) => node.id === "map-muscle-effector")
       ?.visited === true,
     "[anatomy] Node Run did not reveal the muscle-effector map node",
+  );
+}
+
+function finishNodeRunDebrief(runtime: GameRuntime): void {
+  runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
+  runtime.placePlayer("p2", 36.5 * 32, 20 * 32);
+  runtime.step(1 / 60, frameInput());
+  assert(
+    runtime.snapshot().state === "debrief",
+    "[anatomy] Node Run exit did not open the debrief",
+  );
+  const prompt = runtime.snapshot().debrief?.prompts[0];
+  assert(prompt, "[anatomy] no OBJ-2 debrief prompt");
+  runtime.submitDebrief(
+    prompt.id,
+    "One input is below threshold, so no spike fires. Two inputs reach threshold and the spike is all-or-none; it travels one way along the axon to the terminal.",
+  );
+  runtime.finishDebrief();
+  assert(
+    runtime.snapshot().state === "level",
+    "[anatomy] finishing the Node Run debrief did not enter the next level",
+  );
+  assert(
+    runtime.snapshot().level.id === "04-muscle-effector",
+    "[anatomy] the transition did not load Endplate Ferry",
+  );
+}
+
+function solveEndplateFerry(
+  runtime: GameRuntime,
+  content: ReturnType<typeof loadContent>,
+): void {
+  walkPlayerTo(runtime, "p1", "motor-terminal");
+  runtime.step(
+    1 / 60,
+    frameInput({
+      p1: { interact: true, scan: false, pulse: false, carry: false, throw: false },
+    }),
+  );
+  assert(
+    runtime.snapshot().puzzle?.id === "puzzle-endplate-ferry",
+    "[anatomy] Endplate Ferry did not activate at the motor terminal",
+  );
+  assert(
+    runtime.simulation.tetherPolicy === "off",
+    "[anatomy] Endplate Ferry tether policy was not applied",
+  );
+
+  const plate = sensorCenter(content, "puzzle-endplate-ferry", "terminal-plate");
+  runtime.placePlayer("p1", plate.x, 20 * 32);
+  for (let frame = 0; frame < 90; frame += 1) {
+    runtime.step(1 / 60, frameInput());
+  }
+
+  walkPlayerTo(runtime, "p2", "ach-packet");
+  runtime.step(
+    1 / 60,
+    frameInput({
+      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false },
+    }),
+  );
+  walkPlayerTo(runtime, "p2", "nicotinic-receptor");
+  runtime.step(
+    1 / 60,
+    frameInput({
+      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false },
+    }),
+  );
+
+  walkPlayerTo(runtime, "p1", "motor-terminal");
+  runtime.step(
+    1 / 60,
+    frameInput({
+      p1: { interact: false, scan: false, pulse: true, carry: false, throw: false },
+    }),
+  );
+  for (let frame = 0; frame < 12; frame += 1) {
+    runtime.step(1 / 60, frameInput());
+  }
+
+  assert(
+    runtime.snapshot().puzzle?.solved === true,
+    "[anatomy] Endplate Ferry did not latch as solved",
+  );
+}
+
+function finishEndplateDebrief(runtime: GameRuntime): void {
+  runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+  runtime.step(1 / 60, frameInput());
+  assert(
+    runtime.snapshot().state === "debrief",
+    "[anatomy] Endplate Ferry exit did not open the debrief",
+  );
+  const prompt = runtime.snapshot().debrief?.prompts[0];
+  assert(prompt, "[anatomy] no Endplate Ferry debrief prompt");
+  assert(
+    runtime.snapshot().debrief?.answers[prompt.id] === undefined,
+    "[anatomy] the 03 debrief answer leaked into the 04 debrief",
+  );
+  runtime.submitDebrief(
+    prompt.id,
+    "Ca²⁺ enters the terminal and triggers ACh release; ACh crosses the cleft, binds the nicotinic receptor, and the muscle responds. AChE clears ACh to end the signal.",
+  );
+  runtime.finishDebrief();
+  assert(
+    runtime.snapshot().state === "complete",
+    "[anatomy] the Endplate Ferry debrief did not complete the pack",
   );
 }
 
@@ -492,26 +610,31 @@ function runAnatomyRuntime(): RuntimeResult {
     "[anatomy] signal-dash did not move player 1",
   );
 
-  // Exit -> debrief -> evidence.
-  runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
-  runtime.placePlayer("p2", 36.5 * 32, 20 * 32);
-  runtime.step(1 / 60, frameInput());
-  assert(runtime.snapshot().state === "debrief", "[anatomy] exit did not open the debrief");
+  // Exit -> 03 debrief -> 04 transition.
+  finishNodeRunDebrief(runtime);
 
-  const debrief = runtime.snapshot().debrief;
-  assert(debrief !== null, "[anatomy] debrief is empty");
-  const prompt = debrief?.prompts[0];
-  assert(prompt, "[anatomy] no debrief prompt for OBJ-2");
-  assert(prompt.objectiveId === "OBJ-2", "[anatomy] wrong debrief objective");
-
-  runtime.submitDebrief(prompt.id, "");
-  assert(runtime.snapshot().state === "debrief", "[anatomy] empty answer finished debrief");
-  runtime.submitDebrief(
-    prompt.id,
-    "One input is below threshold, so no spike fires. Two inputs reach threshold and the spike is all-or-none; it travels one way along the axon to the terminal.",
+  const transitioned = runtime.snapshot();
+  assert(
+    transitioned.roomId === "room-muscle-effector",
+    "[anatomy] the transition did not load the muscle-effector room",
   );
-  runtime.finishDebrief();
-  assert(runtime.snapshot().state === "complete", "[anatomy] debrief did not complete");
+  assert(
+    transitioned.checkpointId === "checkpoint-muscle-entry",
+    "[anatomy] the transition did not use the 04 checkpoint",
+  );
+  assert(
+    transitioned.puzzle === null,
+    "[anatomy] Endplate Ferry should wait for interact activation",
+  );
+  assert(
+    transitioned.map.nodes.find((node) => node.current)?.id ===
+      "map-muscle-effector",
+    "[anatomy] the map did not move to the muscle effector",
+  );
+
+  // 04 puzzle -> debrief -> complete -> evidence.
+  solveEndplateFerry(runtime, content);
+  finishEndplateDebrief(runtime);
 
   const evidence = runtime.exportEvidence();
   assert(evidence.mode === "co-op", "[anatomy] evidence mode is wrong");
@@ -520,17 +643,22 @@ function runAnatomyRuntime(): RuntimeResult {
     evidence.objectives.find((item) => item.id === "OBJ-2")?.requiredMet === true,
     "[anatomy] OBJ-2 evidence is incomplete",
   );
-  assert(
-    evidence.events.some(
-      (event) =>
-        event.type === "puzzle_solved" &&
-        event.puzzleId === "puzzle-node-run",
-    ),
-    "[anatomy] puzzle_solved event is missing from evidence",
-  );
+  for (const puzzleId of ["puzzle-node-run", "puzzle-endplate-ferry"]) {
+    assert(
+      evidence.events.some(
+        (event) =>
+          event.type === "puzzle_solved" && event.puzzleId === puzzleId,
+      ),
+      `[anatomy] ${puzzleId} puzzle_solved event is missing from evidence`,
+    );
+  }
   assert(
     evidence.events.some((event) => event.type === "debrief_completed"),
     "[anatomy] debrief_completed event is missing from evidence",
+  );
+  assert(
+    evidence.events.some((event) => event.type === "pack_completed"),
+    "[anatomy] pack_completed event is missing from evidence",
   );
 
   // Restore: solving the gate autosaves an ability the next boot must keep.
@@ -640,7 +768,7 @@ function main(): void {
 
     const runtime = runAnatomyRuntime();
     console.log(
-      `  [anatomy runtime] PASS — ${runtime.assets} IDs, ${runtime.placeholders} placeholders, dialogue/scan/puzzle/exit/debrief/save/dash/co-op`,
+      `  [anatomy runtime] PASS — ${runtime.assets} IDs, ${runtime.placeholders} placeholders, dialogue/scan/Node Run/transition/Endplate Ferry/exit/debrief/save/dash/co-op`,
     );
     console.log(`  [anatomy runtime] evidence: ${runtime.events} events exported`);
 

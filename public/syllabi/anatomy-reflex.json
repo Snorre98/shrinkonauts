@@ -2,7 +2,7 @@
   "schemaVersion": "1.0",
   "id": "anatomy-reflex",
   "title": "Anatomy: The Reflex Arc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "status": "draft",
   "audience": {
     "primary": "VG2 Biologi 1 students (16\u201319)",
@@ -79,9 +79,10 @@
       ],
       "evidence": [
         "EV-2",
-        "EV-7"
+        "EV-7",
+        "EV-8"
       ],
-      "successCriterion": "The player reaches threshold with two inputs, explains why the spike is all-or-none and one-way, and traces the signal to the terminal.",
+      "successCriterion": "The player reaches threshold, explains why the spike is all-or-none and one-way, and traces the signal across the neuromuscular junction to the muscle.",
       "assessment": "puzzle",
       "levelHint": "nerve-forest"
     },
@@ -512,7 +513,7 @@
     },
     {
       "id": "EV-7",
-      "description": "Nerve Forest debrief teach-back answer.",
+      "description": "OBJ-2 debrief teach-back answer (Nerve Forest and Endplate Ferry).",
       "event": "debrief_answered",
       "filter": {
         "promptId": "prompt-obj-2"
@@ -528,6 +529,23 @@
         "CON-5",
         "CON-6",
         "CON-7"
+      ]
+    },
+    {
+      "id": "EV-8",
+      "description": "Endplate Ferry puzzle solve and neuromuscular-junction diagnostic counters.",
+      "event": "puzzle_solved",
+      "filter": {
+        "puzzleId": "puzzle-endplate-ferry"
+      },
+      "required": true,
+      "weight": 1,
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-4",
+        "CON-6"
       ]
     }
   ],
@@ -559,9 +577,11 @@
       "objectiveIds": [
         "OBJ-2"
       ],
-      "experience": "Route the signal through the nerve pathway; solve the directional gate.",
+      "experience": "Route the signal through the nerve pathway and across the neuromuscular junction; solve both spatial puzzles.",
       "evidence": [
-        "EV-2"
+        "EV-2",
+        "EV-7",
+        "EV-8"
       ]
     },
     {
@@ -792,7 +812,7 @@
   "metadata": {
     "author": "Snorre",
     "created": "2026-10-26",
-    "updated": "2026-10-26",
+    "updated": "2026-10-27",
     "sourceDocs": [
       "syllabus.md",
       "LEARNING-DESIGN.md"

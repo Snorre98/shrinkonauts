@@ -6,7 +6,7 @@ interface RuntimeBridge {
   exportEvidence(): {
     sessionId: string;
     objectives: Array<{ id: string; requiredMet: boolean }>;
-    events: Array<{ type: string; gateId?: string }>;
+    events: Array<{ type: string; gateId?: string; puzzleId?: string }>;
   };
   snapshot(): { state: string; abilities: string[]; mode: string };
 }
@@ -33,8 +33,19 @@ async function boot(page: Page): Promise<string[]> {
     return Boolean(app?.runtime) && app?.game.scene.isActive("room") === true;
   });
   await expect(page.locator(".hud__title")).toHaveText("Nerve Forest");
+  await waitForRoom(page, "room-nerve-forest");
   await expect(page.locator(".overlay--error")).toHaveCount(0);
   return consoleErrors;
+}
+
+async function waitForRoom(page: Page, roomId: string): Promise<void> {
+  await page.waitForFunction(
+    (id) =>
+      document
+        .querySelector<HTMLCanvasElement>("#game-root canvas")
+        ?.getAttribute("data-room-id") === id,
+    roomId,
+  );
 }
 
 async function teleport(
@@ -70,7 +81,7 @@ async function closeOverlay(page: Page, overlay: string): Promise<void> {
   await expect(page.locator(`.${overlay}`)).toHaveCount(0);
 }
 
-test("boots into the vertical slice and finishes dialogue, scan, Node Run, debrief", async ({
+test("boots into the vertical slice and finishes dialogue, scans, Node Run, Endplate Ferry, debrief", async ({
   page,
 }) => {
   const consoleErrors = await boot(page);
@@ -146,6 +157,52 @@ test("boots into the vertical slice and finishes dialogue, scan, Node Run, debri
     );
   await page.getByRole("button", { name: "Record answer" }).click();
   await page.getByRole("button", { name: "Finish level" }).click();
+
+  // ADR-0046 transition: the 03 debrief loads 04 and the room scene restarts.
+  await expect(page.locator(".overlay--debrief")).toHaveCount(0);
+  await expect(page.locator(".hud__title")).toHaveText("Muscle Effector");
+  await expect(page.locator(".hud__eyebrow")).toContainText("04-muscle-effector");
+  await waitForRoom(page, "room-muscle-effector");
+
+  // Activate the ferry at the motor terminal.
+  await teleport(page, "motor-terminal");
+  await expect(page.locator(".hud__prompt")).toContainText("Start Endplate Ferry");
+  await page.keyboard.press("e");
+  await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry");
+
+  // P1 opens the Ca2+ window.
+  await teleport(page, "pad-terminal");
+  await page.waitForTimeout(1500);
+
+  // P2 picks up and places the ACh packet.
+  await teleport(page, "ach-packet");
+  await page.keyboard.press("'");
+  await expect(page.locator(".hud__abilities")).toContainText("(carrying)");
+  await teleport(page, "nicotinic-receptor");
+  await page.keyboard.press("'");
+  await expect(page.locator(".hud__abilities")).not.toContainText("(carrying)");
+
+  // P1 pulses the terminal; the Ca gate + receptor relay opens the muscle gate.
+  await teleport(page, "motor-terminal");
+  await page.keyboard.press("f");
+  await expect(page.locator(".hud__toast")).toContainText("Signal restored");
+  await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry ✓");
+
+  await page.evaluate(() => {
+    const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
+    if (!runtime) throw new Error("runtime bridge is missing");
+    runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+  });
+  await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Level complete" })).toHaveCount(0);
+
+  await page
+    .getByRole("textbox")
+    .fill(
+      "The action potential opens Ca2+ channels; Ca2+ triggers vesicle release. ACh crosses the cleft and binds nicotinic receptors on the muscle, so the muscle responds. AChE breaks down ACh to end the signal.",
+    );
+  await page.getByRole("button", { name: "Record answer" }).click();
+  await page.getByRole("button", { name: "Finish level" }).click();
   await expect(page.getByRole("dialog", { name: "Level complete" })).toBeVisible();
   await expect(page.locator(".overlay__title")).toHaveText("Signal restored");
 
@@ -155,13 +212,13 @@ test("boots into the vertical slice and finishes dialogue, scan, Node Run, debri
   expect(evidence.objectives.find((item) => item.id === "OBJ-2")?.requiredMet).toBe(
     true,
   );
-  expect(
-    evidence.events.some(
-      (event) =>
-        event.type === "puzzle_solved" &&
-        (event as { puzzleId?: string }).puzzleId === "puzzle-node-run",
-    ),
-  ).toBe(true);
+  for (const puzzleId of ["puzzle-node-run", "puzzle-endplate-ferry"]) {
+    expect(
+      evidence.events.some(
+        (event) => event.type === "puzzle_solved" && event.puzzleId === puzzleId,
+      ),
+    ).toBe(true);
+  }
   expect(evidence.events.some((event) => event.type === "debrief_completed")).toBe(
     true,
   );

@@ -34,18 +34,21 @@ function makeRuntime(storage = new MemorySaveStorage()): {
   audio: FakeAudio;
   save: ReturnType<typeof createSave>;
   storage: MemorySaveStorage;
+  levelChanges: string[];
 } {
   const audio = new FakeAudio();
   const save = createSave({ storage });
+  const levelChanges: string[] = [];
   const runtime = new GameRuntime({
     content,
     save,
     audio,
     now: () => new Date("2026-10-26T12:00:00.000Z"),
     sessionId: "session-runtime-test",
+    onLevelChange: (levelId) => levelChanges.push(levelId),
   });
   runtime.start();
-  return { runtime, audio, save, storage };
+  return { runtime, audio, save, storage, levelChanges };
 }
 
 function makeRuntimeWithContent(
@@ -192,6 +195,94 @@ function solveNodeRun(runtime: GameRuntime): void {
   pressSensor(runtime, "terminal-zone");
   stepWith(runtime);
   expect(runtime.snapshot().puzzle?.solved).toBe(true);
+}
+
+function walkPlayerTo(
+  runtime: GameRuntime,
+  id: "p1" | "p2",
+  entityId: string,
+): void {
+  const point = runtime.entityPixel(entityId);
+  if (!point) throw new Error(`missing entity ${entityId}`);
+  runtime.placePlayer(id, point.x, point.y);
+}
+
+function finishNodeRun(runtime: GameRuntime): void {
+  solveNodeRun(runtime);
+  runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
+  stepWith(runtime);
+  expect(runtime.state).toBe("debrief");
+  runtime.submitDebrief(
+    "prompt-obj-2",
+    "One input is below threshold, so no spike fires. Two inputs reach threshold and the spike is all-or-none; it travels one way along the axon to the terminal.",
+  );
+  runtime.finishDebrief();
+  expect(runtime.state).toBe("level");
+  expect(runtime.snapshot().level.id).toBe("04-muscle-effector");
+}
+
+function activateEndplate(runtime: GameRuntime): void {
+  walkPlayerTo(runtime, "p1", "motor-terminal");
+  stepWith(runtime, playerActions({ interact: true }));
+  expect(runtime.snapshot().puzzle?.id).toBe("puzzle-endplate-ferry");
+  expect(runtime.simulation.tetherPolicy).toBe("off");
+}
+
+function waitRuntime(runtime: GameRuntime, ticks: number): void {
+  for (let index = 0; index < ticks; index += 1) {
+    stepWith(runtime);
+  }
+}
+
+function solveEndplateCoop(runtime: GameRuntime): void {
+  activateEndplate(runtime);
+
+  walkPlayerTo(runtime, "p1", "pad-terminal");
+  waitRuntime(runtime, 90);
+
+  walkPlayerTo(runtime, "p2", "ach-packet");
+  stepWith(runtime, playerActions(), playerActions({ carry: true }));
+
+  walkPlayerTo(runtime, "p2", "nicotinic-receptor");
+  stepWith(runtime, playerActions(), playerActions({ carry: true }));
+
+  walkPlayerTo(runtime, "p1", "motor-terminal");
+  stepWith(runtime, playerActions({ pulse: true }));
+  waitRuntime(runtime, 10);
+
+  expect(runtime.snapshot().puzzle?.solved).toBe(true);
+}
+
+function solveEndplateSolo(runtime: GameRuntime): void {
+  activateEndplate(runtime);
+
+  walkPlayerTo(runtime, "p1", "pad-terminal");
+  waitRuntime(runtime, 90);
+
+  walkPlayerTo(runtime, "p1", "ach-packet");
+  stepWith(runtime, playerActions({ carry: true }));
+
+  walkPlayerTo(runtime, "p1", "nicotinic-receptor");
+  stepWith(runtime, playerActions({ carry: true }));
+
+  walkPlayerTo(runtime, "p1", "motor-terminal");
+  stepWith(runtime, playerActions({ pulse: true }));
+  waitRuntime(runtime, 10);
+
+  expect(runtime.snapshot().puzzle?.solved).toBe(true);
+}
+
+function exitEndplate(runtime: GameRuntime): void {
+  runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+  stepWith(runtime);
+  expect(runtime.state).toBe("debrief");
+}
+
+function finishEndplateDebrief(runtime: GameRuntime, answer: string): void {
+  expect(runtime.snapshot().debrief?.prompts[0]?.id).toBe("prompt-obj-2");
+  runtime.submitDebrief("prompt-obj-2", answer);
+  runtime.finishDebrief();
+  expect(runtime.state).toBe("complete");
 }
 
 describe("game runtime", () => {
@@ -419,8 +510,8 @@ describe("game runtime", () => {
     expect(runtime.snapshot().toast).toContain("Save format updated");
   });
 
-  it("runs dialogue, scan, the Node Run puzzle, exit, debrief, and evidence export", () => {
-    const { runtime, audio } = makeRuntime();
+  it("runs dialogue, scan, Node Run, exit, debrief, and transitions to Endplate Ferry", () => {
+    const { runtime, audio, levelChanges } = makeRuntime();
 
     walkTo(runtime, "agent-neuron");
     runtime.interact();
@@ -465,13 +556,24 @@ describe("game runtime", () => {
       "One input is below threshold, so no spike fires. Two inputs reach threshold and the spike is all-or-none. It travels one way along the axon to the terminal.",
     );
     runtime.finishDebrief();
-    expect(runtime.state).toBe("complete");
+
+    expect(runtime.state).toBe("level");
+    const snapshot = runtime.snapshot();
+    expect(snapshot.level.id).toBe("04-muscle-effector");
+    expect(snapshot.roomId).toBe("room-muscle-effector");
+    expect(snapshot.checkpointId).toBe("checkpoint-muscle-entry");
+    expect(snapshot.puzzle).toBeNull();
+    expect(snapshot.map.nodes.find((node) => node.current)?.id).toBe(
+      "map-muscle-effector",
+    );
+    expect(snapshot.abilities).toContain("signal-dash");
+    expect(levelChanges).toEqual(["03-nerve-forest", "04-muscle-effector"]);
 
     const exported = runtime.exportEvidence();
     expect(exported.mode).toBe("co-op");
     expect(exported.sessionId).toBe("session-runtime-test");
     const objective = exported.objectives.find((item) => item.id === "OBJ-2");
-    expect(objective).toMatchObject({ requiredMet: true });
+    expect(objective).toMatchObject({ requiredMet: false });
     expect(objective?.evidenceIds).toEqual(["EV-2", "EV-7"]);
     expect(
       exported.events.some(
@@ -483,7 +585,170 @@ describe("game runtime", () => {
     expect(
       exported.events.some((event) => event.type === "debrief_completed"),
     ).toBe(true);
+    expect(
+      exported.events.some((event) => event.type === "pack_completed"),
+    ).toBe(false);
   });
+
+  it("notifies the platform when a new run restarts level 03", () => {
+    const { runtime, levelChanges } = makeRuntime();
+    finishNodeRun(runtime);
+
+    runtime.newRun();
+    expect(runtime.snapshot().level.id).toBe("03-nerve-forest");
+    expect(levelChanges).toEqual([
+      "03-nerve-forest",
+      "04-muscle-effector",
+      "03-nerve-forest",
+    ]);
+  });
+
+  it("reveals CON-4 and CON-6 in the Endplate Ferry dialogue", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+
+    walkTo(runtime, "agent-muscle");
+    runtime.interact();
+    expect(runtime.state).toBe("dialogue");
+    expect(runtime.snapshot().dialogue?.speaker).toBe("Muscle Effector");
+
+    runtime.advanceDialogue();
+    runtime.advanceDialogue();
+    runtime.advanceDialogue();
+    expect(runtime.snapshot().dialogue?.choices).toHaveLength(2);
+
+    runtime.chooseDialogue("right");
+    expect(runtime.state).toBe("dialogue");
+    expect(runtime.snapshot().knownConceptIds).toEqual(
+      expect.arrayContaining(["CON-4", "CON-6"]),
+    );
+
+    runtime.advanceDialogue();
+    runtime.advanceDialogue();
+    expect(runtime.state).toBe("level");
+  });
+
+  it("solves Endplate Ferry in co-op and exports both OBJ-2 puzzle solves", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+
+    solveEndplateCoop(runtime);
+    const solved = runtime.snapshot();
+    expect(solved.puzzle?.solved).toBe(true);
+    expect(solved.puzzle?.pulse).not.toBeNull();
+    expect(runtime.simulation.tetherPolicy).toBe("off");
+
+    exitEndplate(runtime);
+    expect(runtime.snapshot().debrief?.answers).toEqual({});
+    expect(runtime.snapshot().debrief?.prompts[0]?.id).toBe("prompt-obj-2");
+
+    finishEndplateDebrief(
+      runtime,
+      "The action potential opens Ca²⁺ channels; Ca²⁺ triggers vesicle release. ACh crosses the cleft and binds nicotinic receptors on the muscle, so the muscle responds. AChE breaks down ACh to end the signal.",
+    );
+
+    const exported = runtime.exportEvidence();
+    const objective = exported.objectives.find((item) => item.id === "OBJ-2");
+    expect(objective).toMatchObject({ requiredMet: true });
+    expect(objective?.evidenceIds).toEqual(["EV-2", "EV-7", "EV-8"]);
+    expect(
+      exported.events.some(
+        (event) =>
+          event.type === "puzzle_solved" &&
+          event.puzzleId === "puzzle-node-run",
+      ),
+    ).toBe(true);
+    expect(
+      exported.events.some(
+        (event) =>
+          event.type === "puzzle_solved" &&
+          event.puzzleId === "puzzle-endplate-ferry",
+      ),
+    ).toBe(true);
+    expect(
+      exported.events.some(
+        (event) =>
+          event.type === "level_completed" &&
+          event.levelId === "04-muscle-effector",
+      ),
+    ).toBe(true);
+    expect(
+      exported.events.some((event) => event.type === "pack_completed"),
+    ).toBe(true);
+  });
+
+  it("solves Endplate Ferry in solo mode with the P1 union", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+
+    runtime.togglePlayer2();
+    expect(runtime.snapshot().mode).toBe("solo");
+    expect(runtime.snapshot().players.p1.abilities).toEqual(
+      expect.arrayContaining(["pulse", "carry"]),
+    );
+
+    solveEndplateSolo(runtime);
+    expect(runtime.snapshot().puzzle?.solved).toBe(true);
+    expect(runtime.snapshot().activeP2).toBe(false);
+  });
+
+  it("keeps the 03 debrief answer out of the 04 debrief", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    solveEndplateCoop(runtime);
+    exitEndplate(runtime);
+
+    expect(runtime.snapshot().debrief?.answers).toEqual({});
+    runtime.finishDebrief();
+    expect(runtime.state).toBe("debrief");
+    expect(runtime.snapshot().toast).toBe(
+      "Answer every teach-back prompt to finish",
+    );
+
+    runtime.submitDebrief(
+      "prompt-obj-2",
+      "Ca²⁺ enters the terminal and triggers ACh release; ACh binds the nicotinic receptor and the muscle responds.",
+    );
+    runtime.finishDebrief();
+    expect(runtime.state).toBe("complete");
+  });
+
+  it("restores an Endplate Ferry run from the transition autosave", () => {
+    const { runtime, storage } = makeRuntime();
+    finishNodeRun(runtime);
+    activateEndplate(runtime);
+
+    const restored = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:10:00.000Z"),
+      sessionId: "session-runtime-test-restore",
+    });
+    restored.start();
+
+    const snapshot = restored.snapshot();
+    expect(snapshot.state).toBe("level");
+    expect(snapshot.level.id).toBe("04-muscle-effector");
+    expect(snapshot.roomId).toBe("room-muscle-effector");
+    expect(snapshot.checkpointId).toBe("checkpoint-muscle-entry");
+    expect(snapshot.puzzle?.id).toBe("puzzle-endplate-ferry");
+    expect(restored.simulation.tetherPolicy).toBe("off");
+  });
+
+  it("does not surface an empty-receptor rejection during a pulse", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    activateEndplate(runtime);
+
+    stepWith(runtime, playerActions({ pulse: true }));
+    waitRuntime(runtime, 10);
+
+    expect(runtime.snapshot().puzzle?.counters.wrongReceptor ?? 0).toBe(0);
+    expect(runtime.snapshot().puzzle?.solved).toBe(false);
+    expect(runtime.snapshot().toast).not.toContain("rejects");
+  });
+
 
   it("restores progression and positions from the autosave", () => {
     const { runtime, storage } = makeRuntime();

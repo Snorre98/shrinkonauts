@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0",
+  "id": "04-muscle-effector",
+  "title": "Muscle Effector",
+  "order": 4,
+  "status": "validated",
+  "syllabusObjectiveIds": ["OBJ-2"],
+  "conceptIds": ["CON-4", "CON-6"],
+  "roomId": "room-muscle-effector",
+  "backgroundId": "bg.muscle_endplate",
+  "dialogueIds": ["dlg-muscle-01"],
+  "gateIds": [],
+  "puzzleIds": ["puzzle-endplate-ferry"],
+  "map": {
+    "nodeId": "map-muscle-effector",
+    "label": "Muscle Effector",
+    "x": 3,
+    "y": 1,
+    "edges": [
+      { "to": "map-reflex-core", "type": "gate", "puzzleId": "puzzle-endplate-ferry" }
+    ]
+  },
+  "evidence": [
+    {
+      "objectiveId": "OBJ-2",
+      "event": "puzzle_solved",
+      "filter": { "puzzleId": "puzzle-endplate-ferry" },
+      "required": true
+    },
+    {
+      "objectiveId": "OBJ-2",
+      "event": "debrief_answered",
+      "filter": { "promptId": "prompt-obj-2" },
+      "required": true
+    }
+  ],
+  "unlocks": [
+    { "type": "map", "id": "map-reflex-core" }
+  ],
+  "nextLevelIds": ["05-reflex-core"],
+  "coop": {
+    "supported": true,
+    "notes": "P1 operates the terminal plate and pulse; P2 carries and places the ACh packet. Solo uses the P1 union: step on the plate, carry and place the packet, then pulse the terminal."
+  },
+  "authoring": {
+    "levelSpec": "README.md",
+    "playtestedSolo": false,
+    "playtestedCoop": false,
+    "notes": "M2 Endplate Ferry: interact at the motor terminal; the terminal plate starts the Ca²⁺ window; the ACh packet crosses the cleft to the nicotinic receptor; the terminal pulse binds it; the Ca²⁺ gate + receptor relay opens the latched muscle gate. Uses prompt-obj-2 because per-level debrief prompts are not authored. Automated unit, pack validation, smoke, and browser checks passed; human solo/co-op playtesting is pending."
+  }
+}

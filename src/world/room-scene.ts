@@ -131,6 +131,9 @@ export class RoomScene extends Phaser.Scene {
 
   create(): void {
     try {
+      this.started = false;
+      this.accumulator = 0;
+      this.pendingInput = null;
       this.createWorld();
       this.started = true;
       this.config.onReady?.();
@@ -186,6 +189,14 @@ export class RoomScene extends Phaser.Scene {
   private createWorld(): void {
     const { runtime, theme, assets } = this.config;
     const room = runtime.roomDocument;
+
+    for (const id of PLAYER_IDS) {
+      delete this.playerSprites[id];
+      delete this.playerShadows[id];
+    }
+    this.entitySprites.clear();
+    this.entityGlows.clear();
+    this.propSprites.clear();
 
     runtime.resize(this.scale.width, this.scale.height);
     this.intents = new KeyboardIntentSource(this);

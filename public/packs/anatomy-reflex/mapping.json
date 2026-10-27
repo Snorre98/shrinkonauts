@@ -14,15 +14,18 @@
     },
     "OBJ-2": {
       "levels": [
-        "03-nerve-forest"
+        "03-nerve-forest",
+        "04-muscle-effector"
       ],
       "dialogues": [
+        "dlg-muscle-01",
         "dlg-neuron-01"
       ],
       "gates": [],
       "evidence": [
         "EV-2",
-        "EV-7"
+        "EV-7",
+        "EV-8"
       ],
       "debrief": "debrief-obj-2"
     },
@@ -85,10 +88,20 @@
       ]
     },
     "CON-4": {
-      "levels": [],
-      "dialogues": [],
-      "scanTargets": [],
-      "mapLabels": []
+      "levels": [
+        "04-muscle-effector"
+      ],
+      "dialogues": [
+        "dlg-muscle-01"
+      ],
+      "scanTargets": [
+        "pad-terminal",
+        "scan-cleft",
+        "scan-receptor"
+      ],
+      "mapLabels": [
+        "Muscle Effector"
+      ]
     },
     "CON-5": {
       "levels": [
@@ -106,10 +119,18 @@
       ]
     },
     "CON-6": {
-      "levels": [],
-      "dialogues": [],
-      "scanTargets": [],
-      "mapLabels": []
+      "levels": [
+        "04-muscle-effector"
+      ],
+      "dialogues": [
+        "dlg-muscle-01"
+      ],
+      "scanTargets": [
+        "scan-muscle"
+      ],
+      "mapLabels": [
+        "Muscle Effector"
+      ]
     },
     "CON-7": {
       "levels": [],

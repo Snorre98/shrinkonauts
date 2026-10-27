@@ -698,7 +698,7 @@ export function mountGameUi(
       el(
         "p",
         "complete__lede",
-        "The reflex arc is in order. Export the evidence file for your teacher, or replay the slice.",
+        "The signal reached the muscle effector. Export the evidence file for your teacher, or replay the slice.",
       ),
     );
     const data = snapshot.debrief;

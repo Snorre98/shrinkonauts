@@ -1,0 +1,263 @@
+{
+  "schemaVersion": "1.0",
+  "id": "room-muscle-effector",
+  "title": "Muscle Effector",
+  "width": 40,
+  "height": 22,
+  "tileSize": 32,
+  "tileset": "tileset.anatomy",
+  "layers": {
+    "tiles": [
+      "########################################",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "########################################",
+      "########################################"
+    ]
+  },
+  "background": {
+    "id": "bg.muscle_endplate",
+    "layers": [
+      {
+        "assetId": "bg.muscle_endplate.sky",
+        "depth": -40,
+        "parallaxX": 0.05,
+        "parallaxY": 0.02,
+        "fit": "cover"
+      },
+      {
+        "assetId": "bg.muscle_endplate.far",
+        "depth": -30,
+        "parallaxX": 0.2,
+        "parallaxY": 0.1,
+        "fit": "tile"
+      },
+      {
+        "assetId": "bg.muscle_endplate.mid",
+        "depth": -20,
+        "parallaxX": 0.45,
+        "parallaxY": 0.2,
+        "fit": "tile"
+      },
+      {
+        "assetId": "bg.muscle_endplate.near",
+        "depth": -10,
+        "parallaxX": 0.75,
+        "parallaxY": 0.35,
+        "fit": "tile",
+        "opacity": 0.9
+      }
+    ]
+  },
+  "spawns": {
+    "player1": {
+      "x": 3,
+      "y": 20
+    },
+    "player2": {
+      "x": 5,
+      "y": 20
+    }
+  },
+  "checkpoints": [
+    {
+      "id": "checkpoint-muscle-entry",
+      "x": 4,
+      "y": 20
+    }
+  ],
+  "entities": [
+    {
+      "id": "agent-muscle",
+      "type": "agent",
+      "x": 6,
+      "y": 20,
+      "sprite": "sprite.agent.neuron",
+      "dialogueId": "dlg-muscle-01",
+      "label": "Muscle Effector"
+    },
+    {
+      "id": "motor-terminal",
+      "type": "pulseSource",
+      "x": 9,
+      "y": 20,
+      "sprite": "sprite.pulse.terminal",
+      "label": "Motor terminal",
+      "components": {
+        "pulseSource": {
+          "ability": "pulse"
+        }
+      }
+    },
+    {
+      "id": "pad-terminal",
+      "type": "scanTarget",
+      "x": 11,
+      "y": 20,
+      "sprite": "sprite.scan.synapse",
+      "conceptId": "CON-4",
+      "label": "Terminal plate"
+    },
+    {
+      "id": "body-ach-packet",
+      "type": "body",
+      "x": 13,
+      "y": 20,
+      "components": {
+        "body": {
+          "width": 20,
+          "height": 20,
+          "dynamic": true,
+          "mass": 0.2,
+          "fixedRotation": true,
+          "friction": 0.4
+        }
+      }
+    },
+    {
+      "id": "ach-packet",
+      "type": "prop",
+      "x": 13,
+      "y": 20,
+      "sprite": "sprite.prop.tracer",
+      "label": "ACh packet (signal token)",
+      "components": {
+        "prop": {
+          "bodyId": "body-ach-packet",
+          "tags": ["ach"],
+          "shape": "triangle",
+          "carryable": true,
+          "placeable": true,
+          "pushable": true,
+          "throwable": true
+        }
+      }
+    },
+    {
+      "id": "ca-gate",
+      "type": "puzzleGate",
+      "x": 14,
+      "y": 20,
+      "sprite": "sprite.gate.nerve",
+      "label": "Ca²⁺ gate",
+      "components": {
+        "gate": {
+          "gateId": "ca-gate"
+        }
+      }
+    },
+    {
+      "id": "scan-cleft",
+      "type": "scanTarget",
+      "x": 16,
+      "y": 18,
+      "sprite": "sprite.scan.synapse",
+      "conceptId": "CON-4",
+      "label": "Synaptic cleft"
+    },
+    {
+      "id": "nicotinic-receptor",
+      "type": "receptor",
+      "x": 22,
+      "y": 20,
+      "sprite": "sprite.receptor.triangle",
+      "label": "Nicotinic receptor",
+      "components": {
+        "receptor": {
+          "acceptsTag": "ach",
+          "acceptsShape": "triangle",
+          "snap": {
+            "x": 720,
+            "y": 620
+          }
+        }
+      }
+    },
+    {
+      "id": "scan-receptor",
+      "type": "scanTarget",
+      "x": 22,
+      "y": 18,
+      "sprite": "sprite.scan.synapse",
+      "conceptId": "CON-4",
+      "label": "Nicotinic receptor"
+    },
+    {
+      "id": "wrong-receptor",
+      "type": "receptor",
+      "x": 26,
+      "y": 20,
+      "sprite": "sprite.receptor.circle",
+      "label": "Wrong receptor",
+      "components": {
+        "receptor": {
+          "acceptsTag": "ach",
+          "acceptsShape": "circle",
+          "snap": {
+            "x": 848,
+            "y": 620
+          }
+        }
+      }
+    },
+    {
+      "id": "scan-muscle",
+      "type": "scanTarget",
+      "x": 29,
+      "y": 19,
+      "sprite": "sprite.scan.muscle",
+      "conceptId": "CON-6",
+      "label": "Muscle effector"
+    },
+    {
+      "id": "muscle-gate",
+      "type": "puzzleGate",
+      "x": 33,
+      "y": 20,
+      "sprite": "sprite.gate.ferry",
+      "label": "Muscle gate",
+      "components": {
+        "gate": {
+          "gateId": "muscle-gate"
+        }
+      }
+    },
+    {
+      "id": "exit-muscle",
+      "type": "decor",
+      "x": 35,
+      "y": 19,
+      "sprite": "sprite.exit",
+      "label": "Muscle lever / exit"
+    }
+  ],
+  "exits": [
+    {
+      "id": "exit-to-reflex-core",
+      "x": 36,
+      "y": 19,
+      "width": 1,
+      "height": 1,
+      "toLevelId": "05-reflex-core",
+      "puzzleId": "puzzle-endplate-ferry"
+    }
+  ],
+  "triggers": []
+}

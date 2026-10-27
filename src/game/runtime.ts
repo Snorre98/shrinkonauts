@@ -136,6 +136,8 @@ export interface RuntimeOptions {
   sessionId?: string;
   onCue?: (cue: string) => void;
   onSettings?: (settings: GameSettings) => void;
+  /** Notifies the platform after a runtime level entry that needs a scene rebuild. */
+  onLevelChange?: (levelId: string) => void;
 }
 
 type Listener = (snapshot: RuntimeSnapshot) => void;
@@ -226,6 +228,7 @@ export class GameRuntime implements WorldRuntime {
   private readonly sessionId: string;
   private readonly onCue?: (cue: string) => void;
   private readonly onSettings?: (settings: GameSettings) => void;
+  private readonly onLevelChange?: (levelId: string) => void;
   private readonly listeners = new Set<Listener>();
 
   private machine: MachineState = initialMachine();
@@ -261,6 +264,7 @@ export class GameRuntime implements WorldRuntime {
     this.sessionId = options.sessionId ?? `session-${this.now().getTime()}`;
     this.onCue = options.onCue;
     this.onSettings = options.onSettings;
+    this.onLevelChange = options.onLevelChange;
 
     const level = options.content.levels[0];
     if (!level) throw new Error("PACK_HAS_NO_LEVELS");
@@ -413,6 +417,8 @@ export class GameRuntime implements WorldRuntime {
     this.gateFeedback = null;
     this.gateHintIndex = 0;
     this.firedTriggers.clear();
+    this.lastExitWarning = 0;
+    this.debriefAnswers = {};
     this.machine = transition(this.machine, "start-level");
 
     if (run) {
@@ -437,11 +443,6 @@ export class GameRuntime implements WorldRuntime {
 
     if (options.fresh) {
       this.record({ type: "pack_loaded", packVersion: this.content.pack.version, syllabusVersion: this.content.syllabus.version });
-      this.record({
-        type: "level_started",
-        levelId: level.id,
-      });
-      this.record({ type: "room_entered", roomId: room.id });
     }
 
     if (revealNode(this.progression, level.map.nodeId)) {
@@ -451,9 +452,11 @@ export class GameRuntime implements WorldRuntime {
       type: "level_started",
       levelId: level.id,
     });
+    this.record({ type: "room_entered", roomId: room.id });
 
     this.playCue("boot");
     this.autosave();
+    this.onLevelChange?.(level.id);
   }
 
   private restorePositions(run: RunSnapshot): void {
@@ -558,7 +561,7 @@ export class GameRuntime implements WorldRuntime {
       }
       this.playCue(cue);
       if (cue === "propReturned") {
-        this.setToast("The tracer returned to its start");
+        this.setToast("The puzzle object returned to its start");
       }
     }
     if (hazardRespawned) {
@@ -719,6 +722,7 @@ export class GameRuntime implements WorldRuntime {
 
     const carried = this.carriedProp(id);
     if (carried) {
+      const carriedLabel = this.entityLabel(carried.id);
       const receptor = this.nearestReceptor(id);
       if (receptor) {
         if (
@@ -730,13 +734,13 @@ export class GameRuntime implements WorldRuntime {
         ) {
           this.notePuzzle("placements");
           this.playCue("scan");
-          this.setToast("Tracer placed in the receptor");
+          this.setToast(`${carriedLabel} placed in the receptor`);
         }
       } else {
         this.world.physics.dropProp(carried.id);
         this.notePuzzle("drops");
         this.notePuzzle("wrongSide");
-        this.setToast("No receptor in reach — tracer dropped");
+        this.setToast(`No receptor in reach — ${carriedLabel} dropped`);
       }
       this.autosave();
       this.emit();
@@ -745,22 +749,23 @@ export class GameRuntime implements WorldRuntime {
 
     const prop = this.nearestProp(id);
     if (!prop) {
-      this.setToast("No tracer in reach");
+      this.setToast("No puzzle object in reach");
       this.emit();
       return;
     }
+    const label = this.entityLabel(prop.id);
     if (prop.state === "docked") {
-      this.setToast("The tracer is locked in the receptor");
+      this.setToast(`${label} is locked in the receptor`);
       this.emit();
       return;
     }
     if (!this.world.physics.pickUp(id, prop.id)) {
-      this.setToast("The tracer cannot be picked up");
+      this.setToast(`${label} cannot be picked up`);
       this.emit();
       return;
     }
     this.notePuzzle("pickups");
-    this.setToast("Tracer picked up");
+    this.setToast(`${label} picked up`);
     this.autosave();
     this.emit();
   }
@@ -776,7 +781,7 @@ export class GameRuntime implements WorldRuntime {
     const player = this.world.players[id];
     this.world.physics.throwProp(carried.id, player.facing);
     this.notePuzzle("throws");
-    this.setToast("Tracer thrown");
+    this.setToast(`${this.entityLabel(carried.id)} thrown`);
     this.autosave();
     this.emit();
   }
@@ -1028,19 +1033,26 @@ export class GameRuntime implements WorldRuntime {
   ): void {
     for (const event of events) {
       if (event.type === "receptorBound" && event.propId) {
-        this.world.physics.dockProp(event.propId, event.nodeId);
+        const propEntityId = this.puzzlePropEntityId(document, event.propId);
+        this.world.physics.dockProp(propEntityId, event.nodeId);
         this.playCue("unlock");
-        this.setToast("The tracer locks into the matching receptor");
-      } else if (event.type === "receptorRejected") {
+        this.setToast(
+          `${this.entityLabel(propEntityId)} locks into the matching receptor`,
+        );
+      } else if (event.type === "receptorRejected" && event.propId) {
         this.playCue("wrong");
         this.setToast("The receptor rejects that shape");
       } else if (event.type === "gateOpen") {
         this.playCue("unlock");
-      } else if (event.type === "solved") {
-        const puzzleId = document.id;
-        if (!this.puzzles.has(puzzleId)) continue;
       }
     }
+  }
+
+  private puzzlePropEntityId(document: PuzzleDocument, propNodeId: string): string {
+    const node = document.nodes.find(
+      (entry) => entry.type === "prop" && entry.id === propNodeId,
+    );
+    return node?.entityId ?? propNodeId;
   }
 
   private onPuzzleSolved(id: string, rewards: PuzzleRewards): void {
@@ -1340,12 +1352,6 @@ export class GameRuntime implements WorldRuntime {
       levelId: this.level.id,
       objectiveIds: this.level.syllabusObjectiveIds,
     });
-    if (this.level.id === this.content.pack.endLevelId) {
-      this.record({
-        type: "pack_completed",
-        packId: this.content.pack.id,
-      });
-    }
     this.enterDebrief(true);
   }
 
@@ -1396,14 +1402,47 @@ export class GameRuntime implements WorldRuntime {
       this.emit();
       return;
     }
-    this.machine = { state: "complete", returnTo: null };
+
     this.record({
       type: "debrief_completed",
+      levelId: this.level.id,
       objectiveIds: this.level.syllabusObjectiveIds,
     });
+
+    const nextLevelId = this.nextLevelId();
+    if (nextLevelId) {
+      const next = this.content.levels.find((item) => item.id === nextLevelId);
+      this.enterLevel(nextLevelId, undefined, { fresh: false });
+      this.setToast(`Next: ${next?.title ?? nextLevelId}`);
+      this.emit();
+      return;
+    }
+
+    if (this.level.id === this.content.pack.endLevelId) {
+      this.record({
+        type: "pack_completed",
+        packId: this.content.pack.id,
+      });
+    } else {
+      this.setToast("End of authored content");
+    }
+    this.machine = { state: "complete", returnTo: null };
     this.playCue("debrief");
     this.autosave();
     this.emit();
+  }
+
+  /**
+   * The next authored level in the manifest. A pack's final level ends the run
+   * even when it keeps a forward `nextLevelIds` entry for a future slice.
+   */
+  private nextLevelId(): string | null {
+    if (this.level.id === this.content.pack.endLevelId) return null;
+    for (const id of this.level.nextLevelIds) {
+      if (id === this.level.id) continue;
+      if (this.content.levels.some((level) => level.id === id)) return id;
+    }
+    return null;
   }
 
   exportEvidence(): EvidenceExport {
@@ -1565,6 +1604,11 @@ export class GameRuntime implements WorldRuntime {
       this.audio.play(assetId);
     }
     this.onCue?.(name);
+  }
+
+  private entityLabel(id: string): string {
+    const entity = (this.room.entities ?? []).find((item) => item.id === id);
+    return entity?.label ?? id;
   }
 
   private nearestEntity(
@@ -1966,12 +2010,11 @@ export class GameRuntime implements WorldRuntime {
       const carried = this.carriedProp(actor);
       if (carried) {
         const receptor = this.nearestReceptor(actor);
+        const label = this.entityLabel(carried.id);
         return {
           kind: "prop",
           id: carried.id,
-          label: receptor
-            ? `Place ${carried.id}`
-            : `Drop ${carried.id}`,
+          label: receptor ? `Place ${label}` : `Drop ${label}`,
           key: this.activeP2 ? "'" : "G",
         };
       }
@@ -1980,7 +2023,7 @@ export class GameRuntime implements WorldRuntime {
         return {
           kind: "prop",
           id: prop.id,
-          label: `Pick up ${prop.id}`,
+          label: `Pick up ${this.entityLabel(prop.id)}`,
           key: this.activeP2 ? "'" : "G",
         };
       }
