@@ -336,6 +336,20 @@ system Chrome (Playwright).
 | [0007](adr/0007-side-level-map-travel.md) | Side-level map travel with a return snapshot | Accepted |
 | [0008](adr/0008-schema-evolution.md) | Backward-compatible schema evolution | Accepted |
 
+Proposed feedback architecture (not yet accepted; see the ADR log):
+
+| # | Decision | Status |
+|---|---|---|
+| [0009](adr/0009-feedback-ecs-substrate.md) | Feedback ECS as the generic ECS substrate | Proposed |
+| [0010](adr/0010-anchored-feedback-surfaces.md) | Anchored feedback surfaces, co-op ownership, and input routing | Proposed |
+| [0011](adr/0011-entity-conversations.md) | Entity conversations replace the global dialogue overlay | Proposed |
+| [0012](adr/0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Proposed |
+| [0013](adr/0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects and accessibility | Proposed |
+
+When accepted, ADR-0009 and ADR-0010 replace the "feedback is a toast / no new UI
+surface" constraints in §4.4 and §8, and ADR-0013 amends ADR-0003's no-animation
+constraint.
+
 Existing decisions remain in force: ADR-0034 (dataflow), ADR-0035 (body +
 prop), ADR-0036 (Matter boundary), ADR-0037 (solo union), ADR-0038 (tether),
 ADR-0039 (puzzle as assessment), ADR-0040 (prop softlock contract), ADR-0041

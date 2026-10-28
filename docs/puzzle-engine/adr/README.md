@@ -14,6 +14,16 @@ supersede with a new ADR rather than editing an accepted one.
 | [0007](0007-side-level-map-travel.md) | Side-level map travel with a return snapshot | Accepted |
 | [0008](0008-schema-evolution.md) | Backward-compatible schema evolution | Accepted |
 
+Proposed feedback architecture:
+
+| # | Decision | Status |
+|---|---|---|
+| [0009](0009-feedback-ecs-substrate.md) | Feedback ECS as the generic ECS substrate | Proposed |
+| [0010](0010-anchored-feedback-surfaces.md) | Anchored feedback surfaces, co-op ownership, and input routing | Proposed |
+| [0011](0011-entity-conversations.md) | Entity conversations replace the global dialogue overlay | Proposed |
+| [0012](0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Proposed |
+| [0013](0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects and accessibility | Proposed |
+
 Related accepted records outside this system:
 
 - [ADR-0034–0045](../../adr-m1.5/README.md) — M1.5 puzzle foundation and
