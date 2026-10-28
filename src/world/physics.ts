@@ -20,6 +20,13 @@ const DASH_COOLDOWN = 0.6;
 const MOVE_ACCELERATION = 3250;
 const DECELERATION = 4200;
 const MAX_STEP_MS = 1000 / 60;
+/**
+ * Matter integrates force as `dv = (F / m) * dt²` with `dt` in milliseconds.
+ * Converting the idle deceleration into a per-step velocity delta lets it clamp
+ * to the remaining speed instead of overshooting through zero every frame.
+ */
+const DECELERATION_PER_STEP =
+  (DECELERATION / 1_000_000) * MAX_STEP_MS * MAX_STEP_MS;
 
 const CATEGORY = {
   SOLID: 0x0001,
@@ -417,11 +424,15 @@ export class RoomPhysics {
           y: 0,
         });
       }
-    } else if (Math.abs(body.velocity.x) > 0.02) {
-      Matter.Body.applyForce(body, body.position, {
-        x: -body.mass * (DECELERATION / 1_000_000) * Math.sign(body.velocity.x),
-        y: 0,
-      });
+    } else {
+      const speed = body.velocity.x;
+      if (Math.abs(speed) > 0.02) {
+        const delta = Math.min(Math.abs(speed), DECELERATION_PER_STEP);
+        Matter.Body.setVelocity(body, {
+          x: speed - Math.sign(speed) * delta,
+          y: body.velocity.y,
+        });
+      }
     }
 
     if (intent.jump && player.onGround) {

@@ -6,6 +6,7 @@ import {
   createRoomSimulation,
   emptyIntents,
   placePlayer,
+  setPlayerActive,
   setTetherPolicy,
   stepRoomSimulation,
   stepRoomSimulationWithCues,
@@ -219,7 +220,48 @@ describe("Matter physics coverage", () => {
     for (let frame = 0; frame < 12; frame += 1) {
       stepRoomSimulation(simulation, emptyIntents(), 1 / 60);
     }
-    expect(Math.abs(p1.vx)).toBeLessThan(30);
+    expect(Math.abs(p1.vx)).toBeLessThan(1);
+  });
+
+  it("stops completely after a small nudge with no input", () => {
+    const simulation = settled();
+    setPlayerActive(simulation, "p2", false);
+    const body = simulation.physics.playerBodies.p1;
+    Matter.Body.setVelocity(body, { x: 0.1, y: body.velocity.y });
+
+    for (let frame = 0; frame < 2; frame += 1) {
+      stepRoomSimulation(simulation, emptyIntents(), 1 / 60);
+    }
+    expect(Math.abs(simulation.players.p1.vx)).toBeLessThan(1);
+
+    const stoppedX = simulation.players.p1.x;
+    for (let frame = 0; frame < 120; frame += 1) {
+      stepRoomSimulation(simulation, emptyIntents(), 1 / 60);
+    }
+    expect(Math.abs(simulation.players.p1.x - stoppedX)).toBeLessThan(0.01);
+  });
+
+  it("stops completely after releasing the movement key", () => {
+    const simulation = settled();
+    setPlayerActive(simulation, "p2", false);
+    const move = emptyIntents();
+    move.p1.moveX = 1;
+
+    for (let frame = 0; frame < 30; frame += 1) {
+      stepRoomSimulation(simulation, move, 1 / 60);
+    }
+    expect(simulation.players.p1.vx).toBeGreaterThan(200);
+
+    for (let frame = 0; frame < 10; frame += 1) {
+      stepRoomSimulation(simulation, emptyIntents(), 1 / 60);
+    }
+    expect(Math.abs(simulation.players.p1.vx)).toBeLessThan(1);
+
+    const stoppedX = simulation.players.p1.x;
+    for (let frame = 0; frame < 120; frame += 1) {
+      stepRoomSimulation(simulation, emptyIntents(), 1 / 60);
+    }
+    expect(Math.abs(simulation.players.p1.x - stoppedX)).toBeLessThan(0.01);
   });
 
   it("pushes a prop with the player body", () => {
