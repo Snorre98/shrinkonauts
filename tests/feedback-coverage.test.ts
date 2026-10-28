@@ -63,6 +63,7 @@ const LINK_TYPES: readonly PuzzleLinkType[] = [
   "deactivate",
   "open",
   "close",
+  "clear",
 ];
 
 const EVENT_TYPES = Object.keys(EVENT_LINKS) as PuzzleEventType[];
@@ -167,8 +168,33 @@ describe("feedback descriptor coverage", () => {
     }
   });
 
-  it("uses node cues and keeps pulse explicitly silent", () => {
+  it("maps prop clearance to an ACh dissolve cue", () => {
+    expect(EVENT_COVERAGE.propCleared).toMatchObject({
+      kind: "cue",
+      recipe: {
+        capability: "carrier",
+        state: "expired",
+        reason: "cleared",
+        severity: "neutral",
+        effectPreset: "fx.ach.dissolve",
+      },
+    });
+    expect(LINK_FEEDBACK.clear.capabilities).toContain("carrier");
+    expect(LINK_FEEDBACK.clear.cues?.clear?.reason).toBe("cleared");
+
     const document = readPuzzle("04-muscle-effector");
+    const coverage = eventCueCoverage(document, {
+      type: "propCleared",
+      nodeId: "ach-packet",
+      propId: "ach-packet",
+    });
+    expect(coverage.kind).toBe("cue");
+    if (coverage.kind === "cue") {
+      expect(coverage.recipe.effectPreset).toBe("fx.ach.dissolve");
+    }
+  });
+
+  it("uses node cues and keeps pulse explicitly silent", () => {    const document = readPuzzle("04-muscle-effector");
     const rejected = eventCueCoverage(document, {
       type: "receptorRejected",
       nodeId: "nicotinic-receptor",

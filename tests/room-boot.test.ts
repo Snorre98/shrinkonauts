@@ -19,6 +19,7 @@ import {
   roomPixelWidth,
   stepRoomSimulation,
 } from "../src/world/simulation";
+import { entityAnchorPoint } from "../src/world/effect-types";
 
 const CONTENT_DIR = new URL("../public/content/dev/", import.meta.url);
 const VIEWPORT = { width: 1280, height: 720 };
@@ -247,5 +248,78 @@ describe("room simulation", () => {
     expect(simulation.players.p1.x).toBeLessThanOrEqual(
       roomPixelWidth(room) - 14,
     );
+  });
+});
+
+describe("anatomy level anchors", () => {
+  const ANATOMY_DIR = new URL(
+    "../public/packs/anatomy-reflex/levels/",
+    import.meta.url,
+  );
+
+  function anatomyRoom(levelId: string) {
+    const parsed = parseRoom(
+      JSON.parse(
+        readFileSync(new URL(`${levelId}/room.json`, ANATOMY_DIR), "utf8"),
+      ),
+    );
+    if (!parsed.ok) throw new Error(parsed.error);
+    return parsed.value;
+  }
+
+  it("parses the authored gate, terminal, and receptor sockets", () => {
+    const nerve = anatomyRoom("03-nerve-forest");
+    for (const gateId of ["gate-threshold", "gate-behind", "gate-exit"]) {
+      const gate = nerve.entities?.find((entity) => entity.id === gateId);
+      expect(gate?.components?.anchors?.center, gateId).toEqual({
+        x: 18,
+        y: 18,
+      });
+    }
+
+    const muscle = anatomyRoom("04-muscle-effector");
+    const terminal = muscle.entities?.find(
+      (entity) => entity.id === "motor-terminal",
+    );
+    expect(terminal?.components?.anchors?.muzzle).toEqual({
+      x: 32,
+      y: 16,
+      direction: 0,
+    });
+    for (const receptorId of ["nicotinic-receptor", "wrong-receptor"]) {
+      const receptor = muscle.entities?.find(
+        (entity) => entity.id === receptorId,
+      );
+      expect(receptor?.components?.anchors?.mouth, receptorId).toEqual({
+        x: 4,
+        y: 16,
+        direction: 3.14159,
+      });
+    }
+    for (const gateId of ["ca-gate", "muscle-gate"]) {
+      const gate = muscle.entities?.find((entity) => entity.id === gateId);
+      expect(gate?.components?.anchors?.center, gateId).toEqual({
+        x: 18,
+        y: 18,
+      });
+    }
+  });
+
+  it("resolves authored sockets and falls back to centre", () => {
+    const muscle = anatomyRoom("04-muscle-effector");
+    const terminal = muscle.entities?.find(
+      (entity) => entity.id === "motor-terminal",
+    );
+    expect(
+      entityAnchorPoint(
+        36,
+        36,
+        terminal?.components?.anchors,
+        "muzzle",
+      ),
+    ).toEqual({ x: 32, y: 16, direction: 0 });
+    expect(
+      entityAnchorPoint(36, 36, terminal?.components?.anchors, "missing"),
+    ).toEqual({ x: 18, y: 18 });
   });
 });

@@ -11,6 +11,59 @@
   "dialogueIds": ["dlg-muscle-01"],
   "gateIds": [],
   "puzzleIds": ["puzzle-endplate-ferry"],
+  "feedback": {
+    "puzzles": {
+      "puzzle-endplate-ferry": {
+        "beats": [
+          {
+            "id": "trigger",
+            "label": "Trigger the terminal",
+            "nodes": ["terminal-plate"]
+          },
+          {
+            "id": "release",
+            "label": "Open the Ca²⁺ window",
+            "nodes": ["ca-timer", "ca-gate"]
+          },
+          {
+            "id": "carry",
+            "label": "Carry ACh across the cleft",
+            "nodes": ["ach-packet"]
+          },
+          {
+            "id": "bind",
+            "label": "Bind the nicotinic receptor",
+            "nodes": ["nicotinic-receptor"]
+          },
+          {
+            "id": "respond",
+            "label": "Muscle responds",
+            "nodes": ["response-relay", "muscle-gate"]
+          },
+          {
+            "id": "clear",
+            "label": "ACh is cleared",
+            "nodes": ["ache-timer", "ach-packet"]
+          }
+        ],
+        "nodes": {
+          "terminal-plate": { "label": "Terminal plate" },
+          "ca-timer": { "label": "Ca²⁺ window" },
+          "ca-gate": { "label": "Ca²⁺ gate" },
+          "ach-packet": { "label": "ACh packet" },
+          "nicotinic-receptor": { "label": "Nicotinic receptor" },
+          "wrong-receptor": { "label": "Wrong receptor" },
+          "pulse-terminal": { "label": "Motor terminal" },
+          "ache-timer": { "label": "ACh clearance" },
+          "response-relay": { "label": "Muscle response" },
+          "muscle-gate": {
+            "label": "Muscle gate",
+            "effectPreset": "fx.muscle.wave"
+          }
+        }
+      }
+    }
+  },
   "map": {
     "nodeId": "map-muscle-effector",
     "label": "Muscle Effector",

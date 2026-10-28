@@ -2,7 +2,9 @@ import Phaser from "phaser";
 import type { AssetsModule } from "../assets";
 import type { RoomDocument, ThemeDocument } from "../pack";
 import {
+  defaultEntityAnchors,
   effectStageProgress,
+  entityAnchorPoint,
   simplifyForReducedMotion,
   type TileVisualOp,
   type TileVisualPort,
@@ -65,19 +67,6 @@ const LAYER_DEPTH: Record<WorldEffectStage["layer"], number> = {
   foreground: 30,
   hud: 1000,
 };
-
-function defaultAnchors(
-  width: number,
-  height: number,
-): Record<string, { x: number; y: number }> {
-  return {
-    center: { x: width / 2, y: height / 2 },
-    top: { x: width / 2, y: 0 },
-    bottom: { x: width / 2, y: height },
-    left: { x: 0, y: height / 2 },
-    right: { x: width, y: height / 2 },
-  };
-}
 
 function parseColor(value: string): number {
   const parsed = Number.parseInt(value.replace(/^#/, ""), 16);
@@ -787,12 +776,12 @@ export class RoomEffectLayer {
         );
         const width = sprite.displayWidth;
         const height = sprite.displayHeight;
-        const anchors = {
-          ...defaultAnchors(width, height),
-          ...(entity?.components?.anchors ?? {}),
-        };
-        const point =
-          anchors[anchor.socket ?? "center"] ?? anchors.center ?? { x: width / 2, y: height / 2 };
+        const point = entityAnchorPoint(
+          width,
+          height,
+          entity?.components?.anchors,
+          anchor.socket,
+        );
         return {
           x: sprite.x - width / 2 + point.x,
           y: sprite.y - height + point.y,
@@ -801,9 +790,12 @@ export class RoomEffectLayer {
       case "player": {
         const player = this.options.simulation.players[anchor.id];
         if (!player.active) return null;
-        const anchors = defaultAnchors(PLAYER_WIDTH, PLAYER_HEIGHT);
-        const point =
-          anchors[anchor.socket ?? "center"] ?? anchors.center ?? { x: PLAYER_WIDTH / 2, y: PLAYER_HEIGHT / 2 };
+        const point = entityAnchorPoint(
+          PLAYER_WIDTH,
+          PLAYER_HEIGHT,
+          defaultEntityAnchors(PLAYER_WIDTH, PLAYER_HEIGHT),
+          anchor.socket,
+        );
         return {
           x: player.x - PLAYER_WIDTH / 2 + point.x,
           y: player.y - PLAYER_HEIGHT + point.y,

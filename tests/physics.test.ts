@@ -132,8 +132,7 @@ describe("Matter prop lifecycle", () => {
     expect(simulation.physics.propState("prop-lifecycle")?.placedOn).toBeNull();
   });
 
-  it("returns an out-of-bounds prop to its spawn", () => {
-    const simulation = settledWith([
+  it("returns an out-of-bounds prop to its spawn", () => {    const simulation = settledWith([
       bodyEntity("body-out-of-bounds", 6, 19, 20, 20),
       propEntity("prop-out-of-bounds", "body-out-of-bounds", 6, 19),
     ]);
@@ -149,6 +148,66 @@ describe("Matter prop lifecycle", () => {
     expect(simulation.props["prop-out-of-bounds"]?.state).toBe("free");
     expect(simulation.props["prop-out-of-bounds"]?.x).toBeGreaterThan(0);
     expect(simulation.props["prop-out-of-bounds"]?.y).toBeGreaterThan(0);
+  });
+
+  it("clears a prop body and restores it on reset", () => {
+    const simulation = settledWith([
+      bodyEntity("body-clear", 6, 19, 20, 20),
+      propEntity("prop-clear", "body-clear", 6, 19),
+    ]);
+    const prop = simulation.physics.props.get("prop-clear");
+    expect(prop).toBeDefined();
+    if (!prop) return;
+
+    expect(simulation.physics.pickUp("p2", "prop-clear")).toBe(true);
+    expect(simulation.physics.clearProp("prop-clear")).toBe(true);
+    expect(prop.state.state).toBe("cleared");
+    expect(prop.state.carriedBy).toBeNull();
+    expect(prop.bodyInWorld).toBe(false);
+    expect(
+      Matter.Composite.allBodies(simulation.physics.engine.world).includes(
+        prop.body,
+      ),
+    ).toBe(false);
+    expect(simulation.physics.propState("prop-clear")?.state).toBe("cleared");
+    expect(simulation.physics.pickUp("p2", "prop-clear")).toBe(false);
+    expect(simulation.physics.clearProp("prop-clear")).toBe(false);
+
+    expect(simulation.physics.resetProp("prop-clear")).toBe(true);
+    expect(prop.state.state).toBe("free");
+    expect(prop.bodyInWorld).toBe(true);
+    expect(
+      Matter.Composite.allBodies(simulation.physics.engine.world).includes(
+        prop.body,
+      ),
+    ).toBe(true);
+    expect(simulation.physics.pickUp("p2", "prop-clear")).toBe(true);
+  });
+
+  it("restores a saved cleared prop without a body", () => {
+    const simulation = settledWith([
+      bodyEntity("body-restore-clear", 6, 19, 20, 20),
+      propEntity("prop-restore-clear", "body-restore-clear", 6, 19),
+    ]);
+    const prop = simulation.physics.props.get("prop-restore-clear");
+    expect(prop).toBeDefined();
+    if (!prop) return;
+    const bodies = simulation.physics.bodySnapshots();
+    expect(bodies["body-restore-clear"]).toBeDefined();
+
+    simulation.physics.restoreProps(bodies, {
+      "prop-restore-clear": {
+        bodyId: "body-restore-clear",
+        state: "cleared",
+        carriedBy: null,
+        placedOn: null,
+      },
+    });
+    expect(prop.state.state).toBe("cleared");
+    expect(prop.bodyInWorld).toBe(false);
+    expect(simulation.physics.propStates()["prop-restore-clear"]?.state).toBe(
+      "cleared",
+    );
   });
 
   it("applies the puzzle-scoped tether policy", () => {

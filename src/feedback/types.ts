@@ -534,6 +534,7 @@ export interface FeedbackProjectionContext {
   label: string;
   text?: string;
   effectPreset?: string;
+  tileTarget?: TileTarget;
 }
 
 export interface NodeFeedbackDescriptor<N extends PuzzleNode = PuzzleNode> {
@@ -561,6 +562,7 @@ export interface FeedbackNodeOverride {
   label?: string;
   text?: string;
   effectPreset?: string;
+  tileTarget?: TileTarget;
 }
 
 export interface FeedbackProjection {

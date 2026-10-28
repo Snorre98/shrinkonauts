@@ -233,16 +233,6 @@ function tileTintStage(
   });
 }
 
-function dissolveStage(anchor: AnchorRef): EffectStage {
-  return stage({
-    visual: { kind: "dissolve", target: anchor },
-    targets: [anchor],
-    timing: { durationTicks: 16 },
-    binding: { follow: true },
-    layer: "entities",
-  });
-}
-
 export const EFFECT_PRESETS = {
   "fx.affordance.ring": (context) => {
     const anchor = sourceAnchor(context);
@@ -506,19 +496,40 @@ export const EFFECT_PRESETS = {
 
   "fx.tile.path": (context) => {
     if (!context.tileTarget) return null;
+    const source =
+      context.source && context.source.kind !== "hud"
+        ? context.source
+        : undefined;
     return plan(context, "fx.tile.path", [
       tileTintStage(context.tileTarget, context.color ?? "#ffd166", {
         durationTicks: 30,
-        stagger: { kind: "fromSource", ticks: 1 },
+        stagger: {
+          kind: source ? "fromSource" : "byIndex",
+          ticks: 1,
+        },
       }),
     ]);
   },
 
   "fx.ach.dissolve": (context) => {
     const anchor = sourceAnchor(context);
-    return anchor
-      ? plan(context, "fx.ach.dissolve", [dissolveStage(anchor)])
-      : null;
+    if (!anchor) return null;
+    return plan(context, "fx.ach.dissolve", [
+      ringStage(anchor, { radius: 20, durationTicks: 14 }),
+      stage({
+        visual: { kind: "particleBurst", count: 12, speed: 32 },
+        source: {
+          anchor,
+          direction: { kind: "angle", radians: 0 },
+          spreadRadians: Math.PI * 2,
+          space: "world",
+        },
+        path: { kind: "radial", from: anchor, radius: 20, count: 12 },
+        timing: { durationTicks: 10 },
+        binding: { follow: true },
+        layer: "foreground",
+      }),
+    ]);
   },
 
   "fx.muscle.wave": (context) => {

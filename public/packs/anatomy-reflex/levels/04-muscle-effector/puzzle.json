@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "id": "puzzle-endplate-ferry",
   "title": "Endplate Ferry",
   "objectiveIds": ["OBJ-2"],
@@ -90,7 +90,8 @@
     { "from": "pulse-terminal", "to": "wrong-receptor", "type": "pulse" },
     { "from": "nicotinic-receptor", "to": "ache-timer", "type": "bind" },
     { "from": "ache-timer", "to": "ca-timer", "type": "reset" },
-    { "from": "ache-timer", "to": "ca-gate", "type": "close" }
+    { "from": "ache-timer", "to": "ca-gate", "type": "close" },
+    { "from": "ache-timer", "to": "ach-packet", "type": "clear" }
   ],
   "win": { "type": "gateOpen", "gateId": "muscle-gate" },
   "reset": {

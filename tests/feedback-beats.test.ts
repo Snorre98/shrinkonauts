@@ -161,6 +161,29 @@ describe("feedback beats", () => {
     ]);
   });
 
+  it("treats a cleared prop as a completed clearance beat", () => {
+    const document = readPuzzle("04-muscle-effector");
+    const state = initialState(document);
+    const beats: readonly BeatSpec[] = [
+      { id: "clear", label: "ACh cleared", nodes: ["ache-timer", "ach-packet"] },
+    ];
+
+    setNode(state, "ache-timer", { state: "elapsed", active: true });
+    setNode(state, "ach-packet", {
+      state: "cleared",
+      active: false,
+      occupiedBy: null,
+    });
+    expect(deriveBeats({ document, state, beats })).toEqual([
+      {
+        id: "clear",
+        label: "ACh cleared",
+        state: "done",
+        nodes: ["ache-timer", "ach-packet"],
+      },
+    ]);
+  });
+
   it("is deterministic across repeated derivations", () => {
     const document = readPuzzle("03-nerve-forest");
     const state = initialState(document);

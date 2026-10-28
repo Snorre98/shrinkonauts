@@ -46,6 +46,7 @@
       "debrief": "audio.cue.debrief",
       "checkpoint": "audio.cue.checkpoint",
       "unlock": "audio.cue.unlock",
+      "wrong": "audio.cue.wrong",
       "jump": "audio.cue.jump",
       "land": "audio.cue.land"
     }

@@ -156,6 +156,21 @@ export const EVENT_COVERAGE = {
     recipe: cue("conductor", "active", "positive"),
   },
   relayInactive: { kind: "cue", recipe: cue("conductor", "idle") },
+  propCleared: {
+    kind: "cue",
+    recipe: {
+      ...cue(
+        "carrier",
+        "expired",
+        "neutral",
+        undefined,
+        undefined,
+        "fx.ach.dissolve",
+      ),
+      reason: "cleared",
+      text: "Signal cleared",
+    },
+  },
   solved: { kind: "cue", recipe: SOLVED_RECIPE },
 } satisfies Record<PuzzleEventType, EventCoverage>;
 

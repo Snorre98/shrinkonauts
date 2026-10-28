@@ -995,7 +995,7 @@ export class GameRuntime implements WorldRuntime {
     let best: { prop: PropState; distance: number } | null =
       null;
     for (const prop of Object.values(this.world.props)) {
-      if (prop.state === "carried") continue;
+      if (prop.state === "carried" || prop.state === "cleared") continue;
       const distanceToProp = distance(player.x, player.y - 20, prop.x, prop.y);
       if (distanceToProp > 78) continue;
       if (!best || distanceToProp < best.distance) {
@@ -1201,7 +1201,7 @@ export class GameRuntime implements WorldRuntime {
         y: prop.y,
         width: prop.width,
         height: prop.height,
-        active: true,
+        active: prop.state !== "cleared",
         state: prop.state,
         tags: [...prop.tags],
         shape: prop.shape,
@@ -1250,6 +1250,9 @@ export class GameRuntime implements WorldRuntime {
         this.playCue("wrong");
       } else if (event.type === "gateOpen") {
         this.playCue("unlock");
+      } else if (event.type === "propCleared" && event.propId) {
+        const propEntityId = this.puzzlePropEntityId(document, event.propId);
+        this.world.physics.clearProp(propEntityId);
       }
     }
   }
@@ -2174,6 +2177,19 @@ export class GameRuntime implements WorldRuntime {
   }
 
   private entityLabel(id: string): string {
+    for (const [puzzleId, config] of Object.entries(
+      this.level.feedback?.puzzles ?? {},
+    )) {
+      const puzzle = this.puzzles.get(puzzleId);
+      if (!puzzle) continue;
+      for (const [nodeId, override] of Object.entries(config.nodes ?? {})) {
+        if (!override.label) continue;
+        const node = puzzle.document.nodes.find((item) => item.id === nodeId);
+        if (nodeId === id || node?.entityId === id) {
+          return override.label;
+        }
+      }
+    }
     const entity = (this.room.entities ?? []).find((item) => item.id === id);
     return entity?.label ?? id;
   }
@@ -2352,9 +2368,12 @@ export class GameRuntime implements WorldRuntime {
   private projectFeedback(): void {
     for (const [id, puzzle] of this.puzzles) {
       if (!this.activatedPuzzles.has(id)) continue;
+      const config = this.level.feedback?.puzzles?.[id];
       this.feedback.projectSticky({
         document: puzzle.document,
         state: puzzle.snapshot(),
+        ...(config?.beats ? { beats: config.beats } : {}),
+        ...(config?.nodes ? { overrides: config.nodes } : {}),
       });
     }
   }

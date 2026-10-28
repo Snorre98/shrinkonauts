@@ -63,7 +63,11 @@ function collectWinNodes(document: PuzzleDocument): PuzzleNode[] {
 function isNodeDone(node: PuzzleNode, state: PuzzleNodeRunState): boolean {
   switch (node.type) {
     case "prop":
-      return state.state === "placed" || state.state === "docked";
+      return (
+        state.state === "placed" ||
+        state.state === "docked" ||
+        state.state === "cleared"
+      );
     case "receptor":
       return state.state === "bound";
     case "pulseSource":

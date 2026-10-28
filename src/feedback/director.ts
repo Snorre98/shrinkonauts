@@ -419,6 +419,9 @@ class FeedbackDirectorImpl implements FeedbackDirector {
           ...(override?.effectPreset
             ? { effectPreset: override.effectPreset }
             : {}),
+          ...(override?.tileTarget
+            ? { tileTarget: override.tileTarget }
+            : {}),
         };
         const descriptor = NODE_FEEDBACK[node.type] as NodeFeedbackDescriptor;
         const specs = descriptor.project(node, nodeState, context);

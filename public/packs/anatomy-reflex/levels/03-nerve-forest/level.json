@@ -11,6 +11,61 @@
   "dialogueIds": ["dlg-neuron-01"],
   "gateIds": [],
   "puzzleIds": ["puzzle-node-run"],
+  "feedback": {
+    "puzzles": {
+      "puzzle-node-run": {
+        "beats": [
+          {
+            "id": "input",
+            "label": "Press a dendrite input",
+            "nodes": ["input-a", "input-b"]
+          },
+          {
+            "id": "threshold",
+            "label": "Reach threshold",
+            "nodes": ["stimulus-counter", "threshold-gate"]
+          },
+          {
+            "id": "axon",
+            "label": "Run the axon",
+            "nodes": ["axon-entry"]
+          },
+          {
+            "id": "terminal",
+            "label": "Reach the terminal",
+            "nodes": ["terminal-zone"]
+          },
+          {
+            "id": "exit",
+            "label": "Open the exit",
+            "nodes": ["gate-exit"]
+          }
+        ],
+        "nodes": {
+          "input-a": { "label": "Dendrite input A" },
+          "input-b": { "label": "Dendrite input B" },
+          "stimulus-counter": { "label": "Stimulus counter" },
+          "threshold-gate": { "label": "Threshold gate" },
+          "axon-entry": { "label": "Axon entry" },
+          "behind-gate": { "label": "One-way gate" },
+          "terminal-zone": { "label": "Axon terminal" },
+          "spike-relay": {
+            "label": "Axon relay",
+            "effectPreset": "fx.tile.path",
+            "tileTarget": {
+              "kind": "tileRegion",
+              "layer": "tiles",
+              "x1": 19,
+              "y1": 20,
+              "x2": 33,
+              "y2": 20
+            }
+          },
+          "gate-exit": { "label": "Exit gate" }
+        }
+      }
+    }
+  },
   "map": {
     "nodeId": "map-nerve-forest",
     "label": "Nerve Forest",

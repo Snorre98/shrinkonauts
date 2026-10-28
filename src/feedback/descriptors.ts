@@ -15,7 +15,7 @@ import type {
   PuzzleNodeType,
 } from "../puzzle";
 import { feedbackLexicon } from "./lexicon";
-import { anchorRefFromFeedbackAnchor } from "./effects";
+import { anchorRefFromFeedbackAnchor, nodeEffectAnchor } from "./effects";
 import {
   resolveEffectPreset,
   type EffectPresetId,
@@ -34,6 +34,7 @@ import type {
   FeedbackSurfaceSpec,
   LinkFeedbackDescriptor,
   NodeFeedbackDescriptor,
+  TileTarget,
 } from "./types";
 
 export const FEEDBACK_CAPABILITIES: readonly FeedbackCapability[] = [
@@ -174,8 +175,8 @@ function defaultNodeEffects(
   node: PuzzleNode,
   capability: FeedbackCapability,
   state: FeedbackState,
-  anchor: FeedbackAnchor,
   effectPreset?: string,
+  tileTarget?: TileTarget,
 ): readonly EffectPlan[] | undefined {
   if (!stateHasEffect(state)) return undefined;
   if (!effectPreset && !STATEFUL_EFFECT_CAPABILITIES.has(capability)) {
@@ -187,7 +188,8 @@ function defaultNodeEffects(
     const effect = resolveEffectPreset(id, {
       actor: null,
       owner: "shared",
-      source: anchorRefFromFeedbackAnchor(anchor, node),
+      source: nodeEffectAnchor(node),
+      ...(tileTarget ? { tileTarget } : {}),
       planId: `${id}:${node.id}`,
     });
     return effect ? [effect] : undefined;
@@ -210,6 +212,8 @@ export function feedbackStateForNode(
           return "progress";
         case "docked":
           return "complete";
+        case "cleared":
+          return "expired";
         default:
           return "idle";
       }
@@ -268,6 +272,7 @@ export function nodeSurface(input: {
   severity?: FeedbackSeverity;
   effects?: readonly EffectPlan[];
   effectPreset?: string;
+  tileTarget?: TileTarget;
 }): FeedbackSurfaceSpec {
   const lexicon = feedbackLexicon({
     capability: input.capability,
@@ -284,8 +289,8 @@ export function nodeSurface(input: {
       input.node,
       input.capability,
       input.state,
-      anchor,
       input.effectPreset,
+      input.tileTarget,
     );
 
   return {
@@ -379,6 +384,7 @@ function projectNode(
       ...(context?.effectPreset
         ? { effectPreset: context.effectPreset }
         : {}),
+      ...(context?.tileTarget ? { tileTarget: context.tileTarget } : {}),
       ...(progress ? { progress } : {}),
     }),
   ];
@@ -404,6 +410,19 @@ export const NODE_FEEDBACK = {
   prop: {
     capabilities: ["carrier"],
     project(node: PropNode, state, context) {
+      if (state.state === "cleared") {
+        const label = context?.label ?? nodeLabel(node.id);
+        return [
+          nodeSurface({
+            node,
+            capability: "carrier",
+            state: "expired",
+            label,
+            text: context?.text ?? `${label} cleared`,
+            severity: "neutral",
+          }),
+        ];
+      }
       return projectNode(node, "carrier", state, context);
     },
   } satisfies NodeFeedbackDescriptor<PropNode>,
@@ -528,6 +547,11 @@ const LINK_CUES: Record<PuzzleLinkType, CueRecipe> = {
   deactivate: cue("conductor", "idle"),
   open: cue("barrier", "active", "positive", undefined, "fx.gate.burst"),
   close: cue("barrier", "idle", undefined, undefined, "fx.gate.close"),
+  clear: {
+    ...cue("carrier", "expired", "neutral", undefined, "fx.ach.dissolve"),
+    reason: "cleared",
+    text: "Signal cleared",
+  },
 };
 
 export const LINK_FEEDBACK = {
@@ -559,4 +583,5 @@ export const LINK_FEEDBACK = {
   },
   open: { capabilities: ["barrier"], cues: { open: LINK_CUES.open } },
   close: { capabilities: ["barrier"], cues: { close: LINK_CUES.close } },
+  clear: { capabilities: ["carrier"], cues: { clear: LINK_CUES.clear } },
 } satisfies Record<PuzzleLinkType, LinkFeedbackDescriptor>;

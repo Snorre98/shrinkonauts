@@ -103,6 +103,9 @@
       "components": {
         "pulseSource": {
           "ability": "pulse"
+        },
+        "anchors": {
+          "muzzle": { "x": 32, "y": 16, "direction": 0 }
         }
       }
     },
@@ -160,6 +163,9 @@
       "components": {
         "gate": {
           "gateId": "ca-gate"
+        },
+        "anchors": {
+          "center": { "x": 18, "y": 18 }
         }
       }
     },
@@ -187,6 +193,9 @@
             "x": 720,
             "y": 620
           }
+        },
+        "anchors": {
+          "mouth": { "x": 4, "y": 16, "direction": 3.14159 }
         }
       }
     },
@@ -214,6 +223,9 @@
             "x": 848,
             "y": 620
           }
+        },
+        "anchors": {
+          "mouth": { "x": 4, "y": 16, "direction": 3.14159 }
         }
       }
     },
@@ -236,6 +248,9 @@
       "components": {
         "gate": {
           "gateId": "muscle-gate"
+        },
+        "anchors": {
+          "center": { "x": 18, "y": 18 }
         }
       }
     },

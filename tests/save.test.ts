@@ -86,6 +86,58 @@ describe("save", () => {
     expect(storage.getItem(RUN_STORAGE_KEY)).toContain("anatomy-reflex");
   });
 
+  it("round-trips a cleared prop and keeps old prop snapshots valid", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+
+    save.saveRun({
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: "anatomy-reflex",
+      packVersion: "0.3.0",
+      contentVersion: "0.3.0",
+      levelId: "04-muscle-effector",
+      roomId: "room-muscle-effector",
+      checkpointId: null,
+      progression: createProgression(),
+      events: [],
+      elapsed: 10,
+      players: {
+        activeP2: true,
+        bodies: { p1: body(0, 0), p2: body(0, 0) },
+      },
+      world: {
+        bodies: { "body-ach-packet": body(720, 610) },
+        props: {
+          "ach-packet": {
+            bodyId: "body-ach-packet",
+            state: "cleared",
+            carriedBy: null,
+            placedOn: null,
+          },
+        },
+        puzzles: {},
+      },
+      audio: { muted: false },
+      status: "playing",
+    });
+
+    const loaded = save.loadRun("anatomy-reflex", "0.3.0");
+    expect(loaded.ok).toBe(true);
+    if (loaded.ok) {
+      expect(loaded.run.world.props["ach-packet"]?.state).toBe("cleared");
+    }
+
+    const raw = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    raw.world.props["ach-packet"] = {
+      bodyId: "body-ach-packet",
+      state: "docked",
+      carriedBy: null,
+      placedOn: "nicotinic-receptor",
+    };
+    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(raw));
+    expect(save.loadRun()).toMatchObject({ ok: true });
+  });
+
   it("returns the parsed run for a content-version mismatch", () => {
     const storage = new MemorySaveStorage();
     const save = createSave({ storage });

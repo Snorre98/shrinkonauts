@@ -281,6 +281,39 @@ export interface LevelAuthoring {
   notes?: string;
 }
 
+export type LevelFeedbackTileTarget =
+  | { kind: "tile"; layer: string; x: number; y: number }
+  | {
+      kind: "tileRegion";
+      layer: string;
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    };
+
+export interface LevelFeedbackBeat {
+  id: string;
+  label: string;
+  nodes: string[];
+}
+
+export interface LevelFeedbackNodeOverride {
+  label?: string;
+  text?: string;
+  effectPreset?: string;
+  tileTarget?: LevelFeedbackTileTarget;
+}
+
+export interface LevelFeedbackPuzzle {
+  beats?: LevelFeedbackBeat[];
+  nodes?: Record<string, LevelFeedbackNodeOverride>;
+}
+
+export interface LevelFeedback {
+  puzzles?: Record<string, LevelFeedbackPuzzle>;
+}
+
 export interface LevelDocument {
   schemaVersion: string;
   id: string;
@@ -300,6 +333,7 @@ export interface LevelDocument {
   nextLevelIds: string[];
   coop: LevelCoop;
   authoring?: LevelAuthoring;
+  feedback?: LevelFeedback;
 }
 
 /* ------------------------------------------------------------------ */

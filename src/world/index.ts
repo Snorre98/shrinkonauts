@@ -33,7 +33,9 @@ export type {
   WorldVec2,
 } from "./runtime-port";
 export {
+  defaultEntityAnchors,
   effectStageProgress,
+  entityAnchorPoint,
   isMovementVisual,
   simplifyForReducedMotion,
 } from "./effect-types";

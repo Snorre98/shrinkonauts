@@ -42,12 +42,13 @@ export const EVENT_LINKS = {
   zoneEnter: ["enter", "start"],
   zoneExit: ["exit", "stop"],
   triggerFired: ["increment", "start"],
-  timerElapsed: ["elapsed", "reset"],
+  timerElapsed: ["elapsed", "reset", "clear"],
   counterReached: ["reached"],
   gateOpen: [],
   gateClose: [],
   relayActive: [],
   relayInactive: [],
+  propCleared: [],
   solved: [],
 } satisfies Record<PuzzleEventType, readonly PuzzleLinkType[]>;
 
@@ -486,8 +487,12 @@ export class PuzzleRuntime {
       (entry) => entry.id === node.entityId || entry.id === node.id,
     );
     if (!prop) return;
+    if (state.state === "cleared" && prop.state !== "cleared") return;
     state.state = prop.state;
-    state.active = prop.state !== "free";
+    state.active =
+      prop.state === "carried" ||
+      prop.state === "placed" ||
+      prop.state === "docked";
   }
 
   private updateReceptors(snapshot: PuzzleWorldSnapshot): void {
@@ -659,6 +664,22 @@ export class PuzzleRuntime {
           actorId,
         );
         break;
+      case "prop": {
+        if (link.type !== "clear") break;
+        const state = this.nodes.get(target.id);
+        if (!state || state.state === "cleared") break;
+        state.state = "cleared";
+        state.active = false;
+        state.occupiedBy = null;
+        events.push({
+          type: "propCleared",
+          nodeId: target.id,
+          propId: target.id,
+          ...(actorId ? { actorId } : {}),
+        });
+        this.setNodeActor(target.id, actorId);
+        break;
+      }
       default:
         break;
     }

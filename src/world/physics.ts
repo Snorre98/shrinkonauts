@@ -89,6 +89,7 @@ interface PropBody {
   spawnY: number;
   originalMass: number;
   originalDensity: number;
+  bodyInWorld: boolean;
 }
 
 interface CarryConstraint {
@@ -273,6 +274,7 @@ export class RoomPhysics {
         spawnY: point.y - height / 2,
         originalMass: body.mass,
         originalDensity: body.density,
+        bodyInWorld: true,
         state: {
           id: entity.id,
           bodyId: prop.bodyId,
@@ -523,6 +525,7 @@ export class RoomPhysics {
     if (body.velocity.y < -0.5) return false;
     const bodies = [...this.solids];
     for (const prop of this.props.values()) {
+      if (prop.state.state === "cleared" || !prop.bodyInWorld) continue;
       if (prop.body !== body) bodies.push(prop.body);
     }
     const start = { x: body.position.x, y: body.bounds.max.y - 1 };
@@ -564,8 +567,10 @@ export class RoomPhysics {
 
   pickUp(playerId: PlayerId, propId: string): boolean {
     const prop = this.props.get(propId);
-    if (!prop || !prop.state.carryable) return false;
-    if (prop.state.state === "docked") return false;
+    if (!prop || !prop.state.carryable || !prop.bodyInWorld) return false;
+    if (prop.state.state === "docked" || prop.state.state === "cleared") {
+      return false;
+    }
     if (this.carry) return false;
 
     if (prop.state.state === "placed") {
@@ -596,7 +601,7 @@ export class RoomPhysics {
 
   dropProp(propId: string): boolean {
     const prop = this.props.get(propId);
-    if (!prop) return false;
+    if (!prop || prop.state.state === "cleared") return false;
     this.removeCarry();
     prop.state.state = "free";
     prop.state.carriedBy = null;
@@ -608,7 +613,8 @@ export class RoomPhysics {
 
   placeProp(propId: string, receptorId: string, snap: { x: number; y: number }): boolean {
     const prop = this.props.get(propId);
-    if (!prop || !prop.state.placeable) return false;
+    if (!prop || !prop.state.placeable || !prop.bodyInWorld) return false;
+    if (prop.state.state === "cleared") return false;
     this.removeCarry();
     Matter.Body.setStatic(prop.body, true);
     Matter.Body.setPosition(prop.body, snap);
@@ -623,7 +629,7 @@ export class RoomPhysics {
 
   dockProp(propId: string, receptorId: string): boolean {
     const prop = this.props.get(propId);
-    if (!prop) return false;
+    if (!prop || prop.state.state === "cleared") return false;
     if (!prop.body.isStatic) Matter.Body.setStatic(prop.body, true);
     prop.body.collisionFilter.mask = PROP_MASK;
     prop.state.state = "docked";
@@ -634,7 +640,8 @@ export class RoomPhysics {
 
   throwProp(propId: string, facing: -1 | 1): boolean {
     const prop = this.props.get(propId);
-    if (!prop || !prop.state.throwable) return false;
+    if (!prop || !prop.state.throwable || !prop.bodyInWorld) return false;
+    if (prop.state.state === "cleared") return false;
     this.removeCarry();
     prop.state.state = "free";
     prop.state.carriedBy = null;
@@ -648,10 +655,25 @@ export class RoomPhysics {
     return true;
   }
 
+  clearProp(propId: string): boolean {
+    const prop = this.props.get(propId);
+    if (!prop || prop.state.state === "cleared") return false;
+    if (this.carry?.propId === propId) this.removeCarry();
+    if (prop.bodyInWorld) {
+      Matter.Composite.remove(this.engine.world, prop.body);
+      prop.bodyInWorld = false;
+    }
+    prop.state.state = "cleared";
+    prop.state.carriedBy = null;
+    prop.state.placedOn = null;
+    return true;
+  }
+
   resetProp(propId: string): boolean {
     const prop = this.props.get(propId);
     if (!prop) return false;
     this.removeCarry();
+    this.ensurePropBody(prop);
     if (prop.body.isStatic) this.unstatic(prop);
     Matter.Body.setPosition(prop.body, { x: prop.spawnX, y: prop.spawnY });
     Matter.Body.setVelocity(prop.body, { x: 0, y: 0 });
@@ -666,7 +688,9 @@ export class RoomPhysics {
 
   propOutOfBounds(propId: string): boolean {
     const prop = this.props.get(propId);
-    if (!prop) return false;
+    if (!prop || prop.state.state === "cleared" || !prop.bodyInWorld) {
+      return false;
+    }
     const roomWidth = this.room.width * this.room.tileSize;
     const roomHeight = this.room.height * this.room.tileSize;
     const { x, y } = prop.body.position;
@@ -682,6 +706,12 @@ export class RoomPhysics {
       prop.body.collisionFilter.mask = PROP_MASK;
     }
     this.carry = null;
+  }
+
+  private ensurePropBody(prop: PropBody): void {
+    if (prop.bodyInWorld) return;
+    Matter.Composite.add(this.engine.world, prop.body);
+    prop.bodyInWorld = true;
   }
 
   private unstatic(prop: PropBody): void {
@@ -749,10 +779,24 @@ export class RoomPhysics {
   ): void {
     for (const [id, prop] of this.props) {
       const snapshot = props[id];
-      const bodySnapshot = snapshot ? bodies[snapshot.bodyId] : undefined;
-      if (!snapshot || !bodySnapshot) continue;
+      if (!snapshot) continue;
 
       this.removeCarry();
+      if (snapshot.state === "cleared") {
+        if (prop.bodyInWorld) {
+          Matter.Composite.remove(this.engine.world, prop.body);
+          prop.bodyInWorld = false;
+        }
+        prop.state.state = "cleared";
+        prop.state.carriedBy = null;
+        prop.state.placedOn = null;
+        continue;
+      }
+
+      const bodySnapshot = bodies[snapshot.bodyId];
+      if (!bodySnapshot) continue;
+
+      this.ensurePropBody(prop);
       if (prop.body.isStatic) this.unstatic(prop);
       Matter.Body.setPosition(prop.body, {
         x: bodySnapshot.x,

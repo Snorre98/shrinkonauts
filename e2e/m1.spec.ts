@@ -93,6 +93,14 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await expect(page.locator(".hud__eyebrow")).toContainText("03-nerve-forest");
   await expect(page.locator(".hud__meta")).toContainText("co-op");
   await expect(page.locator(".hud__meta")).toContainText("Node Run");
+  await expect(
+    page.locator(".feedback-beats__item", { hasText: "Press a dendrite input" }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".feedback-surface--stateSwap", {
+      hasText: "Dendrite input A is ready.",
+    }),
+  ).toBeVisible();
 
   // Conversation.
   await teleport(page, "agent-neuron");
@@ -182,6 +190,9 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await expect(page.locator(".hud__prompt")).toContainText("Start Endplate Ferry");
   await page.keyboard.press("e");
   await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry");
+  await expect(
+    page.locator(".feedback-beats__item", { hasText: "Trigger the terminal" }),
+  ).toBeVisible();
 
   // P1 opens the Ca2+ window.
   await teleport(page, "pad-terminal");
@@ -202,6 +213,9 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
     "Signal restored",
   );
   await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry ✓");
+  await expect(
+    page.locator('.feedback-surface[data-surface-id="fb:carrier:ach-packet"]'),
+  ).toContainText("ACh packet cleared", { timeout: 6_000 });
 
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
@@ -295,11 +309,14 @@ test("reduced motion keeps feedback surfaces and text", async ({ page }) => {
   await teleport(page, "pad-input-a", { x: 120, y: 640 });
   const caption = page
     .locator(".feedback-surface--playerCaption", {
-      hasText: "Input A is active",
+      hasText: "Dendrite input A is active.",
     })
     .first();
   await expect(caption).toBeVisible();
   await expect(caption).toContainText("P1:");
+  await expect(
+    page.locator(".feedback-beats__item", { hasText: "Press a dendrite input" }),
+  ).toBeVisible();
 
   expect(consoleErrors).toEqual([]);
 });

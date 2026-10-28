@@ -11,6 +11,7 @@ import {
   EFFECT_PRESETS,
   createFeedbackDirector,
   effectPresetIds,
+  nodeEffectAnchor,
   nodeSurface,
   projectSignal,
   resolveEffectPreset,
@@ -18,6 +19,7 @@ import {
   type EffectPlan,
   type FeedbackSurfaceSpec,
 } from "../src/feedback";
+import { entityAnchorPoint } from "../src/world/effect-types";
 
 const LEVEL_DIR = new URL(
   "../public/packs/anatomy-reflex/levels/",
@@ -342,5 +344,134 @@ describe("feedback effect lifecycle", () => {
     }
 
     expect(puzzle.snapshot()).toEqual(before);
+  });
+
+  it("uses node-type sockets for effect anchors and falls back to centre", () => {
+    const document = readPuzzle("04-muscle-effector");
+    const pulse = document.nodes.find((node) => node.id === "pulse-terminal");
+    const receptor = document.nodes.find(
+      (node) => node.id === "nicotinic-receptor",
+    );
+    const gate = document.nodes.find((node) => node.id === "ca-gate");
+    if (!pulse || !receptor || !gate) throw new Error("fixture nodes missing");
+
+    expect(nodeEffectAnchor(pulse)).toEqual({
+      kind: "entity",
+      id: "motor-terminal",
+      socket: "muzzle",
+    });
+    expect(nodeEffectAnchor(receptor)).toEqual({
+      kind: "entity",
+      id: "nicotinic-receptor",
+      socket: "mouth",
+    });
+    expect(nodeEffectAnchor(gate)).toEqual({
+      kind: "entity",
+      id: "ca-gate",
+      socket: "center",
+    });
+    expect(
+      entityAnchorPoint(36, 36, undefined, "muzzle"),
+    ).toEqual({ x: 18, y: 18 });
+    expect(
+      entityAnchorPoint(
+        36,
+        36,
+        { center: { x: 18, y: 18 }, muzzle: { x: 32, y: 16 } },
+        "missing",
+      ),
+    ).toEqual({ x: 18, y: 18 });
+  });
+
+  it("routes sticky receptor effects through the mouth socket", () => {
+    const document = readPuzzle("04-muscle-effector");
+    const receptor = document.nodes.find(
+      (node) => node.id === "nicotinic-receptor",
+    );
+    if (!receptor) throw new Error("receptor missing");
+
+    const projected = nodeSurface({
+      node: receptor,
+      capability: "container",
+      state: "complete",
+      label: "Nicotinic receptor",
+    });
+    expect(projected.effects?.[0]?.stages[0]?.targets?.[0]).toEqual({
+      kind: "entity",
+      id: "nicotinic-receptor",
+      socket: "mouth",
+    });
+  });
+
+  it("uses the authored tile region with byIndex when there is no source", () => {
+    const document = readPuzzle("03-nerve-forest");
+    const relay = document.nodes.find((node) => node.id === "spike-relay");
+    if (!relay) throw new Error("relay missing");
+    const tileTarget = {
+      kind: "tileRegion" as const,
+      layer: "tiles",
+      x1: 19,
+      y1: 20,
+      x2: 33,
+      y2: 20,
+    };
+
+    const projected = nodeSurface({
+      node: relay,
+      capability: "conductor",
+      state: "active",
+      label: "Axon relay",
+      effectPreset: "fx.tile.path",
+      tileTarget,
+    });
+    expect(projected.effects?.[0]?.id).toBe("fx.tile.path:spike-relay");
+    expect(projected.effects?.[0]?.stages[0]?.visual).toEqual({
+      kind: "tileTint",
+      target: tileTarget,
+      color: "#ffd166",
+      revert: true,
+    });
+    expect(projected.effects?.[0]?.stages[0]?.timing.stagger).toEqual({
+      kind: "byIndex",
+      ticks: 1,
+    });
+  });
+
+  it("keeps ACh dissolve visible without the prop sprite", () => {
+    const plan = resolveEffectPreset("fx.ach.dissolve", {
+      actor: "p1",
+      owner: "p1",
+      source: { kind: "entity", id: "ach-packet" },
+    });
+    expect(plan).not.toBeNull();
+    expect(plan?.actor).toBe("p1");
+    expect(plan?.owner).toBe("p1");
+    expect(plan?.accent).toBe("p1");
+    expect(plan?.stages.map((stage) => stage.visual.kind)).toEqual([
+      "ring",
+      "particleBurst",
+    ]);
+    expect(
+      plan?.stages.every(
+        (stage) => stage.visual.kind !== "dissolve",
+      ),
+    ).toBe(true);
+    expect(plan?.stages[0]?.targets).toEqual([
+      { kind: "entity", id: "ach-packet" },
+    ]);
+  });
+
+  it("emits the muscle wave from the gate centre", () => {
+    const plan = resolveEffectPreset("fx.muscle.wave", {
+      actor: null,
+      owner: "shared",
+      source: { kind: "entity", id: "muscle-gate", socket: "center" },
+    });
+    expect(plan?.stages[0]?.visual.kind).toBe("particleStream");
+    expect(plan?.stages[0]?.source?.anchor).toEqual({
+      kind: "entity",
+      id: "muscle-gate",
+      socket: "center",
+    });
   });
 });

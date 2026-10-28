@@ -259,6 +259,21 @@ function activateEndplate(runtime: GameRuntime): void {
   expect(runtime.simulation.tetherPolicy).toBe("off");
 }
 
+function solveEndplate(runtime: GameRuntime): void {
+  activateEndplate(runtime);
+  walkPlayerTo(runtime, "p1", "pad-terminal");
+  stepWith(runtime);
+  waitRuntime(runtime, 80);
+  walkPlayerTo(runtime, "p2", "ach-packet");
+  stepWith(runtime, playerActions(), playerActions({ carry: true }));
+  walkPlayerTo(runtime, "p2", "nicotinic-receptor");
+  stepWith(runtime, playerActions(), playerActions({ carry: true }));
+  walkPlayerTo(runtime, "p1", "motor-terminal");
+  stepWith(runtime, playerActions({ pulse: true }));
+  waitRuntime(runtime, 10);
+  expect(runtime.snapshot().puzzle?.solved).toBe(true);
+}
+
 function waitRuntime(runtime: GameRuntime, ticks: number): void {
   for (let index = 0; index < ticks; index += 1) {
     stepWith(runtime);
@@ -993,11 +1008,53 @@ describe("game runtime", () => {
       expect.arrayContaining(["fb:binary:input-a", "fb:counter:stimulus-counter"]),
     );
     expect(snapshot.feedback.beats.length).toBeGreaterThan(0);
+    expect(snapshot.feedback.beats.map((beat) => beat.label)).toEqual([
+      "Press a dendrite input",
+      "Reach threshold",
+      "Run the axon",
+      "Reach the terminal",
+      "Open the exit",
+    ]);
+    expect(
+      snapshot.feedback.surfaces.find(
+        (surface) => surface.id === "fb:binary:input-a",
+      )?.content.text,
+    ).toBe("Dendrite input A is ready.");
+    expect(
+      snapshot.feedback.surfaces.find(
+        (surface) => surface.id === "fb:counter:stimulus-counter",
+      )?.content.text,
+    ).toContain("Stimulus counter");
     expect(snapshot.world.entities["agent-neuron"]?.anchors.center).toEqual({
       x: 18,
       y: 18,
     });
     expect(runtime.drainEffects()).toEqual([]);
+  });
+
+  it("projects authored 04 labels and beats after activation", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    activateEndplate(runtime);
+    const snapshot = runtime.snapshot();
+    expect(snapshot.feedback.beats.map((beat) => beat.label)).toEqual([
+      "Trigger the terminal",
+      "Open the Ca²⁺ window",
+      "Carry ACh across the cleft",
+      "Bind the nicotinic receptor",
+      "Muscle responds",
+      "ACh is cleared",
+    ]);
+    expect(
+      snapshot.feedback.surfaces.find(
+        (surface) => surface.id === "fb:carrier:ach-packet",
+      )?.content.text,
+    ).toBe("ACh packet is free.");
+    expect(
+      snapshot.feedback.surfaces.find(
+        (surface) => surface.id === "fb:meter:ca-timer",
+      )?.content.text,
+    ).toBe("Ca²⁺ window is idle.");
   });
 
   it("delivers effect plans idempotently with attribution", () => {
@@ -1032,11 +1089,13 @@ describe("game runtime", () => {
     pressSensor(runtime, "input-a", "p1");
     const puzzle = runtime.snapshot().puzzle;
     const players = JSON.stringify(runtime.simulation.players);
+    const props = JSON.stringify(runtime.simulation.props);
 
     runtime.drainEffects();
 
     expect(runtime.snapshot().puzzle).toEqual(puzzle);
     expect(JSON.stringify(runtime.simulation.players)).toBe(players);
+    expect(JSON.stringify(runtime.simulation.props)).toBe(props);
   });
 
   it("maps a pulse launch to an A-to-B travel plan", () => {
@@ -1052,6 +1111,134 @@ describe("game runtime", () => {
     expect(travel.length).toBeGreaterThan(0);
     expect(travel[0]?.stages[0]?.path).toMatchObject({ kind: "segment" });
     expect(travel[0]?.accent).toBe("p1");
+  });
+
+  it("uses the terminal muzzle and receptor mouth for pulse travel", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    activateEndplate(runtime);
+    walkPlayerTo(runtime, "p1", "motor-terminal");
+    stepWith(runtime, playerActions({ pulse: true }));
+
+    const travel = runtime
+      .drainEffects()
+      .filter((effect) => effect.planId.startsWith("fx.pulse.travel"));
+    const nicotinic = travel.find(
+      (effect) =>
+        effect.stages[0]?.path?.kind === "segment" &&
+        effect.stages[0].path.to.kind === "entity" &&
+        effect.stages[0].path.to.id === "nicotinic-receptor",
+    );
+    expect(nicotinic?.stages[0]?.path).toMatchObject({
+      kind: "segment",
+      from: {
+        kind: "entity",
+        id: "motor-terminal",
+        socket: "muzzle",
+      },
+      to: {
+        kind: "entity",
+        id: "nicotinic-receptor",
+        socket: "mouth",
+      },
+    });
+  });
+
+  it("restores the cleared ACh packet on runtime reset", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    activateEndplate(runtime);
+    walkPlayerTo(runtime, "p2", "ach-packet");
+    stepWith(runtime, playerActions(), playerActions({ carry: true }));
+    walkPlayerTo(runtime, "p2", "nicotinic-receptor");
+    stepWith(runtime, playerActions(), playerActions({ carry: true }));
+    walkPlayerTo(runtime, "p1", "motor-terminal");
+    stepWith(runtime, playerActions({ pulse: true }));
+
+    let ticks = 0;
+    while (
+      runtime.simulation.props["ach-packet"]?.state !== "cleared" &&
+      ticks < 220
+    ) {
+      stepWith(runtime);
+      ticks += 1;
+    }
+    expect(runtime.simulation.props["ach-packet"]?.state).toBe("cleared");
+    expect(runtime.snapshot().puzzle?.solved).toBe(false);
+
+    runtime.resetPuzzle();
+    expect(runtime.simulation.props["ach-packet"]?.state).toBe("free");
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.find(
+          (surface) => surface.id === "fb:carrier:ach-packet",
+        )?.content.text,
+    ).toBe("ACh packet is free.");
+  });
+
+  it("drains the authored tile path after the axon relay activates", () => {
+    const { runtime } = makeRuntime();
+    solveNodeRun(runtime);
+
+    const tile = runtime
+      .drainEffects()
+      .find((effect) => effect.planId.startsWith("fx.tile.path"));
+    expect(tile).toBeDefined();
+    expect(tile?.stages[0]?.visual).toMatchObject({
+      kind: "tileTint",
+      target: {
+        kind: "tileRegion",
+        layer: "tiles",
+        x1: 19,
+        y1: 20,
+        x2: 33,
+        y2: 20,
+      },
+    });
+    expect(tile?.stages[0]?.timing.stagger).toEqual({
+      kind: "byIndex",
+      ticks: 1,
+    });
+  });
+
+  it("clears the ACh packet after AChE without changing the solve", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    solveEndplate(runtime);
+    const puzzleState = runtime.snapshot().puzzle;
+
+    let ticks = 0;
+    while (
+      runtime.simulation.props["ach-packet"]?.state !== "cleared" &&
+      ticks < 220
+    ) {
+      stepWith(runtime);
+      ticks += 1;
+    }
+
+    const snapshot = runtime.snapshot();
+    expect(ticks).toBeLessThan(220);
+    expect(runtime.simulation.props["ach-packet"]?.state).toBe("cleared");
+    expect(snapshot.puzzle?.solved).toBe(true);
+    expect(snapshot.puzzle?.solved).toBe(puzzleState?.solved);
+    expect(
+      snapshot.feedback.surfaces.find(
+        (surface) => surface.id === "fb:carrier:ach-packet",
+      ),
+    ).toMatchObject({
+      state: "expired",
+      severity: "neutral",
+      content: { text: "ACh packet cleared" },
+    });
+    const dissolve = runtime
+      .drainEffects()
+      .find((effect) => effect.planId.startsWith("fx.ach.dissolve"));
+    expect(dissolve).toBeDefined();
+    expect(dissolve?.stages.map((stage) => stage.visual.kind)).toEqual([
+      "ring",
+      "particleBurst",
+    ]);
   });
 
   it("projects authored room sockets into the runtime world view", () => {

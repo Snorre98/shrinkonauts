@@ -1,6 +1,6 @@
 import type { LearningEvent } from "../curriculum";
 import type { ProgressionSnapshot } from "../progression";
-import type { PuzzleRunState } from "../puzzle";
+import type { PropRunState, PuzzleRunState } from "../puzzle";
 
 export const RUN_SCHEMA_VERSION = "2.1";
 export const SAVE_SCHEMA_VERSION = "2.0";
@@ -30,7 +30,7 @@ export interface BodySnapshot {
 
 export interface PropSnapshot {
   bodyId: string;
-  state: "free" | "carried" | "placed" | "docked";
+  state: PropRunState;
   carriedBy: "p1" | "p2" | null;
   placedOn: string | null;
 }
@@ -218,7 +218,8 @@ function isPropSnapshot(value: unknown): value is PropSnapshot {
     (value.state === "free" ||
       value.state === "carried" ||
       value.state === "placed" ||
-      value.state === "docked") &&
+      value.state === "docked" ||
+      value.state === "cleared") &&
     (value.carriedBy === null ||
       value.carriedBy === "p1" ||
       value.carriedBy === "p2") &&

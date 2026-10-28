@@ -151,7 +151,19 @@ export function anchorRefFromFeedbackAnchor(
 /** Effect anchor for a puzzle node, without a surface anchor. */
 export function nodeEffectAnchor(node: PuzzleNode): AnchorRef {
   if (node.entityId) {
-    return { kind: "entity", id: node.entityId };
+    const socket =
+      node.type === "pulseSource"
+        ? "muzzle"
+        : node.type === "receptor"
+          ? "mouth"
+          : node.type === "gate"
+            ? "center"
+            : undefined;
+    return {
+      kind: "entity",
+      id: node.entityId,
+      ...(socket ? { socket } : {}),
+    };
   }
   if ("rect" in node) {
     return {

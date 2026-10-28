@@ -19,6 +19,36 @@ export interface WorldVec2 {
   y: number;
 }
 
+export function defaultEntityAnchors(
+  width: number,
+  height: number,
+): Record<string, WorldVec2> {
+  return {
+    center: { x: width / 2, y: height / 2 },
+    top: { x: width / 2, y: 0 },
+    bottom: { x: width / 2, y: height },
+    left: { x: 0, y: height / 2 },
+    right: { x: width, y: height / 2 },
+  };
+}
+
+/**
+ * Resolve a local entity socket. Missing sockets fall back to the entity
+ * centre so effects remain visible even before content authors a socket.
+ */
+export function entityAnchorPoint(
+  width: number,
+  height: number,
+  anchors: Readonly<Record<string, WorldVec2>> | undefined,
+  socket: string | undefined,
+): WorldVec2 {
+  return (
+    anchors?.[socket ?? "center"] ??
+    anchors?.center ??
+    defaultEntityAnchors(width, height).center ?? { x: width / 2, y: height / 2 }
+  );
+}
+
 export type WorldAnchorRef =
   | { kind: "entity"; id: string; socket?: string }
   | { kind: "player"; id: PlayerId; socket?: string }

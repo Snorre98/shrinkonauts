@@ -531,7 +531,7 @@ export class RoomScene
       const prop = this.simulation.props[id];
       if (!prop) continue;
       sprite.setPosition(prop.x, prop.y + prop.height / 2);
-      sprite.setVisible(true);
+      sprite.setVisible(prop.state !== "cleared");
     }
   }
 }

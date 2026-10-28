@@ -51,6 +51,7 @@ const LINK_TYPES: readonly PuzzleLinkType[] = [
   "deactivate",
   "open",
   "close",
+  "clear",
 ];
 
 const SOURCE_TYPES: Record<PuzzleLinkType, readonly PuzzleNodeType[]> = {
@@ -70,6 +71,16 @@ const SOURCE_TYPES: Record<PuzzleLinkType, readonly PuzzleNodeType[]> = {
   deactivate: NODE_TYPES,
   open: NODE_TYPES,
   close: NODE_TYPES,
+  clear: [
+    "gate",
+    "relay",
+    "timer",
+    "receptor",
+    "trigger",
+    "plate",
+    "zone",
+    "counter",
+  ],
 };
 
 const TARGET_TYPES: Record<PuzzleLinkType, readonly PuzzleNodeType[]> = {
@@ -89,6 +100,7 @@ const TARGET_TYPES: Record<PuzzleLinkType, readonly PuzzleNodeType[]> = {
   deactivate: ["relay"],
   open: ["gate"],
   close: ["gate"],
+  clear: ["prop"],
 };
 
 function issue(

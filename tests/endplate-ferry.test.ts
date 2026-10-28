@@ -330,6 +330,25 @@ describe("Endplate Ferry puzzle document", () => {
     expect(runtime.isSolved()).toBe(true);
   });
 
+  it("clears the ACh packet when AChE elapses and reset restores it", () => {
+    const runtime = new PuzzleRuntime(puzzle);
+    const packet = prop("placed");
+
+    tickProp(runtime, [packet]);
+    pulseAndSettle(runtime, [packet]);
+    expect(runtime.nodeState("nicotinic-receptor")?.state).toBe("bound");
+
+    waitTicks(runtime, 160, [packet]);
+    expect(runtime.nodeState("ach-packet")?.state).toBe("cleared");
+    expect(runtime.nodeState("ach-packet")?.active).toBe(false);
+    expect(runtime.isSolved()).toBe(false);
+
+    expect(runtime.reset()).toBe(true);
+    expect(runtime.nodeState("ach-packet")?.state).toBe("free");
+    expect(runtime.nodeState("ach-packet")?.active).toBe(false);
+    expect(runtime.nodeState("nicotinic-receptor")?.state).toBe("idle");
+  });
+
   it("closes the Ca²⁺ gate after AChE elapses but keeps the muscle gate latched", () => {
     const runtime = new PuzzleRuntime(puzzle);
     const packet = prop("placed");
@@ -344,6 +363,7 @@ describe("Endplate Ferry puzzle document", () => {
     expect(runtime.nodeState("ache-timer")?.state).toBe("elapsed");
     expect(runtime.nodeState("ca-gate")?.state).toBe("closed");
     expect(runtime.nodeState("muscle-gate")?.state).toBe("open");
+    expect(runtime.nodeState("ach-packet")?.state).toBe("cleared");
     expect(runtime.isSolved()).toBe(true);
   });
 

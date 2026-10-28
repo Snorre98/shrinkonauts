@@ -157,6 +157,10 @@
       "type": "audio",
       "placeholder": true
     },
+    "audio.cue.wrong": {
+      "type": "audio",
+      "placeholder": true
+    },
     "audio.cue.jump": {
       "type": "audio",
       "placeholder": true
