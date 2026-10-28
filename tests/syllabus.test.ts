@@ -8,7 +8,7 @@ import {
 } from "../src/syllabus";
 
 const SYLLABUS_URL = new URL(
-  "../docs/shrinkonauts/base-game/syllabi/anatomy-reflex.json",
+  "../public/syllabi/anatomy-reflex.json",
   import.meta.url,
 );
 
@@ -31,7 +31,7 @@ describe("syllabus parsing", () => {
     expect(syllabus.id).toBe("anatomy-reflex");
     expect(syllabus.objectives).toHaveLength(5);
     expect(syllabus.concepts).toHaveLength(8);
-    expect(syllabus.evidence).toHaveLength(6);
+    expect(syllabus.evidence).toHaveLength(8);
     expect(warnings.filter((warning) => warning.includes("OPTIONAL_ONLY"))).toEqual([
       "SYLLABUS_EVIDENCE_OPTIONAL_ONLY: OBJ-4 has only optional evidence rules",
       "SYLLABUS_EVIDENCE_OPTIONAL_ONLY: OBJ-5 has only optional evidence rules",

@@ -1,0 +1,20 @@
+# Normalize line endings in the repository and in working trees.
+* text=auto eol=lf
+
+# Binary assets must never be normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary
+*.ogg binary
+*.wav binary
+
+# Keep generated/fixture noise out of language stats and diffs.
+package-lock.json linguist-generated=true
+docs/** linguist-documentation=true
