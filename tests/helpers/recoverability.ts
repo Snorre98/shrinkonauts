@@ -12,18 +12,20 @@ import type {
 } from "../../src/puzzle";
 
 /**
- * Sampled recoverability guard for the puzzle engine.
+ * Exhaustive stable-state reachability guard.
  *
- * An exhaustive search over every tick-level interleaving is exponential in
- * the number of timer and cooldown phases, so this guard samples reachable
- * states with a seeded random walk and then asks a deterministic recovery
- * oracle to win from each sampled state. A state the oracle cannot recover
- * from is reported as dead.
+ * The full tick-level state space includes every timer and cooldown phase and
+ * grows without a useful bound. This guard instead explores **stable decision
+ * states**: from each state it applies one authored affordance (sensor on/off,
+ * prop placement, pulse), lets timers/pulses/cooldowns settle, and records the
+ * resulting state. Solved transitions are terminal.
  *
- * The oracle pokes every ordinary play affordance: place each prop on each
- * receptor, fire each pulse, then hold each sensor long enough for the longest
- * timer. That is enough to recover from any state that is not structurally
- * dead, so a failure points at an engine invariant rather than at the search.
+ * The resulting graph is small for the current puzzles (03: 26 states, 04: 15)
+ * and is exhaustive over the action alphabet at decision points. Waiting only
+ * advances timers/pulses/cooldowns; the static gate-recovery validator separately
+ * warns on non-latched gates that can close permanently. A future puzzle that
+ * depends on a sub-timer window or a repeating timer needs an explicit timed
+ * extension.
  */
 
 const PLAYER_WIDTH = 28;
@@ -50,23 +52,26 @@ interface SearchNode {
   world: World;
 }
 
+interface SettleResult {
+  solved: boolean;
+  capped: boolean;
+}
+
 export interface RecoverabilityOptions {
-  /** Seeded random walks. Defaults to 200. */
-  runs?: number;
-  /** Ticks per random walk. Defaults to 400. */
-  ticksPerRun?: number;
-  /** Seed for the deterministic walk. Defaults to 1. */
-  seed?: number;
-  /** Cap on distinct sampled states kept for the oracle. Defaults to 1000. */
+  /** Maximum explored stable states. Defaults to 10,000. */
   maxStates?: number;
+  /** Maximum ticks spent settling one action. Defaults to the document bound. */
+  maxSettleTicks?: number;
 }
 
 export interface RecoverabilityResult {
-  /** Distinct unsolved states collected from the random walks. */
-  sampled: number;
-  /** Random walks that reached the win on their own. */
-  solvedRuns: number;
-  /** Human-readable summaries of sampled states the oracle could not solve. */
+  /** Distinct reachable stable states, including the initial state. */
+  states: number;
+  /** States with at least one action that solves the puzzle. */
+  solvedStates: number;
+  /** True when a state or settle budget was exhausted. Never treat as a pass. */
+  capped: boolean;
+  /** Human-readable summaries of reachable unsolved states that cannot solve. */
   dead: string[];
 }
 
@@ -120,7 +125,7 @@ function actionsFor(document: PuzzleDocument): Action[] {
   return actions;
 }
 
-function initialWorld(document: PuzzleDocument): World {
+function startingWorld(document: PuzzleDocument): World {
   return {
     sensor: null,
     placements: Object.fromEntries(
@@ -199,9 +204,7 @@ function describeState(node: SearchNode): string {
   const nodes = Object.fromEntries(
     Object.entries(node.run.nodes).map(([id, state]) => [
       id,
-      `${state.state}${state.active ? "*" : ""}${
-        state.remaining > 0 ? `(${state.remaining})` : ""
-      }`,
+      `${state.state}${state.active ? "*" : ""}${state.remaining > 0 ? `(${state.remaining})` : ""}`,
     ]),
   );
   return JSON.stringify({
@@ -210,171 +213,193 @@ function describeState(node: SearchNode): string {
   });
 }
 
-function createRandom(seed: number): () => number {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0x1_0000_0000;
-  };
+/**
+ * Absolute tick and evidence counters are observations, not puzzle logic.
+ * Keeping them in the key would create an unbounded state graph.
+ */
+function canonicalKey(run: PuzzleRunState, world: World): string {
+  const nodes = Object.fromEntries(
+    Object.entries(run.nodes).map(([id, state]) => [
+      id,
+      [
+        state.state,
+        state.active,
+        state.count,
+        state.remaining,
+        state.fired,
+        state.occupiedBy,
+      ],
+    ]),
+  );
+  return JSON.stringify({
+    nodes,
+    pulses: run.pulses,
+    sensor: world.sensor,
+    placements: world.placements,
+  });
 }
 
-function sampledStates(
-  document: PuzzleDocument,
-  options: Required<RecoverabilityOptions>,
-): { states: SearchNode[]; solvedRuns: number } {
-  const actions = actionsFor(document);
-  const random = createRandom(options.seed);
-  // Reservoir sampling keeps the oracle budget bounded while still spreading
-  // the sample across every run and tick, instead of only the early states.
-  const reservoir: SearchNode[] = [];
-  let samples = 0;
-  let solvedRuns = 0;
+function settleBudget(document: PuzzleDocument): number {
+  const timers = timersOf(document);
+  const timerTicks = timers.reduce(
+    (total, timer) => total + timer.durationTicks,
+    0,
+  );
+  const pulseNodes = document.nodes.filter(
+    (node) => node.type === "pulseSource",
+  );
+  const travelTicks = Math.max(
+    0,
+    ...pulseNodes.map((node) =>
+      node.type === "pulseSource" ? node.travelTicks : 0,
+    ),
+  );
+  const cooldownTicks = Math.max(
+    0,
+    ...pulseNodes.map((node) =>
+      node.type === "pulseSource" ? node.cooldownTicks : 0,
+    ),
+  );
+  return Math.max(8, timerTicks + travelTicks + cooldownTicks + 8);
+}
 
-  for (let run = 0; run < options.runs; run += 1) {
-    const runtime = new PuzzleRuntime(document);
-    let world = initialWorld(document);
+function isQuiescent(document: PuzzleDocument, run: PuzzleRunState): boolean {
+  if (run.pulses.length > 0) return false;
 
-    for (let tick = 0; tick < options.ticksPerRun; tick += 1) {
-      const action = actions[Math.floor(random() * actions.length)];
-      if (!isNoop(action, world)) {
-        if (action.pulseSource) {
-          runtime.usePulse(action.pulseSource, "p1");
-        } else {
-          world = applyAction(world, action);
-        }
-      }
-      runtime.tickResult(worldSnapshot(document, world));
-
-      if (runtime.isSolved()) {
-        solvedRuns += 1;
-        break;
-      }
-
-      samples += 1;
-      const state: SearchNode = { run: runtime.snapshot(), world };
-      if (reservoir.length < options.maxStates) {
-        reservoir.push(state);
-        continue;
-      }
-      const slot = Math.floor(random() * samples);
-      if (slot < options.maxStates) {
-        reservoir[slot] = state;
-      }
-    }
+  for (const timer of timersOf(document)) {
+    if (run.nodes[timer.id]?.state === "running") return false;
   }
+  for (const sourceId of pulseSourcesOf(document)) {
+    if ((run.nodes[sourceId]?.remaining ?? 0) > 0) return false;
+  }
+  return true;
+}
 
-  return { states: reservoir, solvedRuns };
+function settle(
+  document: PuzzleDocument,
+  runtime: PuzzleRuntime,
+  world: World,
+  maxTicks: number,
+): SettleResult {
+  for (let tick = 0; tick <= maxTicks; tick += 1) {
+    if (runtime.isSolved()) return { solved: true, capped: false };
+    if (isQuiescent(document, runtime.snapshot())) {
+      return { solved: false, capped: false };
+    }
+    runtime.tickResult(worldSnapshot(document, world));
+  }
+  return { solved: runtime.isSolved(), capped: !runtime.isSolved() };
 }
 
 /**
- * Deterministic recovery oracle.
- *
- * For every combination of prop placements: fire every pulse source, then
- * hold every sensor for the longest timer duration. Returns true as soon as
- * the win predicate is reached.
+ * Build the reachable stable-state graph and mark every state that can reach a
+ * solved transition. States that cannot are the recoverability failures.
  */
-function recovers(
-  document: PuzzleDocument,
-  state: SearchNode,
-): boolean {
-  const receptors = receptorsOf(document);
-  const props = propsOf(document);
-  const pulses = pulseSourcesOf(document);
-  const sensors = sensorsOf(document);
-  const maxCooldown = Math.max(0, ...pulses.map((id) => {
-    const node = document.nodes.find((entry) => entry.id === id);
-    return node?.type === "pulseSource" ? node.cooldownTicks : 0;
-  }));
-  const maxTravel = Math.max(0, ...pulses.map((id) => {
-    const node = document.nodes.find((entry) => entry.id === id);
-    return node?.type === "pulseSource" ? node.travelTicks : 0;
-  }));
-  const holdTicks =
-    Math.max(0, ...timersOf(document).map((node) => node.durationTicks)) +
-    maxTravel +
-    2;
-  const placements = props.map(() => [
-    "spawn",
-    ...receptors.map((receptor) => receptor.id),
-  ]);
-
-  const placementVariants: Record<string, string>[] = [{}];
-  props.forEach((prop, index) => {
-    const variants: Record<string, string>[] = [];
-    for (const variant of placementVariants) {
-      for (const placement of placements[index]) {
-        variants.push({ ...variant, [prop.id]: placement });
-      }
-    }
-    placementVariants.splice(0, placementVariants.length, ...variants);
-  });
-
-  const advance = (
-    runtime: PuzzleRuntime,
-    world: World,
-    ticks: number,
-  ): boolean => {
-    for (let tick = 0; tick < ticks; tick += 1) {
-      runtime.tickResult(worldSnapshot(document, world));
-      if (runtime.isSolved()) return true;
-    }
-    return false;
-  };
-
-  for (const variant of placementVariants) {
-    const baseWorld: World = { sensor: null, placements: variant };
-    const runtime = new PuzzleRuntime(document);
-    runtime.restore(state.run);
-
-    let won = false;
-    for (const source of pulses) {
-      for (let wait = 0; wait <= maxCooldown; wait += 1) {
-        if (runtime.usePulse(source, "p1")) break;
-        if (advance(runtime, baseWorld, 1)) {
-          won = true;
-          break;
-        }
-      }
-      if (won) break;
-      if (advance(runtime, baseWorld, maxTravel + 2)) {
-        won = true;
-        break;
-      }
-    }
-    if (won) return true;
-
-    for (const sensor of sensors) {
-      const world: World = { ...baseWorld, sensor: sensor.id };
-      // A one-shot timer can be reset mid-hold (AChE clearance), so press the
-      // sensor again on a fresh edge. Releasing for one tick re-arms the press.
-      for (let cycle = 0; cycle < 3; cycle += 1) {
-        if (advance(runtime, world, holdTicks)) return true;
-        if (advance(runtime, { ...baseWorld, sensor: null }, 1)) return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 export function findUnrecoverableStates(
   document: PuzzleDocument,
   options: RecoverabilityOptions = {},
 ): RecoverabilityResult {
-  const resolved: Required<RecoverabilityOptions> = {
-    runs: options.runs ?? 200,
-    ticksPerRun: options.ticksPerRun ?? 400,
-    seed: options.seed ?? 1,
-    maxStates: options.maxStates ?? 1000,
-  };
-  const { states, solvedRuns } = sampledStates(document, resolved);
-  const dead = states
-    .filter((state) => !recovers(document, state))
-    .map(describeState);
+  const maxStates = options.maxStates ?? 10_000;
+  const maxSettleTicks = options.maxSettleTicks ?? settleBudget(document);
+  const actions = actionsFor(document);
+
+  const initialRuntime = new PuzzleRuntime(document);
+  const initialWorld = startingWorld(document);
+  const states: SearchNode[] = [
+    { run: initialRuntime.snapshot(), world: initialWorld },
+  ];
+  const index = new Map<string, number>([
+    [canonicalKey(states[0].run, states[0].world), 0],
+  ]);
+  const edges: number[][] = [[]];
+  const solves: boolean[] = [false];
+  let capped = false;
+
+  for (let head = 0; head < states.length; head += 1) {
+    if (states.length >= maxStates) {
+      capped = true;
+      break;
+    }
+    const state = states[head];
+    for (const action of actions) {
+      if (isNoop(action, state.world)) continue;
+
+      const runtime = new PuzzleRuntime(document);
+      runtime.restore(state.run);
+      if (action.pulseSource && !runtime.usePulse(action.pulseSource, "p1")) {
+        continue;
+      }
+
+      const world = action.pulseSource
+        ? state.world
+        : applyAction(state.world, action);
+      const first = runtime.tickResult(worldSnapshot(document, world));
+      if (first.solvedNow || runtime.isSolved()) {
+        solves[head] = true;
+        continue;
+      }
+
+      const settled = settle(document, runtime, world, maxSettleTicks);
+      if (settled.capped) {
+        capped = true;
+        continue;
+      }
+      if (settled.solved) {
+        solves[head] = true;
+        continue;
+      }
+
+      const nextRun = runtime.snapshot();
+      const key = canonicalKey(nextRun, world);
+      let next = index.get(key);
+      if (next === undefined) {
+        if (states.length >= maxStates) {
+          capped = true;
+          break;
+        }
+        next = states.length;
+        index.set(key, next);
+        states.push({ run: nextRun, world });
+        edges.push([]);
+        solves.push(false);
+      }
+      if (!edges[head].includes(next)) {
+        edges[head].push(next);
+      }
+    }
+    if (capped) break;
+  }
+
+  const reverse: number[][] = states.map(() => []);
+  edges.forEach((outgoing, from) => {
+    for (const to of outgoing) {
+      reverse[to].push(from);
+    }
+  });
+
+  const canReachSolved = solves.slice();
+  const queue: number[] = [];
+  for (let state = 0; state < canReachSolved.length; state += 1) {
+    if (canReachSolved[state]) queue.push(state);
+  }
+  for (let cursor = 0; cursor < queue.length; cursor += 1) {
+    const state = queue[cursor];
+    for (const predecessor of reverse[state]) {
+      if (canReachSolved[predecessor]) continue;
+      canReachSolved[predecessor] = true;
+      queue.push(predecessor);
+    }
+  }
+
+  const dead = canReachSolved
+    .map((reaches, state) => (reaches ? null : state))
+    .filter((state): state is number => state !== null)
+    .map((state) => describeState(states[state]));
 
   return {
-    sampled: states.length,
-    solvedRuns,
+    states: states.length,
+    solvedStates: solves.filter(Boolean).length,
+    capped,
     dead,
   };
 }

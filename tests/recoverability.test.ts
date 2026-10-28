@@ -32,24 +32,82 @@ const CASES: Array<[string, URL]> = [
   ],
 ];
 
+/**
+ * Negative control: a non-latched gate that can never open because it has no
+ * open link and no transition out of the closed state. The reachability graph
+ * must report the dead state rather than treating an empty result as a pass.
+ */
+const UNRECOVERABLE: PuzzleDocument = {
+  schemaVersion: "1.0",
+  id: "fixture-unrecoverable-gate",
+  title: "Unrecoverable Gate Fixture",
+  objectiveIds: [],
+  conceptIds: [],
+  activation: { mode: "roomStart" },
+  tether: "off",
+  nodes: [
+    {
+      id: "plate",
+      type: "plate",
+      rect: { x: 0, y: 0, width: 32, height: 32 },
+      detects: ["player"],
+      minimum: 1,
+      countCarried: false,
+    },
+    { id: "close-timer", type: "timer", durationTicks: 3, repeat: false },
+    {
+      id: "gate",
+      type: "gate",
+      entityId: "gate",
+      initial: "closed",
+      latched: false,
+    },
+  ],
+  links: [
+    { from: "plate", to: "close-timer", type: "start" },
+    { from: "close-timer", to: "gate", type: "close" },
+  ],
+  win: { type: "gateOpen", gateId: "gate" },
+  reset: {
+    props: [],
+    nodes: ["plate", "close-timer", "gate"],
+  },
+  evidence: { onSolve: [], counters: [] },
+  rewards: {},
+  solution: [],
+  hints: [],
+};
+
 describe("puzzle recoverability", () => {
   for (const [name, url] of CASES) {
     it(
-      `${name}: sampled reachable states are all recoverable`,
+      `${name}: every reachable stable state can reach solved`,
       () => {
-        const result = findUnrecoverableStates(load(url), { maxStates: 1000 });
+        const result = findUnrecoverableStates(load(url), { maxStates: 10_000 });
 
-        // A zero solved-run count means the random walk is not exercising the
-        // affordances at all, which would make this guard vacuous.
-        expect(result.solvedRuns, "no random walk reached the win").toBeGreaterThan(0);
+        // A cap hit means the graph is incomplete, so the result is
+        // inconclusive rather than a pass.
+        expect(result.capped, "state/settle budget exhausted").toBe(false);
+        // Guard against a vacuous search that never finds a win.
+        expect(result.solvedStates, "no reachable solved state").toBeGreaterThan(
+          0,
+        );
         expect(
-          result.dead.length,
+          result.dead,
           `${result.dead.length} unrecoverable state(s) out of ${
-            result.sampled
-          } sampled:\n${result.dead.slice(0, 3).join("\n")}`,
-        ).toBe(0);
+            result.states
+          } reachable stable states:\n${result.dead.slice(0, 3).join("\n")}`,
+        ).toEqual([]);
       },
-      60_000,
+      30_000,
     );
   }
+
+  it("detects a permanently closed gate", () => {
+    const result = findUnrecoverableStates(UNRECOVERABLE, { maxStates: 100 });
+
+    expect(result.capped).toBe(false);
+    expect(result.solvedStates).toBe(0);
+    expect(result.dead.length).toBeGreaterThan(0);
+  });
 });

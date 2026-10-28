@@ -99,4 +99,5 @@ Invariants:
 
 - A blocked link does not fire a second event for the same occurrence.
 - A blocked pulse consumes its cooldown.
-- Authored `message` is surfaced as a toast, not evidence.
+- Authored `message` is surfaced through the feedback layer (toast adapter until
+  Phase 4), not evidence.

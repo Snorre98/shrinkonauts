@@ -20,7 +20,7 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 13 files, 74 unit/integration tests
+npm test               # 19 files, 153 unit/integration tests
 npm run smoke          # room boot + module boundary tests
 npm run build          # type check and production build
 npm run pack:validate  # dev fixture + anatomy pack validation

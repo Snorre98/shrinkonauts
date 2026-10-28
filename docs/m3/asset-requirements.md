@@ -104,6 +104,13 @@ Until the M2 pack is frozen:
 
 **Action:** after M2 content freeze, re-baseline this inventory against the actual `room.json`, `puzzle.json`, and `assets.final.json`. Do not spend M3 credits on puzzle props that the final room does not use.
 
+> **M1.8 material/pattern dependency (proposed).** ADR-0014–0017 introduce
+> materials, tile material grids, autotiling, variants, pattern projection, and
+> atlas assets. They replace the current one-32×32-tile and single-sprite
+> assumptions in this document. Do not generate tile variants, atlases, or
+> material patterns until the M1.8 scope is accepted and this inventory is
+> re-baselined against the material model.
+
 ---
 
 ## 3. Runtime constraints that shape the art
@@ -114,7 +121,7 @@ These are current implementation facts, not preferences.
 |---|---|---|
 | Players are displayed at **28×44 px** | `src/world/physics.ts` (`PLAYER_WIDTH`, `PLAYER_HEIGHT`) | Export player textures at a 28:44 aspect ratio. Do not squash a square image into 28×44. |
 | Entities are displayed at **36×36 px** | `src/world/room-scene.ts` (`ENTITY_SIZE = 36`) | Export entity textures at 1:1. Design for 36 px readability. |
-| The room uses a single **32×32** tile texture | `room.json` (`tileSize: 32`), `room-scene.ts` (`tileset`) | The “tileset” is one tile, not a tile atlas. Generate a seamless 32×32 block texture. |
+| The room uses a single **32×32** tile texture | `room.json` (`tileSize: 32`), `room-scene.ts` (`tileset`) | Current runtime uses one tile texture. After M1.8, expect material grids, autotile variants, and atlases; re-baseline this inventory. |
 | Background far/mid/near use `fit: "tile"` | `room.json`, `src/world/background.ts` (`TileSprite`) | These layers must tile seamlessly. Avoid unique landmarks that repeat obviously. |
 | The sky uses `fit: "cover"` and is scaled ~1.4× | `src/world/background.ts` | Generate a 16:9 sky with safe dark areas for HUD and player silhouettes. |
 | Spritesheets are loaded but not animated | `room-scene.ts` loads `type: "sheet"` but creates `this.add.image(...)`; no `this.anims.create(...)` | For M3, use static `sprite` entries and single PNG/WebP images. |

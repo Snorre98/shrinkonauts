@@ -1,6 +1,6 @@
 # Puzzle Engine Upgrade — Architecture (arc42)
 
-**Status:** accepted design, implementation not started
+**Status:** accepted design; Phase 0 complete, Phase 1 complete, M1.75 in progress
 **Scope:** the engine capabilities needed by the intended M2 nervous-system
 puzzle design (`03`–`05`, Silicon, optional `01`/`02`)
 **Related:** [ADR log](adr/), [behavior contracts](behaviors/),
@@ -52,10 +52,10 @@ content capabilities plus the runtime/rendering seams that make them real.
 | Puzzle documents remain declarative dataflow; no scripts, callbacks, or arbitrary expressions | ADR-0034, ADR-0001 |
 | `puzzle` stays pure and independent of Matter.js, Phaser, DOM, pack loading, and save I/O | existing module boundaries, ADR-0001 |
 | Fixed 60 Hz simulation; Matter.js only in `world`; Phaser only in the world renderer | existing runtime, ADR-0005 |
-| No new movement verbs or abilities | ADR-0009, M2 design |
+| No new movement verbs or abilities | ADR-0009 (M1.5), M2 design |
 | One active puzzle and one tether policy per room | ADR-0038, ADR-0042 |
-| No new UI surface except the map travel controls required by ADR-0007 | ADR-0043, ADR-0007 |
-| Save v2 remains the run format; no new field except `returnTo` | ADR-0041, ADR-0045, ADR-0008 |
+| Feedback surfaces and map travel controls are the only new UI surfaces | ADR-0009, ADR-0010, ADR-0007 |
+| Save v2 remains the run format; no new field except `returnTo` and the optional `conversations` list | ADR-0041, ADR-0045, ADR-0008, ADR-0011 |
 | Placeholder-first assets; no final art requirement | ADR-0029–0033 |
 | Existing 03/04 content and 2.0 saves remain valid | ADR-0008 |
 | Keyboard-only, reduced-motion-friendly, no mouse-only action | ADR-0018, ADR-0020 |
@@ -106,9 +106,11 @@ The upgrade has five defining moves:
    and prop states after level entry, restore, reset, puzzle events, and side
    return. `RoomPhysics` exposes imperative operations; `RoomScene` reads
    simulation state.
-4. **Feedback is data, not a new UI.** A blocked conditional link carries an
-   authored message and uses the existing toast. It is not evidence and does
-   not create a fail state.
+4. **Feedback is state projection, not a new source of truth.** Persistent
+   surfaces are rebuilt from puzzle/world state, transient cues are sequenced
+   separately, and cosmetic effects never mutate state or collision. Entity
+   conversations and co-op attribution use the same surface model. This is the
+   strategy in ADR-0009, ADR-0010, ADR-0011, and ADR-0013.
 5. **Travel is bounded.** The main path remains linear (ADR-0046). Optional
    01/02 are side excursions with a single `returnTo` snapshot, not a full
    per-level cache. The map becomes a keyboard-focusable travel surface only
@@ -197,7 +199,7 @@ sequenceDiagram
     Game->>World: setGateOpen / setPropState / unlock / clear
     World-->>Game: gateStates / propStates
     Game->>Scene: snapshot + simulation
-    Scene->>Player: closed gate blocks; open gate passes; toast message
+    Scene->>Player: closed gate blocks; open gate passes; feedback surface/effect
 ```
 
 Order is deliberately single-writer: the puzzle graph evaluates first, the
@@ -278,7 +280,7 @@ sequenceDiagram
 flowchart TD
     A[Condition false] --> B[emit linkBlocked]
     B --> C{authored message?}
-    C -->|yes| D[toast feedback]
+    C -->|yes| D[feedback fact → surface]
     C -->|no| E[silent; no state change]
     F[Invalid side travel] --> G[reject; keep current level]
     H[Missing returnTo on side finish] --> I[complete side evidence; return to map/complete fallback]
@@ -317,10 +319,10 @@ system Chrome (Playwright).
 | Module sealing / public APIs | ADR-0001; [`contracts/module-boundaries.md`](contracts/module-boundaries.md) |
 | Gate and prop state ownership | Puzzle graph owns logical state; world owns bodies; `GameRuntime` is the single synchronizer |
 | Schema evolution | Optional fields + minor versions; old content/saves default off (ADR-0008) |
-| Feedback | Authored conditional-link messages use the existing toast; no new panel or evidence type |
+| Feedback | State-projected persistent surfaces plus sequenced transient cues; co-op attribution and entity conversations; cosmetic effect plans (ADR-0009–0013) |
 | No-fail recovery | Reset, checkpoint, side return, and save/restore restore valid state; blocked actions never consume evidence |
 | Presentation as projection | `RoomSimulation.gateStates`/prop states drive `RoomScene`; no puzzle imports in `world` |
-| Accessibility | Keyboard-only map travel, focus management, immediate state swaps under reduced motion |
+| Accessibility | Keyboard-only map travel, focus management, persistent text/state alternatives; reduced motion simplifies or removes effects without losing information (ADR-0013) |
 | Determinism | Fixed-step puzzle evaluation; no wall-clock or random behavior in `puzzle` |
 
 ## 9. Architectural Decisions
@@ -335,20 +337,32 @@ system Chrome (Playwright).
 | [0006](adr/0006-per-level-debrief-prompts.md) | Per-level debrief prompts with syllabus fallback | Accepted |
 | [0007](adr/0007-side-level-map-travel.md) | Side-level map travel with a return snapshot | Accepted |
 | [0008](adr/0008-schema-evolution.md) | Backward-compatible schema evolution | Accepted |
+| [0009](adr/0009-feedback-ecs-substrate.md) | Feedback ECS as the generic ECS substrate | Accepted |
+| [0010](adr/0010-anchored-feedback-surfaces.md) | Anchored feedback surfaces, co-op ownership, and input routing | Accepted |
+| [0011](adr/0011-entity-conversations.md) | Entity conversations replace the global dialogue overlay | Accepted |
+| [0012](adr/0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Accepted |
+| [0013](adr/0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects, composable effect plans, and accessibility | Accepted |
 
-Proposed feedback architecture (not yet accepted; see the ADR log):
+Proposed material and pattern architecture (not yet accepted; see the ADR log):
 
 | # | Decision | Status |
 |---|---|---|
-| [0009](adr/0009-feedback-ecs-substrate.md) | Feedback ECS as the generic ECS substrate | Proposed |
-| [0010](adr/0010-anchored-feedback-surfaces.md) | Anchored feedback surfaces, co-op ownership, and input routing | Proposed |
-| [0011](adr/0011-entity-conversations.md) | Entity conversations replace the global dialogue overlay | Proposed |
-| [0012](adr/0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Proposed |
-| [0013](adr/0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects and accessibility | Proposed |
+| [0014](adr/0014-material-pattern-vocabulary.md) | Material and pattern vocabulary | Proposed |
+| [0015](adr/0015-tile-material-grid-autotiling.md) | Tile material grid, autotiling, and variants | Proposed |
+| [0016](adr/0016-pattern-projection-surfaces.md) | Pattern projection across tiles, objects, backgrounds, and UI | Proposed |
+| [0017](adr/0017-tile-variant-atlas-manifest.md) | Tile variant atlas and manifest metadata | Proposed |
 
-When accepted, ADR-0009 and ADR-0010 replace the "feedback is a toast / no new UI
-surface" constraints in §4.4 and §8, and ADR-0013 amends ADR-0003's no-animation
-constraint.
+ADR-0009 and ADR-0010 supersede the old "feedback is a toast / no new UI
+surface" constraints in §2, §4 (strategy item 4), and §8. ADR-0013 amends
+ADR-0003's no-animation constraint; ADR-0011 adds the optional conversation save
+field.
+
+Implementation: [`feedback-implementation-plan.md`](feedback-implementation-plan.md)
+and the [M1.75 milestone](../m1.75/README.md).
+
+The material/pattern layer is planned separately in
+[`material-pattern-implementation-plan.md`](material-pattern-implementation-plan.md)
+and the [M1.8 milestone](../m1.8/README.md).
 
 Existing decisions remain in force: ADR-0034 (dataflow), ADR-0035 (body +
 prop), ADR-0036 (Matter boundary), ADR-0037 (solo union), ADR-0038 (tether),

@@ -11,7 +11,7 @@ actions after feedback; there is no automatic background retry.
 
 | Failure class | Player-visible result | Retry |
 |---|---|---|
-| Blocked conditional link | Authored toast message; no state change | Player repeats the action after meeting the condition |
+| Blocked conditional link | Authored feedback message; no state change | Player repeats the action after meeting the condition |
 | Blocked pulse | No bind; normal cooldown | Wait for cooldown, pulse again |
 | Closed physical gate | Movement is blocked by collision | Open the gate or use reset |
 | Locked prop | Pickup rejected; “locked” state remains | Unlock it, or reset |
@@ -25,7 +25,9 @@ actions after feedback; there is no automatic background retry.
 
 - A link with `requires` inactive is not applied.
 - `linkBlocked` is emitted once per trigger occurrence.
-- If `message` is authored, `GameRuntime` shows it through the existing toast.
+- If `message` is authored, `GameRuntime` emits a feedback fact; until Phase 4
+  the existing toast adapter displays it. ADR-0009 and ADR-0010 define the
+  target surface transport.
 - The blocked link does not emit a normal target event, counter increment, gate
   open, timer start, or receptor bind.
 - A blocked pulse is consumed; the cooldown starts as normal.
@@ -82,8 +84,8 @@ actions after feedback; there is no automatic background retry.
 |---|---|
 | Invalid content | Pack validation error with code and path; no boot |
 | Invalid travel | Map reason string; no state change |
-| Blocked link | Authored toast |
-| Blocked pulse | Cooldown HUD + toast |
+| Blocked link | Authored feedback message |
+| Blocked pulse | Cooldown HUD + feedback cue |
 | Missing save field | Default; load continues |
 | Corrupt save | Existing ADR-0045 recovery |
 | Renderer rebuild failure | Existing fatal error overlay |

@@ -1,6 +1,6 @@
 # ADR-0011: Entity conversations replace the global dialogue overlay
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-28
 Deciders: Snorre
 Related: ADR-0009, ADR-0010, ADR-0014, ADR-0043

@@ -1,6 +1,6 @@
 # ADR-0012: Capability-based feedback defaults and coverage
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-28
 Deciders: Snorre
 Related: ADR-0009, ADR-0010, ADR-0034
@@ -83,11 +83,13 @@ permission to leak a new string into the DOM.
 interface NodeFeedbackDescriptor<N extends PuzzleNode = PuzzleNode> {
   capabilities: readonly FeedbackCapability[];
   project(node: N, state: PuzzleNodeRunState): FeedbackSurfaceSpec[];
+  effects?(node: N, state: PuzzleNodeRunState): EffectPlan[];
   cues?: Partial<Record<PuzzleEventType, CueRecipe>>;
 }
 
 interface LinkFeedbackDescriptor {
   capabilities: readonly FeedbackCapability[];
+  effects?(link: PuzzleLink): EffectPlan[];
   cues?: Partial<Record<PuzzleLinkType, CueRecipe>>;
 }
 ```
@@ -129,7 +131,8 @@ function projectSignal(signal: FeedbackSignal): FeedbackSurfaceSpec {
 ```
 
 A and B are not alternatives to C. **C is the ECS runtime; A and B are the two
-ways surfaces are created.**
+ways surfaces are created.** Effects follow the same two paths: a descriptor
+supplies a default effect recipe, or a signal supplies a custom `EffectPlan`.
 
 ### 4. Default anchor and presentation policy
 
@@ -149,6 +152,27 @@ The capability determines the default surface:
 
 Content may override label, anchor, presentation, and copy through a validated
 `feedback` block. It may not introduce new component or presentation kinds.
+
+### 4.1 Default effect recipes
+
+Effects use the composable operators from ADR-0013. The capability supplies a
+default recipe; a new puzzle type inherits it unless the descriptor overrides it.
+
+| Capability | Default effect recipes |
+|---|---|
+| `affordance` | interact ring, idle glow |
+| `binary` | plate depress, lever pull, state swap |
+| `meter` | timer ring, cooldown sweep, orb travel |
+| `counter` | pip pop, threshold burst |
+| `container` | socket fill, rejection bounce |
+| `carrier` | pickup glow, drop trail, dissolve |
+| `barrier` | gate burst, bridge tile reveal |
+| `conductor` | path beam, tile wave |
+| `outcome` | screen flash, exit ping |
+
+Content may select an effect preset or provide a validated `EffectPlan` built
+from the closed operators. It may not introduce a new operator or a new path
+kind.
 
 ### 5. Reasons, not prose
 
@@ -205,7 +229,7 @@ Compile-time:
 - `satisfies Record<PuzzleNodeType, NodeFeedbackDescriptor>`;
 - `satisfies Record<PuzzleLinkType, LinkFeedbackDescriptor>`;
 - closed `FeedbackCapability`, `FeedbackState`, `Presentation`,
-  `RejectionReason`.
+  `RejectionReason`, `EffectOperator`, `EffectPathKind`, `TileVisualOp`.
 
 Validator:
 
@@ -217,7 +241,14 @@ Validator:
 - unknown audio cue;
 - beat referencing an unknown node;
 - puzzle with no hints or no solved cue;
-- feedback override using an unknown component or presentation.
+- feedback override using an unknown component or presentation;
+- effect target or socket that does not exist;
+- tile layer missing or tile region outside the room bounds;
+- unknown effect operator or path kind;
+- persistent effect with no cancellation source;
+- player-caused effect with no actor;
+- effect that declares a collision change;
+- movement-only effect with no reduced-motion alternative.
 
 Tests:
 
@@ -226,10 +257,15 @@ Tests:
 - every critical state has a persistent element;
 - projection goldens for each fixture;
 - cue ordering, dedupe, priority, TTL, multi-step delivery;
+- directional effects start at the named socket and respect direction/spread;
+- A→B effect endpoints match resolved anchors and follow moving anchors;
+- tile visuals apply and revert while collision state is unchanged;
+- effect plans do not mutate simulation state;
+- P1/P2 effect attribution does not cross;
 - reduced motion changes effects but not state or text;
 - **new-type test:** add a dummy type and verify it gets affordance, ack,
-  progress, outcome, and a persistent element without touching `ui/`, `world/`,
-  or `audio/`.
+  progress, outcome, a persistent element, and a default effect without touching
+  `ui/`, `world/`, or `audio/`.
 
 ## Consequences
 
@@ -240,6 +276,7 @@ Tests:
 - Coverage is enforceable at compile time, validation time, and test time.
 - Unique mechanics still have an escape hatch via signals.
 - Puzzle classes can define beats without defining UI.
+- Directional, path, and tile effects are covered by the same capability table.
 
 **Harder:**
 
@@ -248,14 +285,17 @@ Tests:
   renderer.
 - Descriptors are code, not content, so adding a type still requires an engine
   change.
+- Effect presets need anchor/socket/tile validation.
 - Content overrides must be validated against a closed vocabulary.
 
 **Constrained:**
 
 - No per-type UI components.
 - No arbitrary feedback components from content.
+- No arbitrary effect operators or path kinds from content.
 - No raw engine state strings in the UI.
 - No silent events.
+- No effect may change collision or simulation state.
 - No feedback without a label or reason where the player needs one.
 
 ## Alternatives considered
@@ -273,4 +313,5 @@ Tests:
 
 - [`0009-feedback-ecs-substrate.md`](0009-feedback-ecs-substrate.md)
 - [`0010-anchored-feedback-surfaces.md`](0010-anchored-feedback-surfaces.md)
+- [`0013-cosmetic-feedback-effects-accessibility.md`](0013-cosmetic-feedback-effects-accessibility.md)
 - [`../../adr-m1.5/0034-puzzle-as-data-typed-dataflow.md`](../../adr-m1.5/0034-puzzle-as-data-typed-dataflow.md)

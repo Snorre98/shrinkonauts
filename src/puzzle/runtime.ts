@@ -768,6 +768,9 @@ export class PuzzleRuntime {
           this.nodes.get(link.from)?.active === true,
       );
 
+      // Open-before-close is the recovery invariant: an elapsed Ca²⁺ timer
+      // must be able to reopen the gate even while a close source such as the
+      // AChE clearance timer is still active.
       if (open) {
         this.setGate(node, "open", events);
       } else if (close) {

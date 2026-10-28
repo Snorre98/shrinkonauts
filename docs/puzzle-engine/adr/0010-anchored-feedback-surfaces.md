@@ -1,6 +1,6 @@
 # ADR-0010: Anchored feedback surfaces, co-op ownership, and input routing
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-28
 Deciders: Snorre
 Related: ADR-0009, ADR-0016, ADR-0017, ADR-0018, ADR-0020, ADR-0043
@@ -71,8 +71,13 @@ interface FeedbackSurface {
 
   priority: number;
   a11y: { announce: boolean; textAlternative?: string };
+
+  /** Declarative cosmetic effects spawned with this surface. */
+  effects?: EffectPlan[];
 }
 ```
+
+`EffectPlan` is the composable effect contract from ADR-0013.
 
 The three concepts are separate:
 
@@ -87,13 +92,24 @@ emphasis, not information hiding.
 
 ```ts
 type FeedbackAnchor =
-  | { kind: "entity"; entityId: string; offset?: Vec2; fallback?: "hud" }
-  | { kind: "player"; playerId: PlayerId; offset?: Vec2 }
-  | { kind: "node"; nodeId: string; entityId?: string; fallback?: "hud" }
+  | { kind: "entity"; entityId: string; socket?: string; offset?: Vec2; fallback?: "hud" }
+  | { kind: "player"; playerId: PlayerId; socket?: string; offset?: Vec2 }
+  | { kind: "node"; nodeId: string; entityId?: string; socket?: string; fallback?: "hud" }
+  | { kind: "tile"; layer: string; x: number; y: number }
+  | { kind: "tileRegion"; layer: string; x1: number; y1: number; x2: number; y2: number }
   | { kind: "world"; point: Vec2; offset?: Vec2 }
   | { kind: "hud"; slot?: "top" | "bottom" | "left" | "right" }
   | { kind: "screen"; x?: number; y?: number };
 ```
+
+`FeedbackAnchor` is the surface-side view of the effect `AnchorRef` used by
+ADR-0013. Sockets and tile targets are shared vocabulary: a bubble can point at
+an entity socket, and an effect can originate from the same socket.
+
+`FeedbackAnchor` is a superset of `AnchorRef`: a surface may also anchor to a
+puzzle `node` or the `screen`. Those surface-only anchors resolve to the node's
+entity or to the HUD fallback before an effect is spawned; effects use only the
+`AnchorRef` subset from ADR-0013.
 
 Default policy:
 
@@ -228,6 +244,12 @@ expires by TTL.
 Both are the same surface mechanism with different presentation and anchor
 policies.
 
+Effects use the same attribution model. An effect emitted by an object on behalf
+of P1 is anchored to the object or its socket, but carries `actor: "p1"`,
+`owner: "p1"`, and `accent: "p1"`. A shared gate burst carries
+`accent: "neutral"`. This keeps co-op causality visible in the effect, not only
+in a text surface.
+
 ### 6. Default co-op attribution
 
 - P1 talks to the Muscle Effector → bubble on `agent-muscle`, owner P1.
@@ -236,6 +258,9 @@ policies.
 - P1 pulses an empty receptor → bubble on that receptor, owner P1.
 - Wrong packet on the wrong socket → bubble on the socket, owner = the player
   who pulsed/placed.
+- P1 pulse travels from the terminal to the receptor → orb/beam accent P1,
+  anchored to both sockets.
+- Shared gate burst → neutral accent, anchored to the gate socket.
 - Puzzle solved → shared HUD/screen outcome, not a caption under the last actor.
 - Both players act at once → two captions, two anchors, no cross-attribution.
 
@@ -248,6 +273,8 @@ policies.
 - One player can read/answer while the other keeps playing.
 - Text and choices use the existing DOM accessibility stack.
 - The same model supports HUD meters, captions, bubbles, and modals.
+- Directional, path, and tile effects can carry the same actor/owner/accent
+  attribution.
 
 **Harder:**
 
@@ -256,6 +283,8 @@ policies.
   areas.
 - Layout must handle overlapping surfaces and off-screen anchors.
 - Focus and screen-reader policy need deliberate handling for soft surfaces.
+- Effects need socket and tile anchor resolution in addition to entity/player
+  anchors.
 - The old global toast/dialogue paths must be removed, not kept alongside the
   new model.
 
@@ -266,6 +295,7 @@ policies.
 - No entity conversation may use the global modal.
 - No canvas-rendered text for choices or accessibility-critical content.
 - No arbitrary placement: anchors come from the policy, not from ad-hoc UI code.
+- No effect may change collision or simulation state.
 
 ## Alternatives considered
 
@@ -281,6 +311,7 @@ policies.
 ## References
 
 - [`0009-feedback-ecs-substrate.md`](0009-feedback-ecs-substrate.md)
+- [`0013-cosmetic-feedback-effects-accessibility.md`](0013-cosmetic-feedback-effects-accessibility.md)
 - [`../../shrinkonauts/base-game/adr/0016-local-coop-p0.md`](../../shrinkonauts/base-game/adr/0016-local-coop-p0.md)
 - [`../../shrinkonauts/base-game/adr/0017-coop-camera-tether.md`](../../shrinkonauts/base-game/adr/0017-coop-camera-tether.md)
 - [`../../shrinkonauts/base-game/adr/0018-keyboard-first-input-rebinding.md`](../../shrinkonauts/base-game/adr/0018-keyboard-first-input-rebinding.md)

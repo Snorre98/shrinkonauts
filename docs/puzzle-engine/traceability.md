@@ -51,3 +51,16 @@ to it and to §2/§5.2/§8.
 | 0006 | data-model, interface | 1, 4 |
 | 0007 | data-model, state-machine, failure-semantics | 1, 4 |
 | 0008 | data-model, failure-semantics | 1, 5 |
+
+## Feedback layer (M1.75)
+
+The full arc42/behavior/contract expansion is completed in Phase 8. This table
+indexes the accepted feedback decisions now.
+
+| ADR | Primary contracts | Implementation plan phase |
+|---|---|---|
+| 0009 | module-boundaries (`ecs`, `feedback`), interface (`FeedbackFrame`, `WorldEffectPlan`) | 2, 3, 4 |
+| 0010 | interface (`FeedbackSurface`, anchors, input routing), data-model (ownership/attribution) | 4, 5 |
+| 0011 | data-model (conversations save field), state-machine (dialogue mode removed) | 5 |
+| 0012 | interface (descriptor tables, capabilities, rejection reasons), data-model (feedback overrides) | 3, 8 |
+| 0013 | interface (`EffectPlan`, effect ports), failure-semantics (cosmetic/non-blocking effects), module-boundaries | 6, 8 |

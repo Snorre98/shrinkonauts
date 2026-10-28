@@ -287,6 +287,9 @@ describe("Endplate Ferry puzzle document", () => {
     expect(runtime.isSolved()).toBe(true);
   });
 
+  // Frozen historical dead state from docs/puzzle-engine/endplate-ferry-feedback-and-softlock.md.
+  // The current recovery invariant is that the elapsed Ca²⁺ timer opens the gate
+  // before any active AChE close source can close it.
   it("recovers from the reported dead state by re-arming the Ca²⁺ window", () => {
     const runtime = new PuzzleRuntime(puzzle);
     const packet = prop("docked");

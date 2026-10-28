@@ -1,9 +1,9 @@
 # Puzzle Engine Upgrade
 
-**Status:** accepted design; implementation not started
+**Status:** accepted design; Phase 0 complete, Phase 1 complete, M1.75 in progress
 **Scope:** the engine capabilities required by the intended M2 nervous-system
 puzzle design (`03`–`05`, Silicon, optional `01`/`02`)
-**Authority:** accepted ADR-0001–0008 in [`adr/`](adr/)
+**Authority:** accepted ADR-0001–0013 in [`adr/`](adr/)
 **Implementation:** phased plan in [`implementation-plan.md`](implementation-plan.md)
 
 This documentation set turns the engine gaps found during the M2 level work
@@ -35,14 +35,24 @@ enforce:
 - **Props gain `locked` and `cleared`** plus `unlock`/`clear` event links and
   optional initial state.
 - **Event links can carry `requires` + `message`.** A blocked link is skipped,
-  emits `linkBlocked`, and shows the authored toast; it is not evidence or a
-  fail state.
+  emits `linkBlocked`, and surfaces the authored message through the feedback
+  layer (the toast adapter remains until Phase 4); it is not evidence or a fail
+  state.
 - **A level can override its debrief prompts.** 04 adds
   `prompt-obj-2-nmj`/EV-9; 03 keeps `prompt-obj-2`/EV-7.
 - **Map travel is a side excursion.** Main progression stays linear; optional
   01/02 return to a saved main snapshot. No full per-level cache.
 - **Schemas move by minor version:** puzzle 1.1, level 1.1, run 2.1. Old content
   and saves default to old behavior.
+- **Feedback is state projection, not toast text.** Persistent surfaces are
+  rebuilt from state; transient cues are sequenced and attributed to P1/P2
+  (ADR-0009, ADR-0010).
+- **Entity conversations replace the global dialogue overlay.** A conversation
+  is an owned speech-bubble surface; blocking modes such as debrief and pause
+  remain explicit (ADR-0011).
+- **Effects are cosmetic and composable.** Direction, A→B paths, persistent
+  beams, and tile visuals use closed operators; tile visuals never change
+  collision (ADR-0013).
 
 ## Field reports
 
@@ -68,6 +78,14 @@ enforce:
 9. [`traceability.md`](traceability.md) — ADR → arc42 → behavior → contract.
 10. [`implementation-plan.md`](implementation-plan.md) — phased changes, tests,
     migration, acceptance.
+11. [`feedback-implementation-plan.md`](feedback-implementation-plan.md) — the
+    M1.75 feedback/effect layer plan.
+12. [`material-pattern-implementation-plan.md`](material-pattern-implementation-plan.md)
+    — the M1.8 material/pattern layer plan.
+13. [`../m1.75/README.md`](../m1.75/README.md) — the M1.75 milestone boundary
+    and definition of done.
+14. [`../m1.8/README.md`](../m1.8/README.md) — the M1.8 material/pattern
+    milestone boundary and definition of done.
 
 ## Relationship to existing decisions
 
@@ -95,6 +113,7 @@ enforce:
 
 ## Status of implementation
 
-This is a design/plan artifact. No engine code is changed by this document set.
-The implementation plan starts with schema/types/validators and keeps the
-existing 03 → 04 pack as the regression baseline.
+This is a design/plan artifact. The M2 puzzle-engine work is implemented through
+its correctness gate; the M1.75 feedback layer has completed Phase 0 and Phase 1,
+with Phases 2–8 still to implement. The existing 03 → 04 pack remains the
+regression baseline. No engine code is changed by these documents.

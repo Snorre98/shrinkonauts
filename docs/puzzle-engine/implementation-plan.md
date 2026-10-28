@@ -1,7 +1,8 @@
 # Puzzle Engine Upgrade — Implementation Plan
 
 **Status:** plan only; no engine code is changed by this document
-**Source decisions:** [ADR-0001–0008](adr/)
+**Source decisions:** [ADR-0001–0008](adr/); the feedback layer is
+[ADR-0009–0013](adr/) in [`feedback-implementation-plan.md`](feedback-implementation-plan.md)
 **Contracts:** [module boundaries](contracts/module-boundaries.md),
 [data model](contracts/data-model.md), [interface](contracts/interface.md),
 [state machine](contracts/state-machine.md),
@@ -12,6 +13,16 @@
 
 The plan is deliberately phased so each phase leaves the pack valid and the
 existing 03/04 flow playable. Do not merge phases 1–4 into one change.
+
+> The feedback and effect layer from ADR-0009–0013 is accepted separately in
+> [`feedback-implementation-plan.md`](feedback-implementation-plan.md). Phase 0
+> is complete and the Phase 1 correctness fixes and stable-state reachability
+> guard are in place; the feedback layer remains a prerequisite for
+> feedback-dependent content migration, not an optional polish pass.
+>
+> The material and pattern layer from ADR-0014–0017 is planned separately in
+> [`material-pattern-implementation-plan.md`](material-pattern-implementation-plan.md).
+> It is the visual-language foundation and must precede final tile/UI art.
 
 ---
 
@@ -244,6 +255,10 @@ and no new prop states behave exactly as before.
 to side levels.
 
 ### 4.1 Synchronization and feedback
+
+> Feedback transport for blocked links is superseded by ADR-0009–0013. The
+> immediate toast remains the M1.5 adapter until the feedback plan's Phase 4;
+> see [`feedback-implementation-plan.md`](feedback-implementation-plan.md) §7.1.
 
 Files:
 

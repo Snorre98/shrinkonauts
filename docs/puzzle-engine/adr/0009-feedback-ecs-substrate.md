@@ -1,11 +1,11 @@
 # ADR-0009: Feedback ECS as the generic ECS substrate
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-28
 Deciders: Snorre
 Related: ADR-0001, ADR-0003, ADR-0005, ADR-0034, ADR-0043
-Amends: [`architecture.md`](../architecture.md) §4.4 and §8; ADR-0005's
-"no new UI surface" constraint
+Amends: [`architecture.md`](../architecture.md) §4 (strategy item 4) and §8;
+ADR-0005's "no new UI surface" constraint
 
 ## Context
 
@@ -88,7 +88,7 @@ Feedback components:
 |---|---|
 | `SourceRef` | entity/node/system that caused the feedback |
 | `ActorRef` | player who caused it, or `null` |
-| `Anchor` | entity, player, node, world point, HUD, or screen anchor |
+| `Anchor` | entity/player/socket, tile, world point, HUD, or screen anchor |
 | `Presentation` | speech bubble, player caption, HUD status, meter, tracker, screen caption, modal, anchored panel |
 | `Content` | text, speaker, choices, progress |
 | `Ownership` | owner, audience, interaction mode, focus policy, movement policy |
@@ -96,7 +96,8 @@ Feedback components:
 | `Priority` | ordering, coalescing, eviction |
 | `Visual` | severity, icon, palette token |
 | `Accessibility` | announce policy, text alternative |
-| `WorldEffect` | optional cosmetic effect descriptor |
+| `EffectPlan` | declarative cosmetic effect plan; see ADR-0013 |
+| `EffectInstance` | a running effect with resolved timing and anchors |
 | `Conversation` | dialogue graph/session binding; only on conversation surfaces |
 | `Transform` | generic position/size for future full-game ECS use |
 | `Renderable` | generic visibility/depth for future full-game ECS use |
@@ -111,6 +112,18 @@ A conversation is the same entity plus `Conversation`. A timer meter is the same
 entity minus `Conversation`, with `Presentation: "hudMeter"` and
 `Lifetime: { sticky: true }`. A player caption is the same entity with a player
 anchor and a TTL.
+
+Effects are feedback entities too, but they carry an `EffectPlan` instead of a
+`Presentation`. An `EffectPlan` is composed of stages with anchors, paths,
+visuals, timing, and binding; ADR-0013 owns the closed operator vocabulary. The
+feedback ECS spawns an `EffectInstance` for each running plan and hands resolved
+instances to the world effect sink. Effects never mutate simulation state.
+
+`EffectPlan` is the authoring type. The feedback ECS resolves it into an
+`EffectInstance`, and `GameRuntime` maps that into the world-facing
+`WorldEffectPlan` passed to `WorldEffectPort`. `world` never receives a feedback
+`EffectPlan`, an ECS component, or a `PuzzleRuntime` reference. The exact
+`WorldEffectPlan` shape is finalized with the effect port in Phase 6.
 
 ### 3. Split feedback into persistent projection and transient cues
 
@@ -143,15 +156,19 @@ Fixed tick:
 2. `ProjectSticky` — rebuild persistent surfaces from current game/puzzle state.
 3. `ConversationTick` — advance conversations resolved by input.
 4. `LifetimeTick` — decrement TTL, fade, despawn.
-5. `OrderAndDedupe` — priority, coalescing, stable order.
+5. `EffectSpawn` — turn new `EffectPlan` components into `EffectInstance`s.
+6. `EffectTick` — advance timing, re-resolve follow bindings, cancel lost
+   anchors.
+7. `OrderAndDedupe` — priority, coalescing, stable order.
 
 Render frame:
 
-6. `ResolveAnchors` — project entity/player/world positions into screen space.
-7. `Layout` — stack, offset, clamp, edge-dock, HUD fallback.
-8. `RenderSync` — diff the DOM surface layer against the resolved surfaces.
-9. `AccessibilitySync` — live-region announcements and labels.
-10. `Effects` — update or emit cosmetic world effects.
+8. `ResolveAnchors` — project entity/player/socket/tile positions into screen
+   space.
+9. `Layout` — stack, offset, clamp, edge-dock, HUD fallback.
+10. `RenderSync` — diff the DOM surface layer against the resolved surfaces.
+11. `EffectRender` — hand resolved effect instances to the world effect sink.
+12. `AccessibilitySync` — live-region announcements and labels.
 
 Tick systems are deterministic and headless-testable. Frame systems depend on
 camera, viewport, and DOM adapters; they must not mutate game simulation.
@@ -197,7 +214,7 @@ interface FeedbackFrame {
   seq: number;
   tick: number;
   surfaces: FeedbackSurface[];
-  effects: WorldEffect[];
+  effects: EffectPlan[];
 }
 ```
 
@@ -212,12 +229,14 @@ ecs       → core only
 feedback  → ecs, puzzle types, core
 game      → feedback
 ui        → feedback types
-world     → no feedback import; receives effects through a world-effect port
+world     → no feedback import; receives effect plans and tile visual ops
+             through narrow world ports
 audio     → no feedback import; receives cue IDs through the game audio port
 ```
 
 `feedback` does not import `world`, `ui`, `game`, `pack`, or Phaser. `world` does
-not import `feedback`. `game` translates effects into the world port.
+not import `feedback`. `game` translates effect plans into `WorldEffectPort`
+calls and tile visual ops into `TileVisualPort` calls.
 
 ### 7. Full-game ECS migration seam
 
@@ -243,6 +262,7 @@ The feedback layer must not need a rewrite when gameplay becomes ECS.
 - New puzzle types can add feedback without touching HUD, scene, or audio.
 - Persistent state and transient events are separately reliable.
 - Co-op attribution and ownership have a place in the model.
+- Directional, path, and tile effects share one composable plan model.
 - The ECS kernel is proven on a bounded problem before gameplay migrates.
 - Feedback can be tested headlessly with deterministic systems.
 
@@ -252,6 +272,8 @@ The feedback layer must not need a rewrite when gameplay becomes ECS.
 - Feedback is no longer a single `setToast` call; callers must emit facts.
 - Frame-phase systems need camera/viewport context.
 - Restore must rebuild sticky surfaces idempotently.
+- Effect plans need anchor/socket/tile validation and a world effect/tile visual
+  port.
 - The kernel must stay generic or the future full-game migration becomes
   harder.
 
@@ -260,6 +282,7 @@ The feedback layer must not need a rewrite when gameplay becomes ECS.
 - No feedback state in save files.
 - No DOM, Phaser, or game imports in the ECS kernel.
 - No arbitrary feedback components from content.
+- No effect may mutate simulation state or collision.
 - No per-puzzle UI systems.
 - No global feedback singleton.
 - No game-state ownership inside the feedback ECS.
@@ -282,5 +305,6 @@ The feedback layer must not need a rewrite when gameplay becomes ECS.
 - [`0001-compact-modules-public-apis.md`](0001-compact-modules-public-apis.md)
 - [`0003-gate-prop-presentation.md`](0003-gate-prop-presentation.md)
 - [`0005-conditional-links-feedback.md`](0005-conditional-links-feedback.md)
+- [`0013-cosmetic-feedback-effects-accessibility.md`](0013-cosmetic-feedback-effects-accessibility.md)
 - [`../../adr-m1.5/0034-puzzle-as-data-typed-dataflow.md`](../../adr-m1.5/0034-puzzle-as-data-typed-dataflow.md)
 - [`../../adr-m1.5/0043-puzzle-feedback-hints-cooldown.md`](../../adr-m1.5/0043-puzzle-feedback-hints-cooldown.md)

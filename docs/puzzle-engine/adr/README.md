@@ -14,15 +14,33 @@ supersede with a new ADR rather than editing an accepted one.
 | [0007](0007-side-level-map-travel.md) | Side-level map travel with a return snapshot | Accepted |
 | [0008](0008-schema-evolution.md) | Backward-compatible schema evolution | Accepted |
 
-Proposed feedback architecture:
+## Feedback and effect architecture
 
 | # | Decision | Status |
 |---|---|---|
-| [0009](0009-feedback-ecs-substrate.md) | Feedback ECS as the generic ECS substrate | Proposed |
-| [0010](0010-anchored-feedback-surfaces.md) | Anchored feedback surfaces, co-op ownership, and input routing | Proposed |
-| [0011](0011-entity-conversations.md) | Entity conversations replace the global dialogue overlay | Proposed |
-| [0012](0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Proposed |
-| [0013](0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects and accessibility | Proposed |
+| [0009](0009-feedback-ecs-substrate.md) | Feedback ECS as the generic ECS substrate | Accepted |
+| [0010](0010-anchored-feedback-surfaces.md) | Anchored feedback surfaces, co-op ownership, and input routing | Accepted |
+| [0011](0011-entity-conversations.md) | Entity conversations replace the global dialogue overlay | Accepted |
+| [0012](0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Accepted |
+| [0013](0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects, composable effect plans, and accessibility | Accepted |
+
+## Amendments
+
+- ADR-0009 amends ADR-0005's "no new UI surface" constraint.
+- ADR-0013 amends ADR-0003's "no animation timelines" and "immediate state
+  swaps only" constraints.
+
+The amended records stay immutable; these amendment notes are the index entry,
+not edits to ADR-0003 or ADR-0005.
+
+Proposed material and pattern architecture:
+
+| # | Decision | Status |
+|---|---|---|
+| [0014](0014-material-pattern-vocabulary.md) | Material and pattern vocabulary | Proposed |
+| [0015](0015-tile-material-grid-autotiling.md) | Tile material grid, autotiling, and variants | Proposed |
+| [0016](0016-pattern-projection-surfaces.md) | Pattern projection across tiles, objects, backgrounds, and UI | Proposed |
+| [0017](0017-tile-variant-atlas-manifest.md) | Tile variant atlas and manifest metadata | Proposed |
 
 Related accepted records outside this system:
 
