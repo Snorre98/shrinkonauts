@@ -10,6 +10,7 @@ import {
 } from "../curriculum";
 import {
   createFeedbackDirector,
+  type AnchorRef,
   type FeedbackAnchor,
   type FeedbackDirector,
   type FeedbackFrame,
@@ -17,6 +18,7 @@ import {
   type SourceRefValue,
   type SurfaceId,
 } from "../feedback";
+import { toWorldEffectPlan } from "./effect-mapper";
 import type {
   DialogueDocument,
   DialogueEffect,
@@ -316,7 +318,8 @@ export class GameRuntime implements WorldRuntime {
   private lastPuzzleSignature: string | null = null;
   private stuckTicks = 0;
   private stuckSurfaceId: SurfaceId | null = null;
-  private drainedFrameSeq = -1;
+  private effectFrameSeq = -1;
+  private effectPlans: readonly WorldEffectPlan[] = [];
 
   constructor(options: RuntimeOptions) {
     this.content = options.content;
@@ -331,6 +334,7 @@ export class GameRuntime implements WorldRuntime {
       options.stuckThresholdTicks ?? FEEDBACK_STUCK_TICKS;
     this.feedback = createFeedbackDirector({
       defaultCueTtlTicks: FEEDBACK_CUE_TTL_TICKS,
+      isAnchorAlive: (anchor) => this.anchorIsAlive(anchor),
     });
 
     const level = options.content.levels[0];
@@ -483,7 +487,8 @@ export class GameRuntime implements WorldRuntime {
     this.dismissStuck();
     this.lastPuzzleSignature = null;
     this.stuckTicks = 0;
-    this.drainedFrameSeq = -1;
+    this.effectFrameSeq = -1;
+    this.effectPlans = [];
     this.activeGate = null;
     this.gateFeedback = null;
     this.gateHintIndex = 0;
@@ -872,6 +877,7 @@ export class GameRuntime implements WorldRuntime {
         this.notePuzzle("wrongSide");
         this.emitAction(id, "drop", "accepted", {
           reason: "out-of-range",
+          target: { kind: "entity", id: carried.id },
           text: `No receptor in reach — ${carriedLabel} dropped`,
         });
         this.resetStuckActivity();
@@ -911,6 +917,7 @@ export class GameRuntime implements WorldRuntime {
     }
     this.notePuzzle("pickups");
     this.emitAction(id, "pickup", "accepted", {
+      target: { kind: "entity", id: prop.id },
       text: `${label} picked up`,
     });
     this.resetStuckActivity();
@@ -933,6 +940,7 @@ export class GameRuntime implements WorldRuntime {
     this.world.physics.throwProp(carried.id, player.facing);
     this.notePuzzle("throws");
     this.emitAction(id, "throw", "accepted", {
+      target: { kind: "entity", id: carried.id },
       text: `${this.entityLabel(carried.id)} thrown`,
     });
     this.resetStuckActivity();
@@ -962,7 +970,11 @@ export class GameRuntime implements WorldRuntime {
       return;
     }
     this.playCue("scan");
+    const targetEntityId = this.puzzleNodeEntityId(target.nodeId);
     this.emitAction(id, "pulse", "started", {
+      ...(targetEntityId
+        ? { target: { kind: "entity" as const, id: targetEntityId } }
+        : { target: { kind: "node" as const, id: target.nodeId } }),
       text: "Signal pulse sent",
     });
     this.resetStuckActivity();
@@ -2569,14 +2581,27 @@ export class GameRuntime implements WorldRuntime {
 
   drainEffects(): readonly WorldEffectPlan[] {
     const frame = this.feedbackFrame();
-    if (frame.seq === this.drainedFrameSeq) return [];
-    this.drainedFrameSeq = frame.seq;
-    return frame.effects.map((effect) => ({
-      id: effect.id,
-      actor: effect.actor,
-      owner: effect.owner,
-      ...(effect.accent ? { accent: effect.accent } : {}),
-    }));
+    if (frame.seq === this.effectFrameSeq) return this.effectPlans;
+    this.effectFrameSeq = frame.seq;
+    this.effectPlans = frame.effects.map(toWorldEffectPlan);
+    return this.effectPlans;
+  }
+
+  private anchorIsAlive(anchor: AnchorRef): boolean {
+    switch (anchor.kind) {
+      case "entity":
+        return (
+          this.room.entities?.some((entity) => entity.id === anchor.id) ===
+            true || this.world.props[anchor.id] !== undefined
+        );
+      case "player":
+        return this.world.players[anchor.id].active;
+      case "tile":
+      case "tileRegion":
+      case "world":
+      case "hud":
+        return true;
+    }
   }
 
   private gateView(): GateView | null {

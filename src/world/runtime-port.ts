@@ -2,9 +2,9 @@ import type { RoomDocument } from "../pack";
 import type {
   GameplayCue,
   Intents,
-  PlayerId,
   RoomSimulation,
 } from "./simulation";
+import type { WorldEffectPlan } from "./effect-types";
 
 /**
  * Structural interface the renderer needs from the game runtime. `world` must
@@ -54,17 +54,6 @@ export interface RuntimeInput {
   actions: FrameActions;
 }
 
-/**
- * Minimal world-facing effect seam for Phase 4. Phase 6 will extend this with
- * resolved stages/paths; `world` deliberately never imports feedback types.
- */
-export interface WorldEffectPlan {
-  id: string;
-  actor: PlayerId | null;
-  owner: PlayerId | "shared";
-  accent?: "p1" | "p2" | "neutral";
-}
-
 export interface WorldRuntime {
   readonly roomDocument: RoomDocument;
   readonly simulation: RoomSimulation;
@@ -72,7 +61,11 @@ export interface WorldRuntime {
   step(dt: number, input: RuntimeInput): GameplayCue[];
   /** Entity id under the interaction cursor, or null. */
   interactionId(): string | null;
-  /** Drains newly produced cosmetic effect plans for the scene sink. */
+  /**
+   * Returns the currently running cosmetic effect plans for the scene sink.
+   * The result is stable for one feedback frame so multiple consumers cannot
+   * steal effects from each other; the scene reconciles by effect ID.
+   */
   drainEffects(): readonly WorldEffectPlan[];
 }
 
@@ -107,3 +100,27 @@ export function emptyRuntimeInput(): RuntimeInput {
     },
   };
 }
+
+export type {
+  EffectCancelPolicy,
+  EffectEasing,
+  TileVisualOp,
+  TileVisualPort,
+  TileVisualValue,
+  WorldAnchorRef,
+  WorldDirection,
+  WorldEffectBinding,
+  WorldEffectLayer,
+  WorldEffectLifetime,
+  WorldEffectOperator,
+  WorldEffectPath,
+  WorldEffectPathKind,
+  WorldEffectPlan,
+  WorldEffectPort,
+  WorldEffectSource,
+  WorldEffectStage,
+  WorldEffectTiming,
+  WorldEffectVisual,
+  WorldTileTarget,
+  WorldVec2,
+} from "./effect-types";

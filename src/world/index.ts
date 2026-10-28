@@ -5,13 +5,44 @@ export { KeyboardIntentSource } from "./input";
 export type { FrameInput } from "./input";
 export { emptyRuntimeInput, emptyPlayerUiActions } from "./runtime-port";
 export type {
+  EffectCancelPolicy,
+  EffectEasing,
   FrameActions,
   PlayerActionInput,
   PlayerUiActions,
   RuntimeInput,
+  TileVisualOp,
+  TileVisualPort,
+  TileVisualValue,
+  WorldAnchorRef,
+  WorldDirection,
+  WorldEffectBinding,
+  WorldEffectLayer,
+  WorldEffectLifetime,
+  WorldEffectOperator,
+  WorldEffectPath,
+  WorldEffectPathKind,
   WorldEffectPlan,
+  WorldEffectPort,
+  WorldEffectSource,
+  WorldEffectStage,
+  WorldEffectTiming,
+  WorldEffectVisual,
   WorldRuntime,
+  WorldTileTarget,
+  WorldVec2,
 } from "./runtime-port";
+export {
+  effectStageProgress,
+  isMovementVisual,
+  simplifyForReducedMotion,
+} from "./effect-types";
+export { createTileVisualState } from "./tile-visuals";
+export type {
+  TileKey,
+  TileVisualRecord,
+  TileVisualState,
+} from "./tile-visuals";
 export { RoomScene } from "./room-scene";
 export type { RoomSceneConfig } from "./room-scene";
 export { PLAYER_ASSET_IDS } from "./ids";

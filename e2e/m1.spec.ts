@@ -280,6 +280,30 @@ test("two players can hold conversations while the other keeps moving", async ({
   expect(consoleErrors).toEqual([]);
 });
 
+test("reduced motion keeps feedback surfaces and text", async ({ page }) => {
+  const consoleErrors = await boot(page);
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
+  await page.getByRole("button", { name: "Off", exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => document.documentElement.dataset.reducedMotion))
+    .toBe("true");
+  await page.getByRole("button", { name: "Resume" }).click();
+  await expect(page.locator(".overlay--pause")).toHaveCount(0);
+
+  await teleport(page, "pad-input-a", { x: 120, y: 640 });
+  const caption = page
+    .locator(".feedback-surface--playerCaption", {
+      hasText: "Input A is active",
+    })
+    .first();
+  await expect(caption).toBeVisible();
+  await expect(caption).toContainText("P1:");
+
+  expect(consoleErrors).toEqual([]);
+});
+
 test("pause settings, checkpoint player toggle, map and mute work from the keyboard", async ({
   page,
 }) => {

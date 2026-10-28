@@ -177,26 +177,196 @@ export interface FeedbackLabels {
   actor?: string;
 }
 
+export type EffectCancelPolicy =
+  | "onSourceInactive"
+  | "onTargetGone"
+  | "manual";
+
+export type EffectLayer =
+  | "background"
+  | "tiles"
+  | "entities"
+  | "foreground"
+  | "hud";
+
+export type EffectEasing = "linear" | "easeIn" | "easeOut" | "easeInOut";
+
+export type AnchorRef =
+  | { kind: "entity"; id: string; socket?: string }
+  | { kind: "player"; id: PlayerId; socket?: string }
+  | { kind: "tile"; layer: string; x: number; y: number }
+  | {
+      kind: "tileRegion";
+      layer: string;
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    }
+  | { kind: "world"; x: number; y: number }
+  | { kind: "hud"; slot?: "top" | "bottom" | "left" | "right" };
+
+export type TileTarget =
+  | { kind: "tile"; layer: string; x: number; y: number }
+  | {
+      kind: "tileRegion";
+      layer: string;
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    };
+
 /**
- * Minimal effect contract for the feedback domain.
- *
- * Phase 6 (ADR-0013) owns the stage, path, visual, and tile vocabulary. The
- * feedback domain only needs a stable identity and attribution so effects can
- * be carried by surfaces and cues without importing the world.
+ * World-facing tile appearance operation. Feedback only defines the closed
+ * shape; `game` maps the resolved stage into the world port.
  */
+export interface TileVisualOp {
+  target: TileTarget;
+  op: "swap" | "tint" | "alpha" | "overlay" | "sequence";
+  value: string | number;
+  revert: boolean;
+  ttlTicks?: number;
+}
+
+export type Direction =
+  | { kind: "angle"; radians: number }
+  | { kind: "vector"; x: number; y: number }
+  | { kind: "toward"; target: AnchorRef }
+  | { kind: "facing"; entityId: string };
+
+export interface EffectSource {
+  anchor: AnchorRef;
+  offset?: Vec2;
+  direction?: Direction;
+  spreadRadians?: number;
+  space?: "world" | "local";
+  followFacing?: boolean;
+}
+
+export type EffectPath =
+  | { kind: "point" }
+  | { kind: "segment"; from: AnchorRef; to: AnchorRef; curve?: number }
+  | { kind: "polyline"; points: AnchorRef[]; curve?: number }
+  | {
+      kind: "arc";
+      center: AnchorRef;
+      radius: number;
+      startAngle: number;
+      endAngle: number;
+    }
+  | {
+      kind: "ray";
+      from: AnchorRef;
+      direction: Direction;
+      length: number;
+      spread?: number;
+    }
+  | { kind: "radial"; from: AnchorRef; radius: number; count?: number };
+
+export type EffectVisual =
+  | { kind: "orb"; assetId?: string; trail?: boolean; size?: number }
+  | { kind: "beam"; assetId?: string; width?: number; pulse?: boolean }
+  | { kind: "ring"; assetId?: string; radius?: number }
+  | {
+      kind: "particleBurst";
+      assetId?: string;
+      count?: number;
+      speed?: number;
+    }
+  | {
+      kind: "particleStream";
+      assetId?: string;
+      rate?: number;
+      length?: number;
+    }
+  | { kind: "spriteSwap"; target: AnchorRef; assetId: string }
+  | { kind: "tint"; target: AnchorRef; color: string; fadeTicks?: number }
+  | { kind: "dissolve"; target: AnchorRef; assetId?: string }
+  | { kind: "tileSwap"; target: TileTarget; tile: string; revert?: boolean }
+  | { kind: "tileTint"; target: TileTarget; color: string; revert?: boolean }
+  | {
+      kind: "tileOverlay";
+      target: TileTarget;
+      assetId: string;
+      revert?: boolean;
+    }
+  | { kind: "tileAlpha"; target: TileTarget; alpha: number; revert?: boolean }
+  | {
+      kind: "tileSequence";
+      target: TileTarget;
+      frames: string[];
+      fps?: number;
+      revert?: boolean;
+    }
+  | { kind: "decal"; target: AnchorRef; assetId: string };
+
+export type EffectOperator = EffectVisual["kind"];
+
+export type EffectPathKind = EffectPath["kind"];
+
+export interface EffectTiming {
+  delayTicks?: number;
+  durationTicks?: number;
+  repeat?: number;
+  easing?: EffectEasing;
+  stagger?: { kind: "none" | "fromSource" | "byIndex"; ticks: number };
+}
+
+export type EffectLifetime =
+  | { kind: "oneShot" }
+  | {
+      kind: "persistent";
+      until: "sourceInactive" | "targetGone" | "manual";
+    };
+
+export interface EffectBinding {
+  /** Re-resolve moving anchors every render frame. */
+  follow?: boolean;
+  /** Ride a moving object instead of the stage source. */
+  attachTo?: AnchorRef;
+  space?: "world" | "local";
+}
+
+export interface EffectStage {
+  visual: EffectVisual;
+  source?: EffectSource;
+  path?: EffectPath;
+  targets?: readonly AnchorRef[];
+  timing: EffectTiming;
+  lifetime?: EffectLifetime;
+  binding: EffectBinding;
+  layer: EffectLayer;
+}
+
+/** Declarative cosmetic effect plan from ADR-0013. */
 export interface EffectPlan {
   readonly id: string;
   readonly actor: PlayerId | null;
   readonly owner: FeedbackOwner;
   readonly accent?: "p1" | "p2" | "neutral";
+  readonly stages: readonly EffectStage[];
+  readonly cancel?: EffectCancelPolicy;
 }
 
-/** A running effect handed to the world effect sink in a later phase. */
+/**
+ * A running effect handed to the world effect sink.
+ *
+ * Stages keep logical anchors; the world renderer resolves them every frame.
+ * Feedback owns timing and cancellation, not pixels.
+ */
 export interface EffectInstance {
   readonly id: string;
   readonly planId: string;
+  readonly ownerSurfaceId: string;
+  readonly actor: PlayerId | null;
+  readonly owner: FeedbackOwner;
+  readonly accent?: "p1" | "p2" | "neutral";
   readonly startedTick: number;
+  readonly ageTicks: number;
   readonly remainingTicks?: number;
+  readonly stages: readonly EffectStage[];
+  readonly cancel?: EffectCancelPolicy;
 }
 
 export interface Conversation {
@@ -274,7 +444,8 @@ export interface FeedbackFrame extends FeedbackView {
   /** Monotonic frame sequence; increments once per director tick. */
   seq: number;
   tick: number;
-  effects: readonly EffectPlan[];
+  /** Running resolved effects; plans stay on surfaces and cues. */
+  effects: readonly EffectInstance[];
 }
 
 export interface FeedbackSignal {
@@ -350,6 +521,8 @@ export interface CueRecipe {
   interaction?: FeedbackInteraction;
   a11y?: FeedbackAccessibility;
   labels?: FeedbackLabels;
+  /** Named cosmetic effect preset (ADR-0013). */
+  effectPreset?: string;
 }
 
 export type EventCoverage =
@@ -434,6 +607,11 @@ export type FeedbackFact =
 export interface FeedbackDirectorOptions {
   /** TTL applied to transient cues when a recipe does not specify one. */
   defaultCueTtlTicks?: number;
+  /**
+   * Optional liveness predicate for logical anchors. The game injects this so
+   * feedback can cancel `onTargetGone` effects without importing world state.
+   */
+  isAnchorAlive?: (anchor: AnchorRef) => boolean;
 }
 
 export interface FeedbackDirector {

@@ -14,6 +14,7 @@ import {
   Content,
   Conversation as ConversationComponent,
   CueState as CueStateComponent,
+  EffectInstance as EffectInstanceComponent,
   Effects,
   Lifetime,
   Ownership,
@@ -32,9 +33,17 @@ import {
   nodeLabel,
   NODE_FEEDBACK,
 } from "./descriptors";
+import {
+  effectEndTicks,
+  isSourceActive,
+  persistentCancel,
+} from "./effects";
 import { projectFact } from "./facts";
 import type {
+  AnchorRef,
   CueState,
+  Direction,
+  EffectInstance,
   EffectPlan,
   FeedbackBeat,
   FeedbackCue,
@@ -60,6 +69,68 @@ const DEFAULT_CUE_PRIORITY = 50;
 
 function compareText(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function compareEffects(left: EffectInstance, right: EffectInstance): number {
+  return compareText(left.id, right.id);
+}
+
+function collectAnchors(instance: EffectInstance): AnchorRef[] {
+  const anchors: AnchorRef[] = [];
+  const add = (anchor: AnchorRef | undefined): void => {
+    if (anchor) anchors.push(anchor);
+  };
+  for (const stage of instance.stages) {
+    add(stage.source?.anchor);
+    add(stage.binding.attachTo);
+    for (const target of stage.targets ?? []) add(target);
+    if (
+      stage.visual.kind === "spriteSwap" ||
+      stage.visual.kind === "tint" ||
+      stage.visual.kind === "dissolve" ||
+      stage.visual.kind === "decal"
+    ) {
+      add(stage.visual.target);
+    }
+    if (stage.path) {
+      switch (stage.path.kind) {
+        case "point":
+          break;
+        case "segment":
+          add(stage.path.from);
+          add(stage.path.to);
+          break;
+        case "polyline":
+          for (const point of stage.path.points) add(point);
+          break;
+        case "arc":
+          add(stage.path.center);
+          break;
+        case "ray":
+          add(stage.path.from);
+          addDirectionAnchor(stage.path.direction, add);
+          break;
+        case "radial":
+          add(stage.path.from);
+          break;
+      }
+    }
+    if (stage.source?.direction) {
+      addDirectionAnchor(stage.source.direction, add);
+    }
+  }
+  return anchors;
+}
+
+function addDirectionAnchor(
+  direction: Direction,
+  add: (anchor: AnchorRef | undefined) => void,
+): void {
+  if (direction.kind === "toward") {
+    add(direction.target);
+  } else if (direction.kind === "facing") {
+    add({ kind: "entity", id: direction.entityId });
+  }
 }
 
 /**
@@ -102,35 +173,17 @@ export function orderAndDedupe(
   };
 }
 
-function collectEffects(
-  surfaces: readonly FeedbackSurface[],
-  cues: readonly FeedbackCue[],
-): EffectPlan[] {
-  const byId = new Map<string, EffectPlan>();
-  for (const surface of surfaces) {
-    for (const effect of surface.effects ?? []) {
-      byId.set(effect.id, effect);
-    }
-  }
-  for (const cue of cues) {
-    for (const effect of cue.effects ?? []) {
-      byId.set(effect.id, effect);
-    }
-  }
-  return [...byId.values()].sort((left, right) =>
-    compareText(left.id, right.id),
-  );
-}
-
 class FeedbackDirectorImpl implements FeedbackDirector {
   private readonly world: EcsWorld;
   private readonly defaultCueTtlTicks: number;
+  private readonly isAnchorAlive?: (anchor: AnchorRef) => boolean;
 
   private pendingFacts: FeedbackFact[] = [];
   private readonly pendingProjections = new Map<string, FeedbackProjection>();
 
   private readonly stickyIds = new Set<string>();
   private readonly cueEntityByCause = new Map<string, EntityId>();
+  private readonly effectSignatures = new Map<string, string>();
   private beats: FeedbackBeat[] = [];
   private readonly documents = new Map<string, PuzzleDocument>();
   private readonly labelsByNode = new Map<string, string>();
@@ -139,10 +192,12 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   private tickNumber = 0;
   private frameSeq = 0;
   private lastFrame: FeedbackFrame | null = null;
+  private renderedEffects: EffectInstance[] = [];
 
   constructor(options: FeedbackDirectorOptions = {}) {
     this.defaultCueTtlTicks =
       options.defaultCueTtlTicks ?? DEFAULT_CUE_TTL_TICKS;
+    this.isAnchorAlive = options.isAnchorAlive;
     this.world = createEcsWorld();
     this.registerSystems();
   }
@@ -175,6 +230,8 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   removeSurface(surfaceId: string): void {
     this.world.despawn(createEntityId(surfaceId));
     this.stickyIds.delete(surfaceId);
+    this.effectSignatures.delete(surfaceId);
+    this.cancelEffectsForOwner(surfaceId);
   }
 
   tick(dt: number): void {
@@ -202,6 +259,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     this.pendingProjections.clear();
     this.stickyIds.clear();
     this.cueEntityByCause.clear();
+    this.effectSignatures.clear();
     this.beats = [];
     this.documents.clear();
     this.labelsByNode.clear();
@@ -209,6 +267,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     this.tickNumber = 0;
     this.frameSeq = 0;
     this.lastFrame = null;
+    this.renderedEffects = [];
   }
 
   private registerSystems(): void {
@@ -239,6 +298,30 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     });
 
     this.world.addSystem({
+      name: "EffectSpawn",
+      phase: "tick",
+      run: () => this.effectSpawn(),
+    });
+
+    this.world.addSystem({
+      name: "EffectTick",
+      phase: "tick",
+      run: () => this.effectTick(),
+    });
+
+    this.world.addSystem({
+      name: "EffectRender",
+      phase: "frame",
+      run: () => {
+        this.renderedEffects = this.world
+          .query(EffectInstanceComponent)
+          .map((entity) => this.world.get(entity, EffectInstanceComponent))
+          .filter((instance): instance is EffectInstance => Boolean(instance))
+          .sort(compareEffects);
+      },
+    });
+
+    this.world.addSystem({
       name: "OrderAndDedupe",
       phase: "frame",
       run: () => {
@@ -263,15 +346,31 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   }
 
   private documentForFact(fact: FeedbackFact): PuzzleDocument | undefined {
-    if (fact.kind !== "puzzle.event") return undefined;
-    if (fact.puzzleId) {
-      return this.documents.get(fact.puzzleId);
-    }
-    for (const document of this.documents.values()) {
-      if (document.nodes.some((node) => node.id === fact.event.nodeId)) {
-        return document;
+    if (fact.kind === "puzzle.event") {
+      if (fact.puzzleId) {
+        return this.documents.get(fact.puzzleId);
+      }
+      for (const document of this.documents.values()) {
+        if (document.nodes.some((node) => node.id === fact.event.nodeId)) {
+          return document;
+        }
       }
     }
+
+    if (fact.kind === "action.outcome" && fact.target) {
+      for (const document of this.documents.values()) {
+        if (
+          document.nodes.some(
+            (node) =>
+              node.id === fact.target?.id ||
+              node.entityId === fact.target?.id,
+          )
+        ) {
+          return document;
+        }
+      }
+    }
+
     return this.documents.values().next().value as PuzzleDocument | undefined;
   }
 
@@ -360,6 +459,8 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     for (const id of this.stickyIds) {
       if (!seen.has(id)) {
         this.world.despawn(createEntityId(id));
+        this.effectSignatures.delete(id);
+        this.cancelEffectsForOwner(id);
       }
     }
     this.stickyIds.clear();
@@ -457,6 +558,8 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     if (existing) {
       this.world.despawn(existing);
       this.cueEntityByCause.delete(spec.cause);
+      this.effectSignatures.delete(existing);
+      this.cancelEffectsForOwner(existing);
     }
 
     const seq = this.nextCueSeq;
@@ -537,6 +640,8 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       if (remainingTicks <= 0) {
         this.world.despawn(entity);
         this.cueEntityByCause.delete(cueState.cause);
+        this.effectSignatures.delete(entity);
+        this.cancelEffectsForOwner(entity);
         continue;
       }
 
@@ -548,6 +653,139 @@ class FeedbackDirectorImpl implements FeedbackDirector {
         sticky: false,
         ttlTicks: cueState.ttlTicks,
       });
+    }
+  }
+
+  private effectSpawn(): void {
+    const desired = new Map<
+      string,
+      { signature: string; plans: readonly EffectPlan[] }
+    >();
+    for (const entity of this.world.query(Effects, State)) {
+      const plans = this.world.get(entity, Effects) ?? [];
+      desired.set(entity, {
+        signature: JSON.stringify(plans),
+        plans,
+      });
+    }
+
+    const instancesByOwner = new Map<string, EntityId[]>();
+    for (const entity of this.world.query(EffectInstanceComponent)) {
+      const instance = this.world.get(entity, EffectInstanceComponent);
+      if (!instance) continue;
+      const list = instancesByOwner.get(instance.ownerSurfaceId) ?? [];
+      list.push(entity);
+      instancesByOwner.set(instance.ownerSurfaceId, list);
+    }
+
+    for (const [ownerId, entities] of instancesByOwner) {
+      const next = desired.get(ownerId);
+      const signature = this.effectSignatures.get(ownerId);
+      if (!next || signature !== next.signature) {
+        for (const entity of entities) this.world.despawn(entity);
+        if (!next) this.effectSignatures.delete(ownerId);
+      }
+    }
+
+    for (const [ownerId, entry] of desired) {
+      if (this.effectSignatures.get(ownerId) === entry.signature) continue;
+      this.effectSignatures.set(ownerId, entry.signature);
+
+      const seen = new Set<string>();
+      for (const plan of entry.plans) {
+        if (plan.stages.length === 0 || seen.has(plan.id)) continue;
+        seen.add(plan.id);
+
+        const instanceId = `fx:inst:${ownerId}:${plan.id}`;
+        const end = effectEndTicks(plan.stages);
+        const cancel =
+          plan.cancel ??
+          (Number.isFinite(end) ? undefined : persistentCancel(plan.stages));
+        const instance: EffectInstance = {
+          id: instanceId,
+          planId: plan.id,
+          ownerSurfaceId: ownerId,
+          actor: plan.actor,
+          owner: plan.owner,
+          ...(plan.accent ? { accent: plan.accent } : {}),
+          startedTick: this.tickNumber,
+          ageTicks: 0,
+          ...(Number.isFinite(end)
+            ? { remainingTicks: Math.max(0, end) }
+            : {}),
+          stages: plan.stages,
+          ...(cancel ? { cancel } : {}),
+        };
+
+        const entity = createEntityId(instanceId);
+        this.world.spawn(entity);
+        this.world.add(entity, EffectInstanceComponent, instance);
+      }
+    }
+
+    for (const ownerId of [...this.effectSignatures.keys()]) {
+      if (!desired.has(ownerId)) this.effectSignatures.delete(ownerId);
+    }
+  }
+
+  private effectTick(): void {
+    for (const entity of this.world.query(EffectInstanceComponent)) {
+      const instance = this.world.get(entity, EffectInstanceComponent);
+      if (!instance) continue;
+
+      if (this.shouldCancel(instance)) {
+        this.world.despawn(entity);
+        continue;
+      }
+
+      // A newly spawned instance is visible for at least one frame before its
+      // age advances.
+      if (instance.startedTick === this.tickNumber) continue;
+
+      const ageTicks = instance.ageTicks + 1;
+      const end = effectEndTicks(instance.stages);
+      if (Number.isFinite(end) && ageTicks >= end) {
+        this.world.despawn(entity);
+        continue;
+      }
+
+      this.world.add(entity, EffectInstanceComponent, {
+        ...instance,
+        ageTicks,
+        ...(Number.isFinite(end)
+          ? { remainingTicks: Math.max(0, end - ageTicks) }
+          : {}),
+      });
+    }
+  }
+
+  private shouldCancel(instance: EffectInstance): boolean {
+    const owner = this.world.get(
+      createEntityId(instance.ownerSurfaceId),
+      State,
+    );
+    if (owner === undefined) return true;
+
+    if (instance.cancel === "onSourceInactive") {
+      return !isSourceActive(owner);
+    }
+
+    if (instance.cancel === "onTargetGone") {
+      const predicate = this.isAnchorAlive;
+      if (predicate) {
+        return collectAnchors(instance).some((anchor) => !predicate(anchor));
+      }
+    }
+
+    return false;
+  }
+
+  private cancelEffectsForOwner(ownerId: string): void {
+    for (const entity of this.world.query(EffectInstanceComponent)) {
+      const instance = this.world.get(entity, EffectInstanceComponent);
+      if (instance?.ownerSurfaceId === ownerId) {
+        this.world.despawn(entity);
+      }
     }
   }
 
@@ -660,7 +898,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       surfaces: view.surfaces,
       cues: view.cues,
       beats: view.beats,
-      effects: collectEffects(view.surfaces, view.cues),
+      effects: [...this.renderedEffects].sort(compareEffects),
     };
   }
 }

@@ -9,10 +9,15 @@ import type { RoomDocument, ThemeDocument } from "../pack";
 import { LayeredBackground } from "./background";
 import { PLAYER_ASSET_IDS } from "./ids";
 import { KeyboardIntentSource } from "./input";
+import { RoomEffectLayer } from "./effects";
 import {
   emptyPlayerUiActions,
   emptyRuntimeInput,
   type RuntimeInput,
+  type TileVisualOp,
+  type TileVisualPort,
+  type WorldEffectPlan,
+  type WorldEffectPort,
   type WorldRuntime,
 } from "./runtime-port";
 import {
@@ -24,6 +29,11 @@ import {
   type PlayerId,
   type RoomSimulation,
 } from "./simulation";
+import {
+  createTileVisualState,
+  type TileKey,
+  type TileVisualState,
+} from "./tile-visuals";
 import { resolveTexture } from "./textures";
 
 export interface RoomSceneConfig {
@@ -38,6 +48,8 @@ export interface RoomSceneConfig {
   onCue?: (cue: GameplayCue | string) => void;
   /** Lets the platform suppress gameplay keys while a form field has focus. */
   shouldIgnoreInput?: () => boolean;
+  /** Narrow accessibility seam; the scene never reads save/UI state itself. */
+  isReducedMotion?: () => boolean;
 }
 
 const FIXED_STEP = 1 / 60;
@@ -47,6 +59,11 @@ const ENTITY_SIZE = 36;
 
 function isSvgSource(src: string): boolean {
   return src.split("?")[0]?.toLowerCase().endsWith(".svg") ?? false;
+}
+
+function colorNumber(value: string): number {
+  const parsed = Number.parseInt(value.replace(/^#/, ""), 16);
+  return Number.isFinite(parsed) ? parsed : 0xffffff;
 }
 
 function emptyActions(input: RuntimeInput): RuntimeInput {
@@ -81,7 +98,10 @@ function emptyActions(input: RuntimeInput): RuntimeInput {
   };
 }
 
-export class RoomScene extends Phaser.Scene {
+export class RoomScene
+  extends Phaser.Scene
+  implements WorldEffectPort, TileVisualPort
+{
   private intents!: KeyboardIntentSource;
   private background!: LayeredBackground;
   private readonly playerSprites: Partial<
@@ -93,6 +113,15 @@ export class RoomScene extends Phaser.Scene {
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly entityGlows = new Map<string, Phaser.GameObjects.Ellipse>();
   private readonly propSprites = new Map<string, Phaser.GameObjects.Image>();
+  private readonly tileImages = new Map<string, Phaser.GameObjects.Image>();
+  private readonly tileBase = new Map<
+    string,
+    { textureKey: string; tint: number; alpha: number }
+  >();
+  private readonly tileOverlays = new Map<string, Phaser.GameObjects.Image>();
+  private tileVisuals: TileVisualState = createTileVisualState();
+  private effectLayer: RoomEffectLayer | null = null;
+  private lastReducedMotion = false;
   private accumulator = 0;
   private started = false;
   /**
@@ -198,6 +227,41 @@ export class RoomScene extends Phaser.Scene {
     const camera = this.cameras.main;
     camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
     this.background.update(camera);
+
+    const reduced = this.config.isReducedMotion?.() ?? false;
+    if (reduced !== this.lastReducedMotion) {
+      this.lastReducedMotion = reduced;
+      this.effectLayer?.clear();
+    }
+    this.syncEffects();
+  }
+
+  private syncEffects(): void {
+    this.effectLayer?.sync(this.config.runtime.drainEffects());
+  }
+
+  /** Structural `WorldEffectPort` method. */
+  spawn(plan: WorldEffectPlan): string {
+    return this.effectLayer?.spawn(plan) ?? plan.id;
+  }
+
+  /** Structural `WorldEffectPort` method. */
+  cancel(effectId: string): void {
+    this.effectLayer?.cancel(effectId);
+  }
+
+  /** Structural `TileVisualPort` method. */
+  apply(op: TileVisualOp): string {
+    const opId = this.tileVisuals.apply(op);
+    this.renderTileOp(opId);
+    return opId;
+  }
+
+  /** Structural `TileVisualPort` method. */
+  revert(opId: string): void {
+    const record = this.tileVisuals.record(opId);
+    this.tileVisuals.revert(opId);
+    for (const tile of record?.tiles ?? []) this.renderTile(tile);
   }
 
   private createWorld(): void {
@@ -208,9 +272,17 @@ export class RoomScene extends Phaser.Scene {
       delete this.playerSprites[id];
       delete this.playerShadows[id];
     }
+    this.effectLayer?.destroy();
+    this.effectLayer = null;
     this.entitySprites.clear();
     this.entityGlows.clear();
     this.propSprites.clear();
+    this.tileImages.clear();
+    this.tileBase.clear();
+    for (const overlay of this.tileOverlays.values()) overlay.destroy();
+    this.tileOverlays.clear();
+    this.tileVisuals = createTileVisualState();
+    this.lastReducedMotion = this.config.isReducedMotion?.() ?? false;
 
     runtime.resize(this.scale.width, this.scale.height);
     this.intents = new KeyboardIntentSource(this);
@@ -227,6 +299,19 @@ export class RoomScene extends Phaser.Scene {
     for (const id of PLAYER_IDS) {
       this.createPlayer(id);
     }
+
+    this.effectLayer = new RoomEffectLayer({
+      scene: this,
+      room,
+      simulation: this.simulation,
+      assets,
+      theme,
+      tilePort: this,
+      entitySprites: this.entitySprites,
+      propSprites: this.propSprites,
+      playerSprites: this.playerSprites,
+      isReducedMotion: () => this.config.isReducedMotion?.() ?? false,
+    });
   }
 
   private createTiles(): void {
@@ -246,7 +331,7 @@ export class RoomScene extends Phaser.Scene {
           continue;
         }
 
-        this.add
+        const image = this.add
           .image(
             columnIndex * room.tileSize + room.tileSize / 2,
             rowIndex * room.tileSize + room.tileSize / 2,
@@ -254,8 +339,80 @@ export class RoomScene extends Phaser.Scene {
           )
           .setDisplaySize(room.tileSize, room.tileSize)
           .setDepth(0);
+        const tileKey = `tiles/${columnIndex}/${rowIndex}`;
+        this.tileImages.set(tileKey, image);
+        this.tileBase.set(tileKey, {
+          textureKey: image.texture.key,
+          tint: image.tintTopLeft,
+          alpha: image.alpha,
+        });
       }
     }
+  }
+
+  private renderTileOp(opId: string): void {
+    const record = this.tileVisuals.record(opId);
+    if (!record) return;
+    for (const tile of record.tiles) this.renderTile(tile);
+  }
+
+  private renderTile(tile: TileKey): void {
+    const key = `${tile.layer}/${tile.x}/${tile.y}`;
+    const image = this.tileImages.get(key);
+    const base = this.tileBase.get(key);
+    if (!image || !base) return;
+
+    const existingOverlay = this.tileOverlays.get(key);
+    if (existingOverlay) {
+      existingOverlay.destroy();
+      this.tileOverlays.delete(key);
+    }
+
+    image.setTexture(base.textureKey);
+    image.setTint(base.tint);
+    image.setAlpha(base.alpha);
+
+    const value = this.tileVisuals.valueAt(tile.layer, tile.x, tile.y);
+    if (!value) return;
+
+    switch (value.kind) {
+      case "swap": {
+        const texture = this.assetTexture(value.tile);
+        if (texture) image.setTexture(texture);
+        break;
+      }
+      case "tint":
+        image.setTint(colorNumber(value.color));
+        break;
+      case "alpha":
+        image.setAlpha(Math.max(0, Math.min(1, value.alpha)));
+        break;
+      case "overlay": {
+        const texture = this.assetTexture(value.assetId);
+        if (!texture) break;
+        const overlay = this.add
+          .image(image.x, image.y, texture)
+          .setDisplaySize(
+            this.config.runtime.roomDocument.tileSize,
+            this.config.runtime.roomDocument.tileSize,
+          )
+          .setDepth(image.depth + 0.5);
+        this.tileOverlays.set(key, overlay);
+        break;
+      }
+      case "sequence": {
+        const frame = value.frames[0];
+        const texture = frame ? this.assetTexture(frame) : null;
+        if (texture) image.setTexture(texture);
+        break;
+      }
+    }
+  }
+
+  private assetTexture(assetId: string): string | null {
+    const asset = this.config.assets.resolveById(assetId);
+    if (!asset) return null;
+    return resolveTexture(this, asset, this.config.theme.fonts.ui);
   }
 
   private createEntities(room: RoomDocument): void {

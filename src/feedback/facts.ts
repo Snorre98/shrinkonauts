@@ -5,6 +5,7 @@ import type {
   PuzzleEventType,
   PuzzleLinkType,
   PuzzleNode,
+  PulseSourceNode,
 } from "../puzzle";
 import {
   LINK_FEEDBACK,
@@ -13,13 +14,23 @@ import {
   nodeLabel,
 } from "./descriptors";
 import { feedbackLexicon } from "./lexicon";
+import {
+  anchorRefFromFeedbackAnchor,
+  nodeEffectAnchor,
+} from "./effects";
+import {
+  resolveEffectPreset,
+  type EffectPresetId,
+} from "./effect-presets";
 import type {
   CueRecipe,
+  EffectPlan,
   EventCoverage,
   FeedbackAnchor,
   FeedbackCapability,
   FeedbackCueSpec,
   FeedbackFact,
+  FeedbackOwner,
   FeedbackPresentation,
   FeedbackResult,
   FeedbackSeverity,
@@ -37,6 +48,7 @@ function cue(
   severity?: FeedbackSeverity,
   presentation?: FeedbackPresentation,
   priority?: number,
+  effectPreset?: EffectPresetId,
 ): CueRecipe {
   return {
     capability,
@@ -44,6 +56,7 @@ function cue(
     ...(severity ? { severity } : {}),
     ...(presentation ? { presentation } : {}),
     ...(priority !== undefined ? { priority } : {}),
+    ...(effectPreset ? { effectPreset } : {}),
   };
 }
 
@@ -56,6 +69,7 @@ const SOLVED_RECIPE: CueRecipe = {
   anchor: { kind: "screen" },
   owner: "shared",
   text: "Signal restored",
+  effectPreset: "fx.outcome.exitPing",
 };
 
 /**
@@ -71,24 +85,72 @@ export const EVENT_COVERAGE = {
   pulseArrived: { kind: "cue", recipe: cue("conductor", "active", "positive") },
   receptorBound: {
     kind: "cue",
-    recipe: cue("container", "complete", "positive"),
+    recipe: cue("container", "complete", "positive", undefined, undefined, "fx.container.accept"),
   },
   receptorRejected: {
     kind: "cue",
-    recipe: cue("container", "blocked", "critical", "speechBubble"),
+    recipe: cue(
+      "container",
+      "blocked",
+      "critical",
+      "speechBubble",
+      undefined,
+      "fx.rejection.bounce",
+    ),
   },
-  platePress: { kind: "cue", recipe: cue("binary", "active") },
-  plateRelease: { kind: "cue", recipe: cue("binary", "idle") },
-  zoneEnter: { kind: "cue", recipe: cue("container", "active") },
+  platePress: {
+    kind: "cue",
+    recipe: cue("binary", "active", undefined, undefined, undefined, "fx.plate.press"),
+  },
+  plateRelease: {
+    kind: "cue",
+    recipe: cue("binary", "idle", undefined, undefined, undefined, "fx.plate.release"),
+  },
+  zoneEnter: {
+    kind: "cue",
+    recipe: cue("container", "active", undefined, undefined, undefined, "fx.container.accept"),
+  },
   zoneExit: { kind: "cue", recipe: cue("container", "idle") },
-  triggerFired: { kind: "cue", recipe: cue("binary", "complete", "positive") },
-  timerElapsed: { kind: "cue", recipe: cue("meter", "complete", "positive") },
+  triggerFired: {
+    kind: "cue",
+    recipe: cue("binary", "complete", "positive", undefined, undefined, "fx.plate.press"),
+  },
+  timerElapsed: {
+    kind: "cue",
+    recipe: cue("meter", "complete", "positive", undefined, undefined, "fx.meter.elapsed"),
+  },
   counterReached: {
     kind: "cue",
-    recipe: cue("counter", "complete", "positive"),
+    recipe: cue("counter", "complete", "positive", undefined, undefined, "fx.counter.burst"),
   },
-  gateOpen: { kind: "cue", recipe: cue("barrier", "active", "positive") },
-  gateClose: { kind: "cue", recipe: cue("barrier", "idle") },
+  gateOpen: {
+    kind: "cue",
+    recipe: {
+      ...cue(
+        "barrier",
+        "active",
+        "positive",
+        undefined,
+        undefined,
+        "fx.gate.burst",
+      ),
+      owner: "shared",
+    },
+  },
+  gateClose: {
+    kind: "cue",
+    recipe: {
+      ...cue(
+        "barrier",
+        "idle",
+        undefined,
+        undefined,
+        undefined,
+        "fx.gate.close",
+      ),
+      owner: "shared",
+    },
+  },
   relayActive: {
     kind: "cue",
     recipe: cue("conductor", "active", "positive"),
@@ -139,6 +201,23 @@ function reasonForEvent(event: PuzzleEvent): RejectionReason | undefined {
  * Resolves an event to a descriptor cue, an incoming link cue, or the global
  * coverage table. Node cues win because they can carry node-specific copy.
  */
+function withGlobalCueDefaults(
+  recipe: CueRecipe,
+  eventType: PuzzleEventType,
+): CueRecipe {
+  const global = EVENT_COVERAGE[eventType];
+  if (global.kind !== "cue") return recipe;
+  return {
+    ...recipe,
+    ...(!recipe.effectPreset && global.recipe.effectPreset
+      ? { effectPreset: global.recipe.effectPreset }
+      : {}),
+    ...(!recipe.owner && global.recipe.owner
+      ? { owner: global.recipe.owner }
+      : {}),
+  };
+}
+
 export function eventCueCoverage(
   document: PuzzleDocument,
   event: PuzzleEvent,
@@ -149,7 +228,10 @@ export function eventCueCoverage(
     : undefined;
   const nodeCue = descriptor?.cues?.[event.type];
   if (nodeCue) {
-    return { kind: "cue", recipe: nodeCue };
+    return {
+      kind: "cue",
+      recipe: withGlobalCueDefaults(nodeCue, event.type),
+    };
   }
 
   const allowedLinkTypes = EVENT_LINKS[event.type] as readonly PuzzleLinkType[];
@@ -161,7 +243,10 @@ export function eventCueCoverage(
     ] as LinkFeedbackDescriptor;
     const linkCue = linkDescriptor.cues?.[link.type];
     if (linkCue) {
-      return { kind: "cue", recipe: linkCue };
+      return {
+        kind: "cue",
+        recipe: withGlobalCueDefaults(linkCue, event.type),
+      };
     }
   }
 
@@ -211,6 +296,27 @@ function priorityFor(
   return 40;
 }
 
+function effectsForRecipe(
+  recipe: CueRecipe,
+  fact: Extract<FeedbackFact, { kind: "puzzle.event" }>,
+  actor: PlayerId | null,
+  owner: FeedbackOwner,
+  anchor: FeedbackAnchor,
+  node: PuzzleNode | undefined,
+): readonly EffectPlan[] | undefined {
+  if (!recipe.effectPreset) return undefined;
+  const effectAnchor = node
+    ? nodeEffectAnchor(node)
+    : anchorRefFromFeedbackAnchor(anchor);
+  const effect = resolveEffectPreset(recipe.effectPreset, {
+    actor,
+    owner,
+    source: effectAnchor,
+    planId: `${recipe.effectPreset}:${fact.event.type}:${fact.event.nodeId}:${fact.event.propId ?? ""}`,
+  });
+  return effect ? [effect] : undefined;
+}
+
 function cueFromPuzzleEvent(
   fact: Extract<FeedbackFact, { kind: "puzzle.event" }>,
   context: FactProjectionContext,
@@ -252,6 +358,15 @@ function cueFromPuzzleEvent(
           ? nodeAnchor(node)
           : { kind: "hud", slot: "top" });
   const presentation = presentationFor(recipe, node, actor, targeted);
+  const owner = recipe.owner ?? actor ?? "shared";
+  const effects = effectsForRecipe(
+    recipe,
+    fact,
+    actor,
+    owner,
+    anchor,
+    node,
+  );
 
   return {
     cause:
@@ -259,7 +374,7 @@ function cueFromPuzzleEvent(
       `puzzle:${fact.event.type}:${fact.event.nodeId}:${fact.event.propId ?? ""}:${actor ?? "shared"}`,
     source: fact.source,
     actor,
-    owner: recipe.owner ?? actor ?? "shared",
+    owner,
     audience: recipe.audience ?? "both",
     anchor,
     presentation,
@@ -270,6 +385,7 @@ function cueFromPuzzleEvent(
     priority: priorityFor(recipe, state),
     ttlTicks: recipe.ttlTicks ?? context.defaultTtlTicks,
     a11y: recipe.a11y ?? { announce: true, textAlternative: text },
+    ...(effects ? { effects } : {}),
   };
 }
 
@@ -320,6 +436,88 @@ function severityForResult(result: FeedbackResult): FeedbackSeverity {
   }
 }
 
+const ACTION_EFFECT_PRESETS: Readonly<Record<string, EffectPresetId>> = {
+  carry: "fx.carrier.pickup",
+  pickup: "fx.carrier.pickup",
+  place: "fx.container.accept",
+  drop: "fx.carrier.drop",
+  throw: "fx.carrier.drop",
+  interact: "fx.affordance.ring",
+  use: "fx.affordance.ring",
+  scan: "fx.affordance.ring",
+  hint: "fx.affordance.ring",
+  gate: "fx.gate.burst",
+  reset: "fx.outcome.flash",
+};
+
+function pulseTravelEffects(
+  document: PuzzleDocument | undefined,
+  target: SourceRef,
+  actor: PlayerId,
+): readonly EffectPlan[] | undefined {
+  if (!document) return undefined;
+  const sourceNode = document.nodes.find(
+    (node): node is PulseSourceNode =>
+      node.type === "pulseSource" &&
+      (node.id === target.id || node.entityId === target.id),
+  );
+  if (!sourceNode) return undefined;
+
+  const effects: EffectPlan[] = [];
+  for (const link of document.links) {
+    if (link.from !== sourceNode.id || link.type !== "pulse") continue;
+    const receptor = document.nodes.find((node) => node.id === link.to);
+    if (!receptor) continue;
+    const effect = resolveEffectPreset("fx.pulse.travel", {
+      actor,
+      owner: actor,
+      source: nodeEffectAnchor(sourceNode),
+      target: nodeEffectAnchor(receptor),
+      durationTicks: sourceNode.travelTicks,
+      planId: `fx.pulse.travel:${sourceNode.id}:${receptor.id}`,
+    });
+    if (effect) effects.push(effect);
+  }
+  return effects.length > 0 ? effects : undefined;
+}
+
+function actionEffects(
+  fact: Extract<FeedbackFact, { kind: "action.outcome" }>,
+  context: FactProjectionContext,
+  anchor: FeedbackAnchor,
+): readonly EffectPlan[] | undefined {
+  const source = anchorRefFromFeedbackAnchor(anchor);
+  if (fact.result === "rejected" || fact.result === "blocked") {
+    const effect = resolveEffectPreset("fx.rejection.bounce", {
+      actor: fact.actor,
+      owner: fact.actor,
+      source,
+      planId: `fx.rejection.bounce:${fact.action}:${fact.target?.id ?? fact.actor}`,
+    });
+    return effect ? [effect] : undefined;
+  }
+
+  if (fact.action === "pulse" && fact.target) {
+    const travel = pulseTravelEffects(context.document, fact.target, fact.actor);
+    if (travel) return travel;
+  }
+
+  const preset = ACTION_EFFECT_PRESETS[fact.action];
+  if (!preset) return undefined;
+  const target =
+    fact.action === "pickup"
+      ? ({ kind: "player", id: fact.actor } as const)
+      : undefined;
+  const effect = resolveEffectPreset(preset, {
+    actor: fact.actor,
+    owner: fact.actor,
+    source,
+    ...(target ? { target } : {}),
+    planId: `${preset}:${fact.action}:${fact.target?.id ?? fact.actor}`,
+  });
+  return effect ? [effect] : undefined;
+}
+
 function cueFromActionOutcome(
   fact: Extract<FeedbackFact, { kind: "action.outcome" }>,
   context: FactProjectionContext,
@@ -345,6 +543,7 @@ function cueFromActionOutcome(
     ? sourceAnchor(fact.target)
     : { kind: "player", playerId: fact.actor };
   const presentation = fact.target ? "speechBubble" : "playerCaption";
+  const effects = actionEffects(fact, context, anchor);
 
   return {
     cause: `action:${fact.actor}:${fact.action}:${fact.result}:${
@@ -363,6 +562,7 @@ function cueFromActionOutcome(
     priority: fact.result === "rejected" ? 80 : 50,
     ttlTicks: context.defaultTtlTicks,
     a11y: { announce: true, textAlternative: a11yText },
+    ...(effects ? { effects } : {}),
   };
 }
 

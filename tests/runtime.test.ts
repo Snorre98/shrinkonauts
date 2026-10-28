@@ -1000,6 +1000,60 @@ describe("game runtime", () => {
     expect(runtime.drainEffects()).toEqual([]);
   });
 
+  it("delivers effect plans idempotently with attribution", () => {
+    const { runtime } = makeRuntime();
+    expect(runtime.drainEffects()).toEqual([]);
+
+    pressSensor(runtime, "input-a", "p2");
+    const first = runtime.drainEffects();
+    const plate = first.find((effect) =>
+      effect.planId.startsWith("fx.plate.press"),
+    );
+    expect(plate).toMatchObject({
+      actor: "p2",
+      owner: "p2",
+      accent: "p2",
+    });
+    expect(plate?.stages.length).toBeGreaterThan(0);
+    expect(runtime.drainEffects().map((effect) => effect.id)).toEqual(
+      first.map((effect) => effect.id),
+    );
+
+    waitRuntime(runtime, 20);
+    expect(
+      runtime
+        .drainEffects()
+        .some((effect) => effect.planId.startsWith("fx.plate.press")),
+    ).toBe(false);
+  });
+
+  it("does not let draining effects change puzzle or player state", () => {
+    const { runtime } = makeRuntime();
+    pressSensor(runtime, "input-a", "p1");
+    const puzzle = runtime.snapshot().puzzle;
+    const players = JSON.stringify(runtime.simulation.players);
+
+    runtime.drainEffects();
+
+    expect(runtime.snapshot().puzzle).toEqual(puzzle);
+    expect(JSON.stringify(runtime.simulation.players)).toBe(players);
+  });
+
+  it("maps a pulse launch to an A-to-B travel plan", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    activateEndplate(runtime);
+    walkPlayerTo(runtime, "p1", "motor-terminal");
+    stepWith(runtime, playerActions({ pulse: true }));
+
+    const travel = runtime
+      .drainEffects()
+      .filter((effect) => effect.planId.startsWith("fx.pulse.travel"));
+    expect(travel.length).toBeGreaterThan(0);
+    expect(travel[0]?.stages[0]?.path).toMatchObject({ kind: "segment" });
+    expect(travel[0]?.accent).toBe("p1");
+  });
+
   it("projects authored room sockets into the runtime world view", () => {
     const { runtime } = makeRuntimeWithContent(contentWithAnchors());
     const entity = runtime.snapshot().world.entities["agent-neuron"];

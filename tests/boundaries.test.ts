@@ -118,12 +118,37 @@ describe("module boundaries", () => {
         "feedback/components.ts",
         "feedback/descriptors.ts",
         "feedback/director.ts",
+        "feedback/effect-presets.ts",
+        "feedback/effects.ts",
         "feedback/facts.ts",
         "feedback/index.ts",
         "feedback/lexicon.ts",
         "feedback/types.ts",
       ]),
     );
+  });
+
+  it("keeps feedback free of adapters and world state", () => {
+    const feedbackFiles = sourceFiles(
+      fileURLToPath(new URL("../src/feedback/", import.meta.url)),
+    );
+    for (const file of feedbackFiles) {
+      const source = read(file);
+      expect(
+        source,
+        `${relativeToSrc(file)} must not import Phaser`,
+      ).not.toMatch(/from\s+["']phaser["']/);
+      expect(
+        source,
+        `${relativeToSrc(file)} must not import Matter`,
+      ).not.toMatch(/from\s+["']matter-js["']/);
+      for (const target of ["world", "game", "ui", "pack"]) {
+        expect(
+          source,
+          `${relativeToSrc(file)} must not import ${target}`,
+        ).not.toMatch(new RegExp(`from\\s+["']\\.\\./${target}(?:/[^"']*)?["']`));
+      }
+    }
   });
 
   it("keeps feedback out of the world module", () => {

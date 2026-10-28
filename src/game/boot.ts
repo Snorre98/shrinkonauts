@@ -297,6 +297,7 @@ export async function bootGame(options: BootOptions = {}): Promise<BootResult> {
       theme: content.theme,
       assets,
       plan,
+      isReducedMotion: () => save.settings.accessibility.reducedMotion,
       shouldIgnoreInput: () => {
         const active = document.activeElement;
         return (

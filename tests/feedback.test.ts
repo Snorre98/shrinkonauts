@@ -564,6 +564,15 @@ describe("feedback facts and cues", () => {
           actor: null,
           owner: "shared",
           accent: "neutral",
+          stages: [
+            {
+              visual: { kind: "ring", radius: 18 },
+              targets: [{ kind: "hud", slot: "top" }],
+              timing: { durationTicks: 6 },
+              binding: { follow: false },
+              layer: "hud",
+            },
+          ],
         },
       ],
     });

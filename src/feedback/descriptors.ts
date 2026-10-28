@@ -15,6 +15,11 @@ import type {
   PuzzleNodeType,
 } from "../puzzle";
 import { feedbackLexicon } from "./lexicon";
+import { anchorRefFromFeedbackAnchor } from "./effects";
+import {
+  resolveEffectPreset,
+  type EffectPresetId,
+} from "./effect-presets";
 import type {
   CueRecipe,
   EffectPlan,
@@ -46,7 +51,7 @@ export const FEEDBACK_CAPABILITIES: readonly FeedbackCapability[] = [
 export interface CapabilityDefaults {
   presentation: FeedbackPresentation;
   anchor: "entity" | "player" | "hud" | "screen" | "node";
-  effectPreset: string;
+  effectPreset: EffectPresetId;
 }
 
 export const CAPABILITY_DEFAULTS = {
@@ -149,6 +154,47 @@ function capabilityAnchor(
     : nodeAnchor(node);
 }
 
+/**
+ * Sticky surfaces only carry effects when the capability has a meaningful
+ * continuous state. One-shot event responses are attached to cues instead, so
+ * boot does not emit a burst for every authored node.
+ */
+const STATEFUL_EFFECT_CAPABILITIES: ReadonlySet<FeedbackCapability> = new Set([
+  "meter",
+  "container",
+  "carrier",
+  "conductor",
+]);
+
+function stateHasEffect(state: FeedbackState): boolean {
+  return state === "active" || state === "progress" || state === "complete";
+}
+
+function defaultNodeEffects(
+  node: PuzzleNode,
+  capability: FeedbackCapability,
+  state: FeedbackState,
+  anchor: FeedbackAnchor,
+  effectPreset?: string,
+): readonly EffectPlan[] | undefined {
+  if (!stateHasEffect(state)) return undefined;
+  if (!effectPreset && !STATEFUL_EFFECT_CAPABILITIES.has(capability)) {
+    return undefined;
+  }
+  const defaultPreset = CAPABILITY_DEFAULTS[capability].effectPreset;
+  const preset = effectPreset ?? defaultPreset;
+  const build = (id: string): readonly EffectPlan[] | undefined => {
+    const effect = resolveEffectPreset(id, {
+      actor: null,
+      owner: "shared",
+      source: anchorRefFromFeedbackAnchor(anchor, node),
+      planId: `${id}:${node.id}`,
+    });
+    return effect ? [effect] : undefined;
+  };
+  return build(preset) ?? (preset !== defaultPreset ? build(defaultPreset) : undefined);
+}
+
 export function feedbackStateForNode(
   node: PuzzleNode,
   state: PuzzleNodeRunState,
@@ -221,6 +267,7 @@ export function nodeSurface(input: {
   presentation?: FeedbackPresentation;
   severity?: FeedbackSeverity;
   effects?: readonly EffectPlan[];
+  effectPreset?: string;
 }): FeedbackSurfaceSpec {
   const lexicon = feedbackLexicon({
     capability: input.capability,
@@ -230,6 +277,16 @@ export function nodeSurface(input: {
   const text = input.text ?? lexicon.text;
   const presentation =
     input.presentation ?? CAPABILITY_DEFAULTS[input.capability].presentation;
+  const anchor = capabilityAnchor(input.capability, input.node);
+  const effects =
+    input.effects ??
+    defaultNodeEffects(
+      input.node,
+      input.capability,
+      input.state,
+      anchor,
+      input.effectPreset,
+    );
 
   return {
     capability: input.capability,
@@ -237,7 +294,7 @@ export function nodeSurface(input: {
     actor: null,
     owner: "shared",
     audience: "both",
-    anchor: capabilityAnchor(input.capability, input.node),
+    anchor,
     presentation,
     content: {
       text,
@@ -249,9 +306,7 @@ export function nodeSurface(input: {
     interaction: { mode: "none", focus: "soft", movement: "free" },
     priority: defaultSurfacePriority(input.capability),
     a11y: { announce: false, textAlternative: text },
-    ...(input.effects && input.effects.length > 0
-      ? { effects: input.effects }
-      : {}),
+    ...(effects && effects.length > 0 ? { effects } : {}),
   };
 }
 
@@ -265,12 +320,26 @@ export function projectSignal(signal: FeedbackSignal): FeedbackSurfaceSpec {
       ...(signal.reason ? { reason: signal.reason } : {}),
     }).text;
   const actor = signal.actor ?? null;
+  const owner = signal.owner ?? actor ?? "shared";
+  const effects =
+    signal.effects ??
+    (stateHasEffect(signal.state)
+      ? (() => {
+          const effect = resolveEffectPreset(defaults.effectPreset, {
+            actor,
+            owner,
+            source: anchorRefFromFeedbackAnchor(signal.anchor),
+            planId: `${defaults.effectPreset}:${signal.source.kind}:${signal.source.id}`,
+          });
+          return effect ? [effect] : undefined;
+        })()
+      : undefined);
 
   return {
     capability: signal.capability,
     source: signal.source,
     actor,
-    owner: signal.owner ?? actor ?? "shared",
+    owner,
     audience: "both",
     anchor: signal.anchor,
     presentation: signal.presentation ?? defaults.presentation,
@@ -286,9 +355,7 @@ export function projectSignal(signal: FeedbackSignal): FeedbackSurfaceSpec {
     },
     priority: signal.priority ?? defaultSurfacePriority(signal.capability),
     a11y: signal.a11y ?? { announce: false, textAlternative: text },
-    ...(signal.effects && signal.effects.length > 0
-      ? { effects: signal.effects }
-      : {}),
+    ...(effects && effects.length > 0 ? { effects } : {}),
   };
 }
 
@@ -309,6 +376,9 @@ function projectNode(
       state: feedbackState,
       label,
       ...(context?.text ? { text: context.text } : {}),
+      ...(context?.effectPreset
+        ? { effectPreset: context.effectPreset }
+        : {}),
       ...(progress ? { progress } : {}),
     }),
   ];
@@ -319,12 +389,14 @@ function cue(
   state: FeedbackState,
   severity?: FeedbackSeverity,
   presentation?: FeedbackPresentation,
+  effectPreset?: EffectPresetId,
 ): CueRecipe {
   return {
     capability,
     state,
     ...(severity ? { severity } : {}),
     ...(presentation ? { presentation } : {}),
+    ...(effectPreset ? { effectPreset } : {}),
   };
 }
 
@@ -440,22 +512,22 @@ export const NODE_FEEDBACK = {
 } satisfies Record<PuzzleNodeType, NodeFeedbackDescriptor>;
 
 const LINK_CUES: Record<PuzzleLinkType, CueRecipe> = {
-  pulse: cue("conductor", "active"),
-  bind: cue("container", "complete", "positive"),
-  press: cue("binary", "active"),
-  release: cue("binary", "idle"),
-  enter: cue("container", "active"),
+  pulse: cue("conductor", "active", undefined, undefined, "fx.pulse.impact"),
+  bind: cue("container", "complete", "positive", undefined, "fx.container.accept"),
+  press: cue("binary", "active", undefined, undefined, "fx.plate.press"),
+  release: cue("binary", "idle", undefined, undefined, "fx.plate.release"),
+  enter: cue("container", "active", undefined, undefined, "fx.container.accept"),
   exit: cue("container", "idle"),
-  increment: cue("counter", "progress"),
-  start: cue("meter", "progress"),
+  increment: cue("counter", "progress", undefined, undefined, "fx.counter.pip"),
+  start: cue("meter", "progress", undefined, undefined, "fx.affordance.ring"),
   stop: cue("meter", "reset"),
-  reset: cue("meter", "reset"),
-  elapsed: cue("meter", "complete", "positive"),
-  reached: cue("counter", "complete", "positive"),
-  activate: cue("conductor", "active"),
+  reset: cue("meter", "reset", undefined, undefined, "fx.conductor.spark"),
+  elapsed: cue("meter", "complete", "positive", undefined, "fx.meter.elapsed"),
+  reached: cue("counter", "complete", "positive", undefined, "fx.counter.burst"),
+  activate: cue("conductor", "active", undefined, undefined, "fx.conductor.spark"),
   deactivate: cue("conductor", "idle"),
-  open: cue("barrier", "active", "positive"),
-  close: cue("barrier", "idle"),
+  open: cue("barrier", "active", "positive", undefined, "fx.gate.burst"),
+  close: cue("barrier", "idle", undefined, undefined, "fx.gate.close"),
 };
 
 export const LINK_FEEDBACK = {
