@@ -103,7 +103,7 @@ export class RoomScene
   implements WorldEffectPort, TileVisualPort
 {
   private intents!: KeyboardIntentSource;
-  private background!: LayeredBackground;
+  private background: LayeredBackground | null = null;
   private readonly playerSprites: Partial<
     Record<PlayerId, Phaser.GameObjects.Image>
   > = {};
@@ -173,6 +173,7 @@ export class RoomScene
   }
 
   create(): void {
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
     try {
       this.started = false;
       this.accumulator = 0;
@@ -226,7 +227,7 @@ export class RoomScene
     this.syncPlayers();
     const camera = this.cameras.main;
     camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
-    this.background.update(camera);
+    this.background?.update(camera);
 
     const reduced = this.config.isReducedMotion?.() ?? false;
     if (reduced !== this.lastReducedMotion) {
@@ -264,6 +265,27 @@ export class RoomScene
     for (const tile of record?.tiles ?? []) this.renderTile(tile);
   }
 
+  /**
+   * Phaser destroys the scene's game objects before a restart and before the
+   * scene is stopped. Drop our references so the next `createWorld()` does not
+   * try to destroy already-destroyed objects (which can throw inside Phaser's
+   * scene manager on some restart timings).
+   */
+  shutdown(): void {
+    this.effectLayer = null;
+    this.background = null;
+    for (const id of PLAYER_IDS) {
+      delete this.playerSprites[id];
+      delete this.playerShadows[id];
+    }
+    this.entitySprites.clear();
+    this.entityGlows.clear();
+    this.propSprites.clear();
+    this.tileImages.clear();
+    this.tileBase.clear();
+    this.tileOverlays.clear();
+  }
+
   private createWorld(): void {
     const { runtime, theme, assets } = this.config;
     const room = runtime.roomDocument;
@@ -292,7 +314,14 @@ export class RoomScene
     camera.setBounds(0, 0, roomPixelWidth(room), roomPixelHeight(room));
     camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
 
-    this.background = new LayeredBackground(this, room, theme, assets);
+    this.background = new LayeredBackground(
+      this,
+      room.background.layers,
+      roomPixelWidth(room),
+      roomPixelHeight(room),
+      theme,
+      assets,
+    );
     this.createTiles();
     this.createEntities(room);
 

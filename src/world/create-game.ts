@@ -1,5 +1,4 @@
 import Phaser from "phaser";
-import type { RoomScene } from "./room-scene";
 
 export const VIEWPORT = { width: 1280, height: 720 } as const;
 
@@ -14,7 +13,7 @@ export interface GameMountOptions {
  * `game` and `ui` never depend on the engine API.
  */
 export function createGame(
-  scene: RoomScene,
+  scene: Phaser.Scene,
   options: GameMountOptions,
 ): Phaser.Game {
   const viewport = options.viewport ?? VIEWPORT;

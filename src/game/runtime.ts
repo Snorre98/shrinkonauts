@@ -143,7 +143,7 @@ export interface RuntimeSavePort {
     packVersion?: string,
     contentVersion?: string,
   ): RunLoadResult;
-  clearRun(): void;
+  clearRun(packId?: string): void;
   updateAudio(patch: Partial<GameSettings["audio"]>): GameSettings;
   updateAccessibility(
     patch: Partial<GameSettings["accessibility"]>,
@@ -169,6 +169,13 @@ export interface RuntimeOptions {
   onLevelChange?: (levelId: string) => void;
   /** Ticks without a puzzle-state change before the stuck affordance appears. */
   stuckThresholdTicks?: number;
+}
+
+export interface StartOptions {
+  /** `false` starts a fresh run even when a compatible save exists. */
+  resume?: boolean;
+  /** Solo starts with P2 inactive; local co-op starts with both players. */
+  activeP2?: boolean;
 }
 
 type Listener = (snapshot: RuntimeSnapshot) => void;
@@ -351,37 +358,42 @@ export class GameRuntime implements WorldRuntime {
   /* Lifecycle                                                        */
   /* ---------------------------------------------------------------- */
 
-  start(): void {
+  start(options: StartOptions = {}): void {
+    if (options.resume === false) {
+      this.newRun({ activeP2: options.activeP2 });
+      return;
+    }
+
     const loaded = this.save.loadRun(
       this.content.pack.id,
       this.content.pack.version,
       this.content.pack.version,
     );
     if (loaded.ok) {
-      this.restoreRun(loaded.run);
+      this.restoreRun(loaded.run, options.activeP2);
       return;
     }
     if (loaded.reason === "VERSION_MISMATCH" && loaded.run) {
-      this.restoreFromCheckpoint(loaded.run);
+      this.restoreFromCheckpoint(loaded.run, options.activeP2);
       this.setToast(loaded.message);
       this.emit();
       return;
     }
-    this.newRun();
+    this.newRun({ activeP2: options.activeP2 });
     if (loaded.reason === "VERSION_MISMATCH") {
       this.setToast(loaded.message);
       this.emit();
     }
   }
 
-  newRun(): void {
-    this.save.clearRun();
+  newRun(options: { activeP2?: boolean } = {}): void {
+    this.save.clearRun(this.content.pack.id);
     this.progression = createProgression({
       abilities: [PLACEHOLDER_ABILITY],
     });
     this.curriculum = createCurriculum();
     this.debriefAnswers = {};
-    this.activeP2 = true;
+    this.activeP2 = options.activeP2 ?? true;
     this.checkpointId = null;
     this.firedTriggers.clear();
     this.enterLevel(
@@ -391,10 +403,10 @@ export class GameRuntime implements WorldRuntime {
     );
   }
 
-  private restoreRun(run: RunSnapshot): void {
+  private restoreRun(run: RunSnapshot, activeP2Override?: boolean): void {
     this.progression = createProgression(run.progression);
     this.curriculum = createCurriculum({ events: run.events });
-    this.activeP2 = run.players.activeP2;
+    this.activeP2 = activeP2Override ?? run.players.activeP2;
     this.checkpointId = run.checkpointId;
     this.debriefAnswers = {};
 
@@ -423,10 +435,13 @@ export class GameRuntime implements WorldRuntime {
    * but cannot trust serialised world state. Rebuild the level at the saved
    * checkpoint instead of starting a new run.
    */
-  private restoreFromCheckpoint(run: RunSnapshot): void {
+  private restoreFromCheckpoint(
+    run: RunSnapshot,
+    activeP2Override?: boolean,
+  ): void {
     this.progression = createProgression(run.progression);
     this.curriculum = createCurriculum({ events: run.events });
-    this.activeP2 = run.players.activeP2;
+    this.activeP2 = activeP2Override ?? run.players.activeP2;
     this.debriefAnswers = {};
 
     const level =

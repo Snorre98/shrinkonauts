@@ -47,6 +47,8 @@ export type {
 } from "./tile-visuals";
 export { RoomScene } from "./room-scene";
 export type { RoomSceneConfig } from "./room-scene";
+export { HubScene } from "./hub-scene";
+export type { HubLaunchOptions, HubSceneConfig, HubSelectionView } from "./hub-scene";
 export { PLAYER_ASSET_IDS } from "./ids";
 export {
   cameraTarget,

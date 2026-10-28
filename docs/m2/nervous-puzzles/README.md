@@ -262,6 +262,12 @@ affected puzzle rules must be rechecked before implementation.
 
 ## 11. Relationship to M4 online co-op (proposed)
 
+M1.9 already shows a **Silicon: Interrupt Loop** card in the bathroom menu as
+`coming-soon`. Implementing this package as the separate `silicon-reflex` pack
+and changing its catalog status to `available` is the only menu-facing step; the
+hub does not hardcode the cycle. See
+[`../../m1.9/README.md`](../../m1.9/README.md).
+
 M4 consumes the frozen M2 content; it does not change any puzzle rule, gate
 type, verb, entity behaviour, UI surface, or save field. The online session is
 host-authoritative and level-scoped. M4.0 runs the `03-nerve-forest` Node Run

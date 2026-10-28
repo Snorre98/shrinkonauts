@@ -1,22 +1,33 @@
-# Shrinkonauts M1.75 — Implementation Notes
+# Shrinkonauts M1.9 — Implementation Notes
 
-M1.75 adds the feedback and effect layer on top of the M1 runtime. The app boots
-directly into **03 — Nerve Forest**, plays the Node Run puzzle, transitions
-through the debrief to **04 — Endplate Ferry**, and finishes the pack with
-teach-back evidence export.
+M1.9 adds the pre-game bathroom hub on top of the M1.75 feedback/effect layer.
+The app boots into a bathroom, selects a cycle and player mode in the washing
+machine menu, plays a launch transition, and enters the selected pack. Anatomy
+starts at **03 — Nerve Forest**, plays Node Run, transitions to **04 — Endplate
+Ferry**, and finishes with teach-back evidence export. Silicon is visible but
+gated until M2; online co-op is a disabled M4 placeholder.
 
-The M0.2 foundation and M1 runtime are preserved: placeholder-first assets, the
-provider chain, the audio cue layer, fixed-step simulation, the DOM HUD, the pure
-validator, autosave/restore, local co-op, and the browser smoke.
+The M0.2 foundation, M1 runtime, and M1.75 feedback layer are preserved:
+placeholder-first assets, the provider chain, the audio cue layer, fixed-step
+simulation, the DOM HUD, the pure validator, autosave/restore, local co-op, and
+the browser smoke.
 
-No final art or audio is included. Every anatomy asset ID resolves to a
-procedural placeholder, and every cue resolves to a synth or silent fallback.
+No final art or audio is included. Anatomy and bathroom assets resolve to
+procedural placeholders, and every cue resolves to a synth or silent fallback.
+
+**Remaining work and sequencing:** [`docs/m1.9/remaining-work.md`](docs/m1.9/remaining-work.md).
 
 ## Status
 
 | Area | State |
 | --- | --- |
-| Direct boot into `03-nerve-forest` | Working |
+| Default bathroom hub + washing-machine menu | Working |
+| Pack catalog (`public/packs/index.json`) | Working |
+| Per-pack saves (`shrinkonauts.run.<packId>`) | Working |
+| Anatomy cycle start, launch, and return | Working |
+| Silicon cycle | Visible; gated until M2 |
+| Online co-op lobby | Visible placeholder; M4 |
+| Direct boot into `03-nerve-forest` | Working via `?skipMenu=1` |
 | 03 → 04 transition through debrief | Working |
 | Pack + syllabus loading from `public/` | Working |
 | Entity conversations (P1/P2 concurrent) | Working |
@@ -27,17 +38,20 @@ procedural placeholder, and every cue resolves to a synth or silent fallback.
 | Beat progress and stuck hint/reset affordance | Working |
 | Composable cosmetic effects and tile visuals | Working |
 | Debrief, teach-back, evidence export | Working |
-| Autosave + restore (`shrinkonauts.run`) | Working |
+| Autosave + restore | Working |
 | Conversation save/restore + legacy dialogue migration | Working |
 | Audio + accessibility settings (`shrinkonauts.settings`) | Working |
 | Local co-op, tether, checkpoint P2 toggle | Working |
+| Solo start with P2 inactive | Working |
 | Pause, text scale, reduced motion, mute, focus management | Working |
-| Placeholder asset pipeline (44/44 anatomy IDs) | Working |
+| Placeholder asset pipeline (44/44 anatomy, 15/15 bathroom) | Working |
 | Pure validator with injected feedback vocabulary | Working |
 | Headless runtime smoke | Working |
 | Playwright browser smoke on system Chrome | Working |
+| Human hub visual/accessibility playtest | **Pending** |
 | Human solo/co-op playtest | **Pending** |
 | Final art/audio | Deferred |
+| M3.5 bathroom hub art pass | Deferred |
 | Levels 5+, capture mode, music/ambience loops | Deferred |
 | Full key rebinding | Deferred |
 | Physical gate bodies, `locked`/`unlock`, conditional links | Deferred |
@@ -50,10 +64,10 @@ Run from `shrinkonauts/`:
 ```bash
 npm install
 npm run dev             # http://127.0.0.1:5173/
-npm test                # 29 files, 303 unit/integration tests
+npm test                # 32 files, 317 unit/integration tests
 npm run smoke           # room boot + module boundary tests
 npm run build           # tsc --noEmit + Vite production build
-npm run pack:validate   # dev fixture + anatomy pack validation
+npm run pack:validate   # dev fixture + anatomy + catalog/hub validation
 npm run pack:map        # regenerate/check the mapping document
 npm run pack:smoke      # dev simulation + headless runtime loop
 npm run smoke:e2e       # Playwright, system Chrome, port 4173
@@ -83,15 +97,17 @@ platform ──> game ──> audio ──> assets
                   ├─> assets
                   ├─> syllabus
                   ├─> pack
+                  ├─> hub
                   ├─> progression
                   ├─> narrative
                   ├─> curriculum
                   ├─> save
                   ├─> feedback ──> ecs, puzzle
                   ├─> ui ──> feedback
-                  └─> world ──> assets, pack, puzzle
+                  └─> world ──> assets, hub, pack, puzzle
 
 pack ──> assets, core, puzzle, syllabus
+hub ──> assets, core, pack
 progression, narrative ──> pack
 curriculum ──> core, pack, syllabus
 save ──> curriculum, progression, puzzle
@@ -108,11 +124,12 @@ save ──> curriculum, progression, puzzle
 | `progression` | Abilities, flags, gates, map reveal | `pack` |
 | `narrative` | Dialogue traversal, choices, effects | `pack` |
 | `curriculum` | Learning events, objective progress, debrief, evidence export | `core`, `pack`, `syllabus` |
-| `save` | Versioned run slot, conversations, audio/accessibility settings | `curriculum`, `progression`, `puzzle` |
+| `save` | Per-pack run slots, conversations, audio/accessibility settings | `curriculum`, `progression`, `puzzle` |
 | `audio` | Cue playback, Web Audio, unlock, mute/volume, providers | `assets`, `core` |
-| `ui` | HUD, overlays, anchored surfaces, live region, settings | `assets`, `core`, `curriculum`, `feedback`, `pack` |
-| `world` | Phaser scene, fixed-step simulation, effects, tile visuals, input | `assets`, `core`, `pack`, `puzzle` |
-| `game` | Runtime orchestrator, feedback integration, conversations, effect mapping, browser boot | all domain/adapters |
+| `hub` | Bathroom hub document, loader, validation | `assets`, `core`, `pack` |
+| `ui` | HUD, bathroom menu, overlays, anchored surfaces, live region, settings | `assets`, `core`, `curriculum`, `feedback`, `pack` |
+| `world` | Phaser hub/room scenes, fixed-step simulation, effects, tile visuals, input | `assets`, `core`, `hub`, `pack`, `puzzle` |
+| `game` | App shell, pack runtime orchestrator, feedback integration, conversations, effect mapping, browser boot | all domain/adapters |
 | `platform` | Browser entry point | `core`, `game`, `ui` |
 
 `tests/boundaries.test.ts` enforces the graph: no Phaser or Matter outside
@@ -143,17 +160,29 @@ by the Node or browser caller.
 `src/game/runtime.ts` is a plain TypeScript orchestrator. It owns run state but
 never touches the DOM, Phaser, Web Audio, localStorage, or asset files.
 
+`src/game/boot.ts` owns the outer M1.9 shell:
+
 ```text
-start()
+boot → hub → loading-pack → launching → playing
+                    ↘ error → hub
+```
+
+The hub mounts the bathroom Phaser game and the washing-machine DOM menu. A
+start loads the selected pack, plays the launch timeline, destroys the hub game,
+and creates the room game. Returning to the hub reverses that swap. Only one
+Phaser game is alive at a time.
+
+```text
+start({ resume?, activeP2? })
   └─ loadRun(packId, packVersion)
        ├─ valid save  → restoreRun()
        └─ none/invalid → newRun()
 
-newRun()
-  ├─ clearRun()
+newRun({ activeP2? })
+  ├─ clearRun(packId)
   ├─ abilities = ["scan"]
   ├─ clear curriculum, debrief answers, triggers, conversations
-  ├─ activeP2 = true
+  ├─ activeP2 = option ?? true
   └─ enterLevel(startLevelId, fresh)
 
 enterLevel()
@@ -337,12 +366,17 @@ owner's (or shared) UI actions.
 
 ## Save format
 
-`src/save/index.ts` owns both localStorage slots and all persistence.
+`src/save/index.ts` owns both localStorage families and all persistence.
 
 ```text
-shrinkonauts.run        one versioned run snapshot (2.1)
-shrinkonauts.settings   audio + accessibility settings (2.0)
+shrinkonauts.run.<packId>   one versioned run snapshot per pack (2.1)
+shrinkonauts.run            legacy single slot; migrated into the matching pack
+shrinkonauts.settings       audio + accessibility settings (2.0)
 ```
+
+A legacy `shrinkonauts.run` save is copied into `shrinkonauts.run.<packId>` when
+its `packId` matches the selected pack, then the legacy key is removed. A save
+for another pack is reported as a pack mismatch and is not copied.
 
 Run snapshot additions in M1.75:
 
@@ -537,8 +571,11 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/progression.test.ts` | Abilities, gates, all three puzzles, map traversal |
 | `tests/narrative.test.ts` | Linear dialogue, choices, effects, unknown choice |
 | `tests/curriculum.test.ts` | Evidence matching, objective progress, debrief, export |
-| `tests/save.test.ts` | Settings/run persistence, version/pack rejection, conversations |
-| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, overlays |
+| `tests/save.test.ts` | Settings/run persistence, per-pack slots, legacy migration, version/pack rejection, conversations |
+| `tests/catalog.test.ts` | Pack catalog ordering, statuses, paths, duplicates |
+| `tests/app-state.test.ts` | Hub phases, cycle/mode selection, start eligibility, error recovery |
+| `tests/hub.test.ts` | Bathroom document parsing, IDs, manifests, validation |
+| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, solo start, overlays |
 | `tests/puzzle.test.ts`, `puzzle-dispatch.test.ts`, `endplate-ferry.test.ts` | Puzzle schema/dataflow, dispatch, timers, gate recovery |
 | `tests/recoverability.test.ts` | Exhaustive stable-state reachability |
 | `tests/ecs.test.ts` | Spawn/despawn/query/system order/determinism |
@@ -550,6 +587,7 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/surface-router.test.ts` | Hard/soft ownership, solo fallback, navigation |
 | `tests/feedback-accessibility.test.ts` | Text alternatives, effect ownership, reduced motion, input, no mutation |
 | `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, module graph |
+| `e2e/hub.spec.ts` | Browser: bathroom, cycle selection, launch skip, solo start, return |
 | `e2e/m1.spec.ts` | Browser: 03 → 04, conversations, attribution, reduced motion, live region, export |
 
 `npm run smoke` runs the room-boot and boundary suites. `pack:smoke` adds a
@@ -559,14 +597,14 @@ system Chrome.
 
 ## Verification performed
 
-On 2026-10-28, after the Phase 8 changes:
+On 2026-10-28, after the M1.9 hub changes:
 
 ```text
-npm test             29 files, 303 tests passed
+npm test             32 files, 317 tests passed
 npm run build        tsc clean + Vite production build
-npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; 44 IDs
+npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
 npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (44 IDs, 44 placeholders)
-npm run smoke:e2e      4/4 passed (system Chrome, port 4173)
+npx playwright test   7/7 passed (system Chrome, port 4173)
 git diff --check      clean
 ```
 
@@ -575,22 +613,27 @@ git diff --check      clean
 Captured from the M1 build with system Chrome at 1280 × 720; every asset is a
 procedural placeholder:
 
-| Nerve Forest | Dialogue | Signal gate |
+| Bathroom hub | Launch transition | Nerve Forest |
 | --- | --- | --- |
-| ![Nerve Forest](screenshots/m1-nerve-forest.png) | ![Neuron Keeper dialogue](screenshots/m1-dialogue.png) | ![Sequence gate](screenshots/m1-gate.png) |
+| ![Bathroom hub](screenshots/m1.9-hub.png) | ![Launch transition](screenshots/m1.9-launch.png) | ![Nerve Forest](screenshots/m1-nerve-forest.png) |
+
+| Dialogue | Signal gate |
+| --- | --- |
+| ![Neuron Keeper dialogue](screenshots/m1-dialogue.png) | ![Sequence gate](screenshots/m1-gate.png) |
 
 ## Deferred
 
 - Human solo and co-op playtest of the M1.75 feedback flow.
 - Final art and final audio; only procedural placeholders exist.
-- The Silicon fixture.
+- The Silicon fixture/pack (visible as a gated cycle).
 - Levels 5+ and the second core gate.
 - Capture mode.
 - Music and ambience loops.
 - Full key rebinding.
 - Conditional dialogue-node skipping; M1 supports linear nodes, choices, and
   effects only.
-- A dedicated pack-select or intro screen.
+- Final bathroom hub art (M3.5); procedural hub placeholders ship now.
+- Real online host/join/ready (M4); the hub shows a disabled placeholder.
 - Physical puzzle-gate bodies (ADR-0002 target).
 - `locked`/`unlock`/`propReleased` (ADR-0004 target).
 - `requires`/`message`/`linkBlocked` (ADR-0005 target).
@@ -600,8 +643,20 @@ procedural placeholder:
 
 ## Decisions and deviations
 
-- **Direct boot.** No PackSelect or Intro; the runtime enters the start level
-  immediately.
+- **Hub, not direct boot.** `/` shows the bathroom; direct boot remains at
+  `/?skipMenu=1&pack=anatomy-reflex`.
+- **Outer app shell.** Pack selection and launch live in `AppController`, not
+  `GameRuntime`; the runtime remains pack/level-scoped.
+- **Catalog-driven cycles.** `public/packs/index.json` lists Anatomy and the
+  gated Silicon cycle; M2 flips Silicon by changing status.
+- **Per-pack saves.** Run slots are `shrinkonauts.run.<packId>`; the legacy
+  `shrinkonauts.run` slot migrates once.
+- **Separate hub content.** `public/hub/bathroom/` has its own document, theme,
+  and manifests; it is not a playable pack.
+- **One Phaser game at a time.** The hub game is destroyed before the room game
+  is created, avoiding texture-key collisions between packs.
+- **Online is a placeholder.** The hub exposes the M4 section but no transport,
+  room code, or session state until M4.
 - **Two-level slice.** `03-nerve-forest` starts and transitions through debrief
   to `04-muscle-effector`, which ends the pack. `05-reflex-core` is a forward
   reference only.

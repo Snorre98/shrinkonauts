@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "id": "bathroom",
+  "title": "The Bathroom",
+  "theme": "theme.json",
+  "assetManifests": {
+    "placeholder": "assets.placeholder.json",
+    "final": "assets.final.json"
+  },
+  "width": 1280,
+  "height": 720,
+  "background": {
+    "layers": [
+      {
+        "assetId": "bg.bathroom.wall",
+        "depth": -40,
+        "parallaxX": 0.05,
+        "parallaxY": 0.02,
+        "fit": "cover"
+      },
+      {
+        "assetId": "bg.bathroom.far",
+        "depth": -30,
+        "parallaxX": 0.15,
+        "parallaxY": 0.08,
+        "fit": "tile"
+      },
+      {
+        "assetId": "bg.bathroom.mid",
+        "depth": -20,
+        "parallaxX": 0.35,
+        "parallaxY": 0.15,
+        "fit": "tile"
+      },
+      {
+        "assetId": "bg.bathroom.near",
+        "depth": -10,
+        "parallaxX": 0.7,
+        "parallaxY": 0.3,
+        "fit": "tile",
+        "opacity": 0.75
+      }
+    ]
+  },
+  "machine": {
+    "body": "sprite.prop.washer",
+    "door": "sprite.prop.washer.door",
+    "drum": "sprite.prop.washer.drum",
+    "x": 1000,
+    "y": 820,
+    "scale": 1.1,
+    "screen": {
+      "x": 840,
+      "y": 444,
+      "width": 200,
+      "height": 56
+    },
+    "doorAnchor": { "x": 1000, "y": 700 },
+    "drumAnchor": { "x": 1000, "y": 700 }
+  },
+  "player": {
+    "civilian": "sprite.player.civilian",
+    "astronaut": "sprite.player.p1",
+    "idle": { "x": 560, "y": 650 },
+    "entry": { "x": 980, "y": 700 },
+    "exit": { "x": 870, "y": 700 },
+    "scale": 1,
+    "tinyScale": 0.35
+  },
+  "audio": {
+    "click": "audio.cue.hub.click",
+    "door": "audio.cue.hub.door",
+    "spin": "audio.cue.hub.spin",
+    "shrink": "audio.cue.hub.shrink",
+    "arrive": "audio.cue.hub.arrive",
+    "hum": "audio.cue.hub.hum"
+  },
+  "intro": {
+    "minDurationMs": 5600,
+    "reducedMotionMs": 1400,
+    "skipAfterMs": 600
+  }
+}

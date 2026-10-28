@@ -102,7 +102,7 @@ function parseSpawn(
   return ok({ x: value.x, y: value.y });
 }
 
-function parseBackgroundLayer(
+export function parseBackgroundLayer(
   value: unknown,
   index: number,
   code: string,

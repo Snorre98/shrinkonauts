@@ -28,7 +28,7 @@ async function boot(page: Page): Promise<string[]> {
   });
   page.on("pageerror", (error) => consoleErrors.push(error.message));
 
-  await page.goto("/");
+  await page.goto("/?skipMenu=1&pack=anatomy-reflex");
   // Wait for the Phaser scene, not only the boot bridge: key presses sent
   // before `create()` are consumed by no one and would be lost.
   await page.waitForFunction(() => {

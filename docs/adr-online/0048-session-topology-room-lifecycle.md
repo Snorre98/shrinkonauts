@@ -52,22 +52,25 @@ host may regenerate a code before the guest joins.
 ### 3. Session states
 
 ```text
-created → waiting-for-guest → handshake → active
-                                      ↘ paused
-                                      ↘ ended
+created → waiting-for-guest → handshake → lobby-ready → active
+                                                  ↘ paused
+                                                  ↘ ended
 ```
 
 - `created`: host socket connected; no guest.
 - `waiting-for-guest`: code is shareable; host sees a waiting state.
 - `handshake`: roles exchanged; build/pack/protocol versions validated.
-- `active`: host has sent the initial run state and guest is ready.
+- `lobby-ready`: both clients have loaded the host's pack and signalled ready.
+  The host's pack is authoritative; the guest cannot change it.
+- `active`: host has sent the initial run state and both clients have entered
+  the launch/level path.
 - `paused`: guest lost or host tab hidden; host simulation is frozen.
 - `ended`: host left, host ended, version rejected, or unrecoverable protocol
   error.
 
-The host starts the run only after the guest is ready. The host may remain in a
-waiting lobby indefinitely; empty rooms hibernate, and no persistent room state
-survives.
+The M1.9 bathroom hub is the lobby UI. The host starts the run only after the
+guest is ready. The host may remain in a waiting lobby indefinitely; empty rooms
+hibernate, and no persistent room state survives.
 
 ### 4. Host and guest departure
 
@@ -138,6 +141,8 @@ is reconstructed from attachments and active sockets.
 ## Tests
 
 - Host creates, guest joins, session becomes active.
+- Bathroom hub host/join reaches `lobby-ready`; host Start is disabled until
+  the guest is ready; guest pack is read-only.
 - Second host/second guest/third player rejected.
 - Guest disconnect pauses host; rejoin within grace restores role.
 - Guest disconnect beyond grace ends the session cleanly.

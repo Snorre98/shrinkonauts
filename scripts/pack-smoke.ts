@@ -16,7 +16,7 @@ import {
 } from "../src/pack/load";
 import type { RoomDocument, ThemeDocument } from "../src/pack/types";
 import { validatePack } from "../src/pack/validate";
-import { createSave, MemorySaveStorage, RUN_STORAGE_KEY } from "../src/save";
+import { createSave, MemorySaveStorage, runStorageKey } from "../src/save";
 import {
   createRoomSimulation,
   emptyIntents,
@@ -526,7 +526,8 @@ function runAnatomyRuntime(): RuntimeResult {
     "[anatomy] start checkpoint missing",
   );
   assert(
-    storage.getItem(RUN_STORAGE_KEY)?.includes("03-nerve-forest") === true,
+    storage.getItem(runStorageKey("anatomy-reflex"))?.includes("03-nerve-forest") ===
+      true,
     "[anatomy] boot did not autosave the run",
   );
 

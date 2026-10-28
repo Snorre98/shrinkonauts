@@ -5,6 +5,7 @@ import {
   MemorySaveStorage,
   RUN_SCHEMA_VERSION,
   RUN_STORAGE_KEY,
+  runStorageKey,
   SAVE_SCHEMA_VERSION,
   SETTINGS_STORAGE_KEY,
 } from "../src/save";
@@ -83,7 +84,9 @@ describe("save", () => {
       expect(loaded.run.checkpointId).toBe("checkpoint-entry");
       expect(loaded.run.savedAt).toBe("2026-10-26T12:00:00.000Z");
     }
-    expect(storage.getItem(RUN_STORAGE_KEY)).toContain("anatomy-reflex");
+    expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
+      "anatomy-reflex",
+    );
   });
 
   it("round-trips a cleared prop and keeps old prop snapshots valid", () => {
@@ -127,15 +130,17 @@ describe("save", () => {
       expect(loaded.run.world.props["ach-packet"]?.state).toBe("cleared");
     }
 
-    const raw = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    const raw = JSON.parse(
+      storage.getItem(runStorageKey("anatomy-reflex")) ?? "{}",
+    );
     raw.world.props["ach-packet"] = {
       bodyId: "body-ach-packet",
       state: "docked",
       carriedBy: null,
       placedOn: "nicotinic-receptor",
     };
-    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(raw));
-    expect(save.loadRun()).toMatchObject({ ok: true });
+    storage.setItem(runStorageKey("anatomy-reflex"), JSON.stringify(raw));
+    expect(save.loadRun("anatomy-reflex")).toMatchObject({ ok: true });
   });
 
   it("returns the parsed run for a content-version mismatch", () => {
@@ -215,6 +220,63 @@ describe("save", () => {
       ok: false,
       reason: "VERSION_MISMATCH",
     });
+  });
+
+  it("keeps pack run slots isolated and migrates the legacy slot once", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+
+    const run = {
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: "anatomy-reflex",
+      packVersion: "0.1.0",
+      contentVersion: "0.1.0",
+      levelId: "03-nerve-forest",
+      roomId: "room-nerve-forest",
+      checkpointId: null,
+      progression: createProgression(),
+      events: [],
+      elapsed: 0,
+      players: {
+        activeP2: true,
+        bodies: { p1: body(0, 0), p2: body(0, 0) },
+      },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
+      status: "playing" as const,
+    };
+
+    save.saveRun(run);
+    save.saveRun({
+      ...run,
+      packId: "silicon-reflex",
+      levelId: "01-interrupt-loop",
+      roomId: "room-interrupt-loop",
+    });
+
+    expect(save.hasRun("anatomy-reflex")).toBe(true);
+    expect(save.hasRun("silicon-reflex")).toBe(true);
+    expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
+      "03-nerve-forest",
+    );
+    expect(storage.getItem(runStorageKey("silicon-reflex"))).toContain(
+      "01-interrupt-loop",
+    );
+
+    // A save written by the pre-M1.9 single-slot build migrates into the pack
+    // slot named by the save itself.
+    storage.removeItem?.(runStorageKey("anatomy-reflex"));
+    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(run));
+    expect(save.loadRun("anatomy-reflex")).toMatchObject({ ok: true });
+    expect(storage.getItem(RUN_STORAGE_KEY)).toBeNull();
+    expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
+      "anatomy-reflex",
+    );
+    expect(save.loadRun("silicon-reflex")).toMatchObject({ ok: true });
+
+    save.clearRun("anatomy-reflex");
+    expect(save.hasRun("anatomy-reflex")).toBe(false);
+    expect(save.hasRun("silicon-reflex")).toBe(true);
   });
 
   it("round-trips optional conversation sessions and accepts legacy dialogue", () => {
@@ -302,10 +364,15 @@ describe("save", () => {
       audio: { muted: false },
       status: "playing",
     });
-    const raw = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    const raw = JSON.parse(
+      storage.getItem(runStorageKey("anatomy-reflex")) ?? "{}",
+    );
     raw.conversations = [{ surfaceId: "x", owner: "p3" }];
-    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(raw));
-    expect(save.loadRun()).toMatchObject({ ok: false, reason: "INVALID_SAVE" });
+    storage.setItem(runStorageKey("anatomy-reflex"), JSON.stringify(raw));
+    expect(save.loadRun("anatomy-reflex")).toMatchObject({
+      ok: false,
+      reason: "INVALID_SAVE",
+    });
   });
 
   it("clears the run without touching settings", () => {
@@ -332,8 +399,11 @@ describe("save", () => {
       status: "playing",
     });
 
-    save.clearRun();
-    expect(save.loadRun()).toMatchObject({ ok: false, reason: "NO_SAVE" });
+    save.clearRun("anatomy-reflex");
+    expect(save.loadRun("anatomy-reflex")).toMatchObject({
+      ok: false,
+      reason: "NO_SAVE",
+    });
     expect(save.settings.audio.muted).toBe(true);
   });
 });

@@ -4,6 +4,7 @@ export {
   isAssetId,
   loadRoom,
   loadTheme,
+  parseBackgroundLayer,
   parseRoom,
   parseTheme,
 } from "./load";
@@ -25,6 +26,16 @@ export {
   parsePack,
 } from "./parse-content";
 export { loadPackContent } from "./load-pack";
+export {
+  catalogEntry,
+  loadPackCatalog,
+  parsePackCatalog,
+} from "./catalog";
+export type {
+  PackAvailability,
+  PackCatalog,
+  PackCatalogEntry,
+} from "./catalog";
 export { parsePuzzle } from "./parse-puzzle";
 export type {
   LoadedPackContent,

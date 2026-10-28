@@ -6,6 +6,7 @@ import {
   MemorySaveStorage,
   RUN_SCHEMA_VERSION,
   RUN_STORAGE_KEY,
+  runStorageKey,
 } from "../src/save";
 import { loadContent, packDirectory } from "../scripts/content-loader";
 
@@ -346,7 +347,38 @@ describe("game runtime", () => {
     expect(snapshot.puzzle?.pulse).toBeNull();
     expect(snapshot.map.nodes.find((node) => node.current)?.visited).toBe(true);
     expect(snapshot.checkpointId).toBe("checkpoint-entry");
-    expect(storage.getItem(RUN_STORAGE_KEY)).toContain("03-nerve-forest");
+    expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
+      "03-nerve-forest",
+    );
+  });
+
+  it("starts solo runs with P2 inactive and can discard a saved run", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+    const runtime = new GameRuntime({
+      content,
+      save,
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:00:00.000Z"),
+    });
+
+    runtime.start({ resume: false, activeP2: false });
+    expect(runtime.snapshot().activeP2).toBe(false);
+    expect(runtime.snapshot().mode).toBe("solo");
+    expect(save.hasRun("anatomy-reflex")).toBe(true);
+
+    runtime.start({ resume: false, activeP2: false });
+    expect(save.hasRun("anatomy-reflex")).toBe(true);
+
+    const restored = new GameRuntime({
+      content,
+      save,
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:10:00.000Z"),
+    });
+    restored.start({ activeP2: true });
+    expect(restored.snapshot().activeP2).toBe(true);
+    expect(restored.snapshot().mode).toBe("co-op");
   });
 
   it("waits for a zoneEnter activation before ticking the puzzle", () => {
@@ -521,9 +553,14 @@ describe("game runtime", () => {
     const { runtime, storage } = makeRuntime();
     solveNodeRun(runtime);
 
-    const saved = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    const saved = JSON.parse(
+      storage.getItem(runStorageKey("anatomy-reflex")) ?? "{}",
+    );
     saved.contentVersion = "0.0.0";
-    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(saved));
+    storage.setItem(
+      runStorageKey("anatomy-reflex"),
+      JSON.stringify(saved),
+    );
 
     const restored = new GameRuntime({
       content,
@@ -542,7 +579,9 @@ describe("game runtime", () => {
         .exportEvidence()
         .events.some((event) => event.type === "puzzle_solved"),
     ).toBe(true);
-    const resaved = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    const resaved = JSON.parse(
+      storage.getItem(runStorageKey("anatomy-reflex")) ?? "{}",
+    );
     expect(resaved.contentVersion).toBe(content.pack.version);
   });
 
@@ -1427,11 +1466,16 @@ describe("game runtime", () => {
         .feedback.surfaces.some((surface) => surface.id === state.surfaceId),
     ).toBe(true);
 
-    const raw = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    const raw = JSON.parse(
+      storage.getItem(runStorageKey("anatomy-reflex")) ?? "{}",
+    );
     raw.conversations = undefined;
     raw.dialogue = { dialogueId: "dlg-neuron-01", nodeId: "problem" };
     delete raw.conversations;
-    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(raw));
+    storage.setItem(
+      runStorageKey("anatomy-reflex"),
+      JSON.stringify(raw),
+    );
 
     const migrated = new GameRuntime({
       content,
@@ -1455,7 +1499,9 @@ describe("game runtime", () => {
       now: () => new Date("2026-10-26T12:00:00.000Z"),
     });
     first.start();
-    const raw = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    const raw = JSON.parse(
+      storage.getItem(runStorageKey("anatomy-reflex")) ?? "{}",
+    );
     raw.conversations = [
       {
         surfaceId: "conversation:p1:missing",
@@ -1465,7 +1511,10 @@ describe("game runtime", () => {
         entityId: "missing",
       },
     ];
-    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(raw));
+    storage.setItem(
+      runStorageKey("anatomy-reflex"),
+      JSON.stringify(raw),
+    );
 
     const restored = new GameRuntime({
       content,

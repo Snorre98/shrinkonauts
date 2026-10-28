@@ -4,7 +4,7 @@
 **Owner:** Snorre  
 **Scope:** one-level online co-op for the M3 capture slice, with an architecture
 that extends to the M2 pack  
-**Depends on:** M1.75, M1.8, M2, M3  
+**Depends on:** M1.75, M1.8, M1.9, M2, M3
 **ADR domain:** [`../adr-online/README.md`](../adr-online/README.md) — ADR-0047–0057  
 **Baseline:** the M3 final `03-nerve-forest` slice plus the M2 pack.
 
@@ -93,6 +93,8 @@ content.
 - [ ] The local-only statements in `architecture.md`, `failure-semantics.md`,
   and `concurrency-topology.md` are amended for an optional online mode, not
   silently contradicted.
+- [ ] M1.9's bathroom hub is the lobby surface; the disabled online block is
+  replaced rather than duplicated.
 
 ### Session and transport
 
@@ -108,6 +110,20 @@ content.
   `GameRoom` class.
 - [ ] `npx wrangler deploy --dry-run` validates the Worker config without
   deploying.
+
+### Bathroom lobby
+
+- [ ] The M1.9 hub's disabled online block is replaced by Host / Join controls.
+- [ ] Host selects the cycle and owns the room code; the guest sees the host's
+  pack read-only.
+- [ ] Both clients load the selected pack and send ready before the host can
+  start.
+- [ ] The launch cinematic runs locally on both clients after the host's start;
+  the host then sends the initial run state.
+- [ ] Guest local save remains a memory/no-op slot; Continue is hidden for the
+  guest.
+- [ ] Host departure or session end returns both clients to the bathroom hub.
+- [ ] M4.0 marks only `anatomy-reflex` as online-ready; Silicon online is M4.1.
 
 ### Host authority and guest view
 
@@ -203,13 +219,14 @@ range.
 |---|---|---:|---|
 | 0 | Accept ADRs, freeze baseline, amend local-only contracts | 1 d | ADRs accepted; M4 plan authoritative |
 | 1 | Worker, DO, wrangler config, room code, roles, version handshake, heartbeat | 2 d | Host/guest connect; third rejected |
+| 1.5 | Bathroom lobby: host/join, pack lock, ready/start barrier, guest save | 1.5 d | Hub starts the online session |
 | 2 | Host snapshot publisher, guest remote world, guest UI mirror | 3 d | Guest renders host state without simulation |
 | 3 | Guest input relay, host merge, P1/P2 movement, tether/camera | 3 d | Both players move and interact |
 | 4 | Conversations, feedback/effects, gate/debrief views, host-only modals | 2 d | Co-op surfaces and attribution work |
 | 5 | Host save/evidence, guest memory save, security and rate limits | 2 d | Durable outcomes are host-only |
 | 6 | Reconnect, visibility, deployment/IaC check, two-browser E2E, playtest, docs | 3 d | Definition of done met |
 
-**Total:** roughly **12–18 focused days**. A **5–8 day M4.0 spike** is possible
+**Total:** roughly **14–20 focused days**. A **5–8 day M4.0 spike** is possible
 if gate/debrief stay host-only, prediction is omitted, and the verification is
 limited to a two-browser smoke. That spike is not the full milestone.
 
@@ -222,6 +239,7 @@ limited to a two-browser smoke. That spike is not the full milestone.
 | M1.75 effects and tile visuals | Host computes; guest mirrors effect/tile-visual plans; effects remain cosmetic and never collision. |
 | M1.8 materials, patterns, autotiling, variants | Both clients load the same pack/build. No textures or atlas data cross the wire. Host tile visuals layer on the material base. |
 | M1.8 UI material/pattern parity | Guest UI uses host `RuntimeSnapshot` and its own local theme/CSS. Pattern animation remains local and reduced-motion-aware. |
+| M1.9 bathroom hub, pack catalog, per-pack saves | Host lobby uses the catalog and host-owned pack. Guest save is a memory/no-op slot. Launch is local; the host sends the initial run after start. |
 | M2 six room puzzles and Silicon | M4.0 ships `03-nerve-forest` only. Session state is level-scoped; M4.1 extends to the full pack. No new puzzle types. |
 | M2 multi-level transitions | Host authority; guest follows host `levelId`/`roomId`; guest rebuilds its scene through the existing level-change port. |
 | M2 side travel and map | Host-owned in M4.0; guest sees host map; guest-initiated travel is deferred. |

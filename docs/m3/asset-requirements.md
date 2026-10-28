@@ -117,6 +117,12 @@ Until the M2 pack is frozen:
 > online play. See [`../m4/README.md`](../m4/README.md) and
 > [`../adr-online/0052-composition-with-planned-milestones.md`](../adr-online/0052-composition-with-planned-milestones.md).
 
+> **M1.9 bathroom hub dependency.** The bathroom hub is a separate content root
+> with its own IDs and placeholder manifests (`public/hub/bathroom/`). Those
+> assets are **not** part of this 20-image M3 scope. Final hub art belongs to a
+> small M3.5 pass; the hub ships with coherent placeholders in the meantime. See
+> [`../m1.9/README.md`](../m1.9/README.md).
+
 ---
 
 ## 3. Runtime constraints that shape the art

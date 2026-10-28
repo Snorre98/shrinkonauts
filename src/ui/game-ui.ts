@@ -39,6 +39,7 @@ export interface GameUiCallbacks {
   onDebriefFinish(): void;
   onExport(): void;
   onNewRun(): void;
+  onExitToHub(): void;
 }
 
 export interface GameUiOptions {
@@ -709,6 +710,7 @@ export function mountGameUi(
         callbacks.onExport(),
       ),
       button("Play again", "button", () => callbacks.onNewRun()),
+      button("Leave to bathroom", "button", () => callbacks.onExitToHub()),
     );
     body.append(actions);
     node.dataset.autofocus = "true";
@@ -796,6 +798,7 @@ export function mountGameUi(
         ? [button("Reset puzzle", "button", () => callbacks.onResetPuzzle())]
         : []),
       button("Restart level", "button", () => callbacks.onNewRun()),
+      button("Leave to bathroom", "button", () => callbacks.onExitToHub()),
     );
     body.append(actions);
     node.dataset.autofocus = "true";

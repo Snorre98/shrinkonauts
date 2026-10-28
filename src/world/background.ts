@@ -1,7 +1,6 @@
 import Phaser from "phaser";
 import type { AssetsModule, ResolvedAsset } from "../assets";
-import type { RoomBackgroundLayer, RoomDocument, ThemeDocument } from "../pack";
-import { roomPixelHeight, roomPixelWidth } from "./simulation";
+import type { RoomBackgroundLayer, ThemeDocument } from "../pack";
 import { resolveTexture } from "./textures";
 
 interface ImageLayerView {
@@ -60,13 +59,15 @@ export class LayeredBackground {
 
   constructor(
     scene: Phaser.Scene,
-    room: RoomDocument,
+    layers: readonly RoomBackgroundLayer[],
+    roomWidth: number,
+    roomHeight: number,
     theme: ThemeDocument,
     assets: AssetsModule,
   ) {
     const camera = scene.cameras.main;
 
-    for (const layer of room.background.layers) {
+    for (const layer of layers) {
       const asset: ResolvedAsset = assets.image(layer.assetId);
       const key = resolveTexture(scene, asset, theme.fonts.ui);
       if (!key) {
@@ -115,8 +116,6 @@ export class LayeredBackground {
 
       const size = textureSize(scene, key);
       if (size.width > 0 && size.height > 0) {
-        const roomWidth = roomPixelWidth(room);
-        const roomHeight = roomPixelHeight(room);
         const coverScale = Math.max(
           roomWidth / size.width,
           roomHeight / size.height,
