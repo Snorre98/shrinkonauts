@@ -44,6 +44,12 @@ enforce:
 - **Schemas move by minor version:** puzzle 1.1, level 1.1, run 2.1. Old content
   and saves default to old behavior.
 
+## Field reports
+
+- [`endplate-ferry-feedback-and-softlock.md`](endplate-ferry-feedback-and-softlock.md)
+  — 2026-10-28 analysis of a reachable Endplate Ferry deadlock, its three
+  engine causes, the missing puzzle feedback, and a fix plan with tests.
+
 ## Reading order
 
 1. [`architecture.md`](architecture.md) — arc42 + C4, quality goals, runtime
