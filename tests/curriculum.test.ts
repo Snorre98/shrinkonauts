@@ -11,7 +11,7 @@ import {
 } from "../src/curriculum";
 
 const SYLLABUS_URL = new URL(
-  "../docs/shrinkonauts/base-game/syllabi/anatomy-reflex.json",
+  "../public/syllabi/anatomy-reflex.json",
   import.meta.url,
 );
 
@@ -44,20 +44,32 @@ describe("curriculum", () => {
     const state = createCurriculum();
     recordEvent(
       state,
-      { type: "gate_solved", gateId: "gate-nerve-01" },
+      { type: "puzzle_solved", puzzleId: "puzzle-node-run" },
       { at: "2026-10-26T10:00:00.000Z" },
     );
     recordEvent(
       state,
-      { type: "gate_solved", gateId: "gate-other" },
+      { type: "puzzle_solved", puzzleId: "puzzle-endplate-ferry" },
+      { at: "2026-10-26T10:00:30.000Z" },
+    );
+    recordEvent(
+      state,
+      { type: "debrief_answered", promptId: "prompt-obj-2" },
+      { at: "2026-10-26T10:00:45.000Z" },
+    );
+    recordEvent(
+      state,
+      { type: "puzzle_solved", puzzleId: "puzzle-other" },
       { at: "2026-10-26T10:01:00.000Z" },
     );
 
     const progress = evidenceForObjective(syllabus, state, "OBJ-2");
     expect(progress.requiredMet).toBe(true);
-    expect(progress.evidenceCount).toBe(1);
+    expect(progress.evidenceCount).toBe(3);
     expect(progress.rules[0]?.matchedEvents).toHaveLength(1);
-    expect(progress.rules[0]?.matchedEvents[0]?.gateId).toBe("gate-nerve-01");
+    expect(progress.rules[0]?.matchedEvents[0]?.puzzleId).toBe(
+      "puzzle-node-run",
+    );
   });
 
   it("reports missing required evidence and builds debrief prompts", () => {
@@ -75,12 +87,18 @@ describe("curriculum", () => {
     const state = createCurriculum();
     recordEvent(
       state,
-      {
-        type: "gate_solved",
-        gateId: "gate-nerve-01",
-        objectiveId: "OBJ-2",
-      },
+      { type: "puzzle_solved", puzzleId: "puzzle-node-run" },
       { at: "2026-10-26T10:00:00.000Z" },
+    );
+    recordEvent(
+      state,
+      { type: "puzzle_solved", puzzleId: "puzzle-endplate-ferry" },
+      { at: "2026-10-26T10:01:00.000Z" },
+    );
+    recordEvent(
+      state,
+      { type: "debrief_answered", promptId: "prompt-obj-2" },
+      { at: "2026-10-26T10:02:00.000Z" },
     );
 
     const exported = exportEvidence(state, {
@@ -94,9 +112,9 @@ describe("curriculum", () => {
 
     expect(exported.schemaVersion).toBe("1.0");
     expect(exported.mode).toBe("co-op");
-    expect(exported.events).toHaveLength(1);
+    expect(exported.events).toHaveLength(3);
     expect(exported.objectives.find((item) => item.id === "OBJ-2")).toMatchObject(
-      { requiredMet: true, evidenceIds: ["EV-2"] },
+      { requiredMet: true, evidenceIds: ["EV-2", "EV-7", "EV-8"] },
     );
     expect(JSON.stringify(exported)).not.toMatch(/@|name|student/i);
   });
