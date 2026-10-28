@@ -111,6 +111,12 @@ Until the M2 pack is frozen:
 > material patterns until the M1.8 scope is accepted and this inventory is
 > re-baselined against the material model.
 
+> **M4 online co-op dependency (proposed).** M4 adds no new M3 asset IDs. Both
+> host and guest load the same static manifest; audio remains local; capture
+> mode remains local-only. Do not add per-client art or streamed textures for
+> online play. See [`../m4/README.md`](../m4/README.md) and
+> [`../adr-online/0052-composition-with-planned-milestones.md`](../adr-online/0052-composition-with-planned-milestones.md).
+
 ---
 
 ## 3. Runtime constraints that shape the art
@@ -941,6 +947,7 @@ Do not invent new prefixes without updating the asset contract.
 | Date | Change |
 |---|---|
 | 2026-10-27 | Initial M3 asset requirements, style bible, Ludo prompt pack, and scope contract. |
+| 2026-10-28 | Cross-link the proposed M4 online co-op boundary; M4 adds no M3 asset IDs. |
 
 ---
 

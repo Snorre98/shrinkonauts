@@ -260,8 +260,18 @@ affected puzzle rules must be rechecked before implementation.
 - It does not claim full nervous-system, skeletal, muscular, or hardware
   coverage.
 
-## 11. Change log
+## 11. Relationship to M4 online co-op (proposed)
+
+M4 consumes the frozen M2 content; it does not change any puzzle rule, gate
+type, verb, entity behaviour, UI surface, or save field. The online session is
+host-authoritative and level-scoped. M4.0 runs the `03-nerve-forest` Node Run
+online; the full pack is M4.1. See [`../../m4/README.md`](../../m4/README.md)
+and
+[`../../adr-online/0052-composition-with-planned-milestones.md`](../../adr-online/0052-composition-with-planned-milestones.md).
+
+## 12. Change log
 
 | Date | Change |
 |---|---|
 | 2026-10-27 | Initial M2 nervous-system puzzle design package. |
+| 2026-10-28 | Cross-link the proposed M4 online co-op boundary; no content change. |
