@@ -1,6 +1,6 @@
 # M1.75 — Feedback, Co-op Attribution, and Effect Composition
 
-**Status:** accepted; Phase 0 complete, Phase 1 complete, Phase 2 complete, Phases 3–8 planned
+**Status:** accepted; Phase 0 complete, Phase 1 complete, Phase 2 complete, Phase 3 complete, Phases 4–8 planned
 **Scope:** the feedback/effect layer between the M1.5 puzzle foundation and the
 next content/engine milestone.
 **Source decisions:** [ADR-0009–0013](../puzzle-engine/adr/README.md)
@@ -13,7 +13,8 @@ next content/engine milestone.
 | 0 | Accept ADRs and capture the softlock baseline | Complete |
 | 1 | Correctness gate | Complete (`464ca63` + stable-state reachability) |
 | 2 | Generic ECS kernel | Complete (`src/ecs/`, `tests/ecs.test.ts`) |
-| 3–8 | Feedback, surfaces, conversations, effects, content, validation | Planned |
+| 3 | Feedback domain | Complete (`src/feedback/`, feedback tests) |
+| 4–8 | Surfaces, conversations, effects, content, validation | Planned |
 
 ## 1. Why M1.75 exists
 
@@ -55,12 +56,12 @@ feedback architecture works on real puzzles, not to expand the level count.
 ### Engine and runtime
 
 - [x] `src/ecs/` — generic ECS kernel with deterministic tick/frame systems.
-- [ ] `src/feedback/` — feedback components, facts, director, descriptors,
+- [x] `src/feedback/` — feedback components, facts, director, descriptors,
   lexicon, beats, and effect plans.
 - [ ] `GameRuntime` emits facts instead of hardcoded toast strings.
-- [ ] Every puzzle event type is either mapped to feedback or explicitly
+- [x] Every puzzle event type is either mapped to feedback or explicitly
   silenced.
-- [ ] Persistent surfaces are rebuilt from state; transient cues are sequenced
+- [x] Persistent surfaces are rebuilt from state; transient cues are sequenced
   and deduplicated.
 - [ ] `RuntimeSnapshot.feedback` carries surfaces and beats; the world drains
   effects through a narrow port.

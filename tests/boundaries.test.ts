@@ -107,12 +107,32 @@ describe("module boundaries", () => {
     );
   });
 
+  it("includes the feedback domain in the dependency walk", () => {
+    const files = sourceFiles(
+      fileURLToPath(new URL("../src/feedback/", import.meta.url)),
+    ).map(relativeToSrc);
+
+    expect(files).toEqual(
+      expect.arrayContaining([
+        "feedback/beats.ts",
+        "feedback/components.ts",
+        "feedback/descriptors.ts",
+        "feedback/director.ts",
+        "feedback/facts.ts",
+        "feedback/index.ts",
+        "feedback/lexicon.ts",
+        "feedback/types.ts",
+      ]),
+    );
+  });
+
   it("keeps module dependencies acyclic and directionally ordered", () => {
     // ADR-0002: domain modules never depend on adapters, and adapters only
     // depend downwards. A module may always import from itself.
     const allowed: Record<string, readonly string[]> = {
       core: [],
       ecs: ["core"],
+      feedback: ["core", "ecs", "puzzle"],
       syllabus: ["core"],
       assets: ["core"],
       puzzle: [],
