@@ -6,8 +6,14 @@ import {
   type AssetManifest,
   type ManifestAssetEntry,
 } from "../src/assets";
+import { NODE_EFFECT_SOCKETS, effectPresetIds } from "../src/feedback";
 import { parseRoom, parseTheme, validatePack } from "../src/pack";
-import type { RoomDocument, ThemeDocument } from "../src/pack";
+import type {
+  FeedbackValidationVocabulary,
+  PackContent,
+  RoomDocument,
+  ThemeDocument,
+} from "../src/pack";
 import type { PuzzleDocument } from "../src/puzzle";
 import { loadContent, packDirectory, primaryRoom } from "../scripts/content-loader";
 
@@ -61,6 +67,11 @@ const theme = (() => {
 
 const finalManifest = readManifest("assets.final.json");
 const fixtureManifest = readManifest("assets.fixture.json");
+const feedbackVocabulary: FeedbackValidationVocabulary = {
+  effectPresetIds: effectPresetIds(),
+  tilePathPreset: "fx.tile.path",
+  nodeEffectSockets: NODE_EFFECT_SOCKETS,
+};
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -256,7 +267,6 @@ function packManifest(file: string): AssetManifest {
 
 describe("puzzle gate recovery warnings", () => {
   const content = loadContent(packDirectory("anatomy-reflex"));
-  const room = primaryRoom(content);
   const final = packManifest(
     content.pack.assetManifests.final ?? "assets.final.json",
   );
@@ -264,20 +274,208 @@ describe("puzzle gate recovery warnings", () => {
     content.pack.assetManifests.placeholder ?? "assets.placeholder.json",
   );
 
-  function validateWithEndplate(mutate: (puzzle: PuzzleDocument) => void) {
+  function validateAnatomy(
+    mutate: (copy: PackContent) => void = () => {},
+    vocabulary: FeedbackValidationVocabulary | null = feedbackVocabulary,
+  ) {
     const copy = structuredClone(content);
-    const puzzle = copy.puzzles["puzzle-endplate-ferry"];
-    if (!puzzle) throw new Error("endplate puzzle missing");
-    mutate(puzzle);
+    mutate(copy);
     return validatePack({
-      room,
-      theme: content.theme,
+      room: primaryRoom(copy),
+      theme: copy.theme,
       finalManifest: final,
       packManifest: placeholder,
       fileExists,
       content: copy,
+      ...(vocabulary ? { feedbackVocabulary: vocabulary } : {}),
     });
   }
+
+  function validateWithEndplate(mutate: (puzzle: PuzzleDocument) => void) {
+    return validateAnatomy((copy) => {
+      const puzzle = copy.puzzles["puzzle-endplate-ferry"];
+      if (!puzzle) throw new Error("endplate puzzle missing");
+      mutate(puzzle);
+    });
+  }
+
+  function nodesFor(
+    copy: PackContent,
+    levelId: string,
+    puzzleId: string,
+  ): NonNullable<
+    NonNullable<
+      NonNullable<PackContent["levels"][number]["feedback"]>["puzzles"]
+    >[string]["nodes"]
+  > {
+    const level = copy.levels.find((item) => item.id === levelId);
+    const nodes = level?.feedback?.puzzles?.[puzzleId]?.nodes;
+    if (!nodes) throw new Error(`${levelId}/${puzzleId} feedback nodes missing`);
+    return nodes;
+  }
+
+  it("accepts the authored feedback with the injected vocabulary", () => {
+    const result = validateAnatomy();
+    expect(result.issues).toEqual([]);
+    expect(
+      result.warnings.filter(
+        (warning) =>
+          warning.includes("authored label") ||
+          warning.includes("conventionally emits") ||
+          warning.includes("tileTarget"),
+      ),
+    ).toEqual([]);
+  });
+
+  it("requires a feedback vocabulary when content authors feedback", () => {
+    const result = validateAnatomy(undefined, null);
+    expect(result.ok).toBe(false);
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "FEEDBACK_VOCABULARY_MISSING",
+    );
+  });
+
+  it("rejects feedback for a puzzle the level does not author", () => {
+    const result = validateAnatomy((copy) => {
+      const level = copy.levels.find((item) => item.id === "03-nerve-forest");
+      const puzzles = level?.feedback?.puzzles;
+      if (!puzzles) throw new Error("03 feedback missing");
+      puzzles["puzzle-missing"] = {};
+    });
+
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "FEEDBACK_REFERENCE_MISSING",
+    );
+  });
+
+  it("rejects beats and node overrides that reference missing nodes", () => {
+    const beats = validateAnatomy((copy) => {
+      const level = copy.levels.find((item) => item.id === "03-nerve-forest");
+      const beat = level?.feedback?.puzzles?.["puzzle-node-run"]?.beats?.[0];
+      if (!beat) throw new Error("03 beat missing");
+      beat.nodes.push("missing-node");
+    });
+    const nodes = validateAnatomy((copy) => {
+      nodesFor(copy, "03-nerve-forest", "puzzle-node-run")["missing-node"] = {
+        label: "Missing",
+      };
+    });
+
+    expect(beats.issues.map((issue) => issue.code)).toContain(
+      "FEEDBACK_REFERENCE_MISSING",
+    );
+    expect(nodes.issues.map((issue) => issue.code)).toContain(
+      "FEEDBACK_REFERENCE_MISSING",
+    );
+  });
+
+  it("rejects an unknown effect preset", () => {
+    const result = validateAnatomy((copy) => {
+      const nodes = nodesFor(copy, "04-muscle-effector", "puzzle-endplate-ferry");
+      const gate = nodes["muscle-gate"];
+      if (!gate) throw new Error("muscle-gate override missing");
+      gate.effectPreset = "fx.missing";
+    });
+
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "FEEDBACK_EFFECT_UNKNOWN",
+    );
+  });
+
+  it("rejects invalid tile layers and out-of-bounds regions", () => {
+    const result = validateAnatomy((copy) => {
+      const nodes = nodesFor(copy, "03-nerve-forest", "puzzle-node-run");
+      const relay = nodes["spike-relay"];
+      if (!relay?.tileTarget || relay.tileTarget.kind !== "tileRegion") {
+        throw new Error("spike-relay tile target missing");
+      }
+      relay.tileTarget.layer = "missing-layer";
+      relay.tileTarget.x2 = 999;
+    });
+
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "FEEDBACK_TILE_INVALID",
+    );
+  });
+
+  it("requires a tile target for the tile-path preset", () => {
+    const result = validateAnatomy((copy) => {
+      const nodes = nodesFor(copy, "03-nerve-forest", "puzzle-node-run");
+      const relay = nodes["spike-relay"];
+      if (!relay) throw new Error("spike-relay override missing");
+      delete relay.tileTarget;
+    });
+
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "FEEDBACK_LAYOUT_INVALID",
+    );
+  });
+
+  it("warns when a tile target has no tile-path effect", () => {
+    const result = validateAnatomy((copy) => {
+      const nodes = nodesFor(copy, "04-muscle-effector", "puzzle-endplate-ferry");
+      const gate = nodes["muscle-gate"];
+      if (!gate) throw new Error("muscle-gate override missing");
+      gate.tileTarget = {
+        kind: "tile",
+        layer: "tiles",
+        x: 4,
+        y: 5,
+      };
+    });
+
+    expect(result.warnings.some((warning) => warning.includes("tileTarget"))).toBe(
+      true,
+    );
+  });
+
+  it("warns about empty hints, missing labels, and missing conventional sockets", () => {
+    const emptyHints = validateAnatomy((copy) => {
+      const puzzle = copy.puzzles["puzzle-node-run"];
+      if (!puzzle) throw new Error("node-run puzzle missing");
+      puzzle.hints = [];
+    });
+    const missingLabel = validateAnatomy((copy) => {
+      const nodes = nodesFor(copy, "03-nerve-forest", "puzzle-node-run");
+      const input = nodes["input-a"];
+      if (!input) throw new Error("input-a override missing");
+      delete input.label;
+    });
+    const missingSocket = validateAnatomy((copy) => {
+      const room = copy.rooms["room-muscle-effector"];
+      const terminal = room?.entities?.find(
+        (entity) => entity.id === "motor-terminal",
+      );
+      if (!terminal?.components?.anchors) {
+        throw new Error("motor-terminal anchors missing");
+      }
+      delete terminal.components.anchors.muzzle;
+    });
+
+    expect(emptyHints.warnings.some((warning) => warning.includes("no hints"))).toBe(
+      true,
+    );
+    expect(
+      missingLabel.warnings.some((warning) => warning.includes("authored label")),
+    ).toBe(true);
+    expect(
+      missingSocket.warnings.some((warning) =>
+        warning.includes('socket "muzzle"'),
+      ),
+    ).toBe(true);
+  });
+
+  it("reports unknown theme cue names as errors", () => {
+    const result = validateAnatomy((copy) => {
+      if (!copy.theme.audio?.cues) throw new Error("theme cues missing");
+      copy.theme.audio.cues.mystery = "audio.cue.jump";
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "AUDIO_CUE_UNKNOWN",
+    );
+  });
 
   it("does not warn about the fixed Endplate Ferry gate", () => {
     const result = validateWithEndplate(() => {});

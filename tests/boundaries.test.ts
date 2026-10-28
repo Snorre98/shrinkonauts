@@ -128,7 +128,24 @@ describe("module boundaries", () => {
     );
   });
 
-  it("keeps feedback free of adapters and world state", () => {
+  it("keeps the ECS kernel dependent only on core", () => {
+    const ecsFiles = sourceFiles(
+      fileURLToPath(new URL("../src/ecs/", import.meta.url)),
+    );
+    for (const file of ecsFiles) {
+      for (const match of read(file).matchAll(/from\s+["'](\.[^"']+)["']/g)) {
+        const specifier = match[1] ?? "";
+        const target = specifier.startsWith("./")
+          ? "ecs"
+          : (specifier.replace(/^(\.\.\/)+/, "").split("/")[0] ?? "");
+        expect(target, `${relativeToSrc(file)} -> ${specifier}`).toMatch(
+          /^(ecs|core)$/,
+        );
+      }
+    }
+  });
+
+  it("keeps feedback free of adapters, pack, and world state", () => {
     const feedbackFiles = sourceFiles(
       fileURLToPath(new URL("../src/feedback/", import.meta.url)),
     );
@@ -148,6 +165,15 @@ describe("module boundaries", () => {
           `${relativeToSrc(file)} must not import ${target}`,
         ).not.toMatch(new RegExp(`from\\s+["']\\.\\./${target}(?:/[^"']*)?["']`));
       }
+      for (const match of source.matchAll(/from\s+["'](\.[^"']+)["']/g)) {
+        const specifier = match[1] ?? "";
+        const target = specifier.startsWith("./")
+          ? "feedback"
+          : (specifier.replace(/^(\.\.\/)+/, "").split("/")[0] ?? "");
+        expect(target, `${relativeToSrc(file)} -> ${specifier}`).toMatch(
+          /^(feedback|core|ecs|puzzle)$/,
+        );
+      }
     }
   });
 
@@ -161,6 +187,36 @@ describe("module boundaries", () => {
         `${relativeToSrc(file)} must not import feedback`,
       ).not.toMatch(/from\s+["']\.\.\/feedback(?:\/[^"']*)?["']/);
     }
+  });
+
+  it("keeps feedback out of the pack module", () => {
+    const packFiles = sourceFiles(
+      fileURLToPath(new URL("../src/pack/", import.meta.url)),
+    );
+    for (const file of packFiles) {
+      expect(
+        read(file),
+        `${relativeToSrc(file)} must not import feedback`,
+      ).not.toMatch(/from\s+["']\.\.\/feedback(?:\/[^"']*)?["']/);
+    }
+  });
+
+  it("lets UI consume feedback but not puzzle internals", () => {
+    const uiFiles = sourceFiles(
+      fileURLToPath(new URL("../src/ui/", import.meta.url)),
+    );
+    let feedbackImports = 0;
+    for (const file of uiFiles) {
+      const source = read(file);
+      expect(
+        source,
+        `${relativeToSrc(file)} must not import puzzle internals`,
+      ).not.toMatch(/from\s+["']\.\.\/puzzle(?:\/[^"']*)?["']/);
+      if (/from\s+["']\.\.\/feedback(?:\/[^"']*)?["']/.test(source)) {
+        feedbackImports += 1;
+      }
+    }
+    expect(feedbackImports).toBeGreaterThan(0);
   });
 
   it("keeps module dependencies acyclic and directionally ordered", () => {
@@ -179,7 +235,7 @@ describe("module boundaries", () => {
       curriculum: ["core", "pack", "syllabus"],
       save: ["curriculum", "progression", "puzzle"],
       audio: ["assets", "core"],
-      ui: ["assets", "core", "curriculum", "feedback", "pack", "puzzle"],
+      ui: ["assets", "core", "curriculum", "feedback", "pack"],
       world: ["assets", "core", "pack", "puzzle"],
       game: [
         "assets",

@@ -1,6 +1,9 @@
 # language: en
 # Source: ADR-0002
 Feature: Physical puzzle gates
+  Implementation status: deferred. Logical gate state exists, but physical gate
+  bodies are not implemented in this branch.
+
   A puzzle gate blocks only when it is closed and its room entity authors a body.
   Normative per ADR-0002. A gate is valid when its logical state and body state
   agree after every entry, tick, reset, restore, and return.

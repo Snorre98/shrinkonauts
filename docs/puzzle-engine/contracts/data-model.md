@@ -1,128 +1,123 @@
 # Data model contract
 
 Precise spec for the durable and content formats changed by the engine upgrade.
-Source ADRs: ADR-0002–0008.
+Source ADRs: ADR-0002–0013. The implementation status table in
+[`architecture.md`](../architecture.md) is authoritative where an accepted ADR
+target is deferred.
 
 ## 1. Puzzle document 1.1
 
 The document remains a declarative typed dataflow. New fields are optional;
 existing 1.0 documents parse and behave as before.
 
-### 1.1 New / changed nodes
+### 1.1 Implemented nodes and links
 
-#### `prop`
+| Item | Status | Notes |
+|---|---|---|
+| `prop` nodes | Implemented | `free`, `carried`, `placed`, `docked`, `cleared` |
+| `gate`, `timer`, `counter`, `zone`, `trigger`, `relay`, `plate`, `receptor`, `pulseSource` | Implemented | Existing typed nodes |
+| `clear` link | Implemented | Any non-cleared prop becomes `cleared`; emits `propCleared` |
+| `unlock` link | Deferred | Accepted ADR-0004 target |
+| `requires` / `message` on links | Deferred | Accepted ADR-0005 target |
+| `propReleased` / `linkBlocked` events | Deferred | Accepted ADR-0004/0005 target |
+| `locked` prop state | Deferred | Accepted ADR-0004 target |
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `id` | string | yes | node ID |
-| `type` | `"prop"` | yes | |
-| `entityId` | string | yes | room `prop` entity |
-| `tags` | string[] | yes | non-empty |
-| `shape` | string | yes | non-empty |
-| `initial` | `"free" \| "locked"` | no | default `free`; applied on level entry |
-| `spawn` | `{x,y}` | no | headless replay spawn |
+Implemented prop states:
 
-#### `gate`
-
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `id` | string | yes | node ID |
-| `type` | `"gate"` | yes | |
-| `entityId` | string | no | room `puzzleGate` entity |
-| `initial` | `"closed" \| "open"` | no | default `closed` |
-| `latched` | boolean | no | default `true` |
-
-The gate's physical body and sprites are room-entity data, not puzzle-document
-data.
-
-### 1.2 New / changed links
-
-```json
-{
-  "from": "pulse-terminal",
-  "to": "nicotinic-receptor",
-  "type": "pulse",
-  "requires": "ca-gate",
-  "message": "The terminal has not released yet. Trigger the terminal first."
-}
+```text
+free | carried | placed | docked | cleared
 ```
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `from` | string | yes | source node |
-| `to` | string | yes | target node |
-| `type` | link type | yes | existing plus `unlock`, `clear` |
-| `requires` | string | no | node ID; link applies only when that node is active |
-| `message` | string | no | non-empty authored feedback for a blocked link |
+`cleared` is hidden/non-collidable and reset restores the authored state. A
+cleared prop has no body. `locked` is not part of the current type or parser.
 
-`requires` is legal only on event links: `pulse`, `press`, `release` (the
-plate-release event link), `enter`, `exit`, `increment`, `start`, `stop`,
-`reset`, `elapsed`, `reached`, `bind`, `unlock`, `clear`. It is illegal on
-`activate`, `deactivate`, `open`, `close`. The referenced node must be a
-condition node: `gate`, `timer`, `counter`, `relay`, `receptor`, `plate`,
-`zone`, or `trigger`; `prop` and `pulseSource` are rejected.
-The validator rejects unknown nodes and empty messages.
+Implemented link/event behavior:
 
-### 1.3 Link actions `unlock` and `clear`
+- a `clear` link changes any non-cleared prop to `cleared`;
+- a second `clear` is a no-op and emits no duplicate event;
+- `propCleared` carries `nodeId` and `propId`;
+- reset restores the prop to its authored state.
 
-| Link | Source | Target | Effect |
-|---|---|---|---|
-| `unlock` | gate, relay, timer, receptor, trigger, plate, zone, counter | `prop` | `locked` → `free`; emits `propReleased`; no-op otherwise |
-| `clear` | gate, relay, timer, receptor, trigger, plate, zone, counter | `prop` | any non-cleared → `cleared`; emits `propCleared`; no-op if already cleared |
+Deferred conditional-link semantics:
 
-### 1.4 Events
-
-| Event | Payload | Meaning |
-|---|---|---|
-| `propReleased` | `nodeId`, `propId` | Locked prop became free |
-| `propCleared` | `nodeId`, `propId` | Prop became cleared |
-| `linkBlocked` | `nodeId`, `to`, `type`, `requires`, `message?` | Conditional link skipped |
-
-Existing event types are unchanged.
-
-### 1.5 Prop run states
-
-`"locked" | "free" | "carried" | "placed" | "docked" | "cleared"`.
-
-`locked` is visible/static/non-pickable. `cleared` is hidden/non-collidable.
-`free`/`carried`/`placed`/`docked` retain their existing meanings.
-
-### 1.6 Invariants
-
-- `unlock` only affects a `locked` prop.
-- `clear` affects any state except `cleared`.
-- A `requires` condition is evaluated against `nodeState(requires).active`.
-- A blocked link never mutates its target or emits a normal state event.
-- A pulse blocked by `requires` is consumed; cooldown applies.
-- `PuzzleRuntime` remains deterministic and Phaser/Matter-free.
+- `requires` would apply only when the referenced node is active;
+- `linkBlocked` would be emitted once per blocked occurrence;
+- a blocked link would not mutate its target;
+- a blocked pulse would consume its cooldown;
+- authored `message` would be surfaced through feedback, not evidence.
 
 ## 2. Level document 1.1
 
-### 2.1 New fields
+The current schema accepts `1.x`. Levels `03-nerve-forest` and
+`04-muscle-effector` declare `1.1` because they use the feedback block. A 1.0
+level without feedback remains valid and uses capability defaults.
+
+### 2.1 Implemented fields
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `debrief` | `{ prompts: DebriefPrompt[] }` | no | overrides syllabus-derived prompts |
-| `kind` | `"main" \| "side"` | no | default `main` |
-| `nextLevelIds` | string[] | no | main progression only; side levels use `[]` |
+| `puzzleIds` | string[] | no | authored puzzles; `feedback.puzzles` keys must be in this list |
+| `nextLevelIds` | string[] | no | next authored main-path levels |
+| `coop` | `{ supported: boolean; notes?: string }` | yes | co-op metadata |
+| `authoring` | object | no | level spec/playtest notes |
+| `feedback` | `LevelFeedback` | no | optional labels, beats, effects, tile targets |
+| `unlocks` | `LevelUnlock[]` | yes | parsed content metadata; progression use is deferred |
 
-`DebriefPrompt`:
+### 2.2 Feedback block
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `id` | string | yes | stable prompt ID |
-| `objectiveId` | string | yes | must be in `syllabusObjectiveIds` |
-| `prompt` | string | yes | non-empty |
-| `successCriterion` | string | yes | non-empty |
+```ts
+interface LevelFeedback {
+  puzzles?: Record<string, LevelFeedbackPuzzle>;
+}
 
-### 2.2 Validation
+interface LevelFeedbackPuzzle {
+  beats?: Array<{ id: string; label: string; nodes: string[] }>;
+  nodes?: Record<string, LevelFeedbackNodeOverride>;
+}
 
-- Prompt IDs are unique within the pack.
-- `debrief_answered` level evidence rules must filter one of the override IDs
-  when `debrief.prompts` exists.
-- A `side` level has no `nextLevelIds`, is not `pack.endLevelId`, and has a map
-  edge from a revealed main level.
-- A level without `debrief` falls back to `prompt-${objectiveId.toLowerCase()}`.
+interface LevelFeedbackNodeOverride {
+  label?: string;
+  text?: string;
+  effectPreset?: string;
+  tileTarget?: LevelTileTarget;
+}
+
+type LevelTileTarget =
+  | { kind: "tile"; layer: string; x: number; y: number }
+  | {
+      kind: "tileRegion";
+      layer: string;
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    };
+```
+
+Rules:
+
+- every `feedback.puzzles` key is one of the level's authored `puzzleIds`;
+- beat and node-override IDs must exist in the referenced puzzle;
+- `effectPreset` must be a known named preset from the injected vocabulary;
+- the tile layer must exist on the level room, and tile coordinates/regions must
+  be ordered and inside the room;
+- `fx.tile.path` requires a `tileTarget`; a tile target with another preset is a
+  warning and is ignored;
+- labels are optional on nodes without an override; an override without a label
+  is a warning and uses the generated node label;
+- conventional `muzzle`/`mouth` sockets are warnings when absent; `center` is
+  the silent fallback;
+- a puzzle with no hints produces a warning, not a validation failure.
+
+Feedback is ephemeral: it is never written to a save. Sticky surfaces are rebuilt
+from puzzle/world state after restore.
+
+### 2.3 Deferred level fields
+
+The accepted target also described `kind: "main" | "side"` and
+`debrief: { prompts }`. Neither is present in the current parser. The current
+runtime derives debrief prompts from the syllabus and transitions directly to
+the next authored level.
 
 ## 3. Room document additions
 
@@ -130,83 +125,94 @@ Existing event types are unchanged.
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `components.body` | `{ width:number, height:number, dynamic:false }` | no | opt-in physical collision; static |
 | `components.gate.gateId` | string | yes for a puzzle gate | maps to a puzzle `gate` node |
-| `components.gate.openSprite` | asset ID | no | optional open texture |
-| `components.gate.closedSprite` | asset ID | no | optional closed texture |
+| `components.anchors` | Record<string, {x,y,direction?}> | no | effect/surface sockets; defaults include centre/top/bottom/left/right |
+| `components.body` | body component | no | parsed; physical puzzle-gate-body synchronization is deferred |
+| `openSprite` / `closedSprite` | asset ID | no | deferred presentation target |
 
-If `body` is absent, the gate is visual-only. If sprite IDs are absent, the
-entity's `sprite` is used with a presentation fallback (ADR-0003).
+If `body` is absent, the gate is visual-only. Logical gate state is implemented;
+physical gate bodies and sprite-swap presentation remain deferred.
 
 ## 4. Run snapshot 2.1
 
-### 4.1 Added field
+### 4.1 Implemented fields
 
 ```ts
-interface RunSnapshot {
-  // existing fields unchanged
-  returnTo?: LevelRunSnapshot;
+interface ConversationSnapshot {
+  surfaceId: string;
+  dialogueId: string;
+  nodeId: string;
+  owner: PlayerId;
+  entityId: string;
 }
 
-interface LevelRunSnapshot {
+interface RunSnapshot {
+  schemaVersion: string; // 2.1
+  packId: string;
+  packVersion: string;
+  contentVersion: string;
   levelId: string;
   roomId: string;
   checkpointId: string | null;
+  progression: ProgressionSnapshot;
+  events: LearningEvent[];
   elapsed: number;
-  players: {
-    activeP2: boolean;
-    bodies: Record<"p1" | "p2", BodySnapshot>;
-  };
+  savedAt: string;
+  status: "playing" | "debrief" | "complete";
+  players: { activeP2: boolean; bodies: Record<"p1" | "p2", BodySnapshot> };
   world: {
     bodies: Record<string, BodySnapshot>;
     props: Record<string, PropSnapshot>;
     puzzles: Record<string, PuzzleRunState>;
   };
+  audio: { muted: boolean };
+  conversations?: ConversationSnapshot[];
+  /** Legacy single-dialogue save; migrated to one P1-owned conversation. */
+  dialogue?: { dialogueId: string; nodeId: string };
 }
 ```
 
-`returnTo` is present only while the current level is a side excursion. The run
-level fields (`levelId`, `roomId`, `checkpointId`, `players`, `world`) describe
-the current side level. Progression, curriculum events, audio, and settings
-remain run-level.
+Rules:
 
-### 4.2 Prop snapshot
+- old 2.0 saves without `conversations` load;
+- a legacy `dialogue` field migrates to one P1-owned conversation;
+- malformed conversation snapshots reject the save structurally;
+- a missing entity/dialogue on restore closes the conversation with a recovery
+  cue;
+- feedback ECS state is never serialized.
 
-`PropSnapshot.state` accepts `locked` and `cleared` in addition to the existing
-states.
+`PropSnapshot.state` accepts `cleared` in addition to the existing states.
+`locked` is deferred.
 
-### 4.3 Invariants
+### 4.2 Deferred fields
 
-- `returnTo` is absent in a main level and after pack completion.
-- Entering a side level captures exactly one `returnTo`.
-- Returning restores the snapshot and clears `returnTo`.
-- Old 2.0 snapshots without `returnTo` load with no side excursion.
-- Old snapshots never contain `locked`/`cleared`; the parser accepts both old
-  and new values.
-- No gate or debrief-prompt state is duplicated in the save.
+`RunSnapshot.returnTo` and `LevelRunSnapshot` are accepted ADR-0007 targets but
+are not present in the current parser or runtime. No side-excursion state is
+saved.
 
-## 5. Syllabus evidence additions
+## 5. Syllabus evidence
 
-- `EV-9` (new): `debrief_answered` filtered by `prompt-obj-2-nmj`, required,
-  OBJ-2. This is the 04 NMJ teach-back.
-- 03 keeps EV-7 filtered by `prompt-obj-2`.
-- 05/Silicon may add their own prompt/evidence pairs later.
-- Prompt text lives in the level override; the syllabus owns the evidence rule
-  and weight.
+The syllabus owns evidence rules and weight. The current `04` level uses the
+syllabus-derived `prompt-obj-2`/`EV-7` teach-back. The proposed per-level
+`prompt-obj-2-nmj`/`EV-9` override is deferred with the level debrief override.
 
 ## 6. Versioning
 
-| Format | Version | Old input |
+| Format | Current version | Old input |
 |---|---|---|
 | Puzzle | 1.1 | 1.0 accepted; new fields absent |
-| Level | 1.1 | 1.0 accepted; `kind` main, no `debrief` |
-| Run | 2.1 | 2.0 accepted; no `returnTo`; old prop states |
+| Level | 1.1 | 1.0 accepted; feedback absent |
+| Run | 2.1 | 2.0 accepted; no conversations/legacy dialogue defaults |
+| Settings | 2.0 | separate storage slot |
 | Pack | content version bump on migration | ADR-0045 recovery |
 
 ## 7. Invariants
 
 - New fields are optional and default to old behavior.
-- New enum values are additive.
 - Invalid new values are schema errors, not silent coercions.
-- `puzzle` remains the only owner of logical gate/prop/condition state.
+- `puzzle` remains the only owner of logical puzzle state.
 - The save is a projection of runtime state, never a second puzzle graph.
+- Feedback surfaces, cues, effects, and ECS entities are ephemeral.
+- Effects and tile visuals never carry collision authority.
+- `clear`/`cleared` are implemented; `locked`/`unlock`/`requires`/`message`/
+  `linkBlocked` are deferred.

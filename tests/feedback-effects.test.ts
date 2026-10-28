@@ -11,8 +11,10 @@ import {
   EFFECT_PRESETS,
   createFeedbackDirector,
   effectPresetIds,
+  isPersistentStage,
   nodeEffectAnchor,
   nodeSurface,
+  persistentCancel,
   projectSignal,
   resolveEffectPreset,
   type AnchorRef,
@@ -138,6 +140,42 @@ describe("feedback effect vocabulary", () => {
       expect(plan?.actor, presetId).toBe("p1");
       expect(plan?.owner, presetId).toBe("p1");
       expect(plan?.accent, presetId).toBe("p1");
+    }
+  });
+
+  it("gives every persistent preset a cancellation policy", () => {
+    for (const presetId of effectPresetIds()) {
+      const plan = resolveEffectPreset(presetId, {
+        actor: "p1",
+        owner: "p1",
+        source: { kind: "entity", id: "source" },
+        target: { kind: "entity", id: "target" },
+        tileTarget: { kind: "tile", layer: "tiles", x: 2, y: 3 },
+      });
+      if (!plan) continue;
+      if (!plan.stages.some(isPersistentStage)) continue;
+      expect(
+        plan.cancel ?? persistentCancel(plan.stages),
+        presetId,
+      ).toBeDefined();
+    }
+  });
+
+  it("does not expose a collision-changing field on any preset", () => {
+    for (const presetId of effectPresetIds()) {
+      const plan = resolveEffectPreset(presetId, {
+        actor: "p1",
+        owner: "p1",
+        source: { kind: "entity", id: "source" },
+        target: { kind: "entity", id: "target" },
+        tileTarget: { kind: "tile", layer: "tiles", x: 2, y: 3 },
+      });
+      if (!plan) continue;
+      expect(plan, presetId).not.toHaveProperty("collision");
+      for (const stage of plan.stages) {
+        expect(stage, presetId).not.toHaveProperty("collision");
+        expect(stage.visual, presetId).not.toHaveProperty("collision");
+      }
     }
   });
 

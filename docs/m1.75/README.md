@@ -1,6 +1,6 @@
 # M1.75 — Feedback, Co-op Attribution, and Effect Composition
 
-**Status:** accepted; Phase 0 complete, Phase 1 complete, Phase 2 complete, Phase 3 complete, Phases 4–8 planned
+**Status:** implementation complete; automated validation complete; manual solo/co-op playtest pending
 **Scope:** the feedback/effect layer between the M1.5 puzzle foundation and the
 next content/engine milestone.
 **Source decisions:** [ADR-0009–0013](../puzzle-engine/adr/README.md)
@@ -14,7 +14,11 @@ next content/engine milestone.
 | 1 | Correctness gate | Complete (`464ca63` + stable-state reachability) |
 | 2 | Generic ECS kernel | Complete (`src/ecs/`, `tests/ecs.test.ts`) |
 | 3 | Feedback domain | Complete (`src/feedback/`, feedback tests) |
-| 4–8 | Surfaces, conversations, effects, content, validation | Planned |
+| 4 | Runtime integration, surfaces, input | Complete (`70e97e8`) |
+| 5 | Entity conversations | Complete (`70e97e8`) |
+| 6 | Effects and tile visuals | Complete (`fd66236`) |
+| 7 | 03/04 content migration | Complete (`8dac159`) |
+| 8 | Validation, accessibility, docs, playtest | Automated/docs complete; playtest pending |
 
 ## 1. Why M1.75 exists
 
@@ -58,43 +62,43 @@ feedback architecture works on real puzzles, not to expand the level count.
 - [x] `src/ecs/` — generic ECS kernel with deterministic tick/frame systems.
 - [x] `src/feedback/` — feedback components, facts, director, descriptors,
   lexicon, beats, and effect plans.
-- [ ] `GameRuntime` emits facts instead of hardcoded toast strings.
+- [x] `GameRuntime` emits facts instead of hardcoded toast strings.
 - [x] Every puzzle event type is either mapped to feedback or explicitly
   silenced.
 - [x] Persistent surfaces are rebuilt from state; transient cues are sequenced
   and deduplicated.
-- [ ] `RuntimeSnapshot.feedback` carries surfaces and beats; the world drains
+- [x] `RuntimeSnapshot.feedback` carries surfaces and beats; the world drains
   effects through a narrow port.
 
 ### Co-op feedback
 
-- [ ] Entity conversations are speech bubbles anchored to the entity.
-- [ ] Player-specific messages are captions anchored to the actor and follow the
+- [x] Entity conversations are speech bubbles anchored to the entity.
+- [x] Player-specific messages are captions anchored to the actor and follow the
   player for their TTL.
-- [ ] P1 and P2 can hold simultaneous surfaces without stealing each other's
+- [x] P1 and P2 can hold simultaneous surfaces without stealing each other's
   input.
-- [ ] Effects carry `actor`, `owner`, and `accent` attribution.
-- [ ] The global `dialogue` state and overlay are retired for entity
+- [x] Effects carry `actor`, `owner`, and `accent` attribution.
+- [x] The global `dialogue` state and overlay are retired for entity
   conversations.
 
 ### Effects
 
-- [ ] `EffectPlan` / `EffectStage` composition with closed operators.
-- [ ] Entity/player sockets, directions, rays, cones, segments, polylines, arcs,
+- [x] `EffectPlan` / `EffectStage` composition with closed operators.
+- [x] Entity/player sockets, directions, rays, cones, segments, polylines, arcs,
   and radial paths.
-- [ ] Tile/tile-region visual targets and revert rules.
-- [ ] Persistent effects cancel on source/target loss.
-- [ ] Tile effects never change collision.
-- [ ] Reduced motion removes effects without removing information.
+- [x] Tile/tile-region visual targets and revert rules.
+- [x] Persistent effects cancel on source/target loss.
+- [x] Tile effects never change collision.
+- [x] Reduced motion removes effects without removing information.
 
 ### Content and verification
 
-- [ ] 03 Node Run and 04 Endplate Ferry migrated to the feedback layer.
-- [ ] Ca²⁺ window, gate state, receptor occupancy, ACh clearance, and step
+- [x] 03 Node Run and 04 Endplate Ferry migrated to the feedback layer.
+- [x] Ca²⁺ window, gate state, receptor occupancy, ACh clearance, and step
   progress are visible.
 - [x] The Endplate Ferry softlock is unreachable.
-- [ ] `pack:validate` checks feedback/effect coverage.
-- [ ] Solo and co-op playtests confirm attribution and recoverability.
+- [x] `pack:validate` checks feedback/effect coverage.
+- [ ] Solo and co-op playtests confirm attribution and recoverability. **Pending human playtest.**
 
 ## 4. Definition of done
 
@@ -116,6 +120,8 @@ M1.75 is done when:
    `npm run smoke:e2e`, `npm run build`, and `git diff --check` pass.
 9. The ADRs are accepted and the architecture/contracts/traceability docs point
    at the implementation.
+10. Human solo and co-op playtests pass. **Pending; this is the only unmet
+    acceptance item.**
 
 ## 5. Non-goals
 
@@ -165,7 +171,18 @@ npm run build
 git diff --check
 ```
 
-Manual checks:
+Automated verification on 2026-10-28:
+
+```text
+npm test             29 files / 303 tests passed
+npm run build        passed
+npm run pack:validate passed; 44 anatomy IDs; existing warnings only
+npm run pack:smoke   passed
+npm run smoke:e2e    4/4 passed
+git diff --check     clean
+```
+
+Manual checks still required:
 
 - solo Endplate Ferry: plate → Ca²⁺ window → carry → place → pulse;
 - co-op Endplate Ferry: P1 terminal/pulse, P2 packet, distinct attribution;
@@ -173,7 +190,11 @@ Manual checks:
 - two simultaneous entity conversations;
 - off-screen entity bubble fallback;
 - reduced motion with effects enabled/disabled;
-- tile visual revert with collision unchanged.
+- tile visual revert with collision unchanged;
+- stuck state shows hint/reset, not a dead run.
+
+`authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until
+those checks are performed by a human.
 
 ## 9. Relationship to other documents
 
@@ -182,4 +203,6 @@ Manual checks:
 - [`docs/puzzle-engine/adr/0011-entity-conversations.md`](../puzzle-engine/adr/0011-entity-conversations.md)
 - [`docs/puzzle-engine/adr/0012-capability-feedback-coverage.md`](../puzzle-engine/adr/0012-capability-feedback-coverage.md)
 - [`docs/puzzle-engine/adr/0013-cosmetic-feedback-effects-accessibility.md`](../puzzle-engine/adr/0013-cosmetic-feedback-effects-accessibility.md)
+- [`docs/m4/README.md`](../m4/README.md) — proposed online co-op; it consumes
+  the feedback/conversation/effect layer and does not replace it.
 - [`docs/puzzle-engine/feedback-implementation-plan.md`](../puzzle-engine/feedback-implementation-plan.md)

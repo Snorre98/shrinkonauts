@@ -1,6 +1,9 @@
 # language: en
 # Source: ADR-0007
 Feature: Side-level map travel
+  Implementation status: deferred. The current runtime has no side-level travel
+  or `returnTo` snapshot.
+
   A main level can enter a revealed side level and return to the exact captured
   main state. Normative per ADR-0007.
 

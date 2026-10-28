@@ -38,6 +38,7 @@ export {
 export type { MappingInput } from "./mapping";
 export { validatePack } from "./validate";
 export type {
+  FeedbackValidationVocabulary,
   PackIssue,
   PackIssueCode,
   PackValidationInput,

@@ -23,11 +23,14 @@ import {
   findGateRecoveryHazards,
   replaySolution,
   validatePuzzleDocument,
+  type PuzzleDocument,
 } from "../puzzle";
 import { collectRoomAssetIds, collectThemeAssetIds } from "./load";
 import { buildMapping, mappingDrift } from "./mapping";
 import type {
   DialogueDocument,
+  LevelDocument,
+  LevelFeedbackTileTarget,
   PackContent,
   RoomDocument,
   ThemeDocument,
@@ -44,6 +47,7 @@ export type PackIssueCode =
   | "LICENCE_INVALID"
   | "BACKGROUND_LAYER_INVALID"
   | "AUDIO_CUE_MISSING"
+  | "AUDIO_CUE_UNKNOWN"
   | "UI_ASSET_MISSING"
   | "PACK_SCHEMA_VERSION"
   | "PACK_DUPLICATE_ID"
@@ -62,12 +66,28 @@ export type PackIssueCode =
   | "COVERAGE_PUZZLE_ORPHAN"
   | "REACHABILITY_DEAD_END"
   | "THEME_TOKEN_INVALID"
-  | "MAPPING_DRIFT";
+  | "MAPPING_DRIFT"
+  | "FEEDBACK_REFERENCE_MISSING"
+  | "FEEDBACK_EFFECT_UNKNOWN"
+  | "FEEDBACK_TILE_INVALID"
+  | "FEEDBACK_LAYOUT_INVALID"
+  | "FEEDBACK_VOCABULARY_MISSING";
 
 export interface PackIssue {
   code: PackIssueCode;
   id?: AssetId;
   message: string;
+}
+
+/**
+ * Structural feedback vocabulary supplied by the caller. `pack` must not
+ * import `feedback`; scripts and tests build this from the feedback module.
+ */
+export interface FeedbackValidationVocabulary {
+  effectPresetIds: readonly string[];
+  tilePathPreset: string;
+  /** Conventional node-type socket names; the world uses `center` as fallback. */
+  nodeEffectSockets?: Readonly<Record<string, string | undefined>>;
 }
 
 export interface PackValidationInput {
@@ -82,6 +102,8 @@ export interface PackValidationInput {
    * mapping, licence, and multi-room asset checks run as well.
    */
   content?: PackContent;
+  /** Required when content authors a feedback block. */
+  feedbackVocabulary?: FeedbackValidationVocabulary;
 }
 
 export interface PackValidationResult {
@@ -331,7 +353,6 @@ function checkAudioAssets(
   theme: ThemeDocument,
   assets: ReturnType<typeof createAssets>,
   addIssue: AddIssue,
-  addWarning: AddWarning,
 ): void {
   const audioIds: Array<[string, AssetId]> = [];
 
@@ -346,7 +367,10 @@ function checkAudioAssets(
   }
   for (const [key, id] of Object.entries(theme.audio?.cues ?? {})) {
     if (!KNOWN_CUE_NAMES.has(key)) {
-      addWarning(`theme.audio.cues.${key} is not a known cue name; it is ignored`);
+      addIssue(
+        "AUDIO_CUE_UNKNOWN",
+        `theme.audio.cues.${key} is not a known cue name`,
+      );
     }
     audioIds.push([`theme.audio.cues.${key}`, id]);
   }
@@ -438,10 +462,187 @@ function dialogueRevealsConcept(
   );
 }
 
+function checkFeedbackTileTarget(
+  target: LevelFeedbackTileTarget,
+  room: RoomDocument,
+  label: string,
+  addIssue: AddIssue,
+): void {
+  if (!Object.prototype.hasOwnProperty.call(room.layers, target.layer)) {
+    addIssue(
+      "FEEDBACK_TILE_INVALID",
+      `${label}.layer "${target.layer}" is not authored on room "${room.id}"`,
+    );
+  }
+
+  if (target.kind === "tile") {
+    const outside =
+      target.x < 0 ||
+      target.y < 0 ||
+      target.x >= room.width ||
+      target.y >= room.height;
+    if (outside) {
+      addIssue(
+        "FEEDBACK_TILE_INVALID",
+        `${label} tile (${target.x}, ${target.y}) is outside room "${room.id}" (${room.width} × ${room.height})`,
+      );
+    }
+    return;
+  }
+
+  if (target.x1 > target.x2 || target.y1 > target.y2) {
+    addIssue(
+      "FEEDBACK_TILE_INVALID",
+      `${label} region must be ordered (x1 ≤ x2, y1 ≤ y2)`,
+    );
+  }
+  const outside =
+    target.x1 < 0 ||
+    target.y1 < 0 ||
+    target.x2 < 0 ||
+    target.y2 < 0 ||
+    target.x2 >= room.width ||
+    target.y2 >= room.height;
+  if (outside) {
+    addIssue(
+      "FEEDBACK_TILE_INVALID",
+      `${label} region (${target.x1}, ${target.y1})–(${target.x2}, ${target.y2}) is outside room "${room.id}" (${room.width} × ${room.height})`,
+    );
+  }
+}
+
+function checkLevelFeedback(input: {
+  level: LevelDocument;
+  room: RoomDocument | undefined;
+  puzzles: Record<string, PuzzleDocument>;
+  vocabulary: FeedbackValidationVocabulary | undefined;
+  addIssue: AddIssue;
+  addWarning: AddWarning;
+}): void {
+  const { level, room, puzzles, vocabulary, addIssue, addWarning } = input;
+  const feedbackPuzzles = level.feedback?.puzzles;
+  if (!feedbackPuzzles) return;
+
+  const authored = Object.values(feedbackPuzzles).some(
+    (config) =>
+      (config.beats?.length ?? 0) > 0 ||
+      Object.keys(config.nodes ?? {}).length > 0,
+  );
+  if (!authored) return;
+
+  if (!vocabulary) {
+    addIssue(
+      "FEEDBACK_VOCABULARY_MISSING",
+      `level "${level.id}" authors feedback but validatePack received no feedbackVocabulary`,
+    );
+  }
+
+  const levelPuzzleIds = new Set(level.puzzleIds ?? []);
+  for (const [puzzleId, config] of Object.entries(feedbackPuzzles)) {
+    const label = `level "${level.id}" feedback.puzzles.${puzzleId}`;
+    if (!levelPuzzleIds.has(puzzleId)) {
+      addIssue(
+        "FEEDBACK_REFERENCE_MISSING",
+        `${label} is not one of the level's authored puzzle IDs`,
+      );
+    }
+
+    const puzzle = puzzles[puzzleId];
+    if (!puzzle) {
+      addIssue(
+        "FEEDBACK_REFERENCE_MISSING",
+        `${label} references missing puzzle "${puzzleId}"`,
+      );
+      continue;
+    }
+
+    const nodeIds = new Set(puzzle.nodes.map((node) => node.id));
+
+    for (const [index, beat] of (config.beats ?? []).entries()) {
+      for (const nodeId of beat.nodes) {
+        if (!nodeIds.has(nodeId)) {
+          addIssue(
+            "FEEDBACK_REFERENCE_MISSING",
+            `${label}.beats[${index}] ("${beat.id}") references missing node "${nodeId}"`,
+          );
+        }
+      }
+    }
+
+    for (const [nodeId, override] of Object.entries(config.nodes ?? {})) {
+      const nodeLabel = `${label}.nodes.${nodeId}`;
+      if (!nodeIds.has(nodeId)) {
+        addIssue(
+          "FEEDBACK_REFERENCE_MISSING",
+          `${nodeLabel} references missing node "${nodeId}"`,
+        );
+      }
+      if (!override.label) {
+        addWarning(
+          `${nodeLabel} has no authored label; runtime falls back to the generated node label`,
+        );
+      }
+
+      const effectPreset = override.effectPreset;
+      const tilePath =
+        effectPreset !== undefined &&
+        vocabulary !== undefined &&
+        effectPreset === vocabulary.tilePathPreset;
+      if (
+        effectPreset !== undefined &&
+        vocabulary !== undefined &&
+        !vocabulary.effectPresetIds.includes(effectPreset)
+      ) {
+        addIssue(
+          "FEEDBACK_EFFECT_UNKNOWN",
+          `${nodeLabel}.effectPreset "${effectPreset}" is not a known effect preset`,
+        );
+      }
+      if (tilePath && !override.tileTarget) {
+        addIssue(
+          "FEEDBACK_LAYOUT_INVALID",
+          `${nodeLabel} uses tile-path preset "${effectPreset}" without a tileTarget`,
+        );
+      } else if (override.tileTarget && !tilePath) {
+        addWarning(
+          `${nodeLabel} has a tileTarget but does not use the tile-path preset; the target is ignored`,
+        );
+      }
+
+      if (override.tileTarget && room) {
+        checkFeedbackTileTarget(
+          override.tileTarget,
+          room,
+          `${nodeLabel}.tileTarget`,
+          addIssue,
+        );
+      }
+    }
+
+    if (room && vocabulary?.nodeEffectSockets) {
+      for (const node of puzzle.nodes) {
+        if (!node.entityId) continue;
+        const socket = vocabulary.nodeEffectSockets[node.type];
+        if (!socket || socket === "center") continue;
+        const entity = (room.entities ?? []).find(
+          (item) => item.id === node.entityId,
+        );
+        if (!entity) continue;
+        if (!entity.components?.anchors?.[socket]) {
+          addWarning(
+            `puzzle "${puzzle.id}" node "${node.id}" conventionally emits from socket "${socket}" but entity "${entity.id}" does not author it; the centre fallback is used`,
+          );
+        }
+      }
+    }
+  }
+}
+
 function checkContent(
   content: PackContent,
   finalManifest: AssetManifest | null | undefined,
   packManifest: AssetManifest | null | undefined,
+  feedbackVocabulary: FeedbackValidationVocabulary | undefined,
   addIssue: AddIssue,
   addWarning: AddWarning,
 ): void {
@@ -587,6 +788,12 @@ function checkContent(
         continue;
       }
 
+      if (puzzle.hints.length === 0) {
+        addWarning(
+          `puzzle "${puzzle.id}" has no hints; the stuck affordance cannot offer one`,
+        );
+      }
+
       const validation = validatePuzzleDocument(puzzle, {
         entityPoints: Object.fromEntries(
           (room?.entities ?? []).map((entity) => [
@@ -673,6 +880,15 @@ function checkContent(
         }
       }
     }
+
+    checkLevelFeedback({
+      level,
+      room,
+      puzzles,
+      vocabulary: feedbackVocabulary,
+      addIssue,
+      addWarning,
+    });
 
     for (const edge of level.map.edges) {
       if (edge.puzzleId) referencedPuzzles.add(edge.puzzleId);
@@ -902,25 +1118,20 @@ export function validatePack(
   checkManifest(packManifest, "pack", false, fileExists, addIssue);
   checkBackground(room, assets, addIssue);
   checkUiAssets(theme, assets, addIssue);
-  checkAudioAssets(room, theme, assets, addIssue, addWarning);
+  checkAudioAssets(room, theme, assets, addIssue);
 
   if (content) {
     for (const contentRoom of Object.values(content.rooms)) {
       if (contentRoom.id !== room.id) {
         checkBackground(contentRoom, assets, addIssue);
-        checkAudioAssets(
-          contentRoom,
-          theme,
-          assets,
-          addIssue,
-          addWarning,
-        );
+        checkAudioAssets(contentRoom, theme, assets, addIssue);
       }
     }
     checkContent(
       content,
       finalManifest,
       packManifest,
+      input.feedbackVocabulary,
       addIssue,
       addWarning,
     );

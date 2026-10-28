@@ -1,6 +1,9 @@
 # language: en
 # Source: ADR-0004
 Feature: Prop lifecycle
+  Implementation status: partial. `clear`/`cleared` is implemented;
+  `locked`/`unlock`/`propReleased` are deferred.
+
   Props can be locked until an unlock link fires and cleared after use.
   Normative per ADR-0004. A prop is valid when its logical state, body, and
   visibility agree and reset restores its authored initial state.

@@ -314,6 +314,7 @@ test("reduced motion keeps feedback surfaces and text", async ({ page }) => {
     .first();
   await expect(caption).toBeVisible();
   await expect(caption).toContainText("P1:");
+  await expect(page.locator(".feedback-live")).toContainText("P1:");
   await expect(
     page.locator(".feedback-beats__item", { hasText: "Press a dendrite input" }),
   ).toBeVisible();

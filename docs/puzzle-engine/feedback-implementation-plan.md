@@ -1,6 +1,6 @@
 # Feedback and Effect Layer — Implementation Plan (M1.75)
 
-**Status:** accepted plan; Phase 0 complete, Phase 1 complete, Phase 2 complete, Phase 3 complete, Phases 4–8 planned
+**Status:** accepted plan; Phases 0–7 complete; Phase 8 validation, accessibility, and documentation complete; manual playtest pending
 **Milestone:** [M1.75](../m1.75/README.md)
 **Source decisions:** [ADR-0009–0013](adr/README.md)
 **Contracts:** [module boundaries](contracts/module-boundaries.md),
@@ -19,7 +19,11 @@ migration; effects come after the surface model is stable.
 | 1 — correctness gate | Complete (`464ca63` + stable-state reachability) |
 | 2 — generic ECS kernel | Complete (`src/ecs/` + `tests/ecs.test.ts`) |
 | 3 — feedback domain | Complete (`src/feedback/` + feedback tests) |
-| 4–8 | Planned |
+| 4 — runtime integration | Complete (`70e97e8`) |
+| 5 — entity conversations | Complete (`70e97e8`) |
+| 6 — effects and tile visuals | Complete (`fd66236`) |
+| 7 — content migration | Complete (`8dac159`) |
+| 8 — validation, accessibility, docs, playtest | Automated/docs complete; manual playtest pending |
 
 ---
 
@@ -747,6 +751,57 @@ Exit criteria:
 - Manual checks pass.
 - No remaining softlock path.
 - `playtestedSolo` / `playtestedCoop` recorded honestly.
+
+### 11.5 Phase 8 implementation record (2026-10-28)
+
+**Status:** automated/docs complete; manual playtest pending.
+
+Validation:
+
+- Added `FeedbackValidationVocabulary` to `PackValidationInput`; `pack` still
+  imports no feedback. `scripts/pack-validate.ts`, `scripts/pack-smoke.ts`, and
+  `tests/validate.test.ts` build it from `effectPresetIds()` and
+  `NODE_EFFECT_SOCKETS`.
+- Added feedback issue codes: `FEEDBACK_REFERENCE_MISSING`,
+  `FEEDBACK_EFFECT_UNKNOWN`, `FEEDBACK_TILE_INVALID`,
+  `FEEDBACK_LAYOUT_INVALID`, `FEEDBACK_VOCABULARY_MISSING`, and
+  `AUDIO_CUE_UNKNOWN`.
+- Validator errors cover missing puzzle/beat/node references, unknown presets,
+  missing tile layers, out-of-bounds/unordered tile targets, tile-path presets
+  without targets, missing vocabulary, and unknown theme cue names.
+- Warnings cover tile targets without the tile-path preset, empty puzzle hints,
+  feedback overrides without labels, and missing conventional sockets.
+- Descriptor/vocabulary guarantees remain tests: gate/timer persistence,
+  receptor reasons, persistent-effect cancellation, attribution, no collision
+  fields, and reduced-motion fallback.
+
+Tests and docs:
+
+- Added `tests/feedback-accessibility.test.ts`; expanded validator, feedback
+  coverage/effects, boundary, and browser live-region coverage.
+- Updated architecture, module boundaries, interface, data model,
+  state-machine, failure semantics, traceability, README, IMPLEMENTATION, and
+  M1.75 close-out documents.
+- Added behavior contracts `feedback-surfaces.feature`,
+  `entity-conversations.feature`, `capability-coverage.feature`, and
+  `cosmetic-effects.feature`.
+- Accepted ADR bodies were not edited. Physical gates, `locked`/`unlock`,
+  `requires`/`message`/`linkBlocked`, per-level debrief overrides, and
+  side-level travel are marked deferred rather than implemented.
+
+Verification:
+
+```text
+npm test             29 files / 303 tests passed
+npm run build        passed
+npm run pack:validate passed; 44 anatomy IDs; existing warnings only
+npm run pack:smoke   passed
+npm run smoke:e2e    4/4 passed
+git diff --check     clean
+```
+
+Playtest remains the only unmet acceptance item. `authoring.playtestedSolo` and
+`authoring.playtestedCoop` remain `false`.
 
 ---
 

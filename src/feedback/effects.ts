@@ -1,4 +1,4 @@
-import type { PuzzleNode } from "../puzzle";
+import type { PuzzleNode, PuzzleNodeType } from "../puzzle";
 import type {
   AnchorRef,
   Direction,
@@ -57,6 +57,20 @@ export const EFFECT_LAYERS = [
   "foreground",
   "hud",
 ] as const satisfies readonly EffectLayer[];
+
+/**
+ * Conventional node-type sockets used by default effect recipes. Content may
+ * author these names on a room entity; the world falls back to the entity
+ * centre when one is missing. The validator receives this table structurally
+ * so `pack` does not import `feedback`.
+ */
+export const NODE_EFFECT_SOCKETS: Readonly<
+  Partial<Record<PuzzleNodeType, string>>
+> = {
+  pulseSource: "muzzle",
+  receptor: "mouth",
+  gate: "center",
+};
 
 export function accentFor(
   actor: PlayerId | null,
@@ -151,14 +165,7 @@ export function anchorRefFromFeedbackAnchor(
 /** Effect anchor for a puzzle node, without a surface anchor. */
 export function nodeEffectAnchor(node: PuzzleNode): AnchorRef {
   if (node.entityId) {
-    const socket =
-      node.type === "pulseSource"
-        ? "muzzle"
-        : node.type === "receptor"
-          ? "mouth"
-          : node.type === "gate"
-            ? "center"
-            : undefined;
+    const socket = NODE_EFFECT_SOCKETS[node.type];
     return {
       kind: "entity",
       id: node.entityId,

@@ -19,6 +19,7 @@ import {
   LINK_FEEDBACK,
   NODE_FEEDBACK,
   REJECTION_REASONS,
+  createFeedbackDirector,
   eventCueCoverage,
   feedbackLexicon,
   nodeAnchor,
@@ -151,6 +152,18 @@ describe("feedback descriptor coverage", () => {
     expect(EVENT_COVERAGE.pulse.kind).toBe("silent");
   });
 
+  it("keeps a solved outcome cue for every puzzle", () => {
+    expect(EVENT_COVERAGE.solved).toMatchObject({
+      kind: "cue",
+      recipe: {
+        capability: "outcome",
+        state: "complete",
+        severity: "positive",
+        presentation: "screenCaption",
+      },
+    });
+  });
+
   it("resolves every event emitted by the 03 and 04 solution replays", () => {
     for (const levelId of ["03-nerve-forest", "04-muscle-effector"]) {
       const document = readPuzzle(levelId);
@@ -237,6 +250,102 @@ describe("feedback descriptor coverage", () => {
         type,
       ).toBe(true);
     }
+  });
+
+  it("keeps gate and timer state persistent in every state", () => {
+    const samples = sampleNodes();
+    const gateSample = samples.get("gate");
+    const timerSample = samples.get("timer");
+    if (!gateSample || !timerSample) {
+      throw new Error("gate/timer sample missing");
+    }
+
+    const gateDescriptor = NODE_FEEDBACK.gate as NodeFeedbackDescriptor;
+    const gateContext = {
+      anchor: nodeAnchor(gateSample.node),
+      label: "Ca gate",
+    };
+    const closed = gateDescriptor.project(
+      gateSample.node,
+      { ...gateSample.state, state: "idle", active: false },
+      gateContext,
+    )[0];
+    const open = gateDescriptor.project(
+      gateSample.node,
+      { ...gateSample.state, state: "open", active: true },
+      gateContext,
+    )[0];
+    expect(closed).toMatchObject({
+      presentation: "stateSwap",
+      state: "idle",
+      lifetime: { sticky: true },
+    });
+    expect(open).toMatchObject({
+      presentation: "stateSwap",
+      state: "active",
+      lifetime: { sticky: true },
+    });
+    expect(closed?.content.text).toContain("closed");
+    expect(open?.content.text).toContain("open");
+
+    const timerDescriptor = NODE_FEEDBACK.timer as NodeFeedbackDescriptor;
+    const running = timerDescriptor.project(
+      timerSample.node,
+      { ...timerSample.state, state: "running", remaining: 10 },
+      { anchor: nodeAnchor(timerSample.node), label: "Window" },
+    )[0];
+    const elapsed = timerDescriptor.project(
+      timerSample.node,
+      { ...timerSample.state, state: "elapsed", remaining: 0 },
+      { anchor: nodeAnchor(timerSample.node), label: "Window" },
+    )[0];
+    expect(running).toMatchObject({
+      presentation: "hudMeter",
+      state: "progress",
+      lifetime: { sticky: true },
+    });
+    expect(elapsed).toMatchObject({
+      presentation: "hudMeter",
+      state: "complete",
+      lifetime: { sticky: true },
+    });
+    expect(running?.content.progress?.value).toBe(10);
+    expect(elapsed?.content.text).toContain("finished");
+  });
+
+  it("gives receptor rejection a reason, actor attribution, and copy", () => {
+    const sample = sampleNodes().get("receptor");
+    if (!sample) throw new Error("receptor sample missing");
+    const director = createFeedbackDirector();
+    director.projectSticky({
+      document: sample.document,
+      state: new PuzzleRuntime(sample.document).snapshot(),
+    });
+    director.ingest({
+      kind: "puzzle.event",
+      event: {
+        type: "receptorRejected",
+        nodeId: sample.node.id,
+        message: "no prop on receptor",
+      },
+      actor: "p2",
+      source: { kind: "entity", id: sample.node.entityId ?? sample.node.id },
+    });
+    director.tick(1 / 60);
+    const cue = director
+      .frame()
+      .cues.find((item) => item.cause.startsWith("puzzle:receptorRejected"));
+
+    expect(cue).toMatchObject({
+      actor: "p2",
+      owner: "p2",
+      state: "blocked",
+      reason: "empty",
+      presentation: "speechBubble",
+    });
+    expect(cue?.content.text).toContain("P2:");
+    expect(cue?.content.text).toContain("empty");
+    expect(cue?.a11y.textAlternative).toBe(cue?.content.text);
   });
 
   it("produces text, icon, and audio for every state and reason", () => {

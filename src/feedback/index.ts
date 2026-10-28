@@ -30,6 +30,7 @@ export {
   effectEndTicks,
   isPersistentStage,
   isSourceActive,
+  NODE_EFFECT_SOCKETS,
   nodeEffectAnchor,
   pathEndAnchor,
   persistentCancel,

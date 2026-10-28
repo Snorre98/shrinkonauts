@@ -6,6 +6,7 @@ import { PLAYER_ASSET_IDS } from "../src/assets/ids";
 import { parseManifest } from "../src/assets/manifest";
 import type { AssetManifest } from "../src/assets/types";
 import { silentLogger } from "../src/core/logger";
+import { NODE_EFFECT_SOCKETS, effectPresetIds } from "../src/feedback";
 import { GameRuntime, type AudioPort, type RuntimeInput } from "../src/game/runtime";
 import {
   collectRoomAssetIds,
@@ -30,6 +31,11 @@ import { loadContent, packDirectory } from "./content-loader";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CONTENT_DIR = join(HERE, "..", "public", "content", "dev");
 const VIEWPORT = { width: 1280, height: 720 };
+const FEEDBACK_VOCABULARY = {
+  effectPresetIds: effectPresetIds(),
+  tilePathPreset: "fx.tile.path",
+  nodeEffectSockets: NODE_EFFECT_SOCKETS,
+} as const;
 
 function contentFile(file: string): string {
   return join(CONTENT_DIR, file);
@@ -127,6 +133,7 @@ function runMode(
     finalManifest,
     packManifest,
     fileExists,
+    feedbackVocabulary: FEEDBACK_VOCABULARY,
   });
   if (!validation.ok) {
     const issues = validation.issues
@@ -462,6 +469,7 @@ function assertAnatomyAssets(content: ReturnType<typeof loadContent>): {
       finalManifest,
       packManifest: placeholderManifest,
       fileExists,
+      feedbackVocabulary: FEEDBACK_VOCABULARY,
     });
     if (!validation.ok) {
       const issues = validation.issues

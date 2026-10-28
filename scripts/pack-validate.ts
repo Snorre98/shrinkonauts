@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseManifest } from "../src/assets/manifest";
 import type { AssetManifest } from "../src/assets/types";
+import { NODE_EFFECT_SOCKETS, effectPresetIds } from "../src/feedback";
 import { parseRoom, parseTheme } from "../src/pack/load";
 import type { RoomDocument, ThemeDocument } from "../src/pack/types";
 import {
@@ -18,6 +19,12 @@ import {
 
 const CONTENT_DIR = join(PUBLIC_DIR, "content", "dev");
 const PACK_DIR = join(PACKS_DIR, "anatomy-reflex");
+
+const FEEDBACK_VOCABULARY = {
+  effectPresetIds: effectPresetIds(),
+  tilePathPreset: "fx.tile.path",
+  nodeEffectSockets: NODE_EFFECT_SOCKETS,
+} as const;
 
 function readDevJson(file: string): unknown {
   return JSON.parse(readFileSync(join(CONTENT_DIR, file), "utf8"));
@@ -118,6 +125,7 @@ function validateDev(): boolean {
     finalManifest,
     packManifest: null,
     fileExists,
+    feedbackVocabulary: FEEDBACK_VOCABULARY,
   });
   printReport("placeholder", placeholderResult);
 
@@ -128,6 +136,7 @@ function validateDev(): boolean {
     finalManifest,
     packManifest: fixtureManifest,
     fileExists,
+    feedbackVocabulary: FEEDBACK_VOCABULARY,
   });
   printReport("fixture", fixtureResult);
 
@@ -178,6 +187,7 @@ function validateAnatomy(): boolean {
     packManifest: placeholderManifest,
     fileExists,
     content,
+    feedbackVocabulary: FEEDBACK_VOCABULARY,
   });
   printReport("placeholder", result);
 
