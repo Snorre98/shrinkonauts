@@ -1,6 +1,6 @@
 # ADR-0017: Tile variant atlas and manifest metadata
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-28
 Deciders: Snorre
 Related: ADR-0008, ADR-0014, ADR-0015, ADR-0016, ADR-0029, ADR-0030, ADR-0033
@@ -67,6 +67,10 @@ interface ManifestAssetEntry {
   /** Atlas-only: named regions. */
   regions?: Record<string, AtlasRegion>;
 
+  /** Optional intrinsic image size, used to validate region bounds. */
+  width?: number;
+  height?: number;
+
   anchor?: [number, number];
   placeholder?: boolean;
   license?: string;
@@ -87,6 +91,8 @@ Example:
   "tile.bone.atlas": {
     "type": "atlas",
     "src": "shared/tiles/bone-atlas.png",
+    "width": 64,
+    "height": 1504,
     "regions": {
       "blob-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
       "blob-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
@@ -188,7 +194,8 @@ The manifest schema version is independent of the pack content version.
 - `assets` caches decoded atlas textures and frame lookups.
 - A variant set referencing a missing atlas/frame is a validation error.
 - Placeholder atlases may be generated procedurally at runtime; final atlases
-  replace them by manifest/file swap.
+  replace them by manifest/file swap. A declared placeholder atlas may omit
+  `src` while retaining its regions, or point at a placeholder file.
 
 ### 6. Placeholder-first
 

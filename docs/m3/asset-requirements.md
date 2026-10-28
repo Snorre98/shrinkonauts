@@ -1,6 +1,6 @@
 # M3 Asset Requirements — Shrinkonauts: The Reflex Arc
 
-**Status:** Draft v0.1 · 27 October 2026  
+**Status:** Draft v0.2 · 29 October 2026 (M1.8 material re-baseline)
 **Owner:** Snorre  
 **Scope:** Final 2D art and audio for the M3 vertical slice  
 **Target milestone:** M3 — Art/audio pass + capture (4–5 November 2026)  
@@ -16,9 +16,9 @@
 | Decision | Value |
 |---|---|
 | Art scope | `03-nerve-forest` + shared kit |
-| Visible images | **20** |
+| Visible images | **21** |
 | Audio cues | **11** |
-| Total M3 assets | **31** |
+| Total M3 assets | **32** |
 | Style | **Dank Anatomy Cartoon** |
 | Tool | **Ludo.ai Image Generator / Audio Generator** |
 | Ludo plan | **Indie, $20/mo** (Pro only if automation or scope grows) |
@@ -26,10 +26,16 @@
 | Animation | **None** — the runtime renders single images |
 | UI panels/portraits | **Deferred** — not rendered by the current UI |
 | Music | **Deferred** — not played by the current runtime |
-| Levels 01, 02, 04, 05, Silicon | **Deferred** — design proposals exist, but the pack content is not implemented |
+| Levels 01, 02, 05, Silicon | **Deferred** — design proposals exist, but the pack content is not implemented |
+| Level 04 | **Authored**; its material tiles stay placeholder art outside this M3 pass |
 | Content-freeze dependency | **Puzzle-specific props are blocked until M2 freezes the 03 puzzle** |
 
-> **Content-freeze dependency.** This inventory is based on the current one-level build, which still uses `puzzle-ferry-01` in `03-nerve-forest`. The M2 design package proposes replacing it with **Node Run** and moving the ferry pattern to `04-muscle-effector` ([`docs/m2/nervous-puzzles/03-nerve-forest.md`](../m2/nervous-puzzles/03-nerve-forest.md), [`04-muscle-effector.md`](../m2/nervous-puzzles/04-muscle-effector.md)). If that redesign is implemented, the puzzle-specific props in this document will change. See §2.4 before generating gates, tracers, receptors, or pulse terminals.
+> **Content-freeze dependency.** The pack now implements Node Run in
+> `03-nerve-forest` and Endplate Ferry in `04-muscle-effector`; the earlier
+> Signal Ferry layout is retained only as a test fixture. The puzzle-specific
+> props in this document must still be checked against the frozen room before
+> generation. See §2.4 before generating gates, tracers, receptors, or pulse
+> terminals.
 
 ---
 
@@ -55,11 +61,11 @@ This is a production document, not a GDD. The game design source remains [`DESIG
 | Player sprites P1/P2 | 2 | Shared across all levels |
 | Visible `03-nerve-forest` entity sprites | 12 | Agent, scans, gate, exit, props, receptors |
 | `03-nerve-forest` background layers | 4 | Sky, far, mid, near |
-| Shared tile texture | 1 | One 32×32 texture used by the room |
+| Shared material atlases (bone, nerve) | 2 | Replaces the single 32×32 tile texture; 03 is fully materialized |
 | Badge | 1 | The only UI asset currently rendered |
-| **Visible images subtotal** | **20** | |
+| **Visible images subtotal** | **21** | |
 | SFX cues | 11 | Current theme cue list |
-| **M3 total** | **31** | 20 images + 11 audio |
+| **M3 total** | **32** | 21 images + 11 audio |
 
 ### 2.2 Deliberately out of scope
 
@@ -90,26 +96,32 @@ The deferred UI assets remain declared as placeholders. They will not appear in 
 
 ### 2.4 Content-freeze dependency
 
-The current pack still uses the **Signal Ferry** puzzle in `03-nerve-forest`. The M2 design package proposes replacing it with **Node Run** and moving the ferry/receptor pattern to `04-muscle-effector`. That design is documentation only at the time of writing; it is not implemented.
-
-Until the M2 pack is frozen:
+The pack now implements **Node Run** in `03-nerve-forest` and **Endplate
+Ferry** in `04-muscle-effector`. The earlier Signal Ferry layout remains only
+as a test fixture. Re-check this inventory against the frozen rooms before
+generating puzzle-specific props.
 
 | Asset group | Status before freeze | Reason |
 |---|---|---|
-| Players, tile, badge, sky, far/mid/near | **Safe to generate** | Shared or environment-level; unaffected by puzzle redesign |
+| Players, material atlases, badge, sky, far/mid/near | **Safe to generate** | Shared or environment-level; unaffected by puzzle redesign |
 | Neuron Keeper, scan targets | **Generate after scan list is frozen** | Concept scans may change with the 03 puzzle |
-| `sprite.gate.ferry`, `sprite.prop.tracer`, `sprite.pulse.terminal`, `sprite.receptor.triangle`, `sprite.receptor.circle` | **Blocked** | These belong to the current ferry puzzle; they may move to 04 or be replaced |
+| `sprite.gate.ferry`, `sprite.prop.tracer`, `sprite.pulse.terminal`, `sprite.receptor.triangle`, `sprite.receptor.circle` | **Check the authored 03/04 rooms** | These props are referenced by the current Node Run/Endplate Ferry content |
 | `sprite.exit` | **Safe** | The exit remains even if the gate changes |
 | SFX | **Safe** | Cue vocabulary is stable |
 
-**Action:** after M2 content freeze, re-baseline this inventory against the actual `room.json`, `puzzle.json`, and `assets.final.json`. Do not spend M3 credits on puzzle props that the final room does not use.
+**Action:** re-baseline this inventory against the actual `room.json`,
+`puzzle.json`, and `assets.final.json` after the M2 content freeze. Do not spend
+M3 credits on puzzle props that the final rooms do not use.
 
-> **M1.8 material/pattern dependency (proposed).** ADR-0014–0017 introduce
-> materials, tile material grids, autotiling, variants, pattern projection, and
-> atlas assets. They replace the current one-32×32-tile and single-sprite
-> assumptions in this document. Do not generate tile variants, atlases, or
-> material patterns until the M1.8 scope is accepted and this inventory is
-> re-baselined against the material model.
+> **M1.8 material/pattern re-baseline (implemented).** ADR-0014–0017 now ship
+> material grids, autotiling, variants, world/object/background pattern
+> projection, atlas assets, and UI material slots. The M1.8 placeholder proof
+> fully materializes both 03 and 04. M3 final art remains scoped to 03: provide
+> bone and nerve material atlases for 03; 04 muscle/membrane tiles remain
+> placeholders outside this M3 pass. The former single 32×32 tile assumption is
+> replaced by per-material atlas frames. Do not generate final tile variants,
+> atlases, or material patterns until the M2 content is frozen and this
+> inventory is confirmed.
 
 > **M4 online co-op dependency (proposed).** M4 adds no new M3 asset IDs. Both
 > host and guest load the same static manifest; audio remains local; capture
@@ -119,7 +131,7 @@ Until the M2 pack is frozen:
 
 > **M1.9 bathroom hub dependency.** The bathroom hub is a separate content root
 > with its own IDs and placeholder manifests (`public/hub/bathroom/`). Those
-> assets are **not** part of this 20-image M3 scope. Final hub art belongs to a
+> assets are **not** part of this 21-image M3 scope. Final hub art belongs to a
 > small M3.5 pass; the hub ships with coherent placeholders in the meantime. See
 > [`../m1.9/README.md`](../m1.9/README.md).
 
@@ -133,7 +145,7 @@ These are current implementation facts, not preferences.
 |---|---|---|
 | Players are displayed at **28×44 px** | `src/world/physics.ts` (`PLAYER_WIDTH`, `PLAYER_HEIGHT`) | Export player textures at a 28:44 aspect ratio. Do not squash a square image into 28×44. |
 | Entities are displayed at **36×36 px** | `src/world/room-scene.ts` (`ENTITY_SIZE = 36`) | Export entity textures at 1:1. Design for 36 px readability. |
-| The room uses a single **32×32** tile texture | `room.json` (`tileSize: 32`), `room-scene.ts` (`tileset`) | Current runtime uses one tile texture. After M1.8, expect material grids, autotile variants, and atlases; re-baseline this inventory. |
+| The room uses **material grids and atlases** (`tileSize: 32`) | `room.json` (`tileMaterials`), `materials.json`, `room-scene.ts` | 03 needs bone/nerve atlas frames; 04 placeholders stay out of M3 final scope |
 | Background far/mid/near use `fit: "tile"` | `room.json`, `src/world/background.ts` (`TileSprite`) | These layers must tile seamlessly. Avoid unique landmarks that repeat obviously. |
 | The sky uses `fit: "cover"` and is scaled ~1.4× | `src/world/background.ts` | Generate a 16:9 sky with safe dark areas for HUD and player silhouettes. |
 | Spritesheets are loaded but not animated | `room-scene.ts` loads `type: "sheet"` but creates `this.add.image(...)`; no `this.anims.create(...)` | For M3, use static `sprite` entries and single PNG/WebP images. |
@@ -248,12 +260,12 @@ These are for future levels. **Do not generate them until the level is authored 
 
 | Bucket | Count |
 |---|---:|
-| Visible M3 images | 20 |
+| Visible M3 images | 21 |
 | SFX cues | 11 |
-| **M3 production total** | **31** |
+| **M3 production total** | **32** |
 | Deferred UI images | 8 |
 | Optional unused sprites | 2 |
-| **Current manifest total** | **41** |
+| **Current manifest total** | **42** |
 
 ### 5.2 Shared kit
 
@@ -261,12 +273,15 @@ These are for future levels. **Do not generate them until the level is authored 
 |---|---|---:|---:|---|---|
 | `sprite.player.p1` | sprite | 28×44 | 112×176 PNG | `shared/sprites/player-p1.png` | P0 |
 | `sprite.player.p2` | sprite | 28×44 | 112×176 PNG | `shared/sprites/player-p2.png` | P0 |
-| `tileset.anatomy` | image | 32×32 tile | 32×32 PNG (or 128×128 downscaled) | `shared/tilesets/anatomy.png` | P1 |
+| `tile.bone.atlas` | atlas | 32×32 frames | 192×128 PNG atlas (6×4 frames) | `shared/tiles/bone-atlas.png` | P1 |
+| `tile.nerve.atlas` | atlas | 32×32 frames | 192×128 PNG atlas (6×4 frames) | `shared/tiles/nerve-atlas.png` | P1 |
 | `ui.icon.badge` | image | ~32×32 HUD stamp | 512×512 PNG | `shared/ui/badge.png` | P2 |
 
 ### 5.3 `03-nerve-forest` visible entities
 
-> **Assumption:** the current `puzzle-ferry-01` layout remains in `03-nerve-forest`. If M2 implements Node Run, the gate/tracer/pulse/receptor rows in this table are provisional and must be replaced with the frozen room’s entities.
+> **Assumption:** the authored 03/04 room layout is frozen for this slice. If the
+> M2 rooms change, the gate/tracer/pulse/receptor rows in this table must be
+> replaced with the frozen room’s entities.
 
 | Asset ID | Entity role | Display size | Export size | File path | Priority |
 |---|---|---:|---:|---|---|
@@ -337,7 +352,8 @@ Use lowercase kebab-case, no spaces, no dots in filenames.
 | `sprite.scan.neuron` | `shared/sprites/scan-neuron.png` |
 | `sprite.gate.ferry` | `shared/sprites/gate-ferry.png` |
 | `bg.nerve_forest.sky` | `shared/backgrounds/nerve-forest-sky.webp` |
-| `tileset.anatomy` | `shared/tilesets/anatomy.png` |
+| `tile.bone.atlas` | `shared/tiles/bone-atlas.png` |
+| `tile.nerve.atlas` | `shared/tiles/nerve-atlas.png` |
 | `ui.icon.badge` | `shared/ui/badge.png` |
 | `audio.cue.scan` | `shared/audio/scan.ogg` |
 
@@ -353,7 +369,7 @@ Use lowercase kebab-case, no spaces, no dots in filenames.
 | Entity | 144×144 or 288×288 | 36×36 | PNG with alpha |
 | Background sky | 1920×1080 | cover, ~1.4× scale | WebP |
 | Parallax layer | 1024×512 or 2048×1024 | tile | PNG/WebP with alpha |
-| Tile | 32×32 (or 128×128 downscaled) | 32×32 | PNG/WebP |
+| Material atlas | 32×32 named regions | 32×32 | PNG/WebP; atlas is one file, not one file per variant |
 | Badge | 512×512 | ~32×32 HUD stamp | PNG with alpha |
 | Audio | 48 kHz | — | OGG or MP3 |
 
@@ -378,7 +394,7 @@ Do not export JPG for sprites or layers with alpha. Do not ship 4K art.
 - Verify with a 2×2 repeat at 1280×720, not by looking at one image.
 - Avoid a single strong landmark that repeats obviously.
 - Keep large transparent gaps in the near layer so the room remains playable.
-- The tile must tile on all four sides. Avoid a directional top edge unless the room only uses it as a floor.
+- The material atlas frames must tile on all four sides at the room tile size. Autotile edges are drawn by the frame selected from the material mask; do not bake a single directional top edge into every frame.
 
 ### 6.4 Anchors and padding
 
@@ -413,6 +429,7 @@ Use static types for M3:
 | `sprite.player.*` | `sprite` |
 | `sprite.agent.*`, `sprite.scan.*`, `sprite.gate.*`, `sprite.prop.*`, `sprite.pulse.*`, `sprite.receptor.*`, `sprite.exit` | `sprite` |
 | `bg.*` | `background` |
+| `tile.*.atlas` | `atlas` |
 | `tileset.*`, `ui.*` | `image` |
 | `audio.*` | `audio` |
 
@@ -488,7 +505,7 @@ Generate exactly these six images:
 - Sky has dark areas for HUD; mid layer tiles seamlessly in a 2×2 preview.
 - Alpha is clean, with no magenta fringe.
 
-If four of six pass, proceed. If not, revise the style block/reference and rerun the six. Do not “fix it later” across 20 assets.
+If four of six pass, proceed. If not, revise the style block/reference and rerun the six. Do not “fix it later” across 21 assets.
 
 ### 7.6 Per-asset loop
 
@@ -615,7 +632,8 @@ Prepend `[STYLE]`, append `[SPRITE FRAME]`.
 
 | Asset ID | Prompt |
 |---|---|
-| `tileset.anatomy` | `[STYLE] A seamless 32x32 organic block texture for a side-view platformer: damp bone-and-nerve tissue, deep teal base, bone-cream grit, tiny yellow nerve threads, subtle pores and grime, no directional top edge, no objects, no text. [TILE FRAME]` |
+| `tile.bone.atlas` | `[STYLE] A seamless bone-material tile atlas for a side-view platformer: damp bone-and-nerve tissue, deep teal base, bone-cream grit, subtle pores and grime. Author 32x32 named mask frames for the blob47/edge set; no text, no border, no unique focal object. [TILE FRAME]` |
+| `tile.nerve.atlas` | `[STYLE] A seamless nerve-material tile atlas: damp nerve fibers, yellow sheen, joint-cyan edges, subtle pores and grime. Author 32x32 named mask frames for the edge set; no text, no border, no unique focal object. [TILE FRAME]` |
 | `ui.icon.badge` | `[STYLE] A circular mission patch icon: a tiny astronaut helmet inside a ring of nerve fibers, bone cream, deep teal, nerve yellow, joint cyan, thick ink outline, flat, simple, readable at 32px, no text, centered, transparent or flat magenta, 1:1.` |
 
 ### 8.12 Audio prompts
@@ -651,7 +669,7 @@ Short diegetic game sound effect, 48 kHz, dry, tactile, sci-fi suit plus wet org
 | Players | Reads at 28×44; P1/P2 differ by accent only; helmet, backpack, boots readable; feet at baseline |
 | Entities | Reads at 36×36; silhouette distinct from every other entity; no text; no baked shadow |
 | Backgrounds | Sky supports HUD contrast; far/mid/near tile without seams at 2×2; near layer does not obscure gameplay |
-| Tile | Tiles on all four sides; no obvious repetition artifact; reads as anatomy, not generic stone |
+| Tile atlas | Every 32×32 frame tiles; mask variants are visually distinct; no text or baked directional floor edge |
 | Badge | Reads at 32×32; no text; central composition; works on dark teal |
 | Audio | Short, dry, no long tail; no audio-only cue; no gore; no music |
 
@@ -686,7 +704,9 @@ Short diegetic game sound effect, 48 kHz, dry, tactile, sci-fi suit plus wet org
 
 ### 9.5 Manifest and validator
 
-- `assets.final.json` has real `src` paths for all 20 visible images and 11 audio cues.
+- `assets.final.json` has real `src` paths for all 21 visible images and 11 audio cues.
+- Each atlas entry declares `type: "atlas"`, intrinsic `width`/`height`, and named `regions`; every variant-set frame and fallback resolves.
+- `materials.json` parses, every palette token exists in `theme.json`, and tile/background/UI/entity references resolve.
 - Each entry has a matching licence label in `licenses.json`.
 - `npm run pack:validate` passes.
 - `npm run pack:smoke` still passes.
@@ -733,9 +753,15 @@ Short diegetic game sound effect, 48 kHz, dry, tactile, sci-fi suit plus wet org
     "src": "shared/backgrounds/nerve-forest-sky.webp",
     "license": "Ludo AI Commercial (paid)"
   },
-  "tileset.anatomy": {
-    "type": "image",
-    "src": "shared/tilesets/anatomy.png",
+  "tile.bone.atlas": {
+    "type": "atlas",
+    "src": "shared/tiles/bone-atlas.png",
+    "width": 192,
+    "height": 128,
+    "regions": {
+      "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
+      "mask-85": { "x": 0, "y": 96, "width": 32, "height": 32 }
+    },
     "license": "Ludo AI Commercial (paid)"
   },
   "ui.icon.badge": {
@@ -801,10 +827,10 @@ Use the free tier only for the six-asset style gate. Do not ship a free-tier fil
 
 Assumptions:
 
-- 20 images × 4 variations × 0.5 credits = **40 credits**
+- 21 images × 4 variations × 0.5 credits = **42 credits**
 - 11 SFX × 2 credits = **22 credits**
 - Retries, inpainting, and fixes = **~40 credits**
-- Total ≈ **102 credits**
+- Total ≈ **104 credits**
 
 Ludo Indie includes **250 credits/month** for **$20**. This is enough. Buy extra credits only if the M2 scope expands or the style gate needs heavy iteration.
 
@@ -841,7 +867,7 @@ Never cut P1/P2, Neuron Keeper, the main interactive landmark (gate or exit), or
 
 | Risk | Mitigation |
 |---|---|
-| Style drift across 20 assets | P1 style anchor + global style block + contact sheet |
+| Style drift across 21 assets | P1 style anchor + global style block + contact sheet |
 | Ludo output too “clean” or generic | Add grime/texture words; use reference; reject early |
 | Alpha halos on dark background | Magenta background + 400% edge check + Aseprite cleanup |
 | Non-tileable parallax layers | 2×2 preview; reject/re-roll; fallback to gradient |
@@ -861,7 +887,7 @@ Never cut P1/P2, Neuron Keeper, the main interactive landmark (gate or exit), or
 When a level is authored, validated, and in the capture list, instantiate:
 
 - 4 background layers: sky, far, mid, near
-- 1 tile texture
+- 1 material atlas per authored material (or a shared atlas with named regions)
 - 1 agent character
 - 3–5 scan targets
 - 1 gate
@@ -919,7 +945,8 @@ Do not invent new prefixes without updating the asset contract.
 - [ ] Confirm skip of the eight deferred UI assets.
 - [ ] Confirm whether `far`/`near` layers appear in the capture shot; if not, they can be cut.
 - [ ] Confirm whether `sprite.checkpoint` or `sprite.gate.nerve` become visible before M3; if yes, add them to the scope.
-- [ ] Confirm whether M2 implements Node Run in `03-nerve-forest`; if yes, re-baseline §5.3 before generating any puzzle prop art.
+- [ ] Confirm the two final material atlases (`tile.bone.atlas`, `tile.nerve.atlas`) and their region maps before generating art. 04 material tiles remain placeholders.
+- [ ] Confirm the frozen Node Run/Endplate Ferry rooms before generating puzzle props; re-baseline §5.3 if the rooms change.
 
 ---
 
@@ -954,6 +981,7 @@ Do not invent new prefixes without updating the asset contract.
 |---|---|
 | 2026-10-27 | Initial M3 asset requirements, style bible, Ludo prompt pack, and scope contract. |
 | 2026-10-28 | Cross-link the proposed M4 online co-op boundary; M4 adds no M3 asset IDs. |
+| 2026-10-29 | M1.8 re-baseline: 21 visible images / 32 total; two material atlases replace the single tile; materials, variants, backgrounds, and UI slots added; 04 remains placeholder. |
 
 ---
 

@@ -1,5 +1,7 @@
 export {
+  collectMaterialAssetIds,
   collectRoomAssetIds,
+  collectRoomMaterialAssetIds,
   collectThemeAssetIds,
   isAssetId,
   loadRoom,
@@ -37,6 +39,15 @@ export type {
   PackCatalogEntry,
 } from "./catalog";
 export { parsePuzzle } from "./parse-puzzle";
+export {
+  loadMaterials,
+  parseAtlasFrameRef,
+  parseMaterialBinding,
+  parseMaterials,
+  parsePatternBinding,
+  parsePatternOverrides,
+  parseTileMaterialRule,
+} from "./parse-materials";
 export type {
   LoadedPackContent,
   LoadPackContentOptions,

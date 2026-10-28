@@ -6,7 +6,7 @@ import {
   type WorldEffectPlan,
 } from "../src/world/effect-types";
 import { createRoomSimulation } from "../src/world/simulation";
-import { createTileVisualState } from "../src/world/tile-visuals";
+import { createTileVisualState, composeTileVisual } from "../src/world/tile-visuals";
 
 const ROOM_URL = new URL("../public/content/dev/room.json", import.meta.url);
 
@@ -17,6 +17,40 @@ function devRoom() {
 }
 
 describe("tile visual state", () => {
+  it("composes material base frames with cosmetic overrides", () => {
+    const base = {
+      textureKey: "asset:tile.anatomy.atlas",
+      frame: "mask-5",
+      tint: 0xffffff,
+      alpha: 1,
+    };
+    expect(composeTileVisual(base, undefined)).toEqual(base);
+    expect(
+      composeTileVisual(base, { kind: "tint", color: "#ffd166" }),
+    ).toMatchObject({ frame: "mask-5", tintColor: "#ffd166" });
+    expect(
+      composeTileVisual(base, {
+        kind: "swap",
+        tile: "sprite.player.p1",
+      }),
+    ).toMatchObject({ frame: "mask-5", swapAssetId: "sprite.player.p1" });
+    expect(
+      composeTileVisual(base, { kind: "alpha", alpha: 0.4 }),
+    ).toMatchObject({ frame: "mask-5", alpha: 0.4 });
+    expect(
+      composeTileVisual(base, {
+        kind: "overlay",
+        assetId: "ui.icon.badge",
+      }),
+    ).toMatchObject({ overlayAssetId: "ui.icon.badge" });
+    expect(
+      composeTileVisual(base, {
+        kind: "sequence",
+        frames: ["asset-a", "asset-b"],
+      }),
+    ).toMatchObject({ sequenceAssetId: "asset-a" });
+  });
+
   it("applies and reverts a region tint", () => {
     const store = createTileVisualState();
     const opId = store.apply({

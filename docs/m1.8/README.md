@@ -1,6 +1,6 @@
 # M1.8 — Material and Pattern Layer
 
-**Status:** planned
+**Status:** implemented — placeholder proof complete; human visual/playtest review pending
 **Scope:** the visual-language foundation for tiles, objects, backgrounds, and UI.
 **Source decisions:** [ADR-0014–0017](../puzzle-engine/adr/README.md)
 **Implementation plan:**
@@ -55,42 +55,42 @@ level authoring cheap, not to finish the art here.
 
 ### Material model
 
-- [ ] `src/materials/` — types, definitions, resolution, autotile masks, variant
+- [x] `src/materials/` — types, definitions, resolution, autotile masks, variant
   selection.
-- [ ] Pack-level `materials.json` with materials, patterns, and variant sets.
-- [ ] `MaterialBinding` on tiles, entities, backgrounds, and UI slots.
-- [ ] Theme palette token references instead of raw media paths.
+- [x] Pack-level `materials.json` with materials, patterns, and variant sets.
+- [x] `MaterialBinding` on tiles, entities, backgrounds, and UI slots.
+- [x] Theme palette token references instead of raw media paths.
 
 ### Tile rendering
 
-- [ ] Optional `tileMaterials` grid and `tileMaterialLegend`.
-- [ ] `none`, `edge`, `corner`, `blob47`, `wang`, and `randomVariants` rules.
-- [ ] Deterministic variant selection by coordinate + seed.
-- [ ] `TileMaterialRenderer` with neighbour masks and fallbacks.
-- [ ] Collision remains owned by `layers.tiles`.
+- [x] Optional `tileMaterials` grid and `tileMaterialLegend`.
+- [x] `none`, `edge`, `corner`, `blob47`, `wang`, and `randomVariants` rules.
+- [x] Deterministic variant selection by coordinate + seed.
+- [x] `TileMaterialRenderer` with neighbour masks and fallbacks.
+- [x] Collision remains owned by `layers.tiles`.
 
 ### Pattern projection
 
-- [ ] `PatternProvider` with Phaser texture and CSS background outputs.
-- [ ] `world`, `screen`, and `local` pattern spaces.
-- [ ] World-space pattern continuity across tiles/objects.
-- [ ] Object pattern overlays.
-- [ ] Background pattern bindings.
-- [ ] UI material/pattern slots with CSS parity.
-- [ ] Reduced-motion static fallbacks.
+- [x] `PatternProvider` with Phaser texture and CSS background outputs.
+- [x] `world`, `screen`, and `local` pattern spaces.
+- [x] World-space pattern continuity across tiles/objects.
+- [x] Object pattern overlays.
+- [x] Background pattern bindings.
+- [x] UI material/pattern slots with CSS parity.
+- [x] Reduced-motion static fallbacks.
 
 ### Atlas and validation
 
-- [ ] `atlas` asset type and named regions.
-- [ ] `AtlasFrameRef` resolution.
-- [ ] `TileVariantSet` with mask/frame maps and fallback.
-- [ ] Asset schema `1.1`; old `1.x` manifests remain valid.
-- [ ] `pack:validate` coverage for materials, patterns, variants, atlases, and UI.
-- [ ] Placeholder-first atlas/material generation.
+- [x] `atlas` asset type and named regions.
+- [x] `AtlasFrameRef` resolution.
+- [x] `TileVariantSet` with mask/frame maps and fallback.
+- [x] Asset schema `1.1`; old `1.x` manifests remain valid.
+- [x] `pack:validate` coverage for materials, patterns, variants, atlases, and UI.
+- [x] Placeholder-first atlas/material generation.
 
 ### Proof content
 
-- [ ] A material-migrated section of 03 and/or 04 demonstrating:
+- [x] A material-migrated section of 03 and/or 04 demonstrating:
   - at least two materials in one room;
   - autotiled edges/corners;
   - deterministic variants;
@@ -168,6 +168,50 @@ Manual checks:
 - placeholder vs atlas rendering;
 - reduced motion with animated patterns;
 - old room with no material data unchanged.
+
+## 8a. Implementation outcome (2026-10-29)
+
+Delivered:
+
+- `src/materials/` with catalog, binding resolution, autotile masks, the 47-blob
+  reduction, deterministic variants, procedural pattern bitmaps, and a cached
+  pattern provider.
+- `atlas` assets with named regions, intrinsic dimensions, placeholder support,
+  `AtlasFrameRef`, and `resolveFrame`.
+- Optional `materials.json`, declared by `pack.json`; room tile grids/legends,
+  entity material bindings, background material/pattern bindings, and theme UI
+  slots.
+- Material-aware tile rendering with generated placeholder textures, atlas
+  variants, pattern overlays, and `TileVisualState` composition.
+- World/object/background pattern projection and CSS parity for panel, dialogue,
+  and debrief surfaces with contrast-safe fallback.
+- Fully materialized 03 and 04 proof rooms, a placeholder atlas, shared world/UI
+  patterns, and an object binding on the muscle gate.
+- Validation, boundary, accessibility, manifest, asset, room-boot, and browser
+  coverage.
+
+Deferred within the accepted architecture:
+
+- `wang` transitions (authored use is rejected as deferred).
+- Pattern animation (metadata is parsed; the static frame is rendered and
+  validation warns when animation is authored).
+- Image/atlas-sourced UI patterns (procedural UI patterns ship).
+- Final atlases and editor tooling.
+
+### Verification
+
+```text
+npm test              37 files, 362 tests passed
+npm run build         tsc clean + Vite production build
+npm run pack:validate PASS (expected forward/coverage warnings)
+npm run pack:smoke    PASS (45 IDs, 45 placeholders)
+npm run smoke:e2e     7/7 passed
+git diff --check      clean
+```
+
+Manual/visual review: captured the materialized 03 room at 1280×720; walls,
+floor, platform, atlas frames, object overlays, and background patterns render.
+Human playtest and final-art review remain pending.
 
 ## 9. Relationship to other documents
 

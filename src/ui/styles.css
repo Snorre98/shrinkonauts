@@ -74,6 +74,18 @@ body {
   animation: hud-in 400ms ease-out both;
 }
 
+.hud__panel {
+  background-color: var(
+    --material-panel-background,
+    color-mix(in srgb, var(--color-bg) 72%, transparent)
+  );
+  background-image: var(--material-panel-pattern, none);
+  background-size: var(--material-panel-pattern-size, auto);
+  background-position: var(--material-panel-pattern-position, 0 0);
+  background-repeat: var(--material-panel-pattern-repeat, repeat);
+  background-blend-mode: var(--material-panel-pattern-blend, normal);
+}
+
 .hud__panel--title {
   top: 0;
   left: 0;
@@ -509,6 +521,42 @@ kbd {
 .overlay:focus-visible {
   outline: 3px solid var(--color-joint);
   outline-offset: 4px;
+}
+
+.overlay--debrief {
+  background-color: var(
+    --material-debrief-background,
+    color-mix(in srgb, var(--color-bg) 96%, #000)
+  );
+  background-image: var(--material-debrief-pattern, none);
+  background-size: var(--material-debrief-pattern-size, auto);
+  background-position: var(--material-debrief-pattern-position, 0 0);
+  background-repeat: var(--material-debrief-pattern-repeat, repeat);
+  background-blend-mode: var(--material-debrief-pattern-blend, normal);
+}
+
+.overlay--gate {
+  background-color: var(
+    --material-gate-background,
+    color-mix(in srgb, var(--color-bg) 96%, #000)
+  );
+  background-image: var(--material-gate-pattern, none);
+  background-size: var(--material-gate-pattern-size, auto);
+  background-position: var(--material-gate-pattern-position, 0 0);
+  background-repeat: var(--material-gate-pattern-repeat, repeat);
+  background-blend-mode: var(--material-gate-pattern-blend, normal);
+}
+
+.overlay--map {
+  background-color: var(
+    --material-map-background,
+    color-mix(in srgb, var(--color-bg) 96%, #000)
+  );
+  background-image: var(--material-map-pattern, none);
+  background-size: var(--material-map-pattern-size, auto);
+  background-position: var(--material-map-pattern-position, 0 0);
+  background-repeat: var(--material-map-pattern-repeat, repeat);
+  background-blend-mode: var(--material-map-pattern-blend, normal);
 }
 
 .overlay__header {
@@ -1040,6 +1088,15 @@ kbd {
 
 .feedback-surface--speechBubble {
   border-radius: 16px 16px 16px 4px;
+  background-color: var(
+    --material-dialogue-background,
+    color-mix(in srgb, var(--color-bg) 92%, transparent)
+  );
+  background-image: var(--material-dialogue-pattern, none);
+  background-size: var(--material-dialogue-pattern-size, auto);
+  background-position: var(--material-dialogue-pattern-position, 0 0);
+  background-repeat: var(--material-dialogue-pattern-repeat, repeat);
+  background-blend-mode: var(--material-dialogue-pattern-blend, normal);
 }
 
 .feedback-surface--screenCaption {

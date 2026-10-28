@@ -27,7 +27,7 @@ currently in the code from what remains an accepted target.
 The upgrade is not a new game or a scripting engine. It is a set of optional
 content capabilities plus the runtime/rendering seams that make them real.
 
-### Implementation status (2026-10-28)
+### Implementation status (2026-10-29)
 
 | Area | Status in this branch |
 |---|---|
@@ -37,6 +37,9 @@ content capabilities plus the runtime/rendering seams that make them real.
 | Entity conversations replacing the global dialogue overlay | Implemented |
 | Composable effect plans, world effect ports, tile visual state | Implemented |
 | Capability descriptor coverage and feedback validation | Implemented |
+| Material/pattern catalog, tile material grids, autotiling, variants | Implemented |
+| Atlas assets, named regions, and atlas-backed tile variants | Implemented |
+| World/object/background pattern projection and UI material parity | Implemented |
 | Physical puzzle-gate bodies | Deferred; logical gate state is implemented |
 | `locked` props and `unlock` links | Deferred |
 | Conditional links (`requires`), authored `message`, `linkBlocked` | Deferred |
@@ -56,7 +59,8 @@ current branch.
 | Q2 | No-softlock recovery | Given a cleared or docked prop, a puzzle state, or a checkpoint, when the player resets, saves, or restores, then the state is restored and the puzzle remains completable. Locked props and side-return snapshots remain deferred. | ADR-0004, ADR-0008; `prop-lifecycle.feature`, `schema-compatibility.feature` |
 | Q3 | Data-only authorability | Given a puzzle author adds labels, beats, a named effect preset, a tile target, anchors, or sockets, when the pack validates, then the behavior is expressed in JSON with no level-specific code; invalid feedback references and tile targets are rejected with a code and message. | ADR-0008–0013; `capability-coverage.feature`, `cosmetic-effects.feature` |
 | Q4 | Backward compatibility | Given an existing 1.0 puzzle, 1.0 level, or 2.0 save, when it is loaded by the upgraded runtime, then its old behavior is preserved and optional feedback/conversation fields default off. | ADR-0008, ADR-0011; `schema-compatibility.feature`, `entity-conversations.feature` |
-| Q5 | Testability and observability | Given a surface, cue, effect, conversation, or tile visual change, when it is produced, then the pure feedback frame and simulation state expose it without Phaser/Matter, and the browser test can verify the rendered room, live region, and evidence export. | ADR-0001, ADR-0009–0013; all behavior contracts |
+| Q5 | Testability and observability | Given a surface, cue, effect, conversation, or tile visual change, when it is produced, then the pure feedback frame and simulation state expose it without Phaser/Matter, and the browser test can verify the rendered room, live region, and evidence export. | ADR-0001, ADR-0009–0017; all behavior contracts |
+| Q11 | Material language without gameplay authority | Given a room mixes materials, patterns, variants, or UI slots, when it is validated and rendered, then its visual language is data-driven and deterministic, while `layers.tiles` alone decides collision and materials add no save fields. | ADR-0014–0017; `material-patterns.feature` |
 
 ### 1.3 Stakeholders
 
@@ -159,17 +163,22 @@ flowchart TB
         Ecs[ecs kernel]
         Puzzle[puzzle pure dataflow]
         Pack[pack parse/validate]
+        Materials[materials catalog/patterns]
         Curriculum[curriculum evidence/debrief]
         Save[save v2.1]
     end
     Pack --> Puzzle
+    Pack --> Materials
     Game --> Puzzle
     Game --> Feedback
+    Game --> Materials
     Feedback --> Ecs
     Feedback --> Puzzle
     Game --> World
     Game --> UI
     UI --> Feedback
+    UI --> Materials
+    World --> Materials
     Game --> Save
     Game --> Curriculum
     Platform --> Game
@@ -184,7 +193,8 @@ modules may depend on.
 |---|---|---|---|
 | `core` | result/logging/learning-event primitives | `Result`, `silentLogger`, `LearningEventType` | helpers, constants |
 | `syllabus` | parse/lookup objectives, concepts, evidence | `parseSyllabus`, `objectiveById`, `conceptById`, `prerequisites` | validation tables |
-| `assets` | logical asset resolution/preload | `createAssets`, `AssetsModule`, `AssetId`, `PreloadPlan`, `PLAYER_ASSET_IDS` | provider chain, caches |
+| `assets` | logical asset resolution/preload; atlas regions and frame refs | `createAssets`, `AssetsModule`, `AssetId`, `PreloadPlan`, `PLAYER_ASSET_IDS`, `AtlasFrameRef`, `resolveFrame` | provider chain, caches |
+| `materials` | material/pattern definitions, bindings, autotile masks, variants, pattern resources | `createMaterialCatalog`, `materialById`, `patternById`, `resolveMaterialBinding`, `autotileMask`, `selectVariant`, `createPatternProvider` | catalogs, bitmap generation, pattern cache |
 | `puzzle` | pure typed dataflow; gate/prop/condition state | `PuzzleRuntime`, `validatePuzzleDocument`, `replaySolution`, document/state/event types | node maps, tick ordering, counters |
 | `ecs` | generic deterministic entity/component/system kernel | `createEcsWorld`, `createEntityId`, `defineComponent`, world/component/system types | component stores, system ordering |
 | `feedback` | capability descriptors, facts, director, surfaces, cues, effects | `createFeedbackDirector`, `projectSignal`, descriptors, effect presets, feedback types | ECS components, cue bookkeeping, projection |
@@ -412,8 +422,9 @@ unchanged and do not require the Worker. See
 | Schema evolution | Optional fields + minor versions; old content/saves default off (ADR-0008) |
 | Feedback | State-projected persistent surfaces plus sequenced, deduplicated transient cues; capability descriptors; co-op attribution; entity conversations; cosmetic effect plans (ADR-0009–0013) |
 | No-fail recovery | Reset, checkpoint, and save/restore restore valid state; blocked actions never consume evidence. Side return is deferred. |
-| Presentation as projection | Puzzle state drives sticky feedback surfaces; `RoomSimulation` prop state and `WorldEffectPlan` drive `RoomScene`; `world` imports no feedback. |
-| Accessibility | Keyboard-only play, focus management, owner-aware soft surfaces, persistent text/state alternatives, and a live region with actor attribution; reduced motion simplifies or removes effects without losing information (ADR-0013). |
+| Presentation as projection | Puzzle state drives sticky feedback surfaces; `RoomSimulation` prop state, `WorldEffectPlan`, material grids, and pattern bindings drive `RoomScene`; `world` imports no feedback. |
+| Material and pattern layer | `materials` resolves visual roles, autotile masks, variants, and cached pattern resources; `layers.tiles` remains the sole collision authority; atlases stay storage-agnostic behind `AtlasFrameRef`. |
+| Accessibility | Keyboard-only play, focus management, owner-aware soft surfaces, persistent text/state alternatives, and a live region with actor attribution; reduced motion simplifies or removes effects and pattern animation without losing information (ADR-0013, ADR-0016). |
 | Determinism | Fixed-step puzzle evaluation; no wall-clock or random behavior in `puzzle` |
 
 ## 9. Architectural Decisions
@@ -434,14 +445,14 @@ unchanged and do not require the Worker. See
 | [0012](adr/0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Accepted |
 | [0013](adr/0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects, composable effect plans, and accessibility | Accepted |
 
-Proposed material and pattern architecture (not yet accepted; see the ADR log):
+Material and pattern architecture:
 
 | # | Decision | Status |
 |---|---|---|
-| [0014](adr/0014-material-pattern-vocabulary.md) | Material and pattern vocabulary | Proposed |
-| [0015](adr/0015-tile-material-grid-autotiling.md) | Tile material grid, autotiling, and variants | Proposed |
-| [0016](adr/0016-pattern-projection-surfaces.md) | Pattern projection across tiles, objects, backgrounds, and UI | Proposed |
-| [0017](adr/0017-tile-variant-atlas-manifest.md) | Tile variant atlas and manifest metadata | Proposed |
+| [0014](adr/0014-material-pattern-vocabulary.md) | Material and pattern vocabulary | Accepted |
+| [0015](adr/0015-tile-material-grid-autotiling.md) | Tile material grid, autotiling, and variants | Accepted |
+| [0016](adr/0016-pattern-projection-surfaces.md) | Pattern projection across tiles, objects, backgrounds, and UI | Accepted |
+| [0017](adr/0017-tile-variant-atlas-manifest.md) | Tile variant atlas and manifest metadata | Accepted |
 
 ADR-0009 and ADR-0010 supersede the old "feedback is a toast / no new UI
 surface" constraints in §2, §4 (strategy item 4), and §8. ADR-0013 amends
@@ -452,9 +463,10 @@ deferred M1.5 capabilities.
 Implementation: [`feedback-implementation-plan.md`](feedback-implementation-plan.md)
 and the [M1.75 milestone](../m1.75/README.md).
 
-The material/pattern layer is planned separately in
+The material/pattern layer is implemented from
 [`material-pattern-implementation-plan.md`](material-pattern-implementation-plan.md)
-and the [M1.8 milestone](../m1.8/README.md).
+and the [M1.8 milestone](../m1.8/README.md). `wang`, pattern animation,
+image/atlas UI patterns, and final atlases remain implementation deferrals.
 
 Existing decisions remain in force: ADR-0034 (dataflow), ADR-0035 (body +
 prop), ADR-0036 (Matter boundary), ADR-0037 (solo union), ADR-0038 (tether),
@@ -509,6 +521,7 @@ flowchart TD
 | Q8 | Two entity conversations can be active while the other player keeps moving | `entity-conversations.feature` |
 | Q9 | A new node type requires one descriptor; every event is cued or explicitly silent | `capability-coverage.feature` |
 | Q10 | Effects never mutate state or collision; reduced motion preserves text and state | `cosmetic-effects.feature` |
+| Q11 | Material/pattern changes are visual and deterministic; collision, puzzle, and save state stay owned by their existing modules | `material-patterns.feature` |
 
 ### 10.2b Functional behavior contracts
 
@@ -518,6 +531,7 @@ flowchart TD
 | `behaviors/entity-conversations.feature` | Concurrent conversations, save/restore, recovery | 0011 | Implemented |
 | `behaviors/capability-coverage.feature` | Descriptor coverage, rejection reasons, event coverage | 0012 | Implemented |
 | `behaviors/cosmetic-effects.feature` | Direction/path/follow/cancel, tile visuals, reduced motion | 0013 | Implemented |
+| `behaviors/material-patterns.feature` | Material grid, autotiling, variants, projections, UI parity, no collision | 0014–0017 | Implemented; animation/wang deferred |
 | `behaviors/physical-gates.feature` | Gate bodies, latch, opt-in, reset/restore | 0002 | Deferred (logical gates implemented) |
 | `behaviors/gate-presentation.feature` | Open/closed sprites, fallback, cleared props | 0003 | Partial; feedback surfaces implemented |
 | `behaviors/prop-lifecycle.feature` | locked/free/unlock/clear/reset/save | 0004 | Partial; clear/cleared implemented |

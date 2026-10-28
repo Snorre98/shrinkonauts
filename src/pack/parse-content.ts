@@ -132,6 +132,8 @@ export function parsePack(value: unknown): Result<PackDocument> {
   if (!mapping.ok) return err(mapping.error);
   const licenses = readNonEmptyString(value, "licenses", PACK_CODE);
   if (!licenses.ok) return err(licenses.error);
+  const materials = readOptionalString(value, "materials", PACK_CODE);
+  if (!materials.ok) return err(materials.error);
 
   if (!isRecord(value.assetManifests)) {
     return err(`${PACK_CODE}: assetManifests must be an object`);
@@ -196,6 +198,7 @@ export function parsePack(value: unknown): Result<PackDocument> {
     theme: theme.value,
     mapping: mapping.value,
     licenses: licenses.value,
+    ...(materials.value ? { materials: materials.value } : {}),
     assetManifests: {
       ...(placeholder.value ? { placeholder: placeholder.value } : {}),
       ...(final.value ? { final: final.value } : {}),

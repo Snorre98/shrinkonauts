@@ -89,7 +89,7 @@ but deferred targets; the M1.75 feedback rows are implemented.
 11. [`feedback-implementation-plan.md`](feedback-implementation-plan.md) — the
     M1.75 feedback/effect layer plan.
 12. [`material-pattern-implementation-plan.md`](material-pattern-implementation-plan.md)
-    — the M1.8 material/pattern layer plan.
+    — the implemented M1.8 material/pattern plan and deferrals.
 13. [`../m1.75/README.md`](../m1.75/README.md) — the M1.75 milestone boundary
     and definition of done.
 14. [`../m1.8/README.md`](../m1.8/README.md) — the M1.8 material/pattern

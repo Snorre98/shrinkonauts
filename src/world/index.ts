@@ -39,9 +39,11 @@ export {
   isMovementVisual,
   simplifyForReducedMotion,
 } from "./effect-types";
-export { createTileVisualState } from "./tile-visuals";
+export { createTileVisualState, composeTileVisual } from "./tile-visuals";
 export type {
+  TileBaseVisual,
   TileKey,
+  TileVisualComposition,
   TileVisualRecord,
   TileVisualState,
 } from "./tile-visuals";

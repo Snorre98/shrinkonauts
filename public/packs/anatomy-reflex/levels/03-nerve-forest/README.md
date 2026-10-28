@@ -162,6 +162,15 @@ pause/close, `M` mute.
 - Human solo/co-op playtesting has not been performed. `level.json` records
   `playtestedSolo: false` and `playtestedCoop: false`.
 
+## M1.8 material proof
+
+The room is fully materialized for M1.8: bone walls/floor use `blob47`
+placeholder variants, the central platform uses `edge` autotiling backed by the
+`nerve-edge` atlas variant set, and the tile material grid never changes
+collision. The sky uses a screen-space nerve pattern and the mid background
+layer uses a world-space bone pattern. See `materials.json` and `theme.json` for
+the shared world/UI definitions. Human visual review is pending.
+
 ## Remaining implementation gaps (M2 chunk boundary)
 
 - Full M2 is not implemented. `05-reflex-core`, the Silicon fixture,

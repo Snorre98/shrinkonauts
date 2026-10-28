@@ -501,4 +501,65 @@ describe("puzzle gate recovery warnings", () => {
       ),
     ).toBe(true);
   });
+
+  it("validates material references, palettes, variants, and UI slots", () => {
+    const missingMaterial = validateAnatomy((copy) => {
+      const room = copy.rooms["room-nerve-forest"];
+      if (!room?.tileMaterialLegend) throw new Error("room legend missing");
+      room.tileMaterialLegend.b = {
+        materialId: "missing",
+        autotile: "blob47",
+      };
+    });
+    expect(
+      missingMaterial.issues.map((issue) => issue.code),
+    ).toContain("MATERIAL_REFERENCE_MISSING");
+
+    const badPalette = validateAnatomy((copy) => {
+      const material = copy.materials?.materials.bone;
+      if (!material) throw new Error("bone missing");
+      material.palette = ["missing-token"];
+    });
+    expect(
+      badPalette.issues.map((issue) => issue.code),
+    ).toContain("MATERIAL_PALETTE_INVALID");
+
+    const badUi = validateAnatomy((copy) => {
+      if (!copy.theme.ui.materials) throw new Error("ui materials missing");
+      copy.theme.ui.materials.panel = "missing";
+    });
+    expect(badUi.issues.map((issue) => issue.code)).toContain(
+      "UI_MATERIAL_INVALID",
+    );
+
+    const badBackground = validateAnatomy((copy) => {
+      const layer = copy.rooms["room-nerve-forest"]?.background.layers[0];
+      if (!layer) throw new Error("background layer missing");
+      layer.materialId = "missing";
+    });
+    expect(
+      badBackground.issues.map((issue) => issue.code),
+    ).toContain("BACKGROUND_MATERIAL_INVALID");
+
+    const wang = validateAnatomy((copy) => {
+      const room = copy.rooms["room-muscle-effector"];
+      if (!room?.tileMaterialLegend) throw new Error("room legend missing");
+      room.tileMaterialLegend.m.autotile = "wang";
+    });
+    expect(wang.issues.map((issue) => issue.code)).toContain(
+      "MATERIAL_DEFERRED",
+    );
+  });
+
+  it("keeps old content without a materials document valid", () => {
+    const legacy = validatePack({
+      room,
+      theme,
+      finalManifest,
+      packManifest: fixtureManifest,
+      fileExists,
+    });
+    expect(legacy.ok).toBe(true);
+    expect(legacy.issues).toEqual([]);
+  });
 });

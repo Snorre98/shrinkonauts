@@ -1,6 +1,6 @@
 # ADR-0016: Pattern projection across tiles, objects, backgrounds, and UI
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-28
 Deciders: Snorre
 Related: ADR-0013, ADR-0014, ADR-0015, ADR-0020, ADR-0030, ADR-0031
@@ -64,8 +64,10 @@ Rules:
 
 ### 2. Pattern provider
 
-`assets` owns a pattern provider that resolves a `PatternDefinition` into a
-renderer-agnostic resource:
+`materials` owns the pattern provider that resolves a `PatternDefinition` into
+a renderer-agnostic resource. It receives a structural asset resolver (the
+`assets` public lookup) so `materials` depends only on asset *types*, never on
+the assets implementation. `assets` owns atlas frame and image resolution.
 
 ```ts
 interface PatternResource {
@@ -151,14 +153,16 @@ it harms readability.
 
 ### 5. Background projection
 
-`RoomBackgroundLayer` may gain optional `materialId`/`patternBinding`. The
-pattern is sampled in that layer's space:
+`RoomBackgroundLayer` may gain optional `materialId` and `pattern` fields.
+The pattern is sampled in that layer's space:
 
-- `world` for a continuous environmental field;
-- `screen` for a fixed atmospheric texture;
-- `local` for a baked background layer.
+- `world` samples the layer's parallax world space, so the field moves with the
+  background layer and stays continuous across it;
+- `screen` samples viewport pixels for a fixed atmospheric texture;
+- `local` samples layer-local pixels for a baked background layer.
 
-Background patterns never create collision.
+Background patterns never create collision. They render above the layer image
+or tiling texture and below the tile layer.
 
 ### 6. UI projection
 
@@ -178,6 +182,10 @@ Background patterns never create collision.
   }
 }
 ```
+
+UI material slots are a closed vocabulary: `panel`, `dialogue`, `debrief`,
+`gate`, and `map`. A pack may omit all slots; the existing palette/CSS styling
+then applies unchanged.
 
 The UI material adapter:
 

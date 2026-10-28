@@ -21,9 +21,10 @@ modules.
 | `ecs` | deterministic entity/component/system kernel | `createEcsWorld`, `createEntityId`, `defineComponent`, `EntityId`, `ComponentType`, `EcsWorld`, system/context types | component stores, insertion order, system registration |
 | `feedback` | capability feedback, cues, effects, conversations as surfaces | `createFeedbackDirector`, `projectSignal`, `NODE_FEEDBACK`, `LINK_FEEDBACK`, `CAPABILITY_DEFAULTS`, `EFFECT_PRESETS`, `effectPresetIds`, `NODE_EFFECT_SOCKETS`, feedback types | ECS components, projection, cue dedupe/TTL, effect instances |
 | `syllabus` | syllabus parsing and lookups | `parseSyllabus`, `objectiveById`, `conceptById`, `prerequisites`, syllabus types | validation tables, warnings |
-| `assets` | logical asset resolution and preload | `createAssets`, `AssetsModule`, `AssetId`, `PreloadPlan`, `PLAYER_ASSET_IDS`, `parseManifest` | provider chain, texture caches |
+| `assets` | logical asset resolution and preload; atlas regions and frame refs | `createAssets`, `AssetsModule`, `AssetId`, `PreloadPlan`, `PLAYER_ASSET_IDS`, `parseManifest`, `AtlasFrameRef`, `resolveFrame` | provider chain, texture caches |
+| `materials` | material/pattern definitions, bindings, autotile masks, variants, pattern resources | `createMaterialCatalog`, `materialById`, `patternById`, `resolveMaterialBinding`, `autotileMask`, `selectVariant`, `createPatternProvider`, material/pattern types | catalogs, bitmap generation, pattern caches |
 | `puzzle` | pure typed dataflow, gate/prop/condition state | `PuzzleRuntime`, `createPuzzleRuntime`, `validatePuzzleDocument`, `replaySolution`, `PUZZLE_SCHEMA_VERSION`, document/state/event types | node maps, tick ordering, counters, pulse queue |
-| `pack` | parse/validate content and mapping | `parsePack`, `parseLevel`, `parseRoom`, `parseDialogue`, `parseGate`, `parsePuzzle`, `parseTheme`, `parseMapping`, `parseLicences`, `validatePack`, `FeedbackValidationVocabulary`, `buildMapping`, `normalizeMapping`, content types | file discovery, reference checks, feedback/tile checks, mapping diff |
+| `pack` | parse/validate content and mapping | `parsePack`, `parseLevel`, `parseRoom`, `parseDialogue`, `parseGate`, `parsePuzzle`, `parseTheme`, `parseMaterials`, `parseMapping`, `parseLicences`, `validatePack`, `FeedbackValidationVocabulary`, `buildMapping`, `normalizeMapping`, content types | file discovery, reference checks, feedback/tile/material checks, mapping diff |
 | `progression` | abilities, flags, gates, level graph, map views | `createProgression`, `hasAbility`, `unlockAbility`, `setFlag`, `flagValue`, `solveGate`, `isGateSolved`, `gateIsOpen`, `buildLevelGraph`, `reachableLevels`, `mapNodes`, `mapEdges`, progression types | snapshot normalization |
 | `narrative` | dialogue graph and session | `startDialogue`, `advanceDialogue`, `chooseDialogueOption`, `currentNode`, `conditionMet`, dialogue types | session history, choice records |
 | `curriculum` | evidence, debrief prompts, export | `createCurriculum`, `recordEvent`, `eventMatches`, `evidenceForObjective`, `evidenceSummary`, `debriefPrompts`, `exportEvidence`, `resetProgress` | filter matching, prompt derivation |
@@ -63,6 +64,10 @@ modules.
 | `game` | `routeSurfaceInput` / `SurfaceInputRouter` | Per-player soft-surface input routing | 0010 | Implemented |
 | `game` | `GameRuntime.conversations` / `startConversation` | Concurrent entity conversations | 0011 | Implemented |
 | `world` | `WorldEffectPort` / `TileVisualPort` / `simplifyForReducedMotion` | Narrow cosmetic rendering ports | 0013 | Implemented |
+| `assets` | `AssetsModule.resolveFrame` / `AtlasFrameRef` | Resolve individual assets or named atlas regions | 0017 | Implemented |
+| `materials` | `createMaterialCatalog` / `resolveMaterialBinding` | Material/pattern lookup and binding precedence | 0014 | Implemented |
+| `materials` | `autotileMask` / `selectVariant` / `createPatternProvider` | Masking, deterministic variants, cached world/UI pattern resources | 0015, 0016 | Implemented; `wang` and animation deferred |
+| `pack` | `parseMaterials` / material validation codes | Parse and validate `materials.json`, tile grids, variants, UI/background bindings | 0014–0017 | Implemented |
 | `save` | `RunSnapshot.conversations` | Persist conversation sessions; feedback ECS state stays ephemeral | 0011 | Implemented |
 | `save` | `RunSnapshot.returnTo` | Persist the main level during a side excursion | 0007 | Deferred |
 | `save` | `PropSnapshot.state` | Persist `cleared`; `locked` is deferred | 0004 | Partial |
@@ -101,12 +106,15 @@ flowchart TB
     ecs[ecs] --> core
     syllabus[syllabus] --> core
     assets[assets] --> core
+    materials[materials] --> assets
+    materials --> core
     puzzle[puzzle]
     feedback[feedback] --> core
     feedback --> ecs
     feedback --> puzzle
     pack[pack] --> assets
     pack --> core
+    pack --> materials
     pack --> puzzle
     pack --> syllabus
     progression[progression] --> pack
@@ -123,9 +131,11 @@ flowchart TB
     ui --> core
     ui --> curriculum
     ui --> feedback
+    ui --> materials
     ui --> pack
     world[world] --> assets
     world --> core
+    world --> materials
     world --> pack
     world --> puzzle
     game[game] --> assets
@@ -133,6 +143,7 @@ flowchart TB
     game --> core
     game --> curriculum
     game --> feedback
+    game --> materials
     game --> narrative
     game --> pack
     game --> progression
@@ -166,9 +177,9 @@ flowchart TB
 
 Precise new signatures are in [`interface.md`](interface.md). The full
 existing signatures remain in the source modules and are not duplicated here.
-M1.75 adds the `ecs` and `feedback` modules; it adds no new package. M1.8
-material/pattern work remains planned. The proposed M4 online co-op adds `net`
-and an out-of-tree `worker`; see §1.2.
+M1.75 adds the `ecs` and `feedback` modules; M1.8 adds `materials` and the atlas
+extensions to `assets`. The proposed M4 online co-op adds `net` and an
+out-of-tree `worker`; see §1.2.
 
 ## 4. Invariants
 
@@ -180,6 +191,11 @@ and an out-of-tree `worker`; see §1.2.
 - `feedback` imports only `core`, `ecs`, and `puzzle`; it never imports
   `world`, `game`, `ui`, or `pack`.
 - `world` never imports `game`, `save`, `curriculum`, `ui`, or `feedback`.
+- `materials` imports only `core` and asset *types*; `assets` never imports
+  `materials`.
+- `pack` uses the `materials` public API; `world` and `ui` never reach into
+  material internals.
+- Materials and patterns never mutate collision, puzzle, physics, or save state.
 - `pack` never imports `feedback`; its feedback vocabulary is injected.
 - `ui` may import feedback types and vocabulary, but not puzzle internals.
 - Only `game` writes gate/prop synchronization state; `world` exposes

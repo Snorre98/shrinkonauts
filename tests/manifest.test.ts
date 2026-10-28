@@ -101,6 +101,99 @@ describe("parseManifest", () => {
     }
   });
 
+  it("accepts an atlas with named regions and intrinsic dimensions", () => {
+    const result = parseManifest(
+      {
+        schemaVersion: "1.1",
+        id: "assets.atlas",
+        assets: {
+          "tile.test.atlas": {
+            type: "atlas",
+            src: "tiles/atlas.png",
+            width: 64,
+            height: 32,
+            regions: {
+              "mask-0": { x: 0, y: 0, width: 32, height: 32 },
+              "mask-1": { x: 32, y: 0, width: 32, height: 32 },
+            },
+          },
+        },
+      },
+      MANIFEST_URL,
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.manifest.assets["tile.test.atlas"]?.regions).toBeDefined();
+      expect(result.value.manifest.schemaVersion).toBe("1.1");
+    }
+  });
+
+  it("accepts a declared placeholder atlas without a source", () => {
+    const result = parseManifest(
+      {
+        schemaVersion: "1.1",
+        id: "assets.atlas",
+        assets: {
+          "tile.test.atlas": {
+            type: "atlas",
+            placeholder: true,
+            regions: {
+              cell: { x: 0, y: 0, width: 32, height: 32 },
+            },
+          },
+        },
+      },
+      MANIFEST_URL,
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects invalid atlas metadata", () => {
+    const cases = [
+      {
+        type: "atlas",
+        src: "tiles/atlas.png",
+      },
+      {
+        type: "atlas",
+        src: "tiles/atlas.png",
+        frameWidth: 32,
+        frameHeight: 32,
+        frames: 1,
+        regions: { cell: { x: 0, y: 0, width: 32, height: 32 } },
+      },
+      {
+        type: "atlas",
+        src: "tiles/atlas.png",
+        width: 32,
+        height: 32,
+        regions: { cell: { x: 16, y: 0, width: 32, height: 32 } },
+      },
+      {
+        type: "atlas",
+        src: "tiles/atlas.png",
+        regions: { "": { x: 0, y: 0, width: 32, height: 32 } },
+      },
+      {
+        type: "image",
+        src: "tiles/atlas.png",
+        regions: { cell: { x: 0, y: 0, width: 32, height: 32 } },
+      },
+    ];
+
+    for (const entry of cases) {
+      const result = parseManifest(
+        {
+          schemaVersion: "1.1",
+          id: "assets.atlas",
+          assets: { "tile.test.atlas": entry },
+        },
+        MANIFEST_URL,
+      );
+      expect(result.ok, JSON.stringify(entry)).toBe(false);
+    }
+  });
+
   it("allows explicit placeholder entries without a source", () => {
     const result = parseManifest(
       {

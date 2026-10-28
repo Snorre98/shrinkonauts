@@ -32,6 +32,15 @@ as runtime behavior.
 | [0012](0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Accepted |
 | [0013](0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects, composable effect plans, and accessibility | Accepted |
 
+## Material and pattern architecture
+
+| # | Decision | Status |
+|---|---|---|
+| [0014](0014-material-pattern-vocabulary.md) | Material and pattern vocabulary | Accepted |
+| [0015](0015-tile-material-grid-autotiling.md) | Tile material grid, autotiling, and variants | Accepted |
+| [0016](0016-pattern-projection-surfaces.md) | Pattern projection across tiles, objects, backgrounds, and UI | Accepted |
+| [0017](0017-tile-variant-atlas-manifest.md) | Tile variant atlas and manifest metadata | Accepted |
+
 ## Amendments
 
 - ADR-0009 amends ADR-0005's "no new UI surface" constraint.
@@ -41,14 +50,19 @@ as runtime behavior.
 The amended records stay immutable; these amendment notes are the index entry,
 not edits to ADR-0003 or ADR-0005.
 
-Proposed material and pattern architecture:
+ADR-0014–0017 were amended before acceptance:
 
-| # | Decision | Status |
-|---|---|---|
-| [0014](0014-material-pattern-vocabulary.md) | Material and pattern vocabulary | Proposed |
-| [0015](0015-tile-material-grid-autotiling.md) | Tile material grid, autotiling, and variants | Proposed |
-| [0016](0016-pattern-projection-surfaces.md) | Pattern projection across tiles, objects, backgrounds, and UI | Proposed |
-| [0017](0017-tile-variant-atlas-manifest.md) | Tile variant atlas and manifest metadata | Proposed |
+- `PatternProvider` lives in `materials`, using a structural asset resolver;
+  `assets` keeps atlas/frame resolution (ADR-0016).
+- Material and tile variants use storage-agnostic `AtlasFrameRef` values
+  (ADR-0014, ADR-0015, ADR-0017).
+- Manifest entries may declare intrinsic `width`/`height` for atlas region
+  bounds; placeholder atlases may omit `src` while retaining regions
+  (ADR-0017).
+- `pack.json` declares the optional `materials` document path (ADR-0014).
+- UI material slots are the closed set `panel`, `dialogue`, `debrief`, `gate`,
+  and `map`; background `world` sampling uses the layer's parallax space
+  (ADR-0016).
 
 Related records outside this system:
 

@@ -1,6 +1,6 @@
 # Material and Pattern Layer — Implementation Plan (M1.8)
 
-**Status:** plan only; no engine code is changed by this document
+**Status:** implemented (placeholder proof; deferred items recorded in §18)
 **Milestone:** [M1.8](../m1.8/README.md)
 **Source decisions:** [ADR-0014–0017](adr/README.md)
 **Contracts:** [module boundaries](contracts/module-boundaries.md),
@@ -600,6 +600,22 @@ M1.8 is complete when:
 - Collision from materials.
 - A UI redesign.
 - Full level material authoring beyond the proof section.
+
+## 18. Implementation outcome (2026-10-29)
+
+Implemented Phases 0–7 with the accepted amendments:
+
+- `PatternProvider` lives in `materials` and consumes a structural asset
+  resolver; `assets` owns atlas/frame resolution.
+- Variants use `AtlasFrameRef`; atlas entries carry optional intrinsic
+  `width`/`height`; `pack.json` declares the optional `materials` file.
+- Tile grids, autotiling, deterministic variants, generated placeholders,
+  atlas-backed variants, world/object/background projection, and UI CSS parity
+  are in the runtime.
+- 03 and 04 are fully materialized proof rooms; the M1.9 hub is unchanged.
+
+Deferred: `wang`, pattern animation, image/atlas UI patterns, final atlases,
+editor tooling. See the M1.8 milestone and traceability matrix for evidence.
 
 ## References
 

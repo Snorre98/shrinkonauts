@@ -65,7 +65,7 @@ needs a level override; that is a deliberate M2 decision, not an M1.9 change.
 ## 4. M1.8 dependency: material and pattern layer
 
 **When:** when M1.8 is accepted.  
-**Status:** M1.8 is planned, not implemented.
+**Status:** M1.8 is implemented; hub material-token adoption remains a follow-up.
 
 The hub currently uses plain CSS tokens and procedural placeholder art. When
 M1.8 lands:

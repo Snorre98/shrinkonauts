@@ -11,8 +11,16 @@ import { createAudio, type AudioModule } from "../audio";
 import { consoleLogger } from "../core/logger";
 import { collectHubAssetIds, loadHubContent, type LoadedHubContent } from "../hub";
 import {
+  createMaterialCatalog,
+  createPatternProvider,
+  type MaterialCatalog,
+  type PatternProvider,
+} from "../materials";
+import {
   catalogEntry,
+  collectMaterialAssetIds,
   collectRoomAssetIds,
+  collectRoomMaterialAssetIds,
   collectThemeAssetIds,
   loadPackCatalog,
   loadPackContent,
@@ -22,8 +30,11 @@ import {
 import { createSave, type SaveModule } from "../save";
 import {
   applyTheme,
+  applyUiMaterialStyles,
+  clearUiMaterialStyles,
   mountGameUi,
   mountHubUi,
+  resolveUiMaterialStyles,
   type GameUi,
   type GameUiDiagnostics,
   type HubMode,
@@ -66,6 +77,8 @@ export interface PackBundle {
   plan: PreloadPlan;
   audio: AudioModule;
   runtime: GameRuntime;
+  materials: MaterialCatalog;
+  patterns: PatternProvider;
   warnings: string[];
 }
 
@@ -252,6 +265,7 @@ export class AppController {
     this.warnings = [...loaded.value.warnings];
 
     applyTheme(this.hubContent.theme);
+    clearUiMaterialStyles();
     document.title = "Shrinkonauts — The Bathroom";
 
     this.hubAssets = createAssets({
@@ -676,8 +690,13 @@ export class AppController {
       logger: consoleLogger,
     });
 
+    const materials = createMaterialCatalog(content.materials);
+    const patterns = createPatternProvider({ assets });
+
     const ids = [
       ...Object.values(content.rooms).flatMap(collectRoomAssetIds),
+      ...Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds),
+      ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
       ...Object.values(PLAYER_ASSET_IDS),
     ];
@@ -735,6 +754,8 @@ export class AppController {
         plan,
         audio,
         runtime,
+        materials,
+        patterns,
         warnings,
       };
     } catch (error) {
@@ -755,6 +776,15 @@ export class AppController {
     applyTheme(bundle.content.theme);
     document.title = `${bundle.content.pack.title} — Shrinkonauts`;
     this.applySettings();
+
+    const uiMaterials = resolveUiMaterialStyles({
+      theme: bundle.content.theme,
+      catalog: bundle.materials,
+      patterns: bundle.patterns,
+      reducedMotion: this.saveData.settings.accessibility.reducedMotion,
+    });
+    applyUiMaterialStyles(uiMaterials.styles);
+    for (const warning of uiMaterials.warnings) this.warn(warning);
 
     this.packContent = bundle.content;
     this.packAssets = bundle.assets;
@@ -843,6 +873,8 @@ export class AppController {
         theme: bundle.content.theme,
         assets: bundle.assets,
         plan: bundle.plan,
+        materials: bundle.materials,
+        patterns: bundle.patterns,
         isReducedMotion: () =>
           this.saveData.settings.accessibility.reducedMotion,
         shouldIgnoreInput: () => {
@@ -927,6 +959,7 @@ export class AppController {
     await this.setTransition(true, false);
     this.destroyRoom();
     applyTheme(this.hubContent.theme);
+    clearUiMaterialStyles();
     document.title = "Shrinkonauts — The Bathroom";
     this.applySettings();
     this.state = markHub(this.state, "Back in the bathroom.");
@@ -940,6 +973,7 @@ export class AppController {
     void this.setTransition(false, true);
     this.destroyRoom();
     applyTheme(this.hubContent.theme);
+    clearUiMaterialStyles();
     document.title = "Shrinkonauts — The Bathroom";
     this.ensureHubAudio();
     this.activeAudio = this.hubAudio;

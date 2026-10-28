@@ -305,6 +305,33 @@ describe("anatomy level anchors", () => {
     }
   });
 
+  it("parses fully materialized proof rooms without changing dimensions", () => {
+    for (const levelId of ["03-nerve-forest", "04-muscle-effector"]) {
+      const room = anatomyRoom(levelId);
+      expect(room.tileMaterials, levelId).toHaveLength(room.height);
+      expect(
+        room.tileMaterials?.every((row) => row.length === room.width),
+        levelId,
+      ).toBe(true);
+      expect(room.tileMaterialLegend, levelId).toBeDefined();
+      expect(room.defaultMaterialId, levelId).toBeTruthy();
+      expect(Number.isInteger(room.materialSeed), levelId).toBe(true);
+    }
+
+    const muscle = anatomyRoom("04-muscle-effector");
+    const gate = muscle.entities?.find((entity) => entity.id === "muscle-gate");
+    expect(gate?.components?.material).toEqual({
+      materialId: "muscle",
+      patternId: "muscle-fibers",
+      pattern: {
+        space: "world",
+        scale: 0.75,
+        opacity: 0.35,
+        blend: "overlay",
+      },
+    });
+  });
+
   it("resolves authored sockets and falls back to centre", () => {
     const muscle = anatomyRoom("04-muscle-effector");
     const terminal = muscle.entities?.find(

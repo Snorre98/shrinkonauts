@@ -11,6 +11,7 @@ import {
   parsePack,
 } from "./parse-content";
 import { parsePuzzle } from "./parse-puzzle";
+import { parseMaterials } from "./parse-materials";
 import type {
   DialogueDocument,
   GateDocument,
@@ -20,6 +21,7 @@ import type {
   RoomDocument,
   ThemeDocument,
 } from "./types";
+import type { MaterialsDocument } from "../materials";
 import type { PuzzleDocument } from "../puzzle";
 
 export interface LoadPackContentOptions {
@@ -90,6 +92,17 @@ export async function loadPackContent(
   const themeResult = parseTheme(themeJson.value);
   if (!themeResult.ok) return err(`${pack.theme}: ${themeResult.error}`);
   const theme: ThemeDocument = themeResult.value;
+
+  let materials: MaterialsDocument | undefined;
+  if (pack.materials) {
+    const materialsJson = await json(new URL(pack.materials, packUrl), fetchImpl);
+    if (!materialsJson.ok) return err(materialsJson.error);
+    const materialsResult = parseMaterials(materialsJson.value);
+    if (!materialsResult.ok) {
+      return err(`${pack.materials}: ${materialsResult.error}`);
+    }
+    materials = materialsResult.value;
+  }
 
   const syllabusJson = await json(
     new URL(`${pack.syllabusId}.json`, syllabusBase),
@@ -199,6 +212,7 @@ export async function loadPackContent(
     dialogues,
     gates,
     puzzles,
+    ...(materials ? { materials } : {}),
     warnings,
   });
 }

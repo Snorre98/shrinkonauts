@@ -36,6 +36,16 @@ async function boot(page: Page): Promise<string[]> {
     return Boolean(app?.runtime) && app?.game.scene.isActive("room") === true;
   });
   await expect(page.locator(".hud__title")).toHaveText("Nerve Forest");
+  const materialPanel = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    const panel = document.querySelector<HTMLElement>(".hud__panel");
+    return {
+      pattern: root.getPropertyValue("--material-panel-pattern").trim(),
+      background: panel ? getComputedStyle(panel).backgroundImage : "",
+    };
+  });
+  expect(materialPanel.pattern).toContain("data:image/svg+xml");
+  expect(materialPanel.background).not.toBe("none");
   await waitForRoom(page, "room-nerve-forest");
   await expect(page.locator(".overlay--error")).toHaveCount(0);
   return consoleErrors;

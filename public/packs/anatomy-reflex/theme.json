@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "id": "anatomy-atlas",
   "palette": {
     "bg": "#101a20",
@@ -23,6 +23,16 @@
     "border": 2,
     "fontScale": 1,
     "reducedMotion": false,
+    "materials": {
+      "panel": "bone",
+      "dialogue": "nerve",
+      "debrief": "membrane"
+    },
+    "patterns": {
+      "panel": { "patternId": "bone-cortex", "space": "screen", "scale": 0.5, "opacity": 0.18 },
+      "dialogue": { "patternId": "nerve-fibers", "space": "screen", "scale": 0.5, "opacity": 0.18 },
+      "debrief": { "patternId": "membrane-cells", "space": "screen", "scale": 0.5, "opacity": 0.16 }
+    },
     "assets": {
       "badge": "ui.icon.badge",
       "icon.scan": "ui.icon.scan",

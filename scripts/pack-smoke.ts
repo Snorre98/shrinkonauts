@@ -9,7 +9,9 @@ import { silentLogger } from "../src/core/logger";
 import { NODE_EFFECT_SOCKETS, effectPresetIds } from "../src/feedback";
 import { GameRuntime, type AudioPort, type RuntimeInput } from "../src/game/runtime";
 import {
+  collectMaterialAssetIds,
   collectRoomAssetIds,
+  collectRoomMaterialAssetIds,
   collectThemeAssetIds,
   parseRoom,
   parseTheme,
@@ -106,6 +108,7 @@ function runMode(
   const ids = [
     ...new Set([
       ...collectRoomAssetIds(room),
+      ...collectRoomMaterialAssetIds(room),
       ...collectThemeAssetIds(theme),
       ...Object.values(PLAYER_ASSET_IDS),
     ]),
@@ -442,6 +445,8 @@ function assertAnatomyAssets(content: ReturnType<typeof loadContent>): {
   const ids = [
     ...new Set([
       ...Object.values(content.rooms).flatMap(collectRoomAssetIds),
+      ...Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds),
+      ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
       ...Object.values(PLAYER_ASSET_IDS),
     ]),

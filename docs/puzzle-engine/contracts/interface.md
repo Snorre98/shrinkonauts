@@ -1,8 +1,8 @@
 # Interface contract
 
-Public operations introduced or changed by the puzzle-engine and M1.75 feedback
-work. Source ADRs: ADR-0001–0013. Existing operations keep their current
-signatures.
+Public operations introduced or changed by the puzzle-engine, M1.75 feedback, and
+M1.8 material/pattern work. Source ADRs: ADR-0001–0017. Existing operations keep
+their current signatures.
 
 ## Implementation status
 
@@ -14,6 +14,9 @@ signatures.
 | Entity conversations and per-player surface routing | Implemented |
 | Level `feedback` content block | Implemented |
 | Feedback validation vocabulary injection | Implemented |
+| Material/pattern catalog, tile grids, autotiling, variants | Implemented; `wang` deferred |
+| Atlas assets, regions, frame refs, tile variant sets | Implemented |
+| World/object/background pattern projection and UI material parity | Implemented; animation and image/atlas UI patterns deferred |
 | `clear` link and `propCleared` | Implemented |
 | `locked`, `unlock`, `requires`, `message`, `linkBlocked` | Deferred |
 | Physical gate-body operations | Deferred |
@@ -102,6 +105,51 @@ const feedbackVocabulary = {
 
 If content authors feedback and no vocabulary is supplied, validation reports
 `FEEDBACK_VOCABULARY_MISSING` rather than silently skipping enforcement.
+
+## 1a. `materials`, `assets`, and room/theme bindings
+
+```ts
+function createMaterialCatalog(document?: MaterialsDocument): MaterialCatalog;
+function materialById(catalog: MaterialCatalog, id: string): MaterialDefinition | undefined;
+function patternById(catalog: MaterialCatalog, id: string): PatternDefinition | undefined;
+function resolveMaterialBinding(
+  catalog: MaterialCatalog,
+  binding: MaterialBinding,
+): Result<ResolvedMaterialBinding, string>;
+function autotileMask(
+  grid: MaterialGrid,
+  x: number,
+  y: number,
+  materialId: string,
+): number;
+function selectVariant(
+  rule: Pick<TileMaterialRule, "materialId">,
+  mask: number,
+  x: number,
+  y: number,
+  seed: number,
+  variants: readonly AtlasFrameRef[] | undefined,
+): AtlasFrameRef | null;
+function createPatternProvider(options?: PatternProviderOptions): PatternProvider;
+
+interface AssetsModule {
+  resolveFrame(ref: AtlasFrameRef): ResolvedFrame | null;
+  atlasRegion(assetId: AssetId, frame: string): AtlasRegion | null;
+}
+```
+
+`PatternProvider.resolve(definition, overrides)` returns a cached
+`PatternResource` with a procedural bitmap/CSS data URL or an image/atlas
+reference. It is pure and renderer-agnostic.
+
+`RoomSceneConfig` gains optional `materials` and `patterns`; `ui` gains
+`resolveUiMaterialStyles`, `applyUiMaterialStyles`, and
+`clearUiMaterialStyles`. `parseMaterials` is the pack parser for
+`materials.json`.
+
+Background bindings use `RoomBackgroundLayer.materialId` and
+`.pattern`. A background `world` pattern samples the layer's parallax space;
+`screen` is viewport-fixed and `local` is layer-local.
 
 ## 2. `ecs` — deterministic kernel
 

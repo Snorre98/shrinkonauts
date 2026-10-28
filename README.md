@@ -1,11 +1,12 @@
 # Shrinkonauts
 
 A two-player co-op platformer about shrinking into the body. This repository
-contains the **M1.9 bathroom hub** on top of the M1.75 feedback/effect layer and
-the `03-nerve-forest → 04-muscle-effector` vertical slice: pack/syllabus
-loading, entity conversations, scanning, Node Run, Endplate Ferry, debrief,
-save/load, co-op attribution, anchored feedback surfaces, cosmetic effects,
-content validation, and evidence export.
+contains the **M1.9 bathroom hub**, the M1.8 material/pattern layer, and the
+`03-nerve-forest → 04-muscle-effector` vertical slice: pack/syllabus loading,
+entity conversations, scanning, Node Run, Endplate Ferry, debrief, save/load,
+co-op attribution, anchored feedback surfaces, cosmetic effects, material
+autotiling and variants, world/object/background pattern projection, UI material
+slots, content validation, and evidence export.
 
 The app boots into a real-world bathroom hub. The washing machine menu selects
 the Anatomy cycle or shows Silicon as a gated M2 cycle, chooses Solo or Local
@@ -110,6 +111,17 @@ The hub loads only `public/packs/index.json` and `public/hub/bathroom/`. Pack
 content and assets load when a cycle starts; a failure returns to the hub with
 the error and a working Start button.
 
+## The M1.8 material and pattern layer
+
+`src/materials/` resolves material/pattern definitions, autotile masks,
+deterministic variants, and cached procedural pattern resources. `materials.json`
+is optional and declared by `pack.json`; rooms may author `tileMaterials` and a
+legend, entities may author `components.material`, backgrounds may author
+`materialId`/`pattern`, and the theme may map UI slots. `layers.tiles` remains
+the sole collision authority. Atlases extend the asset manifest with named
+regions and storage-agnostic `AtlasFrameRef` values. See
+[`docs/m1.8/README.md`](docs/m1.8/README.md).
+
 ## The M1.75 slice
 
 1. **03 — Nerve Forest (`puzzle-node-run`).** Talk to the Neuron Keeper, scan
@@ -138,8 +150,10 @@ ephemeral and are rebuilt from puzzle/world state after restore.
   references reported as warnings.
 - Audio is limited to short cues (no music or ambience loops).
 - Full key rebinding is deferred.
-- Final art/audio, the bathroom hub art pass (M3.5), and the M1.8
-  material/pattern layer are deferred.
+- Final art/audio, the bathroom hub art pass (M3.5), and human M1.8 visual
+  review are deferred. M1.8 `wang` transitions, pattern animation,
+  image/atlas-sourced UI patterns, final material atlases, and editor tooling are
+  deferred within the accepted architecture.
 - Physical puzzle-gate bodies, `locked`/`unlock` props, conditional links,
   per-level debrief overrides, and side-level travel are accepted ADR targets but
   are **not implemented** in this branch. See
@@ -241,10 +255,12 @@ modified by this codebase.
 ## Status
 
 M1.9's bathroom hub is **core implementation complete; manual visual and
-accessibility playtest pending**. The automated suite passes (32 files / 317
-tests), pack validation/smoke pass, and the browser smoke passes 7/7. The hub
-starts Anatomy in Solo or Local co-op, returns to the bathroom, and preserves
-per-pack saves. Silicon and online co-op remain gated by M2 and M4.
+accessibility playtest pending**. M1.8's material/pattern layer is implemented
+with placeholder proof content; human visual review is pending. The automated
+suite passes (37 files / 362 tests), pack validation/smoke pass, and the browser
+smoke passes 7/7. The hub starts Anatomy in Solo or Local co-op, returns to the
+bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
+M2 and M4.
 
 M1.75 remains **implementation complete; manual solo/co-op playtest pending**.
 `authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until a

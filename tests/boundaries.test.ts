@@ -219,6 +219,50 @@ describe("module boundaries", () => {
     expect(feedbackImports).toBeGreaterThan(0);
   });
 
+  it("keeps materials pure and below pack/world/ui", () => {
+    const materialFiles = sourceFiles(
+      fileURLToPath(new URL("../src/materials/", import.meta.url)),
+    );
+    for (const file of materialFiles) {
+      const source = read(file);
+      expect(source, `${relativeToSrc(file)} must not import Phaser`).not.toMatch(
+        /from\s+["']phaser["']/,
+      );
+      expect(source, `${relativeToSrc(file)} must not import Matter`).not.toMatch(
+        /from\s+["']matter-js["']/,
+      );
+      for (const target of ["world", "game", "ui", "pack", "hub"]) {
+        expect(
+          source,
+          `${relativeToSrc(file)} must not import ${target}`,
+        ).not.toMatch(new RegExp(`from\\s+["']\\.\\./${target}(?:/[^"']*)?["']`));
+      }
+      for (const match of source.matchAll(/from\s+["'](\.[^"']+)["']/g)) {
+        const specifier = match[1] ?? "";
+        const target = specifier.startsWith("./")
+          ? "materials"
+          : (specifier.replace(/^(\.\.\/)+/, "").split("/")[0] ?? "");
+        expect(target, `${relativeToSrc(file)} -> ${specifier}`).toMatch(
+          /^(materials|core|assets)$/,
+        );
+      }
+    }
+  });
+
+  it("uses the materials public API from pack, world, and ui", () => {
+    for (const moduleName of ["pack", "world", "ui", "game"]) {
+      for (const file of sourceFiles(
+        fileURLToPath(new URL(`../src/${moduleName}/`, import.meta.url)),
+      )) {
+        const source = read(file);
+        expect(
+          source,
+          `${relativeToSrc(file)} must not reach into materials internals`,
+        ).not.toMatch(/from\s+["']\.\.\/materials\/[^"']+["']/);
+      }
+    }
+  });
+
   it("keeps module dependencies acyclic and directionally ordered", () => {
     // ADR-0002: domain modules never depend on adapters, and adapters only
     // depend downwards. A module may always import from itself.
@@ -228,16 +272,17 @@ describe("module boundaries", () => {
       feedback: ["core", "ecs", "puzzle"],
       syllabus: ["core"],
       assets: ["core"],
+      materials: ["assets", "core"],
       puzzle: [],
-      pack: ["assets", "core", "puzzle", "syllabus"],
+      pack: ["assets", "core", "materials", "puzzle", "syllabus"],
       hub: ["assets", "core", "pack"],
       progression: ["pack"],
       narrative: ["pack"],
       curriculum: ["core", "pack", "syllabus"],
       save: ["curriculum", "progression", "puzzle"],
       audio: ["assets", "core"],
-      ui: ["assets", "core", "curriculum", "feedback", "pack"],
-      world: ["assets", "core", "hub", "pack", "puzzle"],
+      ui: ["assets", "core", "curriculum", "feedback", "materials", "pack"],
+      world: ["assets", "core", "hub", "materials", "pack", "puzzle"],
       game: [
         "assets",
         "audio",
@@ -245,6 +290,7 @@ describe("module boundaries", () => {
         "curriculum",
         "feedback",
         "hub",
+        "materials",
         "narrative",
         "pack",
         "progression",

@@ -205,6 +205,15 @@ pause/close, `M` mute.
   runtime source; the vault syllabus and the EV-5/EV-6 numbering conflict were
   not edited.
 
+## M1.8 material proof
+
+The room is fully materialized for M1.8: muscle walls/floor use `edge`
+autotiling and the entrance strip uses membrane `corner` autotiling. The
+`muscle-gate` carries a world-space `muscle-fibers` overlay that shares phase
+with the muscle floor. The near background layer uses the same pattern in
+world space. Materials are visual only; collision comes from `layers.tiles`.
+Human visual review is pending.
+
 ## Remaining implementation gaps (M2 chunk boundary)
 
 - Full M2 is not implemented. `05-reflex-core`, the Silicon fixture,

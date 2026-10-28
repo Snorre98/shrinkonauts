@@ -24,6 +24,10 @@ in [`architecture.md`](architecture.md) is the authority where these differ.
 | 0011 | §4, §5.2, §6.5, §6.6, §8, §10 | entity-conversations | interface, data-model, state-machine, failure-semantics | Q4, Q8 | Implemented |
 | 0012 | §4, §5.2, §6.1, §6.5, §8, §10 | capability-coverage | interface, module-boundaries, data-model | Q3, Q5, Q9 | Implemented |
 | 0013 | §4, §5.2, §6.5, §6.6, §8, §10 | cosmetic-effects | interface, module-boundaries, state-machine, failure-semantics | Q5, Q10 | Implemented |
+| 0014 | §2, §4, §5.2, §8, §9, §10 | material-patterns | module-boundaries, data-model, interface | Q3, Q11 | Implemented; animation deferred |
+| 0015 | §4, §5.2, §6.1, §8, §10 | material-patterns | data-model, interface, state-machine | Q3, Q11 | Implemented; `wang` deferred |
+| 0016 | §4, §5.2, §6.5, §6.6, §8, §10 | material-patterns | module-boundaries, data-model, interface | Q5, Q10, Q11 | Implemented; animation and image/atlas UI patterns deferred |
+| 0017 | §2, §5.2, §8, §10 | material-patterns | data-model, interface, module-boundaries | Q4, Q11 | Implemented |
 
 ## Behavior contract ↔ quality scenario coverage
 
@@ -39,6 +43,7 @@ in [`architecture.md`](architecture.md) is the authority where these differ.
 | Q8 concurrent entity conversations | `entity-conversations.feature` |
 | Q9 descriptor/event coverage | `capability-coverage.feature` |
 | Q10 cosmetic effects and reduced motion | `cosmetic-effects.feature` |
+| Q11 material/pattern visual language, variants, UI parity | `material-patterns.feature` |
 
 ## Behavior contract ↔ ADR coverage
 
@@ -48,6 +53,7 @@ in [`architecture.md`](architecture.md) is the authority where these differ.
 | `entity-conversations.feature` | 0011 |
 | `capability-coverage.feature` | 0012 |
 | `cosmetic-effects.feature` | 0013 |
+| `material-patterns.feature` | 0014, 0015, 0016, 0017 |
 | `physical-gates.feature` | 0002 |
 | `gate-presentation.feature` | 0003 |
 | `prop-lifecycle.feature` | 0004 |
@@ -55,6 +61,7 @@ in [`architecture.md`](architecture.md) is the authority where these differ.
 | `per-level-debrief.feature` | 0006 |
 | `map-travel.feature` | 0007 |
 | `schema-compatibility.feature` | 0008 |
+| `material-patterns.feature` | 0014, 0015, 0016, 0017 |
 
 ## ADR → contract completeness
 
@@ -73,6 +80,10 @@ in [`architecture.md`](architecture.md) is the authority where these differ.
 | 0011 | interface, data-model, state-machine | 5 |
 | 0012 | interface, module-boundaries, data-model | 3, 8 |
 | 0013 | interface, module-boundaries, state-machine, failure-semantics | 6, 8 |
+| 0014 | data-model, interface, module-boundaries | 2, 7 |
+| 0015 | data-model, interface, state-machine | 3, 7 |
+| 0016 | interface, module-boundaries, data-model | 4, 5, 7 |
+| 0017 | data-model, interface, module-boundaries | 1, 7 |
 
 ## Feedback layer (M1.75)
 
@@ -88,6 +99,20 @@ implementation.
 | Entity conversations | `entity-conversations.feature` | interface, data-model, state-machine |
 | Capability descriptors, event coverage, reasons | `capability-coverage.feature` | interface, module-boundaries, data-model |
 | Effects, tile visuals, reduced motion | `cosmetic-effects.feature` | interface, module-boundaries, state-machine, failure-semantics |
+
+## Material and pattern layer (M1.8)
+
+| Area | Behavior contract | Precise contracts |
+|---|---|---|
+| Material/pattern catalog, bindings, data-only JSON authoring | `material-patterns.feature` | data-model, interface |
+| Tile material grid, autotiling, deterministic variants | `material-patterns.feature` | data-model, interface, module-boundaries |
+| Atlas assets, regions, frame refs, placeholder atlases | `material-patterns.feature` | data-model, interface |
+| World/object/background pattern projection | `material-patterns.feature` | interface, module-boundaries |
+| UI material/pattern CSS parity and contrast | `material-patterns.feature` | interface, data-model |
+| No collision/puzzle/save authority; old-room compatibility | `material-patterns.feature` | module-boundaries, data-model |
+
+Deferred within the accepted target: `wang` transitions, pattern animation,
+image/atlas-sourced UI patterns, final atlases, and editor tooling.
 
 ## Online co-op (M4, proposed)
 

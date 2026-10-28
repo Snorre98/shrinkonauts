@@ -26,6 +26,63 @@ function isSchemaVersionSupported(value: unknown): value is string {
   return typeof value === "string" && /^1\.\d+$/.test(value);
 }
 
+function isPositiveInteger(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    Number.isInteger(value) &&
+    value > 0
+  );
+}
+
+function parseAtlasRegions(
+  id: string,
+  raw: unknown,
+): Result<Record<string, { x: number; y: number; width: number; height: number }>> {
+  if (!isRecord(raw)) {
+    return err(`ASSET_MANIFEST_INVALID: ${id} atlas regions must be an object`);
+  }
+
+  const regions: Record<
+    string,
+    { x: number; y: number; width: number; height: number }
+  > = {};
+  for (const [name, value] of Object.entries(raw)) {
+    if (name.trim() === "") {
+      return err(`ASSET_MANIFEST_INVALID: ${id} atlas region names must be non-empty`);
+    }
+    if (!isRecord(value)) {
+      return err(
+        `ASSET_MANIFEST_INVALID: ${id} atlas region "${name}" must be an object`,
+      );
+    }
+    if (
+      !Number.isInteger(value.x) ||
+      !Number.isInteger(value.y) ||
+      (value.x as number) < 0 ||
+      (value.y as number) < 0 ||
+      !isPositiveInteger(value.width) ||
+      !isPositiveInteger(value.height)
+    ) {
+      return err(
+        `ASSET_MANIFEST_INVALID: ${id} atlas region "${name}" needs non-negative integer x/y and positive integer width/height`,
+      );
+    }
+    regions[name] = {
+      x: value.x as number,
+      y: value.y as number,
+      width: value.width,
+      height: value.height,
+    };
+  }
+
+  if (Object.keys(regions).length === 0) {
+    return err(`ASSET_MANIFEST_INVALID: ${id} atlas requires at least one region`);
+  }
+
+  return ok(regions);
+}
+
 function parseEntry(
   id: string,
   raw: unknown,
@@ -43,6 +100,14 @@ function parseEntry(
 
   const type = raw.type;
   const entry: ManifestAssetEntry = { type };
+
+  for (const key of ["width", "height"] as const) {
+    if (raw[key] === undefined) continue;
+    if (!isPositiveInteger(raw[key])) {
+      return err(`ASSET_MANIFEST_INVALID: ${id} has invalid ${key}`);
+    }
+    entry[key] = raw[key];
+  }
 
   if (raw.src !== undefined) {
     if (typeof raw.src !== "string" || raw.src.trim() === "") {
@@ -126,6 +191,46 @@ function parseEntry(
       return err(`ASSET_MANIFEST_INVALID: ${id} has invalid licence`);
     }
     entry.license = raw.license;
+  }
+
+  if (raw.regions !== undefined) {
+    if (type !== "atlas") {
+      return err(
+        `ASSET_MANIFEST_INVALID: ${id} regions are only valid on atlas assets`,
+      );
+    }
+    const regions = parseAtlasRegions(id, raw.regions);
+    if (!regions.ok) return regions;
+    entry.regions = regions.value;
+  }
+
+  if (type === "atlas") {
+    if (
+      entry.frameWidth !== undefined ||
+      entry.frameHeight !== undefined ||
+      entry.frames !== undefined ||
+      entry.fps !== undefined ||
+      entry.loop !== undefined
+    ) {
+      return err(
+        `ASSET_MANIFEST_INVALID: ${id} atlas is not an animation format`,
+      );
+    }
+    if (!entry.regions) {
+      return err(`ASSET_MANIFEST_INVALID: ${id} atlas requires regions`);
+    }
+    if (entry.width !== undefined && entry.height !== undefined) {
+      for (const [name, region] of Object.entries(entry.regions)) {
+        if (
+          region.x + region.width > entry.width ||
+          region.y + region.height > entry.height
+        ) {
+          return err(
+            `ASSET_MANIFEST_INVALID: ${id} atlas region "${name}" exceeds ${entry.width}×${entry.height}`,
+          );
+        }
+      }
+    }
   }
 
   if (type === "sheet") {

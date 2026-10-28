@@ -1,4 +1,17 @@
 export { applyTheme, mountHud } from "./hud";
+export {
+  applyUiMaterialStyles,
+  clearUiMaterialStyles,
+  contrastRatio,
+  mixHex,
+  resolveUiMaterialStyles,
+} from "./material-css";
+export type {
+  ResolvedUiMaterialStyles,
+  ResolveUiMaterialStylesInput,
+  UiMaterialSlotStyle,
+  UiMaterialStyles,
+} from "./material-css";
 export type { Hud, HudModel, HudOptions } from "./hud";
 export { mountGameUi } from "./game-ui";
 export { mountHubUi } from "./hub-ui";

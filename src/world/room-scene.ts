@@ -5,11 +5,18 @@ import {
   type AssetsModule,
   type PreloadPlan,
 } from "../assets";
+import {
+  resolveMaterialBinding,
+  type MaterialCatalog,
+  type PatternProvider,
+} from "../materials";
 import type { RoomDocument, ThemeDocument } from "../pack";
 import { LayeredBackground } from "./background";
 import { PLAYER_ASSET_IDS } from "./ids";
 import { KeyboardIntentSource } from "./input";
 import { RoomEffectLayer } from "./effects";
+import { MaterialTextureCache } from "./material-textures";
+import { PatternLayer } from "./pattern-layer";
 import {
   emptyPlayerUiActions,
   emptyRuntimeInput,
@@ -30,10 +37,13 @@ import {
   type RoomSimulation,
 } from "./simulation";
 import {
+  composeTileVisual,
   createTileVisualState,
+  type TileBaseVisual,
   type TileKey,
   type TileVisualState,
 } from "./tile-visuals";
+import { buildTilePlan } from "./tile-material-renderer";
 import { resolveTexture } from "./textures";
 
 export interface RoomSceneConfig {
@@ -41,6 +51,8 @@ export interface RoomSceneConfig {
   theme: ThemeDocument;
   assets: AssetsModule;
   plan: PreloadPlan;
+  materials?: MaterialCatalog;
+  patterns?: PatternProvider;
   onReady?: () => void;
   onWarning?: (message: string) => void;
   onError?: (error: Error) => void;
@@ -114,11 +126,10 @@ export class RoomScene
   private readonly entityGlows = new Map<string, Phaser.GameObjects.Ellipse>();
   private readonly propSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly tileImages = new Map<string, Phaser.GameObjects.Image>();
-  private readonly tileBase = new Map<
-    string,
-    { textureKey: string; tint: number; alpha: number }
-  >();
+  private readonly tileBase = new Map<string, TileBaseVisual>();
   private readonly tileOverlays = new Map<string, Phaser.GameObjects.Image>();
+  private patternLayer: PatternLayer | null = null;
+  private materialTextures: MaterialTextureCache | null = null;
   private tileVisuals: TileVisualState = createTileVisualState();
   private effectLayer: RoomEffectLayer | null = null;
   private lastReducedMotion = false;
@@ -234,6 +245,7 @@ export class RoomScene
       this.lastReducedMotion = reduced;
       this.effectLayer?.clear();
     }
+    this.patternLayer?.update(delta, camera, reduced);
     this.syncEffects();
   }
 
@@ -274,6 +286,9 @@ export class RoomScene
   shutdown(): void {
     this.effectLayer = null;
     this.background = null;
+    this.patternLayer?.destroy();
+    this.patternLayer = null;
+    this.materialTextures = null;
     for (const id of PLAYER_IDS) {
       delete this.playerSprites[id];
       delete this.playerShadows[id];
@@ -296,6 +311,9 @@ export class RoomScene
     }
     this.effectLayer?.destroy();
     this.effectLayer = null;
+    this.patternLayer?.destroy();
+    this.patternLayer = null;
+    this.materialTextures = null;
     this.entitySprites.clear();
     this.entityGlows.clear();
     this.propSprites.clear();
@@ -314,6 +332,21 @@ export class RoomScene
     camera.setBounds(0, 0, roomPixelWidth(room), roomPixelHeight(room));
     camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
 
+    if (this.config.materials && this.config.patterns) {
+      this.patternLayer = new PatternLayer({
+        scene: this,
+        assets,
+        provider: this.config.patterns,
+        theme,
+        isReducedMotion: () => this.config.isReducedMotion?.() ?? false,
+      });
+    }
+    this.materialTextures = new MaterialTextureCache(
+      this,
+      theme,
+      room.tileSize,
+    );
+
     this.background = new LayeredBackground(
       this,
       room.background.layers,
@@ -321,6 +354,10 @@ export class RoomScene
       roomPixelHeight(room),
       theme,
       assets,
+      {
+        ...(this.config.materials ? { materials: this.config.materials } : {}),
+        ...(this.config.patterns ? { patterns: this.config.patterns } : {}),
+      },
     );
     this.createTiles();
     this.createEntities(room);
@@ -344,8 +381,98 @@ export class RoomScene
   }
 
   private createTiles(): void {
-    const { theme, assets } = this.config;
+    const { theme, assets, materials } = this.config;
     const room = this.config.runtime.roomDocument;
+    const plan = materials ? buildTilePlan(room, materials) : null;
+
+    if (plan) {
+      for (const warning of plan.warnings) this.config.onWarning?.(warning);
+      let tilesetKey: string | null = null;
+      if (plan.usesLegacyTileset) {
+        const tileset = assets.image(room.tileset);
+        tilesetKey = resolveTexture(this, tileset, theme.fonts.ui);
+        if (!tilesetKey) {
+          throw new Error(
+            `ROOM_TILESET_UNRESOLVED: ${room.tileset} produced no texture`,
+          );
+        }
+      }
+
+      for (const cell of plan.cells) {
+        const left = cell.x * room.tileSize;
+        const top = cell.y * room.tileSize;
+        let textureKey = tilesetKey;
+        let frame: string | undefined;
+        let tint: number | null = null;
+
+        if (!cell.legacy && cell.material && cell.rule) {
+          if (cell.variant) {
+            const asset = assets.resolveById(cell.variant.assetId);
+            const resolved = asset
+              ? resolveTexture(this, asset, theme.fonts.ui)
+              : null;
+            if (resolved) {
+              textureKey = resolved;
+              if (cell.variant.kind === "atlas") frame = cell.variant.frame;
+              if (
+                asset &&
+                (asset.source === "placeholder" || asset.placeholder === true)
+              ) {
+                tint = this.materialTint(cell.material, cell.rule.tint);
+              } else if (cell.rule.tint ?? cell.material.tint) {
+                tint = this.materialTint(cell.material, cell.rule.tint);
+              }
+            }
+          }
+          if (!textureKey && this.materialTextures) {
+            textureKey = this.materialTextures.textureFor(
+              cell.material,
+              cell.rule,
+              cell.mask,
+              (cell.x * 31 + cell.y * 17 + plan.seed) % 97,
+            );
+          }
+        }
+
+        if (!textureKey) {
+          this.config.onWarning?.(
+            `TILE_TEXTURE_UNRESOLVED: material tile (${cell.x}, ${cell.y})`,
+          );
+          continue;
+        }
+
+        const image = this.add
+          .image(
+            left + room.tileSize / 2,
+            top + room.tileSize / 2,
+            textureKey,
+            frame,
+          )
+          .setDisplaySize(room.tileSize, room.tileSize)
+          .setDepth(0);
+        if (tint !== null) image.setTint(tint);
+
+        const tileKey = `tiles/${cell.x}/${cell.y}`;
+        this.tileImages.set(tileKey, image);
+        this.tileBase.set(tileKey, {
+          textureKey: image.texture.key,
+          ...(frame ? { frame } : {}),
+          tint: image.tintTopLeft,
+          alpha: image.alpha,
+        });
+
+        if (!cell.legacy) {
+          this.patternLayer?.addTile(
+            left,
+            top,
+            room.tileSize,
+            cell.binding,
+          );
+        }
+      }
+      return;
+    }
+
     const tileset = assets.image(room.tileset);
     const key = resolveTexture(this, tileset, theme.fonts.ui);
     if (!key) {
@@ -379,6 +506,18 @@ export class RoomScene
     }
   }
 
+  private materialTint(
+    material: NonNullable<MaterialCatalog["materials"][string]>,
+    ruleTint: string | undefined,
+  ): number | null {
+    const token = ruleTint ?? material.tint ?? material.palette[0];
+    if (!token) return null;
+    const color = this.config.theme.palette[
+      token as keyof ThemeDocument["palette"]
+    ];
+    return color ? colorNumber(color) : null;
+  }
+
   private renderTileOp(opId: string): void {
     const record = this.tileVisuals.record(opId);
     if (!record) return;
@@ -397,28 +536,26 @@ export class RoomScene
       this.tileOverlays.delete(key);
     }
 
-    image.setTexture(base.textureKey);
-    image.setTint(base.tint);
-    image.setAlpha(base.alpha);
-
     const value = this.tileVisuals.valueAt(tile.layer, tile.x, tile.y);
-    if (!value) return;
+    const composition = composeTileVisual(base, value);
+    image.setTexture(composition.textureKey, composition.frame);
+    image.setTint(composition.tint);
+    image.setAlpha(composition.alpha);
 
-    switch (value.kind) {
-      case "swap": {
-        const texture = this.assetTexture(value.tile);
-        if (texture) image.setTexture(texture);
-        break;
-      }
-      case "tint":
-        image.setTint(colorNumber(value.color));
-        break;
-      case "alpha":
-        image.setAlpha(Math.max(0, Math.min(1, value.alpha)));
-        break;
-      case "overlay": {
-        const texture = this.assetTexture(value.assetId);
-        if (!texture) break;
+    if (composition.swapAssetId) {
+      const texture = this.assetTexture(composition.swapAssetId);
+      if (texture) image.setTexture(texture);
+    }
+    if (composition.sequenceAssetId) {
+      const texture = this.assetTexture(composition.sequenceAssetId);
+      if (texture) image.setTexture(texture);
+    }
+    if (composition.tintColor) {
+      image.setTint(colorNumber(composition.tintColor));
+    }
+    if (composition.overlayAssetId) {
+      const texture = this.assetTexture(composition.overlayAssetId);
+      if (texture) {
         const overlay = this.add
           .image(image.x, image.y, texture)
           .setDisplaySize(
@@ -427,13 +564,6 @@ export class RoomScene
           )
           .setDepth(image.depth + 0.5);
         this.tileOverlays.set(key, overlay);
-        break;
-      }
-      case "sequence": {
-        const frame = value.frames[0];
-        const texture = frame ? this.assetTexture(frame) : null;
-        if (texture) image.setTexture(texture);
-        break;
       }
     }
   }
@@ -481,6 +611,24 @@ export class RoomScene
       this.entitySprites.set(entity.id, sprite);
       if (entity.type === "prop") {
         this.propSprites.set(entity.id, sprite);
+      }
+
+      const materialBinding = entity.components?.material;
+      if (materialBinding && this.config.materials) {
+        const resolved = resolveMaterialBinding(
+          this.config.materials,
+          materialBinding,
+        );
+        if (resolved.ok) {
+          for (const warning of resolved.value.warnings) {
+            this.config.onWarning?.(warning);
+          }
+          this.patternLayer?.addObject(sprite, resolved.value);
+        } else {
+          this.config.onWarning?.(
+            `ENTITY_MATERIAL_UNRESOLVED: ${entity.id} (${resolved.error})`,
+          );
+        }
       }
     }
   }

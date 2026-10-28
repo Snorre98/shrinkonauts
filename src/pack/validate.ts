@@ -20,12 +20,29 @@ import {
 } from "../assets";
 import { silentLogger } from "../core/logger";
 import {
+  UI_MATERIAL_SLOTS,
+  createMaterialCatalog,
+  maskKey,
+  resolveMaterialBinding,
+  type MaterialCatalog,
+  type MaterialsDocument,
+  type PatternBinding,
+  type PatternSpace,
+  type TileMaterialRule,
+  type TileVariantSet,
+} from "../materials";
+import {
   findGateRecoveryHazards,
   replaySolution,
   validatePuzzleDocument,
   type PuzzleDocument,
 } from "../puzzle";
-import { collectRoomAssetIds, collectThemeAssetIds } from "./load";
+import {
+  collectMaterialAssetIds,
+  collectRoomAssetIds,
+  collectRoomMaterialAssetIds,
+  collectThemeAssetIds,
+} from "./load";
 import { buildMapping, mappingDrift } from "./mapping";
 import type {
   DialogueDocument,
@@ -71,7 +88,16 @@ export type PackIssueCode =
   | "FEEDBACK_EFFECT_UNKNOWN"
   | "FEEDBACK_TILE_INVALID"
   | "FEEDBACK_LAYOUT_INVALID"
-  | "FEEDBACK_VOCABULARY_MISSING";
+  | "FEEDBACK_VOCABULARY_MISSING"
+  | "MATERIALS_SCHEMA_INVALID"
+  | "MATERIAL_REFERENCE_MISSING"
+  | "MATERIAL_PALETTE_INVALID"
+  | "MATERIAL_PATTERN_INVALID"
+  | "MATERIAL_VARIANT_INVALID"
+  | "MATERIAL_DEFERRED"
+  | "TILE_MATERIAL_INVALID"
+  | "BACKGROUND_MATERIAL_INVALID"
+  | "UI_MATERIAL_INVALID";
 
 export interface PackIssue {
   code: PackIssueCode;
@@ -102,6 +128,8 @@ export interface PackValidationInput {
    * mapping, licence, and multi-room asset checks run as well.
    */
   content?: PackContent;
+  /** Pack materials document for a single-room validation without full content. */
+  materials?: MaterialsDocument;
   /** Required when content authors a feedback block. */
   feedbackVocabulary?: FeedbackValidationVocabulary;
 }
@@ -220,6 +248,53 @@ function checkManifest(
       addIssue(
         "ASSET_MANIFEST_INVALID",
         `${label} manifest entry "${id}" is a sheet without frame metadata`,
+        id,
+      );
+    }
+
+    if (entry.type === "atlas") {
+      if (!entry.regions || Object.keys(entry.regions).length === 0) {
+        addIssue(
+          "ASSET_MANIFEST_INVALID",
+          `${label} atlas "${id}" has no regions`,
+          id,
+        );
+      }
+      if (
+        entry.frameWidth !== undefined ||
+        entry.frameHeight !== undefined ||
+        entry.frames !== undefined ||
+        entry.fps !== undefined ||
+        entry.loop !== undefined
+      ) {
+        addIssue(
+          "ASSET_MANIFEST_INVALID",
+          `${label} atlas "${id}" carries animation metadata`,
+          id,
+        );
+      }
+      if (entry.width !== undefined && entry.height !== undefined) {
+        for (const [name, region] of Object.entries(entry.regions ?? {})) {
+          if (
+            region.x < 0 ||
+            region.y < 0 ||
+            region.width <= 0 ||
+            region.height <= 0 ||
+            region.x + region.width > entry.width ||
+            region.y + region.height > entry.height
+          ) {
+            addIssue(
+              "ASSET_MANIFEST_INVALID",
+              `${label} atlas "${id}" region "${name}" is outside ${entry.width}×${entry.height}`,
+              id,
+            );
+          }
+        }
+      }
+    } else if (entry.regions !== undefined) {
+      addIssue(
+        "ASSET_MANIFEST_INVALID",
+        `${label} asset "${id}" declares regions but is not an atlas`,
         id,
       );
     }
@@ -635,6 +710,603 @@ function checkLevelFeedback(input: {
         }
       }
     }
+  }
+}
+
+function paletteTokenExists(
+  theme: ThemeDocument,
+  token: string,
+): boolean {
+  return Object.prototype.hasOwnProperty.call(theme.palette, token);
+}
+
+function checkFrameRef(
+  ref: { assetId: AssetId; frame?: string },
+  assets: ReturnType<typeof createAssets>,
+  label: string,
+  addIssue: AddIssue,
+): void {
+  if (!assets.resolveById(ref.assetId)) {
+    addIssue(
+      "MATERIAL_VARIANT_INVALID",
+      `${label} references unknown asset "${ref.assetId}"`,
+      ref.assetId,
+    );
+    return;
+  }
+  if (ref.frame !== undefined) {
+    if (!assets.resolveFrame({ kind: "atlas", assetId: ref.assetId, frame: ref.frame })) {
+      addIssue(
+        "MATERIAL_VARIANT_INVALID",
+        `${label} references missing atlas frame "${ref.assetId}#${ref.frame}"`,
+        ref.assetId,
+      );
+    }
+  } else if (!assets.resolveFrame({ kind: "asset", assetId: ref.assetId })) {
+    addIssue(
+      "MATERIAL_VARIANT_INVALID",
+      `${label} does not resolve to a frame`,
+      ref.assetId,
+    );
+  }
+}
+
+function checkPatternBinding(
+  binding: PatternBinding,
+  label: string,
+  catalog: MaterialCatalog,
+  allowedSpaces: readonly PatternSpace[],
+  addIssue: AddIssue,
+  addWarning: AddWarning,
+): void {
+  const pattern = catalog.patterns[binding.patternId];
+  if (!pattern) {
+    addIssue(
+      "MATERIAL_PATTERN_INVALID",
+      `${label} references unknown pattern "${binding.patternId}"`,
+    );
+    return;
+  }
+  const space = binding.space ?? pattern.space;
+  if (!allowedSpaces.includes(space)) {
+    addIssue(
+      "MATERIAL_PATTERN_INVALID",
+      `${label} uses ${space} space; expected ${allowedSpaces.join(", ")}`,
+    );
+  }
+  if (binding.scale !== undefined && !(binding.scale > 0)) {
+    addIssue("MATERIAL_PATTERN_INVALID", `${label}.scale must be positive`);
+  }
+  if (
+    binding.opacity !== undefined &&
+    (binding.opacity < 0 || binding.opacity > 1)
+  ) {
+    addIssue("MATERIAL_PATTERN_INVALID", `${label}.opacity must be 0..1`);
+  }
+  if (pattern.animation) {
+    addWarning(
+      `${label} declares pattern animation; M1.8 renders the static frame`,
+    );
+  }
+}
+
+function checkPatternDefinition(
+  patternId: string,
+  catalog: MaterialCatalog,
+  assets: ReturnType<typeof createAssets>,
+  addIssue: AddIssue,
+  addWarning: AddWarning,
+): void {
+  const pattern = catalog.patterns[patternId];
+  if (!pattern) {
+    addIssue(
+      "MATERIAL_PATTERN_INVALID",
+      `pattern "${patternId}" is not defined`,
+    );
+    return;
+  }
+  if (!(pattern.scale > 0)) {
+    addIssue("MATERIAL_PATTERN_INVALID", `pattern "${patternId}" scale must be positive`);
+  }
+  if (pattern.source.kind === "image" || pattern.source.kind === "atlas") {
+    const asset = assets.resolveById(pattern.source.assetId);
+    if (!asset) {
+      addIssue(
+        "MATERIAL_PATTERN_INVALID",
+        `pattern "${patternId}" source "${pattern.source.assetId}" does not resolve`,
+        pattern.source.assetId,
+      );
+    } else if (pattern.source.kind === "image") {
+      if (asset.type === "audio" || asset.type === "font") {
+        addIssue(
+          "MATERIAL_PATTERN_INVALID",
+          `pattern "${patternId}" image source "${pattern.source.assetId}" is not visual`,
+          pattern.source.assetId,
+        );
+      }
+    } else if (asset.type !== "atlas") {
+      addIssue(
+        "MATERIAL_PATTERN_INVALID",
+        `pattern "${patternId}" atlas source "${pattern.source.assetId}" is not an atlas`,
+        pattern.source.assetId,
+      );
+    } else if (
+      !assets.resolveFrame({
+        kind: "atlas",
+        assetId: pattern.source.assetId,
+        frame: pattern.source.frame,
+      })
+    ) {
+      addIssue(
+        "MATERIAL_PATTERN_INVALID",
+        `pattern "${patternId}" source frame "${pattern.source.assetId}#${pattern.source.frame}" does not resolve`,
+        pattern.source.assetId,
+      );
+    }
+  }
+  if (pattern.animation) {
+    addWarning(
+      `pattern "${patternId}" declares animation; M1.8 renders the static frame`,
+    );
+  }
+}
+
+function checkVariantSet(
+  setId: string,
+  set: TileVariantSet,
+  catalog: MaterialCatalog,
+  assets: ReturnType<typeof createAssets>,
+  addIssue: AddIssue,
+  addWarning: AddWarning,
+): void {
+  const material = catalog.materials[set.materialId];
+  if (!material) {
+    addIssue(
+      "MATERIAL_VARIANT_INVALID",
+      `variant set "${setId}" references unknown material "${set.materialId}"`,
+    );
+  }
+  if (set.rule === "wang") {
+    addIssue(
+      "MATERIAL_DEFERRED",
+      `variant set "${setId}" uses wang transitions, deferred in M1.8`,
+    );
+  }
+  const allowedKeys = new Set<string>();
+  if (set.rule === "edge") {
+    for (let mask = 0; mask < 16; mask += 1) allowedKeys.add(String(mask));
+  } else {
+    for (let mask = 0; mask < 256; mask += 1) {
+      allowedKeys.add(maskKey({ autotile: set.rule }, mask));
+    }
+  }
+  for (const [key, ref] of Object.entries(set.frames)) {
+    if (!allowedKeys.has(key)) {
+      addIssue(
+        "MATERIAL_VARIANT_INVALID",
+        `variant set "${setId}" frame key "${key}" is outside the ${set.rule} mask space`,
+      );
+    }
+    checkFrameRef(ref, assets, `variant set "${setId}" frame "${key}"`, addIssue);
+  }
+  checkFrameRef(set.fallback, assets, `variant set "${setId}" fallback`, addIssue);
+  if (set.atlas) {
+    const atlas = assets.resolveById(set.atlas);
+    if (!atlas || atlas.type !== "atlas") {
+      addIssue(
+        "MATERIAL_VARIANT_INVALID",
+        `variant set "${setId}" atlas "${set.atlas}" is not an atlas asset`,
+        set.atlas,
+      );
+    }
+  }
+  if (material?.variantSet && material.variantSet !== setId) {
+    addWarning(
+      `material "${material.id}" also references variant set "${material.variantSet}"; "${setId}" is still validated`,
+    );
+  }
+}
+
+function checkTileMaterialRule(
+  rule: TileMaterialRule,
+  label: string,
+  catalog: MaterialCatalog,
+  theme: ThemeDocument,
+  assets: ReturnType<typeof createAssets>,
+  addIssue: AddIssue,
+): void {
+  const material = catalog.materials[rule.materialId];
+  if (!material) {
+    addIssue(
+      "MATERIAL_REFERENCE_MISSING",
+      `${label} references unknown material "${rule.materialId}"`,
+    );
+    return;
+  }
+  if (rule.autotile === "wang") {
+    addIssue("MATERIAL_DEFERRED", `${label} uses wang transitions, deferred in M1.8`);
+  }
+  if (rule.variantSet) {
+    const set = catalog.variantSets[rule.variantSet];
+    if (!set) {
+      addIssue(
+        "MATERIAL_VARIANT_INVALID",
+        `${label} references unknown variant set "${rule.variantSet}"`,
+      );
+    } else {
+      if (set.materialId !== rule.materialId) {
+        addIssue(
+          "MATERIAL_VARIANT_INVALID",
+          `${label} variant set "${set.id}" belongs to material "${set.materialId}", not "${rule.materialId}"`,
+        );
+      }
+      if (set.rule !== rule.autotile) {
+        addIssue(
+          "MATERIAL_VARIANT_INVALID",
+          `${label} autotile "${rule.autotile}" does not match variant set rule "${set.rule}"`,
+        );
+      }
+    }
+  }
+  const effectiveSetId = rule.variantSet ?? material.variantSet;
+  if (effectiveSetId && !catalog.variantSets[effectiveSetId]) {
+    addIssue(
+      "MATERIAL_VARIANT_INVALID",
+      `${label} material "${material.id}" references unknown variant set "${effectiveSetId}"`,
+    );
+  } else if (effectiveSetId) {
+    const effectiveSet = catalog.variantSets[effectiveSetId];
+    if (effectiveSet && effectiveSet.rule !== rule.autotile) {
+      addIssue(
+        "MATERIAL_VARIANT_INVALID",
+        `${label} autotile "${rule.autotile}" does not match material variant set rule "${effectiveSet.rule}"`,
+      );
+    }
+  }
+  for (const [index, ref] of (rule.variants ?? []).entries()) {
+    checkFrameRef(ref, assets, `${label}.variants[${index}]`, addIssue);
+  }
+  if (rule.patternId && !catalog.patterns[rule.patternId]) {
+    addIssue(
+      "MATERIAL_PATTERN_INVALID",
+      `${label} references unknown pattern "${rule.patternId}"`,
+    );
+  }
+  if (rule.tint) {
+    if (!paletteTokenExists(theme, rule.tint)) {
+      addIssue(
+        "MATERIAL_PALETTE_INVALID",
+        `${label} uses unknown tint token "${rule.tint}"`,
+      );
+    }
+  }
+}
+
+function checkRoomMaterials(
+  room: RoomDocument,
+  catalog: MaterialCatalog,
+  theme: ThemeDocument,
+  assets: ReturnType<typeof createAssets>,
+  addIssue: AddIssue,
+  addWarning: AddWarning,
+): void {
+  const hasTileData =
+    room.tileMaterials !== undefined ||
+    room.tileMaterialLegend !== undefined ||
+    room.defaultMaterialId !== undefined;
+  const hasEntityData = (room.entities ?? []).some(
+    (entity) => entity.components?.material !== undefined,
+  );
+  const hasBackgroundData = room.background.layers.some(
+    (layer) => layer.materialId !== undefined || layer.pattern !== undefined,
+  );
+  if (!hasTileData && !hasEntityData && !hasBackgroundData) {
+    return;
+  }
+
+  if (room.tileMaterials) {
+    if (room.tileMaterials.length !== room.height) {
+      addIssue(
+        "TILE_MATERIAL_INVALID",
+        `room "${room.id}" tileMaterials row count does not match height`,
+      );
+    }
+    for (const [rowIndex, row] of room.tileMaterials.entries()) {
+      if (row.length !== room.width) {
+        addIssue(
+          "TILE_MATERIAL_INVALID",
+          `room "${room.id}" tileMaterials row ${rowIndex} does not match width`,
+        );
+      }
+    }
+  }
+
+  const legend = room.tileMaterialLegend ?? {};
+  for (const [character, rule] of Object.entries(legend)) {
+    if (character.length !== 1 || character === " ") {
+      addIssue(
+        "TILE_MATERIAL_INVALID",
+        `room "${room.id}" legend key "${character}" must be one non-space character`,
+      );
+    }
+    checkTileMaterialRule(
+      rule,
+      `room "${room.id}" legend "${character}"`,
+      catalog,
+      theme,
+      assets,
+      addIssue,
+    );
+  }
+
+  if (room.defaultMaterialId && !catalog.materials[room.defaultMaterialId]) {
+    addIssue(
+      "MATERIAL_REFERENCE_MISSING",
+      `room "${room.id}" defaultMaterialId "${room.defaultMaterialId}" does not resolve`,
+    );
+  }
+
+  if (room.materialSeed !== undefined && !Number.isInteger(room.materialSeed)) {
+    addIssue(
+      "TILE_MATERIAL_INVALID",
+      `room "${room.id}" materialSeed must be an integer`,
+    );
+  }
+
+  let decorative = 0;
+  if (room.tileMaterials) {
+    const hasNonSpace = room.tileMaterials.some((row) =>
+      [...row].some((character) => character !== " "),
+    );
+    if (hasNonSpace && Object.keys(legend).length === 0) {
+      addIssue(
+        "TILE_MATERIAL_INVALID",
+        `room "${room.id}" has tileMaterials but no tileMaterialLegend`,
+      );
+    }
+    for (const [y, row] of room.tileMaterials.entries()) {
+      for (const [x, character] of [...row].entries()) {
+        if (character === " ") continue;
+        if (!legend[character]) {
+          addIssue(
+            "TILE_MATERIAL_INVALID",
+            `room "${room.id}" tileMaterials uses unknown legend character "${character}" at (${x}, ${y})`,
+          );
+        }
+        if (room.layers.tiles[y]?.[x] !== "#") {
+          decorative += 1;
+        }
+      }
+    }
+  }
+  if (decorative > 0) {
+    addWarning(
+      `room "${room.id}" has ${decorative} decorative material cell${decorative === 1 ? "" : "s"} on empty collision cells; they remain passable`,
+    );
+  }
+
+  for (const entity of room.entities ?? []) {
+    const binding = entity.components?.material;
+    if (!binding) continue;
+    const resolved = resolveMaterialBinding(catalog, binding);
+    if (!resolved.ok) {
+      addIssue(
+        "MATERIAL_REFERENCE_MISSING",
+        `room "${room.id}" entity "${entity.id}": ${resolved.error}`,
+      );
+      continue;
+    }
+    for (const warning of resolved.value.warnings) addWarning(warning);
+    if (resolved.value.pattern) {
+      const space = resolved.value.pattern.space;
+      if (space === "screen") {
+        addIssue(
+          "MATERIAL_PATTERN_INVALID",
+          `room "${room.id}" entity "${entity.id}" uses screen-space pattern; use world or local`,
+        );
+      }
+      if (resolved.value.pattern.opacity > 0.5) {
+        addWarning(
+          `room "${room.id}" entity "${entity.id}" pattern opacity ${resolved.value.pattern.opacity} is high for readability`,
+        );
+      }
+    }
+    if (
+      resolved.value.tint &&
+      !paletteTokenExists(theme, resolved.value.tint)
+    ) {
+      addIssue(
+        "MATERIAL_PALETTE_INVALID",
+        `room "${room.id}" entity "${entity.id}" uses unknown tint token "${resolved.value.tint}"`,
+      );
+    }
+  }
+
+  for (const [index, layer] of room.background.layers.entries()) {
+    if (layer.materialId && !catalog.materials[layer.materialId]) {
+      addIssue(
+        "BACKGROUND_MATERIAL_INVALID",
+        `room "${room.id}" background.layers[${index}] references unknown material "${layer.materialId}"`,
+      );
+    }
+    if (layer.pattern) {
+      if (!layer.materialId) {
+        addIssue(
+          "BACKGROUND_MATERIAL_INVALID",
+          `room "${room.id}" background.layers[${index}] has a pattern but no materialId`,
+        );
+      }
+      checkPatternBinding(
+        layer.pattern,
+        `room "${room.id}" background.layers[${index}].pattern`,
+        catalog,
+        ["world", "screen", "local"],
+        addIssue,
+        addWarning,
+      );
+      if (
+        layer.pattern.opacity !== undefined &&
+        layer.pattern.opacity > 0.35
+      ) {
+        addWarning(
+          `room "${room.id}" background.layers[${index}] pattern opacity ${layer.pattern.opacity} exceeds the background readability cap of 0.35`,
+        );
+      }
+    }
+  }
+}
+
+function checkThemeMaterials(
+  theme: ThemeDocument,
+  catalog: MaterialCatalog,
+  assets: ReturnType<typeof createAssets>,
+  addIssue: AddIssue,
+  addWarning: AddWarning,
+): void {
+  for (const [materialId, material] of Object.entries(catalog.materials)) {
+    for (const token of [...material.palette, ...(material.tint ? [material.tint] : [])]) {
+      if (!paletteTokenExists(theme, token)) {
+        addIssue(
+          "MATERIAL_PALETTE_INVALID",
+          `material "${materialId}" uses unknown palette token "${token}"`,
+        );
+      }
+    }
+    if (material.patternId && !catalog.patterns[material.patternId]) {
+      addIssue(
+        "MATERIAL_PATTERN_INVALID",
+        `material "${materialId}" references unknown pattern "${material.patternId}"`,
+      );
+    }
+    if (material.autotile === "wang") {
+      addIssue(
+        "MATERIAL_DEFERRED",
+        `material "${materialId}" uses wang autotiling, deferred in M1.8`,
+      );
+    }
+    if (material.variantSet) {
+      const set = catalog.variantSets[material.variantSet];
+      if (!set) {
+        addIssue(
+          "MATERIAL_VARIANT_INVALID",
+          `material "${materialId}" references unknown variant set "${material.variantSet}"`,
+        );
+      } else if (set.materialId !== materialId) {
+        addIssue(
+          "MATERIAL_VARIANT_INVALID",
+          `material "${materialId}" references variant set "${set.id}" for "${set.materialId}"`,
+        );
+      }
+    }
+    if (material.variantSet && material.variants?.length) {
+      addWarning(
+        `material "${materialId}" has both variantSet and inline variants; variantSet wins`,
+      );
+    }
+    for (const [index, ref] of (material.variants ?? []).entries()) {
+      checkFrameRef(
+        ref,
+        assets,
+        `material "${materialId}" variants[${index}]`,
+        addIssue,
+      );
+    }
+  }
+
+  const materials = theme.ui.materials ?? {};
+  const patterns = theme.ui.patterns ?? {};
+  for (const [slot, materialId] of Object.entries(materials)) {
+    if (!UI_MATERIAL_SLOTS.includes(slot as (typeof UI_MATERIAL_SLOTS)[number])) {
+      addIssue(
+        "UI_MATERIAL_INVALID",
+        `theme.ui.materials.${slot} is not a supported slot`,
+      );
+    }
+    if (!catalog.materials[materialId]) {
+      addIssue(
+        "UI_MATERIAL_INVALID",
+        `theme.ui.materials.${slot} references unknown material "${materialId}"`,
+      );
+    }
+  }
+  for (const [slot, binding] of Object.entries(patterns)) {
+    if (!UI_MATERIAL_SLOTS.includes(slot as (typeof UI_MATERIAL_SLOTS)[number])) {
+      addIssue(
+        "UI_MATERIAL_INVALID",
+        `theme.ui.patterns.${slot} is not a supported slot`,
+      );
+    }
+    checkPatternBinding(
+      binding,
+      `theme.ui.patterns.${slot}`,
+      catalog,
+      ["screen", "local"],
+      addIssue,
+      addWarning,
+    );
+    const pattern = catalog.patterns[binding.patternId];
+    if (pattern && pattern.source.kind !== "procedural") {
+      addIssue(
+        "UI_MATERIAL_INVALID",
+        `theme.ui.patterns.${slot} uses a ${pattern.source.kind} source; M1.8 UI patterns must be procedural`,
+      );
+    }
+    if (binding.opacity !== undefined && binding.opacity > 0.35) {
+      addWarning(
+        `theme.ui.patterns.${slot} opacity ${binding.opacity} exceeds the UI readability cap of 0.35`,
+      );
+    }
+  }
+}
+
+function checkMaterials(input: {
+  materials: MaterialsDocument | undefined;
+  rooms: readonly RoomDocument[];
+  theme: ThemeDocument;
+  assets: ReturnType<typeof createAssets>;
+  addIssue: AddIssue;
+  addWarning: AddWarning;
+}): void {
+  const { materials, rooms, theme, assets, addIssue, addWarning } = input;
+  const hasReferences =
+    (theme.ui.materials && Object.keys(theme.ui.materials).length > 0) ||
+    (theme.ui.patterns && Object.keys(theme.ui.patterns).length > 0) ||
+    rooms.some(
+      (room) =>
+        room.tileMaterials !== undefined ||
+        room.tileMaterialLegend !== undefined ||
+        room.defaultMaterialId !== undefined ||
+        room.background.layers.some(
+          (layer) => layer.materialId !== undefined || layer.pattern !== undefined,
+        ) ||
+        (room.entities ?? []).some(
+          (entity) => entity.components?.material !== undefined,
+        ),
+    );
+
+  if (!materials) {
+    if (hasReferences) {
+      addIssue(
+        "MATERIALS_SCHEMA_INVALID",
+        "content references materials but the pack declares no materials document",
+      );
+    }
+    return;
+  }
+
+  const catalog = createMaterialCatalog(materials);
+  for (const patternId of Object.keys(catalog.patterns)) {
+    checkPatternDefinition(patternId, catalog, assets, addIssue, addWarning);
+  }
+  for (const [setId, set] of Object.entries(catalog.variantSets)) {
+    checkVariantSet(setId, set, catalog, assets, addIssue, addWarning);
+  }
+  checkThemeMaterials(theme, catalog, assets, addIssue, addWarning);
+  const seen = new Set<string>();
+  for (const room of rooms) {
+    if (seen.has(room.id)) continue;
+    seen.add(room.id);
+    checkRoomMaterials(room, catalog, theme, assets, addIssue, addWarning);
   }
 }
 
@@ -1077,6 +1749,8 @@ export function validatePack(
 
   const { room, theme, finalManifest, packManifest, fileExists, content } =
     input;
+  const materials = content?.materials ?? input.materials;
+  const materialRooms = content ? Object.values(content.rooms) : [room];
   const assets = createAssets({
     finalManifest: finalManifest ?? null,
     packManifest: packManifest ?? null,
@@ -1086,10 +1760,15 @@ export function validatePack(
   const ids = [
     ...new Set([
       ...collectRoomAssetIds(room),
+      ...collectRoomMaterialAssetIds(room),
       ...collectThemeAssetIds(theme),
+      ...collectMaterialAssetIds(materials),
       ...Object.values(PLAYER_ASSET_IDS),
       ...(content
         ? Object.values(content.rooms).flatMap(collectRoomAssetIds)
+        : []),
+      ...(content
+        ? Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds)
         : []),
     ]),
   ];
@@ -1119,8 +1798,22 @@ export function validatePack(
   checkBackground(room, assets, addIssue);
   checkUiAssets(theme, assets, addIssue);
   checkAudioAssets(room, theme, assets, addIssue);
+  checkMaterials({
+    materials,
+    rooms: materialRooms,
+    theme,
+    assets,
+    addIssue,
+    addWarning,
+  });
 
   if (content) {
+    if (content.pack.materials && !content.materials) {
+      addIssue(
+        "MATERIALS_SCHEMA_INVALID",
+        `pack declares materials "${content.pack.materials}" but it did not load`,
+      );
+    }
     for (const contentRoom of Object.values(content.rooms)) {
       if (contentRoom.id !== room.id) {
         checkBackground(contentRoom, assets, addIssue);

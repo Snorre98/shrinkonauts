@@ -1,6 +1,6 @@
 # ADR-0015: Tile material grid, autotiling, and variants
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-28
 Deciders: Snorre
 Related: ADR-0008, ADR-0013, ADR-0014, ADR-0016, ADR-0017, ADR-0029, ADR-0031
@@ -93,7 +93,7 @@ interface TileMaterialRule {
   variantSet?: string;
 
   /** Inline variants when no named set is used. */
-  variants?: string[];
+  variants?: AtlasFrameRef[];
 
   /** Optional per-rule pattern override. */
   patternId?: PatternId;

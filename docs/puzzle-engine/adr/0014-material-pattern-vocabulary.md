@@ -1,6 +1,6 @@
 # ADR-0014: Material and pattern vocabulary
 
-Status: Proposed
+Status: Accepted
 Date: 2026-10-28
 Deciders: Snorre
 Related: ADR-0001, ADR-0029, ADR-0030, ADR-0031, ADR-0033, ADR-0008
@@ -102,8 +102,8 @@ interface MaterialDefinition {
     | "wang"
     | "randomVariants";
 
-  /** Inline variants, or a named variant set. */
-  variants?: string[];
+  /** Inline storage-agnostic variants, or a named variant set. */
+  variants?: AtlasFrameRef[];
   variantSet?: string;
 
   /** Optional default tint token. */
@@ -119,6 +119,7 @@ Rules:
   etc.), not file paths or raw colours. The theme remains the palette authority.
 - `direction` is visual only. `0` points right; `PI / 2` points down.
 - `variants`/`variantSet` are visual resources; they do not affect collision.
+  `variants` use the storage-agnostic `AtlasFrameRef` from ADR-0017.
 - A material without a pattern is valid; it is a flat material.
 - A material without variants is valid; it uses one texture or a generated
   texture.
@@ -217,10 +218,15 @@ Material and pattern definitions live in a pack-level `materials.json`:
 
 ```text
 public/packs/anatomy-reflex/
+  pack.json              # optional: "materials": "materials.json"
   materials.json
   theme.json
   levels/...
 ```
+
+The pack manifest declares the optional document path explicitly. A pack that
+does not declare `materials` is valid and uses its existing tileset/theme
+styling unchanged.
 
 `materials.json`:
 

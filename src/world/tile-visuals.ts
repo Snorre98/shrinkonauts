@@ -72,6 +72,54 @@ function valueOf(op: TileVisualOp): TileVisualValue {
   }
 }
 
+export interface TileBaseVisual {
+  textureKey: string;
+  frame?: string;
+  tint: number;
+  alpha: number;
+}
+
+export interface TileVisualComposition extends TileBaseVisual {
+  swapAssetId?: string;
+  tintColor?: string;
+  overlayAssetId?: string;
+  sequenceAssetId?: string;
+}
+
+/**
+ * Pure composition of a material/tileset base with an ADR-0013 cosmetic
+ * override. It never reads or writes collision or puzzle state.
+ */
+export function composeTileVisual(
+  base: TileBaseVisual,
+  value: TileVisualValue | undefined,
+): TileVisualComposition {
+  const result: TileVisualComposition = { ...base };
+  if (!value) return result;
+
+  switch (value.kind) {
+    case "swap":
+      result.swapAssetId = value.tile;
+      break;
+    case "tint":
+      result.tintColor = value.color;
+      break;
+    case "alpha":
+      result.alpha = Math.max(0, Math.min(1, value.alpha));
+      break;
+    case "overlay":
+      result.overlayAssetId = value.assetId;
+      break;
+    case "sequence": {
+      const frame = value.frames[0];
+      if (frame) result.sequenceAssetId = frame;
+      break;
+    }
+  }
+
+  return result;
+}
+
 /**
  * Headless tile appearance store. It never reads or writes collision, physics,
  * or puzzle state; `RoomScene` applies the resulting values to tile images.

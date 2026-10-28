@@ -133,6 +133,70 @@ the next authored level.
 If `body` is absent, the gate is visual-only. Logical gate state is implemented;
 physical gate bodies and sprite-swap presentation remain deferred.
 
+### 3.2 Room material fields
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `tileMaterials` | `string[]` | no | Parallel visual grid; same dimensions as `layers.tiles` |
+| `tileMaterialLegend` | `Record<string, TileMaterialRule>` | no | Single-character material rules |
+| `defaultMaterialId` | string | no | Used for solid cells without a material character |
+| `materialSeed` | integer | no | Deterministic variant selection; defaults to a room-derived seed |
+| `background.layers[].materialId` | string | no | Background material palette |
+| `background.layers[].pattern` | `PatternBinding` | no | Background pattern source and placement |
+| `entities[].components.material` | `MaterialBinding` | no | Object palette/pattern overlay |
+
+`layers.tiles` remains the collision grid. A material character on an empty
+collision cell is decorative and passable. No material field adds a save field.
+
+### 3.3 Materials document 1.0
+
+`materials.json` is optional and declared by `pack.json`:
+
+```ts
+interface MaterialsDocument {
+  schemaVersion: "1.x";
+  id: string;
+  materials: Record<string, MaterialDefinition>;
+  patterns?: Record<string, PatternDefinition>;
+  variantSets?: Record<string, TileVariantSet>;
+}
+```
+
+Material fields: `family`, `palette` (theme token names), `edge`, optional
+`patternId`, `direction`, `autotile`, `variants` (`AtlasFrameRef[]`),
+`variantSet`, `tint`.
+
+Pattern fields: `family`, `source` (`procedural` generator+seed, `image`, or
+`atlas` frame), `space`, `scale`, optional `direction`, `contrast`, `blend`,
+`animation`.
+
+Variant sets: `id`, `materialId`, `rule` (`edge`/`corner`/`blob47`/`wang`),
+optional `atlas`, `frames` keyed by the rule mask space, and a required
+`fallback`. `wang` and pattern animation are accepted schema targets but are
+deferred in M1.8; authored use is reported as deferred.
+
+### 3.4 Atlas manifest metadata
+
+`assets` gains `type: "atlas"` and `ManifestAssetEntry.regions` plus optional
+intrinsic `width`/`height`. Regions are non-empty named rectangles with integer
+bounds. `atlas` is not an animation format. A declared placeholder atlas may
+omit `src` while retaining regions.
+
+`AtlasFrameRef` is storage-agnostic:
+
+```ts
+type AtlasFrameRef =
+  | { kind: "asset"; assetId: AssetId }
+  | { kind: "atlas"; assetId: AssetId; frame: string };
+```
+
+### 3.5 Asset and content versions
+
+The asset manifest schema is `1.1`; parsers accept all `1.x`. The materials
+document is `1.0`. Room `1.1` adds the optional material grid; theme `1.1` adds
+`ui.materials`/`ui.patterns`; pack `1.1` adds the optional `materials` path. Old
+1.0 documents remain valid.
+
 ## 4. Run snapshot 2.1
 
 ### 4.1 Implemented fields
@@ -202,9 +266,13 @@ syllabus-derived `prompt-obj-2`/`EV-7` teach-back. The proposed per-level
 |---|---|---|
 | Puzzle | 1.1 | 1.0 accepted; new fields absent |
 | Level | 1.1 | 1.0 accepted; feedback absent |
+| Room | 1.1 | 1.0 accepted; material fields absent |
+| Theme | 1.1 | 1.0 accepted; UI material slots absent |
+| Pack | 1.1 | 1.0 accepted; materials path absent |
+| Materials | 1.0 | no older document |
+| Asset manifest | 1.1 | all 1.x accepted; `atlas` additive |
 | Run | 2.1 | 2.0 accepted; no conversations/legacy dialogue defaults |
 | Settings | 2.0 | separate storage slot |
-| Pack | content version bump on migration | ADR-0045 recovery |
 
 ## 7. Invariants
 
@@ -214,5 +282,7 @@ syllabus-derived `prompt-obj-2`/`EV-7` teach-back. The proposed per-level
 - The save is a projection of runtime state, never a second puzzle graph.
 - Feedback surfaces, cues, effects, and ECS entities are ephemeral.
 - Effects and tile visuals never carry collision authority.
+- Materials, patterns, variants, and atlases never carry collision, puzzle,
+  interaction, or save authority.
 - `clear`/`cleared` are implemented; `locked`/`unlock`/`requires`/`message`/
   `linkBlocked` are deferred.

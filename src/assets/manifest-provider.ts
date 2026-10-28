@@ -57,6 +57,15 @@ export class ManifestProvider implements AssetProvider {
     }
 
     if (!entry.src) {
+      if (entry.type === "atlas" && entry.placeholder === true) {
+        return {
+          id,
+          type: entry.type,
+          placeholder: true,
+          source: this.source,
+          ...this.optionalMetadata(entry),
+        };
+      }
       // An explicit placeholder entry has no file to load. Returning null lets
       // the fallback chain continue to the procedural provider.
       return null;
@@ -66,7 +75,7 @@ export class ManifestProvider implements AssetProvider {
       id,
       type: entry.type as AssetType,
       src: entry.src,
-      placeholder: false,
+      placeholder: entry.placeholder === true,
       source: this.source,
       ...this.optionalMetadata(entry),
     };
@@ -99,6 +108,15 @@ export class ManifestProvider implements AssetProvider {
     }
     if (entry.license !== undefined) {
       metadata.license = entry.license;
+    }
+    if (entry.regions !== undefined) {
+      metadata.regions = entry.regions;
+    }
+    if (entry.width !== undefined) {
+      metadata.width = entry.width;
+    }
+    if (entry.height !== undefined) {
+      metadata.height = entry.height;
     }
 
     return metadata;

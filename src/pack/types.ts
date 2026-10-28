@@ -1,4 +1,11 @@
 import type { AssetId } from "../assets";
+import type {
+  MaterialBinding,
+  MaterialId,
+  MaterialsDocument,
+  PatternBinding,
+  TileMaterialRule,
+} from "../materials";
 import type { PuzzleDocument } from "../puzzle";
 import type { Syllabus } from "../syllabus";
 
@@ -15,6 +22,8 @@ export interface RoomBackgroundLayer {
   tint?: string;
   opacity?: number;
   blend?: BackgroundBlend;
+  materialId?: MaterialId;
+  pattern?: PatternBinding;
 }
 
 export interface RoomSpawn {
@@ -89,6 +98,7 @@ export interface RoomEntityComponents {
   pulseSource?: EntityPulseSourceComponent;
   gate?: EntityGateComponent;
   anchors?: Record<string, EntityAnchorPoint>;
+  material?: MaterialBinding;
 }
 
 export interface RoomEntity {
@@ -146,6 +156,11 @@ export interface RoomDocument {
   layers: {
     tiles: string[];
   };
+  /** Optional visual material grid; `layers.tiles` still owns collision. */
+  tileMaterials?: string[];
+  tileMaterialLegend?: Record<string, TileMaterialRule>;
+  defaultMaterialId?: MaterialId;
+  materialSeed?: number;
   background: {
     id: AssetId;
     layers: RoomBackgroundLayer[];
@@ -192,6 +207,8 @@ export interface ThemeDocument {
     fontScale: number;
     reducedMotion: boolean;
     assets: Record<string, AssetId>;
+    materials?: Record<string, MaterialId>;
+    patterns?: Record<string, PatternBinding>;
   };
   audio?: {
     music?: AssetId;
@@ -227,6 +244,8 @@ export interface PackDocument {
   theme: string;
   mapping: string;
   licenses: string;
+  /** Optional pack-level materials document path. */
+  materials?: string;
   assetManifests: PackAssetManifests;
   assets?: PackAssetIndex;
   ageRating?: string;
@@ -503,6 +522,7 @@ export interface PackContent {
   dialogues: Record<string, DialogueDocument>;
   gates: Record<string, GateDocument>;
   puzzles: Record<string, PuzzleDocument>;
+  materials?: MaterialsDocument;
 }
 
 export interface LevelBundle {

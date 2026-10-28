@@ -1,11 +1,17 @@
 # Shrinkonauts M1.9 — Implementation Notes
 
 M1.9 adds the pre-game bathroom hub on top of the M1.75 feedback/effect layer.
+M1.8 adds the material/pattern visual layer beneath the existing runtime.
 The app boots into a bathroom, selects a cycle and player mode in the washing
 machine menu, plays a launch transition, and enters the selected pack. Anatomy
 starts at **03 — Nerve Forest**, plays Node Run, transitions to **04 — Endplate
 Ferry**, and finishes with teach-back evidence export. Silicon is visible but
 gated until M2; online co-op is a disabled M4 placeholder.
+
+M1.8 adds `materials.json`, material grids and autotiling, deterministic tile
+variants, atlas regions, world/object/background pattern projection, and UI
+material CSS parity. 03 and 04 are fully materialized placeholder proof rooms;
+materials never change collision or puzzle state.
 
 The M0.2 foundation, M1 runtime, and M1.75 feedback layer are preserved:
 placeholder-first assets, the provider chain, the audio cue layer, fixed-step
@@ -37,6 +43,11 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Capability feedback surfaces and attributed cues | Working |
 | Beat progress and stuck hint/reset affordance | Working |
 | Composable cosmetic effects and tile visuals | Working |
+| Material/pattern catalog, tile grids, autotiling, variants | Working |
+| Atlas assets, named regions, frame refs, placeholder atlas | Working |
+| World/object/background pattern projection | Working |
+| UI material/pattern slots and contrast-safe fallback | Working |
+| 03/04 fully materialized placeholder proof | Working |
 | Debrief, teach-back, evidence export | Working |
 | Autosave + restore | Working |
 | Conversation save/restore + legacy dialogue migration | Working |
@@ -64,7 +75,7 @@ Run from `shrinkonauts/`:
 ```bash
 npm install
 npm run dev             # http://127.0.0.1:5173/
-npm test                # 32 files, 317 unit/integration tests
+npm test                # 37 files, 362 unit/integration tests
 npm run smoke           # room boot + module boundary tests
 npm run build           # tsc --noEmit + Vite production build
 npm run pack:validate   # dev fixture + anatomy + catalog/hub validation
@@ -586,7 +597,12 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/anchors.test.ts` | Projection, sockets, resize, off-screen fallback |
 | `tests/surface-router.test.ts` | Hard/soft ownership, solo fallback, navigation |
 | `tests/feedback-accessibility.test.ts` | Text alternatives, effect ownership, reduced motion, input, no mutation |
-| `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, module graph |
+| `tests/patterns.test.ts` | Procedural determinism, tileability, CSS data URL, cache |
+| `tests/materials.test.ts` | Catalog, binding precedence, missing refs, closed schema |
+| `tests/tile-autotile.test.ts` | Masks, 47-blob reduction, deterministic variants, collision parity |
+| `tests/pattern-projection.test.ts` | World/local/screen placement, UI parity, no mutation |
+| `tests/material-accessibility.test.ts` | Contrast, static reduced motion, old-room fallback |
+| `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, materials purity, module graph |
 | `e2e/hub.spec.ts` | Browser: bathroom, cycle selection, launch skip, solo start, return |
 | `e2e/m1.spec.ts` | Browser: 03 → 04, conversations, attribution, reduced motion, live region, export |
 
@@ -597,13 +613,13 @@ system Chrome.
 
 ## Verification performed
 
-On 2026-10-28, after the M1.9 hub changes:
+On 2026-10-29, after the M1.8 material/pattern changes:
 
 ```text
-npm test             32 files, 317 tests passed
+npm test             37 files, 362 tests passed
 npm run build        tsc clean + Vite production build
 npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
-npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (44 IDs, 44 placeholders)
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (45 IDs, 45 placeholders)
 npx playwright test   7/7 passed (system Chrome, port 4173)
 git diff --check      clean
 ```
@@ -639,7 +655,9 @@ procedural placeholder:
 - `requires`/`message`/`linkBlocked` (ADR-0005 target).
 - Per-level debrief prompt overrides (ADR-0006 target).
 - Side-level map travel and `returnTo` (ADR-0007 target).
-- M1.8 material/pattern layer.
+- `wang` material transitions, pattern animation, image/atlas-sourced UI
+  patterns, final material atlases, and editor tooling (M1.8 deferrals).
+- Human M1.8 visual/playtest review.
 
 ## Decisions and deviations
 
