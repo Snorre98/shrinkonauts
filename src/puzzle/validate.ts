@@ -384,6 +384,41 @@ function validateRelayCycles(
   }
 }
 
+/**
+ * Static recovery hazards that are not schema errors.
+ *
+ * A non-latched gate that is closed by a source which can stay active forever
+ * (a non-repeating timer keeps `active: true` after it elapses) can close
+ * permanently when its only open sources are event-driven. Reopening must be
+ * level-triggered for the gate to be recoverable.
+ */
+export function findGateRecoveryHazards(document: PuzzleDocument): string[] {
+  const hazards: string[] = [];
+  const nodes = new Map(document.nodes.map((node) => [node.id, node]));
+
+  for (const gate of document.nodes) {
+    if (gate.type !== "gate" || gate.latched) continue;
+
+    const levelOpen = document.links.some(
+      (link) => link.to === gate.id && link.type === "open",
+    );
+    if (levelOpen) continue;
+
+    for (const link of document.links) {
+      if (link.to !== gate.id || link.type !== "close") continue;
+      const source = nodes.get(link.from);
+      if (source?.type !== "timer" || source.repeat) continue;
+
+      hazards.push(
+        `gate "${gate.id}" is closed by non-repeating timer "${link.from}" but has no level-triggered "open" link; it can close permanently`,
+      );
+      break;
+    }
+  }
+
+  return hazards;
+}
+
 function validateSolution(
   document: PuzzleDocument,
   nodes: Map<string, PuzzleNode>,

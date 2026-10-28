@@ -8,6 +8,8 @@ import {
 } from "../src/assets";
 import { parseRoom, parseTheme, validatePack } from "../src/pack";
 import type { RoomDocument, ThemeDocument } from "../src/pack";
+import type { PuzzleDocument } from "../src/puzzle";
+import { loadContent, packDirectory, primaryRoom } from "../scripts/content-loader";
 
 const CONTENT_DIR = new URL("../public/content/dev/", import.meta.url);
 
@@ -234,5 +236,71 @@ describe("validatePack", () => {
     if (!parsed.ok) {
       expect(parsed.error).toContain("components.mystery is not supported");
     }
+  });
+});
+
+const PACK_DIR = new URL("../public/packs/anatomy-reflex/", import.meta.url);
+
+function readPackJson(file: string): unknown {
+  return JSON.parse(readFileSync(new URL(file, PACK_DIR), "utf8"));
+}
+
+function packManifest(file: string): AssetManifest {
+  const path = new URL(file, PACK_DIR);
+  const parsed = parseManifest(readPackJson(file), path.toString());
+  if (!parsed.ok) {
+    throw new Error(parsed.error);
+  }
+  return parsed.value.manifest;
+}
+
+describe("puzzle gate recovery warnings", () => {
+  const content = loadContent(packDirectory("anatomy-reflex"));
+  const room = primaryRoom(content);
+  const final = packManifest(
+    content.pack.assetManifests.final ?? "assets.final.json",
+  );
+  const placeholder = packManifest(
+    content.pack.assetManifests.placeholder ?? "assets.placeholder.json",
+  );
+
+  function validateWithEndplate(mutate: (puzzle: PuzzleDocument) => void) {
+    const copy = structuredClone(content);
+    const puzzle = copy.puzzles["puzzle-endplate-ferry"];
+    if (!puzzle) throw new Error("endplate puzzle missing");
+    mutate(puzzle);
+    return validatePack({
+      room,
+      theme: content.theme,
+      finalManifest: final,
+      packManifest: placeholder,
+      fileExists,
+      content: copy,
+    });
+  }
+
+  it("does not warn about the fixed Endplate Ferry gate", () => {
+    const result = validateWithEndplate(() => {});
+    expect(
+      result.warnings.filter((warning) => warning.includes("permanently")),
+    ).toEqual([]);
+  });
+
+  it("warns when a non-latched gate can close permanently", () => {
+    const result = validateWithEndplate((puzzle) => {
+      const link = puzzle.links.find(
+        (entry) => entry.from === "ca-timer" && entry.to === "ca-gate",
+      );
+      if (!link) throw new Error("ca-timer -> ca-gate link missing");
+      link.type = "elapsed";
+    });
+
+    expect(
+      result.warnings.some(
+        (warning) =>
+          warning.includes('gate "ca-gate"') &&
+          warning.includes("permanently"),
+      ),
+    ).toBe(true);
   });
 });

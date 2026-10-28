@@ -7,6 +7,7 @@ import {
   validatePuzzleDocument,
   type PlateNode,
   type PuzzleDocument,
+  type PuzzleNodeRunState,
   type PuzzlePropSnapshot,
   type PuzzleWorldSnapshot,
   type ZoneNode,
@@ -106,6 +107,20 @@ function pulseAndSettle(runtime: PuzzleRuntime, props: PuzzleWorldSnapshot["prop
   return waitTicks(runtime, 8, props);
 }
 
+function nodeRunState(
+  overrides: Partial<PuzzleNodeRunState> = {},
+): PuzzleNodeRunState {
+  return {
+    state: "idle",
+    active: false,
+    count: 0,
+    remaining: 0,
+    fired: false,
+    occupiedBy: null,
+    ...overrides,
+  };
+}
+
 describe("Endplate Ferry puzzle document", () => {
   it("validates, including the tether-off geometry guard", () => {
     const entityPoints = Object.fromEntries(
@@ -194,6 +209,7 @@ describe("Endplate Ferry puzzle document", () => {
     pulseAndSettle(runtime, [packet]);
     expect(runtime.evidenceCounters().wrongReceptor).toBe(1);
     expect(runtime.nodeState("nicotinic-receptor")?.state).toBe("idle");
+    expect(runtime.nodeState("ache-timer")?.state).toBe("idle");
     expect(runtime.nodeState("muscle-gate")?.state).toBe("closed");
     expect(runtime.isSolved()).toBe(false);
     expect(runtime.nodeState("ach-packet")?.state).toBe("placed");
@@ -216,7 +232,99 @@ describe("Endplate Ferry puzzle document", () => {
     pulseAndSettle(runtime, []);
     expect(runtime.evidenceCounters().wrongReceptor ?? 0).toBe(0);
     expect(runtime.nodeState("nicotinic-receptor")?.state).toBe("idle");
+    expect(runtime.nodeState("ache-timer")?.state).toBe("idle");
     expect(runtime.isSolved()).toBe(false);
+  });
+
+  it("does not restart the Ca²⁺ timer when the plate is released", () => {
+    const runtime = new PuzzleRuntime(puzzle);
+
+    tickAt(runtime, "terminal-plate");
+    waitTicks(runtime, 10);
+    const remaining = runtime.nodeState("ca-timer")?.remaining ?? 0;
+    expect(remaining).toBeLessThan(72);
+
+    tickProp(runtime, []);
+    expect(runtime.nodeState("terminal-plate")?.state).toBe("released");
+    expect(runtime.nodeState("ca-timer")?.state).toBe("running");
+    expect(runtime.nodeState("ca-timer")?.remaining).toBe(remaining - 1);
+  });
+
+  it("restarts the Ca²⁺ timer after the window has elapsed", () => {
+    const runtime = new PuzzleRuntime(puzzle);
+
+    tickAt(runtime, "terminal-plate");
+    waitTicks(runtime, 80);
+    expect(runtime.nodeState("ca-timer")?.state).toBe("elapsed");
+    expect(runtime.nodeState("ca-gate")?.state).toBe("open");
+
+    tickAt(runtime, "terminal-plate");
+    expect(runtime.nodeState("ca-timer")?.state).toBe("running");
+    expect(runtime.nodeState("ca-timer")?.remaining).toBe(72);
+    // The gate is closed by the AChE close source, not by the timer being
+    // re-armed, so it keeps its previous state until then.
+  });
+
+  it("reopens the Ca²⁺ gate after AChE has cleared an earlier response", () => {
+    const runtime = new PuzzleRuntime(puzzle);
+    const packet = prop("placed");
+
+    tickProp(runtime, [packet]);
+    pulseAndSettle(runtime, [packet]);
+    expect(runtime.nodeState("nicotinic-receptor")?.state).toBe("bound");
+    expect(runtime.nodeState("ca-gate")?.state).toBe("closed");
+
+    waitTicks(runtime, 160, [packet]);
+    expect(runtime.nodeState("ache-timer")?.state).toBe("elapsed");
+    expect(runtime.nodeState("ca-timer")?.state).toBe("idle");
+    expect(runtime.isSolved()).toBe(false);
+
+    tickAt(runtime, "terminal-plate", [packet]);
+    waitTicks(runtime, 80, [packet]);
+    expect(runtime.nodeState("ca-timer")?.state).toBe("elapsed");
+    expect(runtime.nodeState("ca-gate")?.state).toBe("open");
+    expect(runtime.nodeState("muscle-gate")?.state).toBe("open");
+    expect(runtime.isSolved()).toBe(true);
+  });
+
+  it("recovers from the reported dead state by re-arming the Ca²⁺ window", () => {
+    const runtime = new PuzzleRuntime(puzzle);
+    const packet = prop("docked");
+
+    runtime.restore({
+      puzzleId: puzzle.id,
+      tick: 269,
+      solved: false,
+      counters: {},
+      pulses: [],
+      lastError: null,
+      nodes: {
+        "terminal-plate": nodeRunState({ state: "released" }),
+        "ca-timer": nodeRunState({ state: "elapsed", active: true }),
+        "ca-gate": nodeRunState({ state: "closed" }),
+        "ach-packet": nodeRunState({ state: "docked", active: true }),
+        "nicotinic-receptor": nodeRunState({
+          state: "bound",
+          active: true,
+          occupiedBy: "ach-packet",
+        }),
+        "wrong-receptor": nodeRunState(),
+        "pulse-terminal": nodeRunState(),
+        "ache-timer": nodeRunState({ state: "elapsed", active: true }),
+        "response-relay": nodeRunState({ state: "inactive" }),
+        "muscle-gate": nodeRunState({ state: "closed" }),
+      },
+    });
+
+    expect(runtime.isSolved()).toBe(false);
+
+    tickAt(runtime, "terminal-plate", [packet]);
+    expect(runtime.nodeState("ca-timer")?.state).toBe("running");
+
+    waitTicks(runtime, 80, [packet]);
+    expect(runtime.nodeState("ca-gate")?.state).toBe("open");
+    expect(runtime.nodeState("muscle-gate")?.state).toBe("open");
+    expect(runtime.isSolved()).toBe(true);
   });
 
   it("closes the Ca²⁺ gate after AChE elapses but keeps the muscle gate latched", () => {

@@ -82,7 +82,7 @@
   ],
   "links": [
     { "from": "terminal-plate", "to": "ca-timer", "type": "start" },
-    { "from": "ca-timer", "to": "ca-gate", "type": "elapsed" },
+    { "from": "ca-timer", "to": "ca-gate", "type": "open" },
     { "from": "ca-gate", "to": "response-relay", "type": "activate" },
     { "from": "nicotinic-receptor", "to": "response-relay", "type": "activate" },
     { "from": "response-relay", "to": "muscle-gate", "type": "open" },

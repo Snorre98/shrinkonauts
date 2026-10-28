@@ -19,7 +19,11 @@ import {
   type ManifestAssetEntry,
 } from "../assets";
 import { silentLogger } from "../core/logger";
-import { replaySolution, validatePuzzleDocument } from "../puzzle";
+import {
+  findGateRecoveryHazards,
+  replaySolution,
+  validatePuzzleDocument,
+} from "../puzzle";
 import { collectRoomAssetIds, collectThemeAssetIds } from "./load";
 import { buildMapping, mappingDrift } from "./mapping";
 import type {
@@ -598,6 +602,9 @@ function checkContent(
       });
       for (const issue of validation.issues) {
         addIssue("PUZZLE_INVALID", `${puzzle.id}: ${issue.message}`);
+      }
+      for (const hazard of findGateRecoveryHazards(puzzle)) {
+        addWarning(`puzzle "${puzzle.id}": ${hazard}`);
       }
       if (puzzle.activation.mode === "interact" && puzzle.activation.entityId) {
         const roomEntities = room?.entities ?? [];

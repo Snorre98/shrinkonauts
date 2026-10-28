@@ -5,7 +5,9 @@ import type {
   PropNode,
   PuzzleDocument,
   PuzzleEvent,
+  PuzzleEventType,
   PuzzleLink,
+  PuzzleLinkType,
   PuzzleNode,
   PuzzleNodeRunState,
   PuzzlePredicate,
@@ -20,13 +22,34 @@ import type {
   ZoneNode,
 } from "./types";
 
-const EVENT_EXCLUDED = new Set([
-  "pulse",
-  "activate",
-  "deactivate",
-  "open",
-  "close",
-]);
+/**
+ * Event -> link dispatch table.
+ *
+ * A link may only run for the event that matches its authored meaning. Link
+ * types that are not event-driven (`pulse`, `activate`, `deactivate`, `open`,
+ * `close`) are resolved by their dedicated evaluators and never appear here.
+ *
+ * `satisfies` keeps this exhaustive: adding a new `PuzzleEventType` is a
+ * compile error until its dispatch is decided.
+ */
+export const EVENT_LINKS = {
+  pulse: [],
+  pulseArrived: [],
+  receptorBound: ["bind"],
+  receptorRejected: [],
+  platePress: ["press", "start"],
+  plateRelease: ["release", "stop"],
+  zoneEnter: ["enter", "start"],
+  zoneExit: ["exit", "stop"],
+  triggerFired: ["increment", "start"],
+  timerElapsed: ["elapsed", "reset"],
+  counterReached: ["reached"],
+  gateOpen: [],
+  gateClose: [],
+  relayActive: [],
+  relayInactive: [],
+  solved: [],
+} satisfies Record<PuzzleEventType, readonly PuzzleLinkType[]>;
 
 function initialState(node: PuzzleNode): PuzzleNodeRunState {
   const base: PuzzleNodeRunState = {
@@ -535,9 +558,12 @@ export class PuzzleRuntime {
       emitted.add(signature);
       output.push(event);
 
+      const allowed: readonly PuzzleLinkType[] = EVENT_LINKS[event.type];
+      if (allowed.length === 0) continue;
+
       for (const link of this.document.links) {
         if (link.from !== event.nodeId) continue;
-        if (EVENT_EXCLUDED.has(link.type)) continue;
+        if (!allowed.includes(link.type)) continue;
         this.applyLink(link, events);
       }
     }
@@ -581,7 +607,7 @@ export class PuzzleRuntime {
 
   private applyTimerAction(
     timer: TimerNode,
-    linkType: string,
+    linkType: PuzzleLinkType,
   ): void {
     const state = this.nodes.get(timer.id);
     if (!state) return;
@@ -597,7 +623,9 @@ export class PuzzleRuntime {
       state.remaining = timer.durationTicks;
       return;
     }
-    if (state.state === "running" || state.state === "elapsed") {
+    // Recovery invariant: only a running timer ignores a new start. An
+    // elapsed or stopped one-shot timer must always be re-armable.
+    if (state.state === "running") {
       return;
     }
     state.state = "running";
