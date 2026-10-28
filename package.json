@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "description": "Shrinkonauts base game — M1 runtime and Nerve Forest vertical slice",
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "npm@11.19.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

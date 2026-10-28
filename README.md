@@ -33,6 +33,43 @@ npm run preview        # serve the production build
 `smoke:e2e` starts Vite on port 4173 and launches the installed Chrome through
 Playwright's `channel: "chrome"`. It never downloads a bundled browser.
 
+## CI and deployment
+
+| Workflow | Trigger | What it does |
+| --- | --- | --- |
+| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Type check + build, unit tests, pack validation, committed-mapping drift check, Playwright smoke |
+| `.github/workflows/deploy-pages.yml` | push to `main`, manual dispatch | Runs CI, then publishes the tested `dist/` artifact to GitHub Pages |
+
+Live build: <https://snorre98.github.io/shrinkonauts/>
+
+The Vite `base` is `./` and the runtime resolves content from
+`import.meta.env.BASE_URL`, so the same build works from the project subpath
+without a `/shrinkonauts/` base override.
+
+### First-time setup
+
+Pages must be switched to the GitHub Actions source once per repository:
+
+```bash
+./scripts/bootstrap-pages.sh
+```
+
+The script is idempotent, enables Pages with `build_type=workflow`, and points
+the repository homepage at the deployed URL. It requires an authenticated
+`gh` CLI. Alternatively, set **Settings → Pages → Source** to **GitHub Actions**.
+
+Recommended hardening: require the **Verify** and **E2E smoke** checks on
+`main` under **Settings → Rules**, so only tested commits are deployed.
+
+### Rollback
+
+Re-run the last known-good **Deploy to GitHub Pages** workflow run from the
+Actions tab (or `gh run rerun <run-id>`). Reverting a commit on `main` also
+triggers a fresh deploy.
+
+CI runs on Node 24 (pinned by `.nvmrc`) and installs with `npm ci`, so
+`package-lock.json` must stay in sync with `package.json`.
+
 ## Controls
 
 | Player | Move | Jump | Interact | Scan | Dash |

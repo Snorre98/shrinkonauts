@@ -24,6 +24,7 @@ pnpm-debug.log*
 # --- Caches ---
 .cache/
 .vite/
+.vitest/
 .parcel-cache/
 .turbo/
 .eslintcache
@@ -33,6 +34,8 @@ pnpm-debug.log*
 # --- Environment ---
 .env
 .env.*
+.envrc
+.direnv/
 !.env.example
 !.env.sample
 
@@ -42,6 +45,18 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+playwright/.cache/
+.playwright-mcp/
+
+# screenshots/*.png are committed documentation assets (see README).
+# Playwright failure output goes to the ignored test-results/ directory.
+
+# --- Merge / editor leftovers ---
+*.tmp
+*.bak
+*.orig
+*.rej
+*.swp
 
 # --- Editors / OS ---
 .DS_Store
@@ -52,7 +67,8 @@ Thumbs.db
 !.vscode/extensions.json
 
 # --- Misc ---
+._*
 *.pid
 *.seed
-tmp/
-temp/
+/tmp/
+/temp/
