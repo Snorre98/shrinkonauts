@@ -1,6 +1,6 @@
 # M1.75 — Feedback, Co-op Attribution, and Effect Composition
 
-**Status:** accepted; Phase 0 complete, Phase 1 complete, Phases 2–8 planned
+**Status:** accepted; Phase 0 complete, Phase 1 complete, Phase 2 complete, Phases 3–8 planned
 **Scope:** the feedback/effect layer between the M1.5 puzzle foundation and the
 next content/engine milestone.
 **Source decisions:** [ADR-0009–0013](../puzzle-engine/adr/README.md)
@@ -12,7 +12,8 @@ next content/engine milestone.
 |---|---|---|
 | 0 | Accept ADRs and capture the softlock baseline | Complete |
 | 1 | Correctness gate | Complete (`464ca63` + stable-state reachability) |
-| 2–8 | ECS, feedback, surfaces, conversations, effects, content, validation | Planned |
+| 2 | Generic ECS kernel | Complete (`src/ecs/`, `tests/ecs.test.ts`) |
+| 3–8 | Feedback, surfaces, conversations, effects, content, validation | Planned |
 
 ## 1. Why M1.75 exists
 
@@ -53,7 +54,7 @@ feedback architecture works on real puzzles, not to expand the level count.
 
 ### Engine and runtime
 
-- [ ] `src/ecs/` — generic ECS kernel with deterministic tick/frame systems.
+- [x] `src/ecs/` — generic ECS kernel with deterministic tick/frame systems.
 - [ ] `src/feedback/` — feedback components, facts, director, descriptors,
   lexicon, beats, and effect plans.
 - [ ] `GameRuntime` emits facts instead of hardcoded toast strings.

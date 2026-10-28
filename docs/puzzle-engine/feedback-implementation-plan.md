@@ -1,6 +1,6 @@
 # Feedback and Effect Layer — Implementation Plan (M1.75)
 
-**Status:** accepted plan; Phase 0 complete, Phase 1 complete, Phases 2–8 planned
+**Status:** accepted plan; Phase 0 complete, Phase 1 complete, Phase 2 complete, Phases 3–8 planned
 **Milestone:** [M1.75](../m1.75/README.md)
 **Source decisions:** [ADR-0009–0013](adr/README.md)
 **Contracts:** [module boundaries](contracts/module-boundaries.md),
@@ -17,7 +17,8 @@ migration; effects come after the surface model is stable.
 |---|---|
 | 0 — accept and freeze | Complete (2026-10-28) |
 | 1 — correctness gate | Complete (`464ca63` + stable-state reachability) |
-| 2–8 | Planned |
+| 2 — generic ECS kernel | Complete (`src/ecs/` + `tests/ecs.test.ts`) |
+| 3–8 | Planned |
 
 ---
 
@@ -232,6 +233,8 @@ Exit criteria:
 ---
 
 ## 5. Phase 2 — Generic ECS kernel
+
+**Status:** complete (2026-10-28).
 
 **Goal:** prove the ECS substrate on a bounded problem.
 

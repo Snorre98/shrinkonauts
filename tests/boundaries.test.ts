@@ -93,11 +93,26 @@ describe("module boundaries", () => {
     expect(offenders.map(relativeToSrc)).toEqual([]);
   });
 
+  it("includes the ECS kernel in the dependency walk", () => {
+    const files = sourceFiles(
+      fileURLToPath(new URL("../src/ecs/", import.meta.url)),
+    ).map(relativeToSrc);
+
+    expect(files).toEqual(
+      expect.arrayContaining([
+        "ecs/index.ts",
+        "ecs/types.ts",
+        "ecs/world.ts",
+      ]),
+    );
+  });
+
   it("keeps module dependencies acyclic and directionally ordered", () => {
     // ADR-0002: domain modules never depend on adapters, and adapters only
     // depend downwards. A module may always import from itself.
     const allowed: Record<string, readonly string[]> = {
       core: [],
+      ecs: ["core"],
       syllabus: ["core"],
       assets: ["core"],
       puzzle: [],
