@@ -374,6 +374,56 @@ describe("feedback facts and cues", () => {
     expect(rejected?.content.text).toContain("does not fit");
   });
 
+  it("upserts and removes runtime-owned persistent surfaces", () => {
+    const director = createFeedbackDirector();
+    const spec = {
+      id: "conversation:p1:agent-muscle",
+      capability: "affordance" as const,
+      source: { kind: "entity" as const, id: "agent-muscle" },
+      actor: "p1" as const,
+      owner: "p1" as const,
+      anchor: { kind: "entity" as const, entityId: "agent-muscle" },
+      presentation: "speechBubble" as const,
+      content: { speaker: "Muscle Effector", text: "Hello" },
+      state: "active" as const,
+      priority: 90,
+    };
+    director.putSurface(spec);
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
+
+    director.putSurface({ ...spec, content: { text: "Updated" } });
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
+    expect(director.frame().surfaces[0]?.content.text).toBe("Updated");
+
+    director.removeSurface(spec.id);
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toEqual([]);
+  });
+
+  it("keeps sticky projections from multiple puzzles", () => {
+    const director = createFeedbackDirector();
+    const nodeRun = readPuzzle("03-nerve-forest");
+    const endplate = readPuzzle("04-muscle-effector");
+    director.projectSticky({
+      document: nodeRun,
+      state: initialState(nodeRun),
+    });
+    director.projectSticky({
+      document: endplate,
+      state: initialState(endplate),
+    });
+    director.tick(1 / 60);
+    const ids = director.frame().surfaces.map((surface) => surface.id);
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        "fb:puzzle-node-run:binary:input-a",
+        "fb:puzzle-endplate-ferry:meter:ca-timer",
+      ]),
+    );
+  });
+
   it("creates an owned speech bubble for a conversation start", () => {
     const director = createFeedbackDirector();
     director.ingest({

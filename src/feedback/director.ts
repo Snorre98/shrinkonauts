@@ -6,11 +6,13 @@ import {
   type EntityId,
   type TickContext,
 } from "../ecs";
+import type { PuzzleDocument } from "../puzzle";
 import {
   Accessibility,
   ActorRef,
   Anchor,
   Content,
+  Conversation as ConversationComponent,
   CueState as CueStateComponent,
   Effects,
   Lifetime,
@@ -125,13 +127,13 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   private readonly defaultCueTtlTicks: number;
 
   private pendingFacts: FeedbackFact[] = [];
-  private pendingProjection: FeedbackProjection | null = null;
+  private readonly pendingProjections = new Map<string, FeedbackProjection>();
 
   private readonly stickyIds = new Set<string>();
   private readonly cueEntityByCause = new Map<string, EntityId>();
   private beats: FeedbackBeat[] = [];
-  private document: FeedbackProjection["document"] | undefined;
-  private labels: Readonly<Record<string, string>> | undefined;
+  private readonly documents = new Map<string, PuzzleDocument>();
+  private readonly labelsByNode = new Map<string, string>();
 
   private nextCueSeq = 1;
   private tickNumber = 0;
@@ -159,9 +161,20 @@ class FeedbackDirectorImpl implements FeedbackDirector {
         `FEEDBACK_PROJECTION_MISMATCH: expected ${input.document.id}, got ${input.state.puzzleId}`,
       );
     }
-    this.document = input.document;
-    this.labels = this.labelsFromOverrides(input.overrides);
-    this.pendingProjection = input;
+    // Make the document/labels available to facts ingested before the next
+    // ProjectSticky system runs in this tick.
+    this.documents.set(input.document.id, input.document);
+    this.labelsFromOverrides(input.document.id, input.overrides);
+    this.pendingProjections.set(input.document.id, input);
+  }
+
+  putSurface(spec: FeedbackSurfaceSpec & { id: string }): void {
+    this.upsertSurface(spec.id, spec);
+  }
+
+  removeSurface(surfaceId: string): void {
+    this.world.despawn(createEntityId(surfaceId));
+    this.stickyIds.delete(surfaceId);
   }
 
   tick(dt: number): void {
@@ -186,12 +199,12 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       this.world.despawn(entity);
     }
     this.pendingFacts = [];
-    this.pendingProjection = null;
+    this.pendingProjections.clear();
     this.stickyIds.clear();
     this.cueEntityByCause.clear();
     this.beats = [];
-    this.document = undefined;
-    this.labels = undefined;
+    this.documents.clear();
+    this.labelsByNode.clear();
     this.nextCueSeq = 1;
     this.tickNumber = 0;
     this.frameSeq = 0;
@@ -212,10 +225,10 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       name: "ProjectSticky",
       phase: "tick",
       run: () => {
-        const projection = this.pendingProjection;
-        if (!projection) return;
-        this.pendingProjection = null;
-        this.rebuildSticky(projection);
+        if (this.pendingProjections.size === 0) return;
+        const projections = [...this.pendingProjections.values()];
+        this.pendingProjections.clear();
+        this.rebuildSticky(projections);
       },
     });
 
@@ -236,9 +249,11 @@ class FeedbackDirectorImpl implements FeedbackDirector {
 
   private ingestFacts(facts: readonly FeedbackFact[]): void {
     for (const fact of facts) {
+      const document = this.documentForFact(fact);
+      const labels = this.labelsForDocument(document);
       const spec = projectFact(fact, {
-        ...(this.document ? { document: this.document } : {}),
-        ...(this.labels ? { labels: this.labels } : {}),
+        ...(document ? { document } : {}),
+        ...(labels ? { labels } : {}),
         defaultTtlTicks: this.defaultCueTtlTicks,
       });
       if (spec) {
@@ -247,47 +262,99 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     }
   }
 
-  private labelsFromOverrides(
-    overrides: FeedbackProjection["overrides"],
-  ): Readonly<Record<string, string>> | undefined {
-    if (!overrides) return undefined;
-
-    const labels: Record<string, string> = {};
-    for (const [nodeId, override] of Object.entries(overrides)) {
-      if (override.label) {
-        labels[nodeId] = override.label;
+  private documentForFact(fact: FeedbackFact): PuzzleDocument | undefined {
+    if (fact.kind !== "puzzle.event") return undefined;
+    if (fact.puzzleId) {
+      return this.documents.get(fact.puzzleId);
+    }
+    for (const document of this.documents.values()) {
+      if (document.nodes.some((node) => node.id === fact.event.nodeId)) {
+        return document;
       }
+    }
+    return this.documents.values().next().value as PuzzleDocument | undefined;
+  }
+
+  private labelsForDocument(
+    document: PuzzleDocument | undefined,
+  ): Readonly<Record<string, string>> | undefined {
+    if (!document) return undefined;
+    const labels: Record<string, string> = {};
+    for (const node of document.nodes) {
+      const label = this.labelsByNode.get(`${document.id}:${node.id}`);
+      if (label) labels[node.id] = label;
     }
     return Object.keys(labels).length > 0 ? labels : undefined;
   }
 
-  private rebuildSticky(input: FeedbackProjection): void {
-    const seen = new Set<string>();
-
-    for (const node of input.document.nodes) {
-      const nodeState = input.state.nodes[node.id];
-      if (!nodeState) continue;
-
-      const override = input.overrides?.[node.id];
-      const context: FeedbackProjectionContext = {
-        anchor: nodeAnchor(node),
-        label: override?.label ?? nodeLabel(node.id),
-        ...(override?.text ? { text: override.text } : {}),
-        ...(override?.effectPreset
-          ? { effectPreset: override.effectPreset }
-          : {}),
-      };
-      const descriptor = NODE_FEEDBACK[node.type] as NodeFeedbackDescriptor;
-      const specs = descriptor.project(node, nodeState, context);
-
-      for (const spec of specs) {
-        const id = spec.id ?? `fb:${spec.capability}:${node.id}`;
-        if (seen.has(id)) {
-          throw new Error(`FEEDBACK_DUPLICATE_SURFACE_ID: ${id}`);
-        }
-        seen.add(id);
-        this.upsertSurface(id, spec);
+  private labelsFromOverrides(
+    puzzleId: string,
+    overrides: FeedbackProjection["overrides"],
+  ): void {
+    if (!overrides) return;
+    for (const [nodeId, override] of Object.entries(overrides)) {
+      if (override.label) {
+        this.labelsByNode.set(`${puzzleId}:${nodeId}`, override.label);
       }
+    }
+  }
+
+  private rebuildSticky(inputs: readonly FeedbackProjection[]): void {
+    const seen = new Set<string>();
+    const beats: FeedbackBeat[] = [];
+    const multiple = inputs.length > 1;
+
+    for (const input of inputs) {
+      this.documents.set(input.document.id, input.document);
+      this.labelsFromOverrides(input.document.id, input.overrides);
+
+      for (const node of input.document.nodes) {
+        const nodeState = input.state.nodes[node.id];
+        if (!nodeState) continue;
+
+        const override = input.overrides?.[node.id];
+        const context: FeedbackProjectionContext = {
+          anchor: nodeAnchor(node),
+          label: override?.label ?? nodeLabel(node.id),
+          ...(override?.text ? { text: override.text } : {}),
+          ...(override?.effectPreset
+            ? { effectPreset: override.effectPreset }
+            : {}),
+        };
+        const descriptor = NODE_FEEDBACK[node.type] as NodeFeedbackDescriptor;
+        const specs = descriptor.project(node, nodeState, context);
+
+        for (const spec of specs) {
+          const id =
+            spec.id ??
+            (multiple
+              ? `fb:${input.document.id}:${spec.capability}:${node.id}`
+              : `fb:${spec.capability}:${node.id}`);
+          if (seen.has(id)) {
+            throw new Error(`FEEDBACK_DUPLICATE_SURFACE_ID: ${id}`);
+          }
+          seen.add(id);
+          this.upsertSurface(id, spec);
+        }
+      }
+
+      const projected = deriveBeats({
+        document: input.document,
+        state: input.state,
+        ...(input.beats ? { beats: input.beats } : {}),
+        ...(this.labelsForDocument(input.document)
+          ? { labels: this.labelsForDocument(input.document) }
+          : {}),
+      });
+      beats.push(
+        ...(multiple
+          ? projected.map((beat) => ({
+              ...beat,
+              id: `${input.document.id}:${beat.id}`,
+              label: `${input.document.title}: ${beat.label}`,
+            }))
+          : projected),
+      );
     }
 
     for (const id of this.stickyIds) {
@@ -300,20 +367,13 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       this.stickyIds.add(id);
     }
 
-    this.beats = deriveBeats({
-      document: input.document,
-      state: input.state,
-      ...(input.beats ? { beats: input.beats } : {}),
-      ...(this.labels ? { labels: this.labels } : {}),
-    });
+    this.beats = beats;
   }
 
   private upsertSurface(id: string, spec: FeedbackSurfaceSpec): void {
     const surface = this.normalizeSurface(id, spec);
     const entity = createEntityId(id);
-    const exists =
-      this.stickyIds.has(id) &&
-      this.world.get(entity, SourceRef) !== undefined;
+    const exists = this.world.get(entity, SourceRef) !== undefined;
     if (!exists) {
       this.world.spawn(entity);
     }
@@ -338,6 +398,12 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       this.world.add(entity, Reason, surface.reason);
     } else {
       this.world.remove(entity, Reason);
+    }
+
+    if (surface.conversation) {
+      this.world.add(entity, ConversationComponent, surface.conversation);
+    } else {
+      this.world.remove(entity, ConversationComponent);
     }
 
     if (surface.effects && surface.effects.length > 0) {
@@ -382,6 +448,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       ...(spec.effects && spec.effects.length > 0
         ? { effects: spec.effects }
         : {}),
+      ...(spec.conversation ? { conversation: spec.conversation } : {}),
     };
   }
 
@@ -524,6 +591,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     const content = this.required(entity, Content, "content");
     const reason = this.world.get(entity, Reason) ?? undefined;
     const effects = this.world.get(entity, Effects);
+    const conversation = this.world.get(entity, ConversationComponent);
 
     return {
       id: entity,
@@ -542,6 +610,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       priority: this.required(entity, Priority, "priority"),
       a11y: this.required(entity, Accessibility, "accessibility"),
       ...(effects ? { effects } : {}),
+      ...(conversation ? { conversation } : {}),
     };
   }
 

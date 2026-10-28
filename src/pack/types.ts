@@ -75,12 +75,20 @@ export interface EntityGateComponent {
   gateId: string;
 }
 
+export interface EntityAnchorPoint {
+  x: number;
+  y: number;
+  /** Direction in radians; used by Phase 6 effect emitters. */
+  direction?: number;
+}
+
 export interface RoomEntityComponents {
   body?: EntityBodyComponent;
   prop?: EntityPropComponent;
   receptor?: EntityReceptorComponent;
   pulseSource?: EntityPulseSourceComponent;
   gate?: EntityGateComponent;
+  anchors?: Record<string, EntityAnchorPoint>;
 }
 
 export interface RoomEntity {

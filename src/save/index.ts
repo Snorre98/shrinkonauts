@@ -2,7 +2,7 @@ import type { LearningEvent } from "../curriculum";
 import type { ProgressionSnapshot } from "../progression";
 import type { PuzzleRunState } from "../puzzle";
 
-export const RUN_SCHEMA_VERSION = "2.0";
+export const RUN_SCHEMA_VERSION = "2.1";
 export const SAVE_SCHEMA_VERSION = "2.0";
 export const RUN_STORAGE_KEY = "shrinkonauts.run";
 export const SETTINGS_STORAGE_KEY = "shrinkonauts.settings";
@@ -35,6 +35,14 @@ export interface PropSnapshot {
   placedOn: string | null;
 }
 
+export interface ConversationSnapshot {
+  surfaceId: string;
+  dialogueId: string;
+  nodeId: string;
+  owner: "p1" | "p2";
+  entityId: string;
+}
+
 export interface RunSnapshot {
   schemaVersion: string;
   packId: string;
@@ -58,6 +66,9 @@ export interface RunSnapshot {
     puzzles: Record<string, PuzzleRunState>;
   };
   audio: { muted: boolean };
+  /** Conversation sessions survive a reload; feedback ECS state does not. */
+  conversations?: ConversationSnapshot[];
+  /** Legacy single-dialogue save; migrated to one P1 conversation on load. */
   dialogue?: { dialogueId: string; nodeId: string };
 }
 
@@ -228,6 +239,21 @@ function isPuzzleState(value: unknown): value is PuzzleRunState {
   );
 }
 
+function isConversationSnapshot(value: unknown): value is ConversationSnapshot {
+  return (
+    isRecord(value) &&
+    typeof value.surfaceId === "string" &&
+    value.surfaceId !== "" &&
+    typeof value.dialogueId === "string" &&
+    value.dialogueId !== "" &&
+    typeof value.nodeId === "string" &&
+    value.nodeId !== "" &&
+    (value.owner === "p1" || value.owner === "p2") &&
+    typeof value.entityId === "string" &&
+    value.entityId !== ""
+  );
+}
+
 function isRunSnapshot(value: unknown): value is RunSnapshot {
   if (!isRecord(value)) return false;
   if (
@@ -281,6 +307,19 @@ function isRunSnapshot(value: unknown): value is RunSnapshot {
 
   if (!isRecord(value.audio) || typeof value.audio.muted !== "boolean") {
     return false;
+  }
+  if (value.conversations !== undefined) {
+    if (!Array.isArray(value.conversations)) return false;
+    if (!value.conversations.every(isConversationSnapshot)) return false;
+  }
+  if (value.dialogue !== undefined) {
+    if (
+      !isRecord(value.dialogue) ||
+      typeof value.dialogue.dialogueId !== "string" ||
+      typeof value.dialogue.nodeId !== "string"
+    ) {
+      return false;
+    }
   }
   return true;
 }

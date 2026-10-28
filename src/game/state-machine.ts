@@ -1,7 +1,6 @@
 export const GAME_STATES = [
   "boot",
   "level",
-  "dialogue",
   "gate",
   "map",
   "conceptLog",
@@ -15,8 +14,6 @@ export type GameState = (typeof GAME_STATES)[number];
 
 export type GameEventType =
   | "start-level"
-  | "open-dialogue"
-  | "close-dialogue"
   | "open-gate"
   | "close-gate"
   | "open-map"
@@ -40,7 +37,6 @@ export function initialMachine(): MachineState {
 
 const PAUSABLE: readonly GameState[] = [
   "level",
-  "dialogue",
   "gate",
   "map",
   "conceptLog",
@@ -68,14 +64,6 @@ export function transition(
   switch (event) {
     case "start-level":
       return { state: "level", returnTo: null };
-    case "open-dialogue":
-      return machine.state === "level"
-        ? { state: "dialogue", returnTo: null }
-        : machine;
-    case "close-dialogue":
-      return machine.state === "dialogue"
-        ? { state: "level", returnTo: null }
-        : machine;
     case "open-gate":
       return machine.state === "level"
         ? { state: "gate", returnTo: null }

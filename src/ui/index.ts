@@ -10,7 +10,6 @@ export type {
 export type {
   ConceptView,
   DebriefView,
-  DialogueView,
   GateView,
   InteractionView,
   MapView,
@@ -18,4 +17,8 @@ export type {
   PuzzleView,
   RuntimeSnapshot,
   SettingsView,
+  SurfaceAction,
+  WorldAnchorPoint,
+  WorldEntityView,
+  WorldView,
 } from "./model";

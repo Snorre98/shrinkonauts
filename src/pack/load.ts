@@ -20,6 +20,7 @@ import {
 import type {
   BackgroundBlend,
   BackgroundFit,
+  EntityAnchorPoint,
   EntityBodyComponent,
   EntityGateComponent,
   EntityPropComponent,
@@ -450,6 +451,54 @@ function parseReceptorComponent(
   return ok(receptor);
 }
 
+function parseAnchors(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<Record<string, EntityAnchorPoint>> {
+  if (!isRecord(value)) {
+    return err(`${code}: entities[${index}].components.anchors must be an object`);
+  }
+  const anchors: Record<string, EntityAnchorPoint> = {};
+  for (const [name, raw] of Object.entries(value)) {
+    if (!name) {
+      return err(`${code}: entities[${index}].components.anchors needs non-empty names`);
+    }
+    if (!isRecord(raw)) {
+      return err(
+        `${code}: entities[${index}].components.anchors.${name} must be an object`,
+      );
+    }
+    const x = readNumber(
+      raw,
+      "x",
+      code,
+      `entities[${index}].components.anchors.${name}.x`,
+    );
+    if (!x.ok) return err(x.error);
+    const y = readNumber(
+      raw,
+      "y",
+      code,
+      `entities[${index}].components.anchors.${name}.y`,
+    );
+    if (!y.ok) return err(y.error);
+    const anchor: EntityAnchorPoint = { x: x.value, y: y.value };
+    if (raw.direction !== undefined) {
+      const direction = readNumber(
+        raw,
+        "direction",
+        code,
+        `entities[${index}].components.anchors.${name}.direction`,
+      );
+      if (!direction.ok) return err(direction.error);
+      anchor.direction = direction.value;
+    }
+    anchors[name] = anchor;
+  }
+  return ok(anchors);
+}
+
 function parseEntityComponents(
   value: unknown,
   index: number,
@@ -460,7 +509,7 @@ function parseEntityComponents(
     return err(`${code}: entities[${index}].components must be an object`);
   }
 
-  const known = new Set(["body", "prop", "receptor", "pulseSource", "gate"]);
+  const known = new Set(["body", "prop", "receptor", "pulseSource", "gate", "anchors"]);
   for (const key of Object.keys(value)) {
     if (!known.has(key)) {
       return err(
@@ -503,6 +552,11 @@ function parseEntityComponents(
     if (!gateId.ok) return err(gateId.error);
     const gate: EntityGateComponent = { gateId: gateId.value };
     components.gate = gate;
+  }
+  if (value.anchors !== undefined) {
+    const anchors = parseAnchors(value.anchors, index, code);
+    if (!anchors.ok) return err(anchors.error);
+    components.anchors = anchors.value;
   }
   return ok(components);
 }

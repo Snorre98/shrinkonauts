@@ -126,6 +126,18 @@ describe("module boundaries", () => {
     );
   });
 
+  it("keeps feedback out of the world module", () => {
+    const worldFiles = sourceFiles(
+      fileURLToPath(new URL("../src/world/", import.meta.url)),
+    );
+    for (const file of worldFiles) {
+      expect(
+        read(file),
+        `${relativeToSrc(file)} must not import feedback`,
+      ).not.toMatch(/from\s+["']\.\.\/feedback(?:\/[^"']*)?["']/);
+    }
+  });
+
   it("keeps module dependencies acyclic and directionally ordered", () => {
     // ADR-0002: domain modules never depend on adapters, and adapters only
     // depend downwards. A module may always import from itself.
@@ -142,13 +154,14 @@ describe("module boundaries", () => {
       curriculum: ["core", "pack", "syllabus"],
       save: ["curriculum", "progression", "puzzle"],
       audio: ["assets", "core"],
-      ui: ["assets", "core", "curriculum", "pack", "puzzle"],
+      ui: ["assets", "core", "curriculum", "feedback", "pack", "puzzle"],
       world: ["assets", "core", "pack", "puzzle"],
       game: [
         "assets",
         "audio",
         "core",
         "curriculum",
+        "feedback",
         "narrative",
         "pack",
         "progression",

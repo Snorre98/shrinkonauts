@@ -11,6 +11,8 @@ import type {
 
 export type PlayerId = "p1" | "p2";
 
+export type SurfaceId = string;
+
 export type FeedbackOwner = PlayerId | "shared";
 
 export type FeedbackAudience = "owner" | "both";
@@ -129,6 +131,7 @@ export interface FeedbackContent {
   speaker?: string;
   text?: string;
   choices?: readonly FeedbackChoice[];
+  selectedChoiceId?: string;
   progress?: FeedbackProgress;
 }
 
@@ -222,6 +225,7 @@ export interface FeedbackSurface {
   priority: number;
   a11y: FeedbackAccessibility;
   effects?: readonly EffectPlan[];
+  conversation?: Conversation;
 }
 
 export interface FeedbackCue {
@@ -309,6 +313,7 @@ export interface FeedbackSurfaceSpec {
   priority?: number;
   a11y?: FeedbackAccessibility;
   effects?: readonly EffectPlan[];
+  conversation?: Conversation;
 }
 
 export interface FeedbackCueSpec {
@@ -395,6 +400,8 @@ export interface FeedbackProjection {
 export type FeedbackFact =
   | {
       kind: "puzzle.event";
+      /** Optional owner puzzle, used when a level has more than one puzzle. */
+      puzzleId?: string;
       event: PuzzleEvent;
       actor: PlayerId | null;
       source: SourceRef;
@@ -406,6 +413,8 @@ export type FeedbackFact =
       result: FeedbackResult;
       reason?: RejectionReason;
       target?: SourceRef;
+      /** Optional authored/custom copy. */
+      text?: string;
     }
   | {
       kind: "conversation.start";
@@ -417,6 +426,9 @@ export type FeedbackFact =
       kind: "system.outcome";
       outcome: string;
       source: SourceRef;
+      /** Optional authored/custom copy. */
+      text?: string;
+      severity?: FeedbackSeverity;
     };
 
 export interface FeedbackDirectorOptions {
@@ -430,6 +442,14 @@ export interface FeedbackDirector {
   ingestAll(facts: readonly FeedbackFact[]): void;
   /** Queues a persistent projection for the next `tick`. */
   projectSticky(input: FeedbackProjection): void;
+  /**
+   * Create or replace a runtime-owned persistent surface (for example a
+   * conversation or the stuck hint affordance). This writes immediately so a
+   * direct interaction can be observed before the next fixed tick.
+   */
+  putSurface(spec: FeedbackSurfaceSpec & { id: string }): void;
+  /** Remove a runtime-owned surface. */
+  removeSurface(surfaceId: SurfaceId): void;
   /** Runs the Phase 3 tick systems in deterministic order. */
   tick(dt: number): void;
   /** Returns the current ordered view without creating a frame. */

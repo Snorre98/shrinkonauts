@@ -10,6 +10,7 @@ import { LayeredBackground } from "./background";
 import { PLAYER_ASSET_IDS } from "./ids";
 import { KeyboardIntentSource } from "./input";
 import {
+  emptyPlayerUiActions,
   emptyRuntimeInput,
   type RuntimeInput,
   type WorldRuntime,
@@ -55,14 +56,27 @@ function emptyActions(input: RuntimeInput): RuntimeInput {
       p2: { ...input.intents.p2, jump: false, dash: false },
     },
     actions: {
-      p1: { interact: false, scan: false, pulse: false, carry: false, throw: false },
-      p2: { interact: false, scan: false, pulse: false, carry: false, throw: false },
+      p1: {
+        interact: false,
+        scan: false,
+        pulse: false,
+        carry: false,
+        throw: false,
+        ui: emptyPlayerUiActions(),
+      },
+      p2: {
+        interact: false,
+        scan: false,
+        pulse: false,
+        carry: false,
+        throw: false,
+        ui: emptyPlayerUiActions(),
+      },
       map: false,
       log: false,
       pause: false,
       mute: false,
       toggleP2: false,
-      confirm: false,
     },
   };
 }

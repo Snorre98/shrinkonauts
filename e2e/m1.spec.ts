@@ -9,6 +9,9 @@ interface RuntimeBridge {
     events: Array<{ type: string; gateId?: string; puzzleId?: string }>;
   };
   snapshot(): { state: string; abilities: string[]; mode: string };
+  simulation: {
+    players: Record<"p1" | "p2", { x: number; y: number }>;
+  };
 }
 
 type ShrinkonautsWindow = Window & {
@@ -81,7 +84,7 @@ async function closeOverlay(page: Page, overlay: string): Promise<void> {
   await expect(page.locator(`.${overlay}`)).toHaveCount(0);
 }
 
-test("boots into the vertical slice and finishes dialogue, scans, Node Run, Endplate Ferry, debrief", async ({
+test("boots into the vertical slice and finishes conversation, scans, Node Run, Endplate Ferry, debrief", async ({
   page,
 }) => {
   const consoleErrors = await boot(page);
@@ -91,36 +94,44 @@ test("boots into the vertical slice and finishes dialogue, scans, Node Run, Endp
   await expect(page.locator(".hud__meta")).toContainText("co-op");
   await expect(page.locator(".hud__meta")).toContainText("Node Run");
 
-  // Dialogue.
+  // Conversation.
   await teleport(page, "agent-neuron");
   await expect(page.locator(".hud__prompt")).toContainText("Talk to Neuron Keeper");
   await page.keyboard.press("e");
-  await expect(page.getByRole("dialog", { name: "Dialogue" })).toBeVisible();
-  await expect(page.locator(".overlay__title")).toHaveText("Neuron Keeper");
+  await expect(page.locator(".feedback-surface--speechBubble")).toContainText(
+    "You are inside a neuron",
+  );
+  await expect(page.getByRole("dialog", { name: "Dialogue" })).toHaveCount(0);
 
-  await page.keyboard.press("Enter");
-  await expect(page.locator(".dialogue__text")).toContainText(
+  await page.keyboard.press("e");
+  await expect(page.locator(".feedback-surface--speechBubble")).toContainText(
     "A neuron does not fire for every nudge",
   );
-  await page.keyboard.press("Enter");
-  await expect(page.locator(".dialogue__text")).toContainText(
+  await page.keyboard.press("e");
+  await expect(page.locator(".feedback-surface--speechBubble")).toContainText(
     "Two inputs are enough here",
   );
-  await page.keyboard.press("Enter");
-  await expect(page.locator(".dialogue__text")).toContainText("Quick check");
+  await page.keyboard.press("e");
+  await expect(page.locator(".feedback-surface--speechBubble")).toContainText(
+    "Quick check",
+  );
   await page
     .getByRole("button", { name: "A full-size spike fires and travels one way" })
     .click();
-  await expect(page.locator(".overlay--dialogue")).toHaveCount(0);
+  await expect(page.locator(".feedback-surface--speechBubble")).toContainText(
+    "Exactly.",
+  );
+  await page.keyboard.press("e");
+  await expect(page.locator(".feedback-surface--speechBubble")).toHaveCount(0);
 
   // Scan one structure and read it in the concept log.
   await teleport(page, "scan-pathway");
   await page.keyboard.press("q");
-  // Wait for the scan to be applied before opening the log; otherwise both
-  // actions land in the same frame and the log transition consumes the scan.
-  await expect(page.locator(".hud__toast")).toContainText(
-    "Sensory and motor pathways",
-  );
+  // Wait for the scan cue before opening the log; otherwise both actions land
+  // in the same frame and the log transition consumes the scan.
+  await expect(
+    page.locator(".feedback-surface", { hasText: "Sensory and motor pathways" }),
+  ).toBeVisible();
   await page.keyboard.press("c");
   await expect(page.getByRole("dialog", { name: "Concept log" })).toBeVisible();
   await expect(
@@ -132,7 +143,9 @@ test("boots into the vertical slice and finishes dialogue, scans, Node Run, Endp
   // terminal. The threshold counter and terminal relay open the exit gate.
   await teleport(page, "pad-input-a", "pad-input-b");
   await teleport(page, "pad-terminal");
-  await expect(page.locator(".hud__toast")).toContainText("Signal restored");
+  await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
+    "Signal restored",
+  );
   await expect
     .poll(() =>
       page.evaluate(
@@ -185,7 +198,9 @@ test("boots into the vertical slice and finishes dialogue, scans, Node Run, Endp
   // P1 pulses the terminal; the Ca gate + receptor relay opens the muscle gate.
   await teleport(page, "motor-terminal");
   await page.keyboard.press("f");
-  await expect(page.locator(".hud__toast")).toContainText("Signal restored");
+  await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
+    "Signal restored",
+  );
   await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry ✓");
 
   await page.evaluate(() => {
@@ -233,6 +248,38 @@ test("boots into the vertical slice and finishes dialogue, scans, Node Run, Endp
   expect(consoleErrors).toEqual([]);
 });
 
+test("two players can hold conversations while the other keeps moving", async ({
+  page,
+}) => {
+  const consoleErrors = await boot(page);
+
+  await teleport(page, "agent-neuron");
+  await page.keyboard.press("e");
+  await expect(page.locator(".feedback-surface--speechBubble")).toHaveCount(1);
+  await expect(page.locator('.feedback-surface--speechBubble[data-owner="p1"]')).toBeVisible();
+
+  const before = await page.evaluate(
+    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime.simulation.players.p2.x,
+  );
+  await page.keyboard.down("ArrowRight");
+  await page.waitForTimeout(250);
+  await page.keyboard.up("ArrowRight");
+  const after = await page.evaluate(
+    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime.simulation.players.p2.x,
+  );
+  expect(after).toBeGreaterThan(before);
+  await expect(page.locator(".feedback-surface--speechBubble")).toHaveCount(1);
+
+  await teleport(page, "agent-neuron");
+  await page.keyboard.press(",");
+  await expect(page.locator(".feedback-surface--speechBubble")).toHaveCount(2);
+  await expect(page.locator('.feedback-surface--speechBubble[data-owner="p2"]')).toBeVisible();
+
+  await page.keyboard.press("e");
+  await expect(page.locator('.feedback-surface--speechBubble[data-owner="p2"]')).toBeVisible();
+  expect(consoleErrors).toEqual([]);
+});
+
 test("pause settings, checkpoint player toggle, map and mute work from the keyboard", async ({
   page,
 }) => {
@@ -254,7 +301,7 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   );
 
   await page.getByRole("button", { name: "Reset puzzle" }).click();
-  await expect(page.locator(".hud__toast")).toContainText("Puzzle reset");
+  await expect(page.locator(".hud__save")).toContainText("Puzzle reset");
 
   await page.getByRole("button", { name: "130%" }).click();
   await expect

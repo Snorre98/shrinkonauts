@@ -8,6 +8,15 @@ import {
   type DebriefPrompt,
   type EvidenceExport,
 } from "../curriculum";
+import {
+  createFeedbackDirector,
+  type FeedbackAnchor,
+  type FeedbackDirector,
+  type FeedbackFrame,
+  type FeedbackSurfaceSpec,
+  type SourceRefValue,
+  type SurfaceId,
+} from "../feedback";
 import type {
   DialogueDocument,
   DialogueEffect,
@@ -54,19 +63,29 @@ import {
 import type {
   ConceptView,
   DebriefView,
-  DialogueView,
   GateView,
   InteractionView,
   MapView,
   PlayerView,
   PuzzleView,
   RuntimeSnapshot,
+  SurfaceAction,
+  WorldAnchorPoint,
+  WorldEntityView,
+  WorldView,
 } from "../ui/model";
-import type { GameSettings, RunLoadResult, RunSnapshot } from "../save";
+import type {
+  ConversationSnapshot,
+  GameSettings,
+  RunLoadResult,
+  RunSnapshot,
+} from "../save";
 import { RUN_SCHEMA_VERSION } from "../save";
 import {
+  emptyPlayerUiActions,
   emptyRuntimeInput,
   type RuntimeInput,
+  type WorldEffectPlan,
   type WorldRuntime,
 } from "../world/runtime-port";
 import {
@@ -93,12 +112,20 @@ import {
   type GameEventType,
   type MachineState,
 } from "./state-machine";
+import {
+  SurfaceInputRouter,
+  type RoutedSurfaceAction,
+} from "./surface-router";
 
 const INTERACT_RANGE = 70;
 const SCAN_RANGE = 78;
 const CHECKPOINT_RANGE = 64;
 const TOAST_SECONDS = 3;
 const PLACEHOLDER_ABILITY = "scan";
+const FEEDBACK_CUE_TTL_TICKS = 180;
+const FEEDBACK_STUCK_TICKS = 1800;
+const CONVERSATION_ACK_DISTANCE = 140;
+const ROOM_ENTITY_SIZE = 36;
 
 export interface AudioPort {
   play(assetId: string): void;
@@ -138,9 +165,22 @@ export interface RuntimeOptions {
   onSettings?: (settings: GameSettings) => void;
   /** Notifies the platform after a runtime level entry that needs a scene rebuild. */
   onLevelChange?: (levelId: string) => void;
+  /** Ticks without a puzzle-state change before the stuck affordance appears. */
+  stuckThresholdTicks?: number;
 }
 
 type Listener = (snapshot: RuntimeSnapshot) => void;
+
+export interface ConversationState {
+  surfaceId: SurfaceId;
+  owner: PlayerId;
+  entityId: string;
+  document: DialogueDocument;
+  session: DialogueSession;
+  maxDistance?: number;
+  freezeOwner: boolean;
+  selectedChoiceIndex: number;
+}
 
 interface Toast {
   message: string;
@@ -213,6 +253,23 @@ function playerOverlapsTrigger(
   );
 }
 
+function defaultEntityAnchors(
+  width: number,
+  height: number,
+): Record<string, WorldAnchorPoint> {
+  return {
+    center: { x: width / 2, y: height / 2 },
+    top: { x: width / 2, y: 0 },
+    bottom: { x: width / 2, y: height },
+    left: { x: 0, y: height / 2 },
+    right: { x: width, y: height / 2 },
+  };
+}
+
+function asPlayerId(value: string | undefined): PlayerId | null {
+  return value === "p1" || value === "p2" ? value : null;
+}
+
 /**
  * Pure gameplay orchestrator. It owns run state, progression, curriculum,
  * dialogue, gates, save/load, and co-op session state, but never touches the
@@ -230,6 +287,8 @@ export class GameRuntime implements WorldRuntime {
   private readonly onSettings?: (settings: GameSettings) => void;
   private readonly onLevelChange?: (levelId: string) => void;
   private readonly listeners = new Set<Listener>();
+  private readonly feedback: FeedbackDirector;
+  private readonly stuckThresholdTicks: number;
 
   private machine: MachineState = initialMachine();
   private level: LevelDocument;
@@ -238,8 +297,7 @@ export class GameRuntime implements WorldRuntime {
 
   private progression: ProgressionSnapshot = createProgression();
   private curriculum = createCurriculum();
-  private dialogueSession: DialogueSession | null = null;
-  private dialogueDocument: DialogueDocument | null = null;
+  readonly conversations = new Map<SurfaceId, ConversationState>();
   private activeGate: GateDocument | null = null;
   private puzzles = new Map<string, PuzzleRuntime>();
   private activatedPuzzles = new Set<string>();
@@ -255,6 +313,10 @@ export class GameRuntime implements WorldRuntime {
   private firedTriggers = new Set<string>();
   private lastExitWarning = 0;
   private lastEmitSignature: string | null = null;
+  private lastPuzzleSignature: string | null = null;
+  private stuckTicks = 0;
+  private stuckSurfaceId: SurfaceId | null = null;
+  private drainedFrameSeq = -1;
 
   constructor(options: RuntimeOptions) {
     this.content = options.content;
@@ -265,6 +327,11 @@ export class GameRuntime implements WorldRuntime {
     this.onCue = options.onCue;
     this.onSettings = options.onSettings;
     this.onLevelChange = options.onLevelChange;
+    this.stuckThresholdTicks =
+      options.stuckThresholdTicks ?? FEEDBACK_STUCK_TICKS;
+    this.feedback = createFeedbackDirector({
+      defaultCueTtlTicks: FEEDBACK_CUE_TTL_TICKS,
+    });
 
     const level = options.content.levels[0];
     if (!level) throw new Error("PACK_HAS_NO_LEVELS");
@@ -411,8 +478,12 @@ export class GameRuntime implements WorldRuntime {
       }
     }
     this.syncPuzzleTether();
-    this.dialogueSession = null;
-    this.dialogueDocument = null;
+    this.conversations.clear();
+    this.feedback.reset();
+    this.dismissStuck();
+    this.lastPuzzleSignature = null;
+    this.stuckTicks = 0;
+    this.drainedFrameSeq = -1;
     this.activeGate = null;
     this.gateFeedback = null;
     this.gateHintIndex = 0;
@@ -423,6 +494,7 @@ export class GameRuntime implements WorldRuntime {
 
     if (run) {
       this.restorePositions(run);
+      this.restoreConversations(run);
     } else {
       const checkpoint =
         this.room.checkpoints?.find(
@@ -440,6 +512,9 @@ export class GameRuntime implements WorldRuntime {
 
     setPlayerActive(this.world, "p2", this.activeP2);
     this.world.props = this.world.physics.propStates();
+    this.projectFeedback();
+    this.feedback.tick(0);
+    this.lastPuzzleSignature = this.puzzleStateSignature();
 
     if (options.fresh) {
       this.record({ type: "pack_loaded", packVersion: this.content.pack.version, syllabusVersion: this.content.syllabus.version });
@@ -522,13 +597,6 @@ export class GameRuntime implements WorldRuntime {
     if (this.machine.state === "pause") {
       return [];
     }
-
-    if (this.machine.state === "dialogue") {
-      if (actions.confirm) {
-        this.advanceDialogue();
-      }
-      return [];
-    }
     if (this.machine.state === "map" || this.machine.state === "conceptLog") {
       return [];
     }
@@ -536,20 +604,38 @@ export class GameRuntime implements WorldRuntime {
       return [];
     }
 
+    const routed = new Set<PlayerId>();
+    const surfaces = this.feedback.view().surfaces;
+    const router = new SurfaceInputRouter({
+      hard: false,
+      surfaces,
+      mode: this.activeP2 ? "co-op" : "solo",
+    });
+    for (const id of ["p1", "p2"] as const) {
+      if (!this.world.players[id].active) continue;
+      const ui = actions[id].ui ?? emptyPlayerUiActions();
+      const route = router.route(id, ui);
+      if (!route.consumed) continue;
+      routed.add(id);
+      if (route.action) this.applyRoutedSurfaceAction(route.action);
+      if (this.machine.state !== "level") return [];
+    }
+
     for (const id of ["p1", "p2"] as const) {
       if (!this.world.players[id].active) continue;
       const playerActions = actions[id];
+      if (routed.has(id)) continue;
       if (playerActions.carry) this.carryAction(id);
       if (playerActions.throw) this.throwAction(id);
       if (playerActions.pulse) this.pulseAction(id);
       if (playerActions.interact) this.interactFor(id);
       if (this.machine.state !== "level") return [];
-      if (playerActions.scan) this.scan();
+      if (playerActions.scan) this.scan(id);
     }
 
     const cues = stepRoomSimulationWithCues(
       this.world,
-      input.intents,
+      this.frozenIntents(input.intents),
       dt,
       this.progression.abilities,
     );
@@ -561,7 +647,13 @@ export class GameRuntime implements WorldRuntime {
       }
       this.playCue(cue);
       if (cue === "propReturned") {
-        this.setToast("The puzzle object returned to its start");
+        this.feedback.ingest({
+          kind: "system.outcome",
+          outcome: "puzzle.object.returned",
+          source: { kind: "system", id: "puzzle" },
+          text: "The puzzle object returned to its start",
+          severity: "neutral",
+        });
       }
     }
     if (hazardRespawned) {
@@ -572,11 +664,42 @@ export class GameRuntime implements WorldRuntime {
 
     this.checkPuzzleActivations();
     this.tickPuzzles();
+    this.updateConversations();
     this.checkCheckpoints();
     this.checkTriggers();
     this.checkExit();
+    this.feedback.tick(dt);
+    this.updateStuck();
     this.emit();
     return cues;
+  }
+
+  private frozenIntents(intents: RuntimeInput["intents"]): RuntimeInput["intents"] {
+    const frozen = {
+      p1: { ...intents.p1 },
+      p2: { ...intents.p2 },
+    };
+    for (const conversation of this.conversations.values()) {
+      if (!conversation.freezeOwner) continue;
+      const owner = this.effectiveOwner(conversation.owner);
+      frozen[owner] = { moveX: 0, jump: false, dash: false };
+    }
+    return frozen;
+  }
+
+  private applyRoutedSurfaceAction(action: RoutedSurfaceAction): void {
+    if (action.type === "navigate") {
+      this.navigateConversation(action.surfaceId, action.delta);
+      return;
+    }
+    if (action.type === "choose") {
+      this.surfaceAction(action.surfaceId, {
+        type: "choose",
+        choiceId: action.choiceId,
+      });
+      return;
+    }
+    this.surfaceAction(action.surfaceId, { type: action.type });
   }
 
   /* ---------------------------------------------------------------- */
@@ -599,10 +722,6 @@ export class GameRuntime implements WorldRuntime {
     }
     if (this.machine.state === "gate") {
       this.closeGate();
-      return;
-    }
-    if (this.machine.state === "dialogue") {
-      this.closeDialogue();
       return;
     }
     this.transition(this.machine.state === "pause" ? "resume" : "pause");
@@ -666,23 +785,7 @@ export class GameRuntime implements WorldRuntime {
   interact(): void {
     if (this.machine.state !== "level") return;
     const actor = this.world.players.p1.active ? "p1" : "p2";
-    if (this.tryActivatePuzzle(actor)) return;
-    const target = this.nearestEntity(["agent", "gate"], INTERACT_RANGE);
-    if (!target) {
-      this.setToast("Nothing to interact with");
-      this.emit();
-      return;
-    }
-    if (target.entity.type === "agent" && target.entity.dialogueId) {
-      this.startDialogue(target.entity.dialogueId);
-      return;
-    }
-    if (target.entity.type === "gate" && target.entity.gateId) {
-      this.openGate(target.entity.gateId);
-      return;
-    }
-    this.setToast("Nothing to interact with");
-    this.emit();
+    this.interactFor(actor);
   }
 
   private interactFor(id: PlayerId): void {
@@ -695,7 +798,26 @@ export class GameRuntime implements WorldRuntime {
       this.carryAction(id);
       return;
     }
-    this.interact();
+    if (this.tryEntityInteract(id)) return;
+    this.emitAction(id, "interact", "blocked", {
+      reason: "out-of-range",
+      text: "Nothing to interact with",
+    });
+    this.emit();
+  }
+
+  private tryEntityInteract(id: PlayerId): boolean {
+    const target = this.nearestEntity(["agent", "gate"], INTERACT_RANGE, id);
+    if (!target) return false;
+    if (target.entity.type === "agent" && target.entity.dialogueId) {
+      this.startConversation(target.entity.dialogueId, id, target.entity.id);
+      return true;
+    }
+    if (target.entity.type === "gate" && target.entity.gateId) {
+      this.openGate(target.entity.gateId);
+      return true;
+    }
+    return false;
   }
 
   abilitiesFor(id: PlayerId): string[] {
@@ -715,7 +837,10 @@ export class GameRuntime implements WorldRuntime {
   private carryAction(id: PlayerId): void {
     if (this.machine.state !== "level") return;
     if (!this.abilitiesFor(id).includes("carry")) {
-      this.setToast("Only Player 2 can carry in co-op");
+      this.emitAction(id, "carry", "blocked", {
+        reason: "locked",
+        text: "Only Player 2 can carry in co-op",
+      });
       this.emit();
       return;
     }
@@ -734,13 +859,22 @@ export class GameRuntime implements WorldRuntime {
         ) {
           this.notePuzzle("placements");
           this.playCue("scan");
-          this.setToast(`${carriedLabel} placed in the receptor`);
+          const entityId = this.puzzleNodeEntityId(receptor.nodeId);
+          this.emitAction(id, "place", "accepted", {
+            target: entityId ? { kind: "entity", id: entityId } : undefined,
+            text: `${carriedLabel} placed in the receptor`,
+          });
+          this.resetStuckActivity();
         }
       } else {
         this.world.physics.dropProp(carried.id);
         this.notePuzzle("drops");
         this.notePuzzle("wrongSide");
-        this.setToast(`No receptor in reach — ${carriedLabel} dropped`);
+        this.emitAction(id, "drop", "accepted", {
+          reason: "out-of-range",
+          text: `No receptor in reach — ${carriedLabel} dropped`,
+        });
+        this.resetStuckActivity();
       }
       this.autosave();
       this.emit();
@@ -749,23 +883,37 @@ export class GameRuntime implements WorldRuntime {
 
     const prop = this.nearestProp(id);
     if (!prop) {
-      this.setToast("No puzzle object in reach");
+      this.emitAction(id, "pickup", "rejected", {
+        reason: "out-of-range",
+        text: "No puzzle object in reach",
+      });
       this.emit();
       return;
     }
     const label = this.entityLabel(prop.id);
     if (prop.state === "docked") {
-      this.setToast(`${label} is locked in the receptor`);
+      this.emitAction(id, "pickup", "rejected", {
+        reason: "locked",
+        target: { kind: "entity", id: prop.id },
+        text: `${label} is locked in the receptor`,
+      });
       this.emit();
       return;
     }
     if (!this.world.physics.pickUp(id, prop.id)) {
-      this.setToast(`${label} cannot be picked up`);
+      this.emitAction(id, "pickup", "rejected", {
+        reason: "locked",
+        target: { kind: "entity", id: prop.id },
+        text: `${label} cannot be picked up`,
+      });
       this.emit();
       return;
     }
     this.notePuzzle("pickups");
-    this.setToast(`${label} picked up`);
+    this.emitAction(id, "pickup", "accepted", {
+      text: `${label} picked up`,
+    });
+    this.resetStuckActivity();
     this.autosave();
     this.emit();
   }
@@ -774,14 +922,20 @@ export class GameRuntime implements WorldRuntime {
     if (!this.abilitiesFor(id).includes("carry")) return;
     const carried = this.carriedProp(id);
     if (!carried) {
-      this.setToast("Nothing to throw");
+      this.emitAction(id, "throw", "rejected", {
+        reason: "empty",
+        text: "Nothing to throw",
+      });
       this.emit();
       return;
     }
     const player = this.world.players[id];
     this.world.physics.throwProp(carried.id, player.facing);
     this.notePuzzle("throws");
-    this.setToast(`${this.entityLabel(carried.id)} thrown`);
+    this.emitAction(id, "throw", "accepted", {
+      text: `${this.entityLabel(carried.id)} thrown`,
+    });
+    this.resetStuckActivity();
     this.autosave();
     this.emit();
   }
@@ -790,17 +944,28 @@ export class GameRuntime implements WorldRuntime {
     if (!this.abilitiesFor(id).includes("pulse")) return;
     const target = this.nearestPulseSource(id);
     if (!target) {
-      this.setToast("No signal terminal in reach");
+      this.emitAction(id, "pulse", "rejected", {
+        reason: "out-of-range",
+        text: "No signal terminal in reach",
+      });
       this.emit();
       return;
     }
     if (!target.puzzle.usePulse(target.nodeId, id)) {
-      this.setToast("The terminal is still recharging");
+      const entityId = this.puzzleNodeEntityId(target.nodeId);
+      this.emitAction(id, "pulse", "rejected", {
+        reason: "cooldown",
+        target: entityId ? { kind: "entity", id: entityId } : undefined,
+        text: "The terminal is still recharging",
+      });
       this.emit();
       return;
     }
     this.playCue("scan");
-    this.setToast("Signal pulse sent");
+    this.emitAction(id, "pulse", "started", {
+      text: "Signal pulse sent",
+    });
+    this.resetStuckActivity();
     this.autosave();
     this.emit();
   }
@@ -903,20 +1068,36 @@ export class GameRuntime implements WorldRuntime {
     setTetherPolicy(this.world, active?.[1].document.tether ?? "normal");
   }
 
-  private activatePuzzle(id: string): boolean {
+  private activatePuzzle(id: string, actor: PlayerId | null = null): boolean {
     const puzzle = this.puzzles.get(id);
     if (!puzzle || this.activatedPuzzles.has(id)) return false;
     this.activatedPuzzles.add(id);
     this.syncPuzzleTether();
-    this.setToast(`${puzzle.document.title} started`);
+    const text = `${puzzle.document.title} started`;
+    if (actor) {
+      const activation = puzzle.document.activation;
+      const target =
+        activation.mode === "interact" && activation.entityId
+          ? ({ kind: "entity", id: activation.entityId } as SourceRefValue)
+          : undefined;
+      this.emitAction(actor, "puzzle.activate", "started", {
+        text,
+        ...(target ? { target } : {}),
+      });
+    } else {
+      this.feedback.ingest({
+        kind: "system.outcome",
+        outcome: "puzzle.activate",
+        source: { kind: "system", id },
+        text,
+        severity: "neutral",
+      });
+    }
     this.autosave();
     return true;
   }
 
   private checkPuzzleActivations(): void {
-    const players = [this.world.players.p1, this.world.players.p2].filter(
-      (player) => player.active,
-    );
     for (const [id, puzzle] of this.puzzles) {
       if (this.activatedPuzzles.has(id)) continue;
       const activation = puzzle.document.activation;
@@ -925,8 +1106,15 @@ export class GameRuntime implements WorldRuntime {
         (node) => node.id === activation.zoneId && node.type === "zone",
       );
       if (!zone || zone.type !== "zone") continue;
-      if (players.some((player) => playerOverlapsRect(player, zone.rect))) {
-        this.activatePuzzle(id);
+      const actors = (["p1", "p2"] as const).filter(
+        (playerId) =>
+          this.world.players[playerId].active &&
+          playerOverlapsRect(this.world.players[playerId], zone.rect),
+      );
+      if (actors.length === 1) {
+        this.activatePuzzle(id, actors[0] ?? null);
+      } else if (actors.length > 1) {
+        this.activatePuzzle(id, null);
       }
     }
   }
@@ -978,7 +1166,7 @@ export class GameRuntime implements WorldRuntime {
 
   private tryActivatePuzzle(actor: PlayerId): boolean {
     const nearest = this.nearestInactivePuzzle(actor);
-    return nearest ? this.activatePuzzle(nearest.id) : false;
+    return nearest ? this.activatePuzzle(nearest.id, actor) : false;
   }
 
   private puzzleSnapshot(): PuzzleWorldSnapshot {
@@ -1025,6 +1213,7 @@ export class GameRuntime implements WorldRuntime {
         this.onPuzzleSolved(id, result.rewards);
       }
     }
+    this.projectFeedback();
   }
 
   private handlePuzzleEvents(
@@ -1032,20 +1221,45 @@ export class GameRuntime implements WorldRuntime {
     events: readonly PuzzleEvent[],
   ): void {
     for (const event of events) {
+      const actor =
+        event.type === "solved" ? null : asPlayerId(event.actorId);
+      this.feedback.ingest({
+        kind: "puzzle.event",
+        puzzleId: document.id,
+        event,
+        actor,
+        source: this.puzzleEventSource(document, event),
+      });
       if (event.type === "receptorBound" && event.propId) {
         const propEntityId = this.puzzlePropEntityId(document, event.propId);
         this.world.physics.dockProp(propEntityId, event.nodeId);
         this.playCue("unlock");
-        this.setToast(
-          `${this.entityLabel(propEntityId)} locks into the matching receptor`,
-        );
       } else if (event.type === "receptorRejected" && event.propId) {
         this.playCue("wrong");
-        this.setToast("The receptor rejects that shape");
       } else if (event.type === "gateOpen") {
         this.playCue("unlock");
       }
     }
+  }
+
+  private puzzleEventSource(
+    document: PuzzleDocument,
+    event: PuzzleEvent,
+  ): SourceRefValue {
+    if (event.type === "solved") {
+      return { kind: "system", id: document.id };
+    }
+    const node = document.nodes.find((entry) => entry.id === event.nodeId);
+    if (node?.entityId) {
+      return { kind: "entity", id: node.entityId };
+    }
+    if (event.propId) {
+      return {
+        kind: "entity",
+        id: this.puzzlePropEntityId(document, event.propId),
+      };
+    }
+    return { kind: "node", id: event.nodeId };
   }
 
   private puzzlePropEntityId(document: PuzzleDocument, propNodeId: string): string {
@@ -1053,6 +1267,14 @@ export class GameRuntime implements WorldRuntime {
       (entry) => entry.type === "prop" && entry.id === propNodeId,
     );
     return node?.entityId ?? propNodeId;
+  }
+
+  private puzzleNodeEntityId(nodeId: string): string | null {
+    for (const puzzle of this.puzzles.values()) {
+      const node = puzzle.document.nodes.find((entry) => entry.id === nodeId);
+      if (node?.entityId) return node.entityId;
+    }
+    return null;
   }
 
   private onPuzzleSolved(id: string, rewards: PuzzleRewards): void {
@@ -1076,7 +1298,13 @@ export class GameRuntime implements WorldRuntime {
           abilityId: ability,
           source: "puzzle",
         });
-        this.setToast(`Ability unlocked: ${ability}`);
+        this.feedback.ingest({
+          kind: "system.outcome",
+          outcome: "ability.unlocked",
+          source: { kind: "system", id },
+          text: `Ability unlocked: ${ability}`,
+          severity: "positive",
+        });
       }
     }
     for (const flag of rewards.flags ?? []) {
@@ -1089,22 +1317,29 @@ export class GameRuntime implements WorldRuntime {
     }
 
     this.playCue("unlock");
-    this.setToast("Signal restored");
     this.autosave();
     this.emit();
   }
 
-  scan(): void {
+  scan(actor?: PlayerId): void {
     if (this.machine.state !== "level") return;
-    const target = this.nearestEntity(["scanTarget"], SCAN_RANGE);
+    const id = actor ?? (this.world.players.p1.active ? "p1" : "p2");
+    const target = this.nearestEntity(["scanTarget"], SCAN_RANGE, id);
     if (!target || !target.entity.conceptId) {
-      this.setToast("Nothing to scan here");
+      this.emitAction(id, "scan", "rejected", {
+        reason: "out-of-range",
+        text: "Nothing to scan here",
+      });
       this.emit();
       return;
     }
     const conceptId = target.entity.conceptId;
     if (this.knownConceptIds().includes(conceptId)) {
-      this.setToast("Already in your concept log");
+      this.emitAction(id, "scan", "blocked", {
+        reason: "condition-unmet",
+        target: { kind: "entity", id: target.entity.id },
+        text: "Already in your concept log",
+      });
       this.emit();
       return;
     }
@@ -1116,87 +1351,388 @@ export class GameRuntime implements WorldRuntime {
     const concept = this.content.syllabus.concepts.find(
       (item) => item.id === conceptId,
     );
-    this.setToast(concept ? `${concept.term}: ${concept.definition}` : conceptId);
+    this.emitAction(id, "scan", "completed", {
+      target: { kind: "entity", id: target.entity.id },
+      text: concept
+        ? `${concept.term}: ${concept.definition}`
+        : conceptId,
+    });
+    this.resetStuckActivity();
     this.playCue("scan");
     this.emit();
   }
 
   /* ---------------------------------------------------------------- */
-  /* Dialogue                                                         */
+  /* Conversations                                                    */
   /* ---------------------------------------------------------------- */
 
-  startDialogue(dialogueId: string): void {
+  startConversation(
+    dialogueId: string,
+    owner: PlayerId,
+    entityId: string,
+  ): void {
     if (this.machine.state !== "level") return;
+    const surfaceId = `conversation:${owner}:${entityId}`;
+    if (this.conversations.has(surfaceId)) return;
     const dialogue = this.content.dialogues[dialogueId];
     if (!dialogue) {
       this.setToast(`Dialogue missing: ${dialogueId}`);
       this.emit();
       return;
     }
-    this.dialogueDocument = dialogue;
     const step = startDialogue(dialogue);
-    this.dialogueSession = step.session;
+    const node = currentNode(dialogue, step.session);
+    if (!node) {
+      this.setToast(`Dialogue node missing: ${dialogueId}`);
+      this.emit();
+      return;
+    }
+    const hasEntity = this.room.entities?.some(
+      (entity) => entity.id === entityId,
+    );
+    const state: ConversationState = {
+      surfaceId,
+      owner,
+      entityId,
+      document: dialogue,
+      session: step.session,
+      freezeOwner: Boolean(node.choices && node.choices.length > 0),
+      ...(node.choices && node.choices.length > 0
+        ? {}
+        : hasEntity
+          ? { maxDistance: CONVERSATION_ACK_DISTANCE }
+          : {}),
+      selectedChoiceIndex: 0,
+    };
+    this.conversations.set(surfaceId, state);
+    this.updateConversationSurface(state);
     this.applyEffects(step.effects);
-    this.machine = { state: "dialogue", returnTo: null };
     this.record({
       type: "dialogue_started",
       dialogueId,
       agentId: dialogue.speaker,
     });
     this.playCue("dialogue");
-    this.emit();
-  }
-
-  advanceDialogue(): void {
-    if (this.machine.state !== "dialogue" || !this.dialogueDocument || !this.dialogueSession) {
-      return;
-    }
-    const node = currentNode(this.dialogueDocument, this.dialogueSession);
-    if (node?.choices && node.choices.length > 0) {
-      return;
-    }
-    const step = advanceNarrative(this.dialogueDocument, this.dialogueSession);
-    if (step.session === this.dialogueSession) {
-      this.closeDialogue();
-      return;
-    }
-    this.dialogueSession = step.session;
-    this.applyEffects(step.effects);
-    this.emit();
-  }
-
-  chooseDialogue(choiceId: string): void {
-    if (this.machine.state !== "dialogue" || !this.dialogueDocument || !this.dialogueSession) {
-      return;
-    }
-    const step = chooseDialogueOption(
-      this.dialogueDocument,
-      this.dialogueSession,
-      choiceId,
-    );
-    this.dialogueSession = step.session;
-    this.applyEffects(step.effects);
-    if (step.atEnd) {
-      this.closeDialogue();
-      return;
-    }
-    this.emit();
-  }
-
-  closeDialogue(): void {
-    if (this.machine.state !== "dialogue") return;
-    if (this.dialogueSession) {
-      this.record({
-        type: "dialogue_completed",
-        dialogueId: this.dialogueSession.dialogueId,
-        choices: this.dialogueSession.choices.map((choice) => choice.choiceId),
-      });
-    }
-    this.dialogueSession = null;
-    this.dialogueDocument = null;
-    this.machine = { state: "level", returnTo: null };
+    this.dismissStuck();
+    this.resetStuckActivity();
     this.autosave();
     this.emit();
+  }
+
+  advanceConversation(surfaceId: SurfaceId): void {
+    const state = this.conversations.get(surfaceId);
+    if (!state) return;
+    const node = currentNode(state.document, state.session);
+    if (node?.choices && node.choices.length > 0) return;
+    const step = advanceNarrative(state.document, state.session);
+    if (step.session === state.session) {
+      this.closeConversation(surfaceId, "completed");
+      return;
+    }
+    state.session = step.session;
+    this.applyEffects(step.effects);
+    if (!currentNode(state.document, state.session)) {
+      this.closeConversation(surfaceId, "missing-node");
+      return;
+    }
+    this.updateConversationSurface(state);
+    this.autosave();
+    this.emit();
+  }
+
+  chooseConversation(surfaceId: SurfaceId, choiceId: string): void {
+    const state = this.conversations.get(surfaceId);
+    if (!state) return;
+    const step = chooseDialogueOption(
+      state.document,
+      state.session,
+      choiceId,
+    );
+    if (step.session === state.session) return;
+    state.session = step.session;
+    state.selectedChoiceIndex = 0;
+    this.applyEffects(step.effects);
+    if (!currentNode(state.document, state.session)) {
+      this.closeConversation(surfaceId, "missing-node");
+      return;
+    }
+    this.updateConversationSurface(state);
+    this.autosave();
+    this.emit();
+  }
+
+  navigateConversation(surfaceId: SurfaceId, delta: -1 | 1): void {
+    const state = this.conversations.get(surfaceId);
+    if (!state) return;
+    const node = currentNode(state.document, state.session);
+    const choices = node?.choices ?? [];
+    if (choices.length === 0) return;
+    state.selectedChoiceIndex = Math.max(
+      0,
+      Math.min(choices.length - 1, state.selectedChoiceIndex + delta),
+    );
+    this.updateConversationSurface(state);
+    this.emit();
+  }
+
+  closeConversation(
+    surfaceId: SurfaceId,
+    reason:
+      | "completed"
+      | "cancelled"
+      | "distance"
+      | "missing-entity"
+      | "missing-node"
+      | "level-complete" = "cancelled",
+  ): void {
+    const state = this.conversations.get(surfaceId);
+    if (!state) return;
+    if (reason === "completed") {
+      this.record({
+        type: "dialogue_completed",
+        dialogueId: state.session.dialogueId,
+        choices: state.session.choices.map((choice) => choice.choiceId),
+      });
+    }
+    this.conversations.delete(surfaceId);
+    this.feedback.removeSurface(surfaceId);
+    if (reason === "missing-entity" || reason === "missing-node") {
+      this.feedback.ingest({
+        kind: "system.outcome",
+        outcome: `conversation.${reason}`,
+        source: { kind: "system", id: "conversation" },
+        text:
+          reason === "missing-entity"
+            ? "The conversation ended because the entity is no longer here."
+            : "The conversation ended because its dialogue node is missing.",
+        severity: "warning",
+      });
+    }
+    if (reason !== "level-complete") {
+      this.autosave();
+      this.emit();
+    }
+  }
+
+  private closeAllConversations(
+    reason: "level-complete" | "missing-entity" | "missing-node",
+  ): void {
+    for (const surfaceId of [...this.conversations.keys()]) {
+      this.closeConversation(surfaceId, reason);
+    }
+  }
+
+  surfaceAction(surfaceId: SurfaceId, action: SurfaceAction): void {
+    if (surfaceId === this.stuckSurfaceId) {
+      this.handleStuckAction(action);
+      return;
+    }
+    const state = this.conversations.get(surfaceId);
+    if (!state) return;
+    if (this.machine.state !== "level") return;
+    if (action.type === "cancel") {
+      this.closeConversation(surfaceId, "cancelled");
+      return;
+    }
+    if (action.type === "choose") {
+      this.chooseConversation(surfaceId, action.choiceId);
+      return;
+    }
+    const node = currentNode(state.document, state.session);
+    const choices = node?.choices ?? [];
+    if (choices.length > 0) {
+      const choice =
+        choices[state.selectedChoiceIndex] ?? choices[0];
+      if (choice) this.chooseConversation(surfaceId, choice.id);
+      return;
+    }
+    this.advanceConversation(surfaceId);
+  }
+
+  private updateConversationSurface(state: ConversationState): void {
+    const node = currentNode(state.document, state.session);
+    if (!node) return;
+    const choices = node.choices ?? [];
+    state.freezeOwner = choices.length > 0;
+    if (state.freezeOwner) {
+      delete state.maxDistance;
+    } else if (
+      this.room.entities?.some((entity) => entity.id === state.entityId)
+    ) {
+      state.maxDistance = CONVERSATION_ACK_DISTANCE;
+    }
+    const selected = choices[state.selectedChoiceIndex] ?? choices[0];
+    const anchor = this.conversationAnchor(state);
+    const text = node.text;
+    const speaker = node.speaker ?? state.document.speaker;
+    const spec: FeedbackSurfaceSpec & { id: string } = {
+      id: state.surfaceId,
+      capability: "affordance",
+      source: { kind: "entity", id: state.entityId },
+      actor: state.owner,
+      owner: state.owner,
+      audience: "both",
+      anchor,
+      presentation: "speechBubble",
+      content: {
+        speaker,
+        text,
+        ...(choices.length > 0
+          ? {
+              choices: choices.map((choice) => ({
+                id: choice.id,
+                label: choice.text,
+              })),
+              ...(selected ? { selectedChoiceId: selected.id } : {}),
+            }
+          : {}),
+      },
+      state: "active",
+      severity: "neutral",
+      lifetime: { sticky: true },
+      interaction: {
+        mode: choices.length > 0 ? "choice" : "acknowledge",
+        focus: "soft",
+        movement: choices.length > 0 ? "freeze-owner" : "free",
+        ...(state.maxDistance ? { maxDistance: state.maxDistance } : {}),
+      },
+      priority: 90,
+      a11y: {
+        announce: true,
+        textAlternative: `${speaker}: ${text}`,
+      },
+      conversation: {
+        dialogueId: state.session.dialogueId,
+        nodeId: state.session.nodeId,
+        owner: state.owner,
+        entityId: state.entityId,
+        ...(state.maxDistance ? { maxDistance: state.maxDistance } : {}),
+        freezeOwner: state.freezeOwner,
+      },
+    };
+    this.feedback.putSurface(spec);
+  }
+
+  private conversationAnchor(state: ConversationState): FeedbackAnchor {
+    if (this.room.entities?.some((entity) => entity.id === state.entityId)) {
+      return { kind: "entity", entityId: state.entityId, fallback: "hud" };
+    }
+    return { kind: "player", playerId: this.effectiveOwner(state.owner) };
+  }
+
+  private updateConversations(): void {
+    for (const state of [...this.conversations.values()]) {
+      if (!currentNode(state.document, state.session)) {
+        this.closeConversation(state.surfaceId, "missing-node");
+        continue;
+      }
+      if (!state.maxDistance) continue;
+      const entity = this.entityPixel(state.entityId);
+      if (!entity) {
+        this.closeConversation(state.surfaceId, "missing-entity");
+        continue;
+      }
+      const player = this.world.players[this.effectiveOwner(state.owner)];
+      if (
+        !player.active ||
+        distance(player.x, player.y - 20, entity.x, entity.y) >
+          state.maxDistance
+      ) {
+        this.closeConversation(state.surfaceId, "distance");
+      }
+    }
+  }
+
+  private effectiveOwner(owner: PlayerId): PlayerId {
+    return this.activeP2 ? owner : "p1";
+  }
+
+  private restoreConversations(run: RunSnapshot): void {
+    if (run.status !== "playing") return;
+    const legacyEntity =
+      run.conversations === undefined && run.dialogue
+        ? this.room.entities?.find(
+            (item) => item.dialogueId === run.dialogue?.dialogueId,
+          )
+        : undefined;
+    const snapshots: ConversationSnapshot[] =
+      run.conversations !== undefined
+        ? run.conversations
+        : run.dialogue
+          ? (() => {
+              return legacyEntity
+                ? [
+                    {
+                      surfaceId: `conversation:p1:${legacyEntity.id}`,
+                      dialogueId: run.dialogue?.dialogueId ?? "",
+                      nodeId: run.dialogue?.nodeId ?? "",
+                      owner: "p1" as const,
+                      entityId: legacyEntity.id,
+                    },
+                  ]
+                : [];
+            })()
+          : [];
+
+    if (run.conversations === undefined && run.dialogue && !legacyEntity) {
+      this.feedback.ingest({
+        kind: "system.outcome",
+        outcome: "conversation.missing-target",
+        source: { kind: "system", id: "conversation" },
+        text: "A saved conversation closed because its entity is no longer here.",
+        severity: "warning",
+      });
+    }
+
+    for (const snapshot of snapshots) {
+      const dialogue = this.content.dialogues[snapshot.dialogueId];
+      if (!dialogue) {
+        this.feedback.ingest({
+          kind: "system.outcome",
+          outcome: "conversation.missing-dialogue",
+          source: { kind: "system", id: "conversation" },
+          text: "A saved conversation could not be restored.",
+          severity: "warning",
+        });
+        continue;
+      }
+      const entity = this.room.entities?.find(
+        (item) => item.id === snapshot.entityId,
+      );
+      const node = dialogue.nodes[snapshot.nodeId];
+      if (!entity || !node) {
+        this.feedback.ingest({
+          kind: "system.outcome",
+          outcome: "conversation.missing-target",
+          source: { kind: "system", id: "conversation" },
+          text: "A saved conversation closed because its entity is no longer here.",
+          severity: "warning",
+        });
+        continue;
+      }
+      const state: ConversationState = {
+        surfaceId:
+          snapshot.surfaceId ||
+          `conversation:${snapshot.owner}:${snapshot.entityId}`,
+        owner: snapshot.owner,
+        entityId: snapshot.entityId,
+        document: dialogue,
+        session: {
+          dialogueId: dialogue.id,
+          nodeId: snapshot.nodeId,
+          history: [snapshot.nodeId],
+          choices: [],
+        },
+        freezeOwner: Boolean(node.choices && node.choices.length > 0),
+        ...(node.choices && node.choices.length > 0
+          ? {}
+          : { maxDistance: CONVERSATION_ACK_DISTANCE }),
+        selectedChoiceIndex: 0,
+      };
+      if (this.conversations.has(state.surfaceId)) continue;
+      this.conversations.set(state.surfaceId, state);
+      this.updateConversationSurface(state);
+    }
   }
 
   /* ---------------------------------------------------------------- */
@@ -1204,7 +1740,7 @@ export class GameRuntime implements WorldRuntime {
   /* ---------------------------------------------------------------- */
 
   openGate(gateId: string): void {
-    if (this.machine.state !== "level" && this.machine.state !== "dialogue") {
+    if (this.machine.state !== "level") {
       return;
     }
     const gate = this.content.gates[gateId];
@@ -1317,29 +1853,45 @@ export class GameRuntime implements WorldRuntime {
       ),
     );
     if (!exit) return;
+    const actors = (["p1", "p2"] as const).filter(
+      (id) =>
+        this.world.players[id].active &&
+        playerOverlapsExit(this.world.players[id], exit, this.room),
+    );
+    const actor = actors.length === 1 ? actors[0] ?? null : null;
+    const warn = (): void => {
+      const now = this.world.elapsed;
+      if (now - this.lastExitWarning <= 2) return;
+      this.lastExitWarning = now;
+      const text = "The signal gate is still scrambled";
+      if (actor) {
+        this.emitAction(actor, "exit", "blocked", {
+          reason: "condition-unmet",
+          text,
+        });
+      } else {
+        this.feedback.ingest({
+          kind: "system.outcome",
+          outcome: "exit.blocked",
+          source: { kind: "system", id: exit.id },
+          text,
+          severity: "warning",
+        });
+      }
+      this.playCue("wrong");
+      this.emit();
+    };
 
     if (exit.puzzleId) {
       const puzzle = this.puzzles.get(exit.puzzleId);
       if (!puzzle?.isSolved()) {
-        const now = this.world.elapsed;
-        if (now - this.lastExitWarning > 2) {
-          this.lastExitWarning = now;
-          this.setToast("The signal gate is still scrambled");
-          this.playCue("wrong");
-          this.emit();
-        }
+        warn();
         return;
       }
     }
 
     if (exit.gateId && !isGateSolved(this.progression, exit.gateId)) {
-      const now = this.world.elapsed;
-      if (now - this.lastExitWarning > 2) {
-        this.lastExitWarning = now;
-        this.setToast("The signal gate is still scrambled");
-        this.playCue("wrong");
-        this.emit();
-      }
+      warn();
       return;
     }
     this.completeLevel();
@@ -1356,6 +1908,8 @@ export class GameRuntime implements WorldRuntime {
   }
 
   private enterDebrief(record: boolean): void {
+    this.closeAllConversations("level-complete");
+    this.dismissStuck();
     this.machine = { state: "debrief", returnTo: null };
     if (record) {
       this.playCue("debrief");
@@ -1520,14 +2074,9 @@ export class GameRuntime implements WorldRuntime {
 
   private emit(force = false): void {
     const snapshot = this.snapshot();
-    // The scene reads positions from `simulation` every frame, so UI listeners
-    // only need to hear about changes that affect the DOM. Deduplicating here
-    // keeps overlays from being rebuilt 60 times a second.
-    const signature = JSON.stringify({
-      ...snapshot,
-      players: null,
-      camera: null,
-    });
+    // World-space captions follow players, so the signature must include the
+    // world view and the feedback frame (including its sequence).
+    const signature = JSON.stringify(snapshot);
     if (!force && signature === this.lastEmitSignature) {
       return;
     }
@@ -1569,7 +2118,13 @@ export class GameRuntime implements WorldRuntime {
               abilityId: effect.id,
               source: "gate",
             });
-            this.setToast(`Ability unlocked: ${effect.id}`);
+            this.feedback.ingest({
+              kind: "system.outcome",
+              outcome: "ability.unlocked",
+              source: { kind: "system", id: "dialogue" },
+              text: `Ability unlocked: ${effect.id}`,
+              severity: "positive",
+            });
           }
           break;
         case "startGate":
@@ -1614,10 +2169,13 @@ export class GameRuntime implements WorldRuntime {
   private nearestEntity(
     types: readonly RoomEntity["type"][],
     range: number,
+    actor?: PlayerId,
   ): { entity: RoomEntity; player: PlayerState } | null {
-    const players = [this.world.players.p1, this.world.players.p2].filter(
-      (player) => player.active,
-    );
+    const players = actor
+      ? [this.world.players[actor]].filter((player) => player.active)
+      : [this.world.players.p1, this.world.players.p2].filter(
+          (player) => player.active,
+        );
     let best: { entity: RoomEntity; player: PlayerState; distance: number } | null =
       null;
 
@@ -1674,7 +2232,7 @@ export class GameRuntime implements WorldRuntime {
       if (!entered) continue;
       this.firedTriggers.add(trigger.id);
       if (trigger.dialogueId) {
-        this.startDialogue(trigger.dialogueId);
+        this.startConversation(trigger.dialogueId, "p1", trigger.id);
         return;
       }
       if (trigger.gateId) {
@@ -1743,12 +2301,17 @@ export class GameRuntime implements WorldRuntime {
       },
       audio: { muted: this.audio.muted },
       status,
-      ...(this.dialogueSession
+      ...(this.conversations.size > 0
         ? {
-            dialogue: {
-              dialogueId: this.dialogueSession.dialogueId,
-              nodeId: this.dialogueSession.nodeId,
-            },
+            conversations: [...this.conversations.values()].map(
+              (conversation) => ({
+                surfaceId: conversation.surfaceId,
+                dialogueId: conversation.session.dialogueId,
+                nodeId: conversation.session.nodeId,
+                owner: conversation.owner,
+                entityId: conversation.entityId,
+              }),
+            ),
           }
         : {}),
     };
@@ -1766,30 +2329,254 @@ export class GameRuntime implements WorldRuntime {
     }
   }
 
-  private dialogueView(): DialogueView | null {
-    if (
-      this.machine.state !== "dialogue" ||
-      !this.dialogueDocument ||
-      !this.dialogueSession
-    ) {
-      return null;
+  private activePuzzleEntry(): [string, PuzzleRuntime] | null {
+    return (
+      [...this.puzzles.entries()].find(([puzzleId]) =>
+        this.activatedPuzzles.has(puzzleId),
+      ) ?? null
+    );
+  }
+
+  private projectFeedback(): void {
+    for (const [id, puzzle] of this.puzzles) {
+      if (!this.activatedPuzzles.has(id)) continue;
+      this.feedback.projectSticky({
+        document: puzzle.document,
+        state: puzzle.snapshot(),
+      });
     }
-    const node = currentNode(this.dialogueDocument, this.dialogueSession);
-    if (!node) return null;
-    return {
-      id: this.dialogueDocument.id,
-      speaker: node.speaker ?? this.dialogueDocument.speaker,
-      text: node.text,
-      ...(node.portrait ?? this.dialogueDocument.portrait
-        ? { portrait: node.portrait ?? this.dialogueDocument.portrait }
-        : {}),
-      nodeId: this.dialogueSession.nodeId,
-      choices: (node.choices ?? []).map((choice) => ({
-        id: choice.id,
-        text: choice.text,
-      })),
-      atEnd: node.next === null && !node.choices,
+  }
+
+  private puzzleStateSignature(): string | null {
+    const entry = this.activePuzzleEntry();
+    if (!entry) return null;
+    const [, puzzle] = entry;
+    const state = puzzle.snapshot();
+    return JSON.stringify({
+      puzzleId: state.puzzleId,
+      solved: state.solved,
+      nodes: Object.fromEntries(
+        Object.entries(state.nodes).map(([id, node]) => [
+          id,
+          {
+            state: node.state,
+            active: node.active,
+            count: node.count,
+            remaining: node.remaining,
+            fired: node.fired,
+          },
+        ]),
+      ),
+    });
+  }
+
+  private updateStuck(): void {
+    if (this.machine.state !== "level") return;
+    const entry = this.activePuzzleEntry();
+    if (!entry) {
+      this.stuckTicks = 0;
+      this.lastPuzzleSignature = null;
+      this.dismissStuck();
+      return;
+    }
+    const [puzzleId, puzzle] = entry;
+    if (puzzle.isSolved()) {
+      this.dismissStuck();
+      return;
+    }
+    const signature = this.puzzleStateSignature();
+    if (signature !== this.lastPuzzleSignature) {
+      this.lastPuzzleSignature = signature;
+      this.stuckTicks = 0;
+      if (this.stuckSurfaceId) this.dismissStuck();
+    } else {
+      this.stuckTicks += 1;
+    }
+    if (this.stuckTicks < this.stuckThresholdTicks) return;
+    if (this.conversations.size > 0) return;
+    if (this.stuckSurfaceId) return;
+
+    const choices: Array<{ id: string; label: string }> = [];
+    if (this.puzzleHintIndex < puzzle.document.hints.length) {
+      choices.push({ id: "hint", label: "Show hint" });
+    }
+    if (puzzle.canReset()) {
+      choices.push({ id: "reset", label: "Reset puzzle" });
+    }
+    if (choices.length === 0) return;
+
+    puzzle.note("stuckWarnings");
+    this.stuckSurfaceId = `fb:stuck:${puzzleId}`;
+    this.feedback.putSurface({
+      id: this.stuckSurfaceId,
+      capability: "affordance",
+      source: { kind: "node", id: puzzleId },
+      actor: null,
+      owner: "shared",
+      audience: "both",
+      anchor: { kind: "hud", slot: "bottom" },
+      presentation: "hudStatus",
+      content: {
+        text: "Need a nudge?",
+        choices,
+        selectedChoiceId: choices[0]?.id,
+      },
+      state: "blocked",
+      severity: "warning",
+      lifetime: { sticky: true },
+      interaction: {
+        mode: "choice",
+        focus: "soft",
+        movement: "free",
+      },
+      priority: 95,
+      a11y: {
+        announce: true,
+        textAlternative: "Need a nudge? Show hint or reset puzzle.",
+      },
+    });
+  }
+
+  private dismissStuck(): void {
+    if (this.stuckSurfaceId) {
+      this.feedback.removeSurface(this.stuckSurfaceId);
+      this.stuckSurfaceId = null;
+    }
+  }
+
+  private resetStuckActivity(): void {
+    this.stuckTicks = 0;
+    this.lastPuzzleSignature = this.puzzleStateSignature();
+    if (this.stuckSurfaceId) this.dismissStuck();
+  }
+
+  private handleStuckAction(action: SurfaceAction): void {
+    if (action.type === "cancel") {
+      this.resetStuckActivity();
+      this.emit();
+      return;
+    }
+    const choiceId =
+      action.type === "choose"
+        ? action.choiceId
+        : this.feedback
+            .view()
+            .surfaces.find((surface) => surface.id === this.stuckSurfaceId)
+            ?.content.selectedChoiceId ?? "hint";
+    this.resetStuckActivity();
+    if (choiceId === "reset") {
+      this.resetPuzzle();
+    } else {
+      this.puzzleHint();
+    }
+    this.emit();
+  }
+
+  private emitAction(
+    actor: PlayerId,
+    action: string,
+    result: "accepted" | "rejected" | "blocked" | "completed" | "started",
+    options: {
+      reason?:
+        | "empty"
+        | "wrong-shape"
+        | "wrong-tag"
+        | "condition-unmet"
+        | "cooldown"
+        | "out-of-range"
+        | "locked"
+        | "cleared";
+      target?: SourceRefValue;
+      text?: string;
+    } = {},
+  ): void {
+    this.feedback.ingest({
+      kind: "action.outcome",
+      actor,
+      action,
+      result,
+      ...(options.reason ? { reason: options.reason } : {}),
+      ...(options.target ? { target: options.target } : {}),
+      ...(options.text ? { text: options.text } : {}),
+    });
+  }
+
+  private feedbackFrame(): FeedbackFrame {
+    return this.feedback.frame();
+  }
+
+  private worldView(): WorldView {
+    const playerView = (id: PlayerId): PlayerView => {
+      const player = this.world.players[id];
+      return {
+        id,
+        x: player.x,
+        y: player.y,
+        width: PLAYER_WIDTH,
+        height: PLAYER_HEIGHT,
+        facing: player.facing,
+        active: player.active,
+        dashing: player.dashTime > 0,
+        dashReady:
+          hasAbility(this.progression, "signal-dash") &&
+          player.dashCooldown === 0,
+        abilities: this.abilitiesFor(id),
+        carrying: this.carriedProp(id)?.id ?? null,
+      };
     };
+
+    const entities: Record<string, WorldEntityView> = {};
+    for (const entity of this.room.entities ?? []) {
+      const width = ROOM_ENTITY_SIZE;
+      const height = ROOM_ENTITY_SIZE;
+      entities[entity.id] = {
+        id: entity.id,
+        x: (entity.x + 0.5) * this.room.tileSize,
+        y: entity.y * this.room.tileSize,
+        width,
+        height,
+        anchors: {
+          ...defaultEntityAnchors(width, height),
+          ...(entity.components?.anchors ?? {}),
+        },
+      };
+    }
+
+    const props: Record<string, WorldEntityView> = {};
+    for (const prop of Object.values(this.world.props)) {
+      props[prop.id] = {
+        id: prop.id,
+        x: prop.x,
+        y: prop.y + prop.height / 2,
+        width: prop.width,
+        height: prop.height,
+        anchors: defaultEntityAnchors(prop.width, prop.height),
+      };
+    }
+
+    return {
+      camera: { ...this.world.camera },
+      viewport: {
+        width: this.world.viewport.width,
+        height: this.world.viewport.height,
+      },
+      tileSize: this.room.tileSize,
+      players: { p1: playerView("p1"), p2: playerView("p2") },
+      entities,
+      props,
+    };
+  }
+
+  drainEffects(): readonly WorldEffectPlan[] {
+    const frame = this.feedbackFrame();
+    if (frame.seq === this.drainedFrameSeq) return [];
+    this.drainedFrameSeq = frame.seq;
+    return frame.effects.map((effect) => ({
+      id: effect.id,
+      actor: effect.actor,
+      owner: effect.owner,
+      ...(effect.accent ? { accent: effect.accent } : {}),
+    }));
   }
 
   private gateView(): GateView | null {
@@ -1865,8 +2652,16 @@ export class GameRuntime implements WorldRuntime {
       hintIndex,
       hint,
     });
-    this.setToast(`Hint: ${hint}`);
+    this.feedback.ingest({
+      kind: "system.outcome",
+      outcome: "puzzle.hint",
+      source: { kind: "node", id },
+      text: `Hint: ${hint}`,
+      severity: "neutral",
+    });
+    this.resetStuckActivity();
     this.autosave();
+    this.emit();
   }
 
   resetPuzzle(): void {
@@ -1883,9 +2678,19 @@ export class GameRuntime implements WorldRuntime {
     }
     this.world.props = this.world.physics.propStates();
     if (reset) {
-      this.saveNotice = "Puzzle reset";
-      this.setToast("Puzzle reset");
+      const entry = this.activePuzzleEntry();
+      this.feedback.ingest({
+        kind: "system.outcome",
+        outcome: "puzzle.reset",
+        source: { kind: "node", id: entry?.[0] ?? "puzzle" },
+        text: "Puzzle reset",
+        severity: "neutral",
+      });
+      this.resetStuckActivity();
+      this.projectFeedback();
+      this.feedback.tick(0);
       this.autosave();
+      this.saveNotice = "Puzzle reset";
     }
     this.emit();
   }
@@ -2051,6 +2856,8 @@ export class GameRuntime implements WorldRuntime {
         id,
         x: player.x,
         y: player.y,
+        width: PLAYER_WIDTH,
+        height: PLAYER_HEIGHT,
         facing: player.facing,
         active: player.active,
         dashing: player.dashTime > 0,
@@ -2073,12 +2880,13 @@ export class GameRuntime implements WorldRuntime {
       roomId: this.room.id,
       players: { p1: playerView("p1"), p2: playerView("p2") },
       camera: { ...this.world.camera },
+      world: this.worldView(),
+      feedback: this.feedbackFrame(),
       abilities: [...this.progression.abilities],
       knownConceptIds: known,
       interaction: this.interactionView(),
       checkpointId: this.checkpointId,
       activeP2: this.activeP2,
-      dialogue: this.dialogueView(),
       gate: this.gateView(),
       debrief: this.debriefView(),
       map: this.mapView(),

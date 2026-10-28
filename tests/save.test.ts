@@ -165,6 +165,97 @@ describe("save", () => {
     });
   });
 
+  it("round-trips optional conversation sessions and accepts legacy dialogue", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+    const base = {
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: "anatomy-reflex",
+      packVersion: "0.1.0",
+      contentVersion: "0.1.0",
+      levelId: "03-nerve-forest",
+      roomId: "room-nerve-forest",
+      checkpointId: "checkpoint-entry",
+      progression: createProgression({ abilities: ["scan"] }),
+      events: [],
+      elapsed: 12,
+      players: {
+        activeP2: true,
+        bodies: { p1: body(112, 618), p2: body(176, 618) },
+      },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
+      status: "playing" as const,
+    };
+    save.saveRun({
+      ...base,
+      conversations: [
+        {
+          surfaceId: "conversation:p1:agent-neuron",
+          dialogueId: "dlg-neuron-01",
+          nodeId: "problem",
+          owner: "p1",
+          entityId: "agent-neuron",
+        },
+      ],
+    });
+    const loaded = save.loadRun("anatomy-reflex", "0.1.0");
+    expect(loaded.ok).toBe(true);
+    if (loaded.ok) {
+      expect(loaded.run.conversations).toEqual([
+        {
+          surfaceId: "conversation:p1:agent-neuron",
+          dialogueId: "dlg-neuron-01",
+          nodeId: "problem",
+          owner: "p1",
+          entityId: "agent-neuron",
+        },
+      ]);
+    }
+
+    save.saveRun({
+      ...base,
+      schemaVersion: "2.0",
+      dialogue: { dialogueId: "dlg-neuron-01", nodeId: "problem" },
+    });
+    const legacy = save.loadRun("anatomy-reflex", "0.1.0");
+    expect(legacy.ok).toBe(true);
+    if (legacy.ok) {
+      expect(legacy.run.dialogue).toEqual({
+        dialogueId: "dlg-neuron-01",
+        nodeId: "problem",
+      });
+    }
+  });
+
+  it("rejects malformed conversation snapshots", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+    save.saveRun({
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: "anatomy-reflex",
+      packVersion: "0.1.0",
+      contentVersion: "0.1.0",
+      levelId: "03-nerve-forest",
+      roomId: "room-nerve-forest",
+      checkpointId: null,
+      progression: createProgression(),
+      events: [],
+      elapsed: 0,
+      players: {
+        activeP2: true,
+        bodies: { p1: body(0, 0), p2: body(0, 0) },
+      },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
+      status: "playing",
+    });
+    const raw = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    raw.conversations = [{ surfaceId: "x", owner: "p3" }];
+    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(raw));
+    expect(save.loadRun()).toMatchObject({ ok: false, reason: "INVALID_SAVE" });
+  });
+
   it("clears the run without touching settings", () => {
     const storage = new MemorySaveStorage();
     const save = createSave({ storage });

@@ -105,6 +105,37 @@ function contentWithHazard() {
   return copy;
 }
 
+function contentWithAnchors() {
+  const copy = structuredClone(content);
+  const room = copy.rooms["room-nerve-forest"];
+  if (!room) throw new Error("nerve room missing");
+  const agent = room.entities?.find((entity) => entity.id === "agent-neuron");
+  if (!agent) throw new Error("agent-neuron missing");
+  agent.components = {
+    ...(agent.components ?? {}),
+    anchors: { muzzle: { x: 30, y: 8, direction: 0 } },
+  };
+  return copy;
+}
+
+function contentWithSecondAgent() {
+  const copy = structuredClone(content);
+  const room = copy.rooms["room-nerve-forest"];
+  if (!room) throw new Error("nerve room missing");
+  const agent = room.entities?.find((entity) => entity.id === "agent-neuron");
+  if (!agent) throw new Error("agent-neuron missing");
+  room.entities = [
+    ...(room.entities ?? []),
+    {
+      ...structuredClone(agent),
+      id: "agent-neuron-2",
+      x: agent.x + 5,
+      label: "Second Keeper",
+    },
+  ];
+  return copy;
+}
+
 function body(
   x: number,
   y: number,
@@ -343,7 +374,12 @@ describe("game runtime", () => {
     expect(runtime.snapshot().puzzle?.hint).toBe(
       "One input is below threshold. The trigger gate needs a second dendrite input.",
     );
-    expect(runtime.snapshot().toast).toContain("Hint:");
+    stepWith(runtime);
+    expect(
+      runtime
+        .snapshot()
+        .feedback.cues.some((cue) => cue.content.text?.startsWith("Hint:")),
+    ).toBe(true);
     expect(runtime.snapshot().puzzle?.canHint).toBe(true);
 
     runtime.puzzleHint();
@@ -510,24 +546,46 @@ describe("game runtime", () => {
     expect(runtime.snapshot().toast).toContain("Save format updated");
   });
 
-  it("runs dialogue, scan, Node Run, exit, debrief, and transitions to Endplate Ferry", () => {
+  it("runs conversation, scan, Node Run, exit, debrief, and transitions to Endplate Ferry", () => {
     const { runtime, audio, levelChanges } = makeRuntime();
 
     walkTo(runtime, "agent-neuron");
     runtime.interact();
-    expect(runtime.state).toBe("dialogue");
-    expect(runtime.snapshot().dialogue?.speaker).toBe("Neuron Keeper");
-
-    runtime.advanceDialogue();
-    runtime.advanceDialogue();
-    runtime.advanceDialogue();
-    expect(runtime.snapshot().dialogue?.choices).toHaveLength(2);
-
-    runtime.chooseDialogue("right");
+    const neuronConversation = [...runtime.conversations.values()][0];
+    expect(neuronConversation).toBeDefined();
     expect(runtime.state).toBe("level");
+    const neuronSurface = runtime
+      .snapshot()
+      .feedback.surfaces.find(
+        (surface) => surface.id === neuronConversation?.surfaceId,
+      );
+    expect(neuronSurface?.content.speaker).toBe("Neuron Keeper");
+    expect(neuronSurface?.conversation).toMatchObject({
+      owner: "p1",
+      entityId: "agent-neuron",
+      dialogueId: "dlg-neuron-01",
+    });
+
+    runtime.surfaceAction(neuronConversation!.surfaceId, { type: "confirm" });
+    runtime.surfaceAction(neuronConversation!.surfaceId, { type: "confirm" });
+    runtime.surfaceAction(neuronConversation!.surfaceId, { type: "confirm" });
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.find(
+          (surface) => surface.id === neuronConversation?.surfaceId,
+        )?.content.choices,
+    ).toHaveLength(2);
+
+    runtime.surfaceAction(neuronConversation!.surfaceId, {
+      type: "choose",
+      choiceId: "right",
+    });
     expect(runtime.snapshot().knownConceptIds).toEqual(
       expect.arrayContaining(["CON-3"]),
     );
+    runtime.surfaceAction(neuronConversation!.surfaceId, { type: "confirm" });
+    expect(runtime.conversations.size).toBe(0);
 
     walkTo(runtime, "scan-pathway");
     runtime.scan();
@@ -603,29 +661,45 @@ describe("game runtime", () => {
     ]);
   });
 
-  it("reveals CON-4 and CON-6 in the Endplate Ferry dialogue", () => {
+  it("reveals CON-4 and CON-6 in the Endplate Ferry conversation", () => {
     const { runtime } = makeRuntime();
     finishNodeRun(runtime);
 
     walkTo(runtime, "agent-muscle");
     runtime.interact();
-    expect(runtime.state).toBe("dialogue");
-    expect(runtime.snapshot().dialogue?.speaker).toBe("Muscle Effector");
+    const conversation = [...runtime.conversations.values()][0];
+    expect(conversation).toBeDefined();
+    expect(runtime.state).toBe("level");
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.find(
+          (surface) => surface.id === conversation?.surfaceId,
+        )?.content.speaker,
+    ).toBe("Muscle Effector");
 
-    runtime.advanceDialogue();
-    runtime.advanceDialogue();
-    runtime.advanceDialogue();
-    expect(runtime.snapshot().dialogue?.choices).toHaveLength(2);
+    runtime.surfaceAction(conversation!.surfaceId, { type: "confirm" });
+    runtime.surfaceAction(conversation!.surfaceId, { type: "confirm" });
+    runtime.surfaceAction(conversation!.surfaceId, { type: "confirm" });
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.find(
+          (surface) => surface.id === conversation?.surfaceId,
+        )?.content.choices,
+    ).toHaveLength(2);
 
-    runtime.chooseDialogue("right");
-    expect(runtime.state).toBe("dialogue");
+    runtime.surfaceAction(conversation!.surfaceId, {
+      type: "choose",
+      choiceId: "right",
+    });
     expect(runtime.snapshot().knownConceptIds).toEqual(
       expect.arrayContaining(["CON-4", "CON-6"]),
     );
 
-    runtime.advanceDialogue();
-    runtime.advanceDialogue();
-    expect(runtime.state).toBe("level");
+    runtime.surfaceAction(conversation!.surfaceId, { type: "confirm" });
+    runtime.surfaceAction(conversation!.surfaceId, { type: "confirm" });
+    expect(runtime.conversations.size).toBe(0);
   });
 
   it("solves Endplate Ferry in co-op and exports both OBJ-2 puzzle solves", () => {
@@ -909,5 +983,261 @@ describe("game runtime", () => {
       intents: { ...input().intents, p1: { moveX: 0, jump: false, dash: true } },
     });
     expect(runtime.simulation.players.p1.x).toBeGreaterThan(before);
+  });
+
+  it("projects persistent feedback and beat progress at boot", () => {
+    const { runtime } = makeRuntime();
+    const snapshot = runtime.snapshot();
+    expect(snapshot.feedback.seq).toBeGreaterThan(0);
+    expect(snapshot.feedback.surfaces.map((surface) => surface.id)).toEqual(
+      expect.arrayContaining(["fb:binary:input-a", "fb:counter:stimulus-counter"]),
+    );
+    expect(snapshot.feedback.beats.length).toBeGreaterThan(0);
+    expect(snapshot.world.entities["agent-neuron"]?.anchors.center).toEqual({
+      x: 18,
+      y: 18,
+    });
+    expect(runtime.drainEffects()).toEqual([]);
+  });
+
+  it("projects authored room sockets into the runtime world view", () => {
+    const { runtime } = makeRuntimeWithContent(contentWithAnchors());
+    const entity = runtime.snapshot().world.entities["agent-neuron"];
+    expect(entity?.anchors.center).toEqual({ x: 18, y: 18 });
+    expect(entity?.anchors.muzzle).toEqual({
+      x: 30,
+      y: 8,
+      direction: 0,
+    });
+  });
+
+  it("attributes a P2 plate press to P2 and keeps it out of the toast", () => {
+    const { runtime } = makeRuntime();
+    pressSensor(runtime, "input-a", "p2");
+    const snapshot = runtime.snapshot();
+    const cue = snapshot.feedback.cues.find((item) =>
+      item.cause.startsWith("puzzle:platePress:input-a"),
+    );
+    expect(cue).toMatchObject({
+      actor: "p2",
+      owner: "p2",
+      anchor: { kind: "player", playerId: "p2" },
+      presentation: "playerCaption",
+    });
+    expect(snapshot.toast).toBeNull();
+  });
+
+  it("keeps solved feedback shared and on the screen anchor", () => {
+    const { runtime } = makeRuntime();
+    solveNodeRun(runtime);
+    const cue = runtime
+      .snapshot()
+      .feedback.cues.find((item) => item.cause.startsWith("puzzle:solved"));
+    expect(cue).toMatchObject({
+      actor: null,
+      owner: "shared",
+      anchor: { kind: "screen" },
+      presentation: "screenCaption",
+      content: { text: "Signal restored" },
+    });
+  });
+
+  it("attributes an empty receptor rejection to the pulsing player", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    activateEndplate(runtime);
+    stepWith(runtime, playerActions({ pulse: true }));
+    waitRuntime(runtime, 10);
+    const cue = runtime
+      .snapshot()
+      .feedback.cues.find((item) =>
+        item.cause.startsWith("puzzle:receptorRejected:nicotinic-receptor"),
+      );
+    expect(cue).toMatchObject({
+      actor: "p1",
+      owner: "p1",
+      anchor: { kind: "entity", entityId: "nicotinic-receptor" },
+      presentation: "speechBubble",
+      reason: "empty",
+    });
+  });
+
+  it("lets P1 and P2 talk to different entities at once", () => {
+    const { runtime } = makeRuntimeWithContent(contentWithSecondAgent());
+    walkPlayerTo(runtime, "p1", "agent-neuron");
+    stepWith(runtime, playerActions({ interact: true }));
+    walkPlayerTo(runtime, "p2", "agent-neuron-2");
+    stepWith(runtime, playerActions(), playerActions({ interact: true }));
+
+    const conversations = [...runtime.conversations.values()];
+    expect(conversations).toHaveLength(2);
+    expect(new Set(conversations.map((item) => item.owner))).toEqual(
+      new Set(["p1", "p2"]),
+    );
+    expect(new Set(conversations.map((item) => item.entityId))).toEqual(
+      new Set(["agent-neuron", "agent-neuron-2"]),
+    );
+  });
+
+  it("runs two owned conversations at once and freezes only the chooser", () => {
+    const { runtime } = makeRuntime();
+
+    walkPlayerTo(runtime, "p1", "agent-neuron");
+    stepWith(runtime, playerActions({ interact: true }));
+    const p1Conversation = [...runtime.conversations.values()].find(
+      (item) => item.owner === "p1",
+    );
+    expect(p1Conversation).toBeDefined();
+
+    walkPlayerTo(runtime, "p2", "agent-neuron");
+    stepWith(runtime, playerActions(), playerActions({ interact: true }));
+    const p2Conversation = [...runtime.conversations.values()].find(
+      (item) => item.owner === "p2",
+    );
+    expect(p2Conversation).toBeDefined();
+    expect(runtime.conversations.size).toBe(2);
+
+    for (let index = 0; index < 3; index += 1) {
+      runtime.surfaceAction(p1Conversation!.surfaceId, { type: "confirm" });
+    }
+    expect(p1Conversation!.session.nodeId).toBe("check");
+    expect(p2Conversation!.session.nodeId).toBe("intro");
+
+    const p1X = runtime.simulation.players.p1.x;
+    const p2X = runtime.simulation.players.p2.x;
+    runtime.step(1 / 60, {
+      ...input(),
+      intents: {
+        p1: { moveX: 1, jump: false, dash: false },
+        p2: { moveX: 1, jump: false, dash: false },
+      },
+    });
+    expect(runtime.simulation.players.p1.x).toBeCloseTo(p1X, 0);
+    expect(runtime.simulation.players.p2.x).toBeGreaterThan(p2X);
+
+    runtime.surfaceAction(p2Conversation!.surfaceId, { type: "cancel" });
+    expect(runtime.conversations.size).toBe(1);
+  });
+
+  it("shows the stuck affordance after a stable run and dismisses it on hint", () => {
+    const audio = new FakeAudio();
+    const save = createSave({ storage: new MemorySaveStorage() });
+    const runtime = new GameRuntime({
+      content,
+      save,
+      audio,
+      now: () => new Date("2026-10-26T12:00:00.000Z"),
+      stuckThresholdTicks: 3,
+    });
+    runtime.start();
+    for (let index = 0; index < 3; index += 1) stepWith(runtime);
+    const surface = runtime
+      .snapshot()
+      .feedback.surfaces.find((item) => item.id.startsWith("fb:stuck:"));
+    expect(surface).toBeDefined();
+    expect(surface?.content.choices?.map((choice) => choice.id)).toEqual([
+      "hint",
+      "reset",
+    ]);
+    expect(runtime.snapshot().puzzle?.hint).toBeNull();
+    expect(runtime.snapshot().puzzle?.counters.stuckWarnings).toBe(1);
+
+    runtime.surfaceAction(surface!.id, {
+      type: "choose",
+      choiceId: "hint",
+    });
+    expect(runtime.snapshot().puzzle?.hint).not.toBeNull();
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:stuck:")),
+    ).toBe(false);
+  });
+
+  it("restores a saved conversation and migrates an old dialogue field", () => {
+    const storage = new MemorySaveStorage();
+    const first = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:00:00.000Z"),
+    });
+    first.start();
+    walkTo(first, "agent-neuron");
+    first.interact();
+    const conversation = [...first.conversations.values()][0]!;
+    first.surfaceAction(conversation.surfaceId, { type: "confirm" });
+
+    const restored = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:10:00.000Z"),
+    });
+    restored.start();
+    expect(restored.conversations.size).toBe(1);
+    const state = [...restored.conversations.values()][0]!;
+    expect(state.owner).toBe("p1");
+    expect(state.entityId).toBe("agent-neuron");
+    expect(state.session.nodeId).toBe("problem");
+    expect(
+      restored
+        .snapshot()
+        .feedback.surfaces.some((surface) => surface.id === state.surfaceId),
+    ).toBe(true);
+
+    const raw = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    raw.conversations = undefined;
+    raw.dialogue = { dialogueId: "dlg-neuron-01", nodeId: "problem" };
+    delete raw.conversations;
+    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(raw));
+
+    const migrated = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:20:00.000Z"),
+    });
+    migrated.start();
+    const migratedState = [...migrated.conversations.values()][0]!;
+    expect(migratedState.owner).toBe("p1");
+    expect(migratedState.entityId).toBe("agent-neuron");
+    expect(migratedState.session.nodeId).toBe("problem");
+  });
+
+  it("closes a restored conversation with a recovery cue when its entity is gone", () => {
+    const storage = new MemorySaveStorage();
+    const first = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:00:00.000Z"),
+    });
+    first.start();
+    const raw = JSON.parse(storage.getItem(RUN_STORAGE_KEY) ?? "{}");
+    raw.conversations = [
+      {
+        surfaceId: "conversation:p1:missing",
+        dialogueId: "dlg-neuron-01",
+        nodeId: "intro",
+        owner: "p1",
+        entityId: "missing",
+      },
+    ];
+    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(raw));
+
+    const restored = new GameRuntime({
+      content,
+      save: createSave({ storage }),
+      audio: new FakeAudio(),
+      now: () => new Date("2026-10-26T12:10:00.000Z"),
+    });
+    restored.start();
+    expect(restored.conversations.size).toBe(0);
+    expect(
+      restored
+        .snapshot()
+        .feedback.cues.some((cue) => cue.content.text?.includes("no longer here")),
+    ).toBe(true);
   });
 });

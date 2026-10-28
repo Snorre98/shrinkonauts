@@ -231,8 +231,8 @@ export async function bootGame(options: BootOptions = {}): Promise<BootResult> {
         : undefined,
       diagnostics,
       callbacks: {
-        onAdvanceDialogue: () => runtime?.advanceDialogue(),
-        onChooseDialogue: (choiceId) => runtime?.chooseDialogue(choiceId),
+        onSurfaceAction: (surfaceId, action) =>
+          runtime?.surfaceAction(surfaceId, action),
         onGateSubmit: (answer) => runtime?.submitGateAnswer(answer),
         onGateHint: () => runtime?.gateHint(),
         onCloseGate: () => runtime?.closeGate(),

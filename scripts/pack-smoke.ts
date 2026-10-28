@@ -542,7 +542,7 @@ function runAnatomyRuntime(): RuntimeResult {
   runtime.step(1 / 60, frameInput({ pause: true }));
   assert(runtime.snapshot().state === "level", "[anatomy] Esc did not resume");
 
-  // Dialogue + choice.
+  // Conversation + choice.
   walkTo(runtime, "agent-neuron");
   assert(
     runtime.interactionId() === "agent-neuron",
@@ -554,24 +554,37 @@ function runAnatomyRuntime(): RuntimeResult {
       p1: { interact: true, scan: false, pulse: false, carry: false, throw: false },
     }),
   );
-  assert(runtime.snapshot().state === "dialogue", "[anatomy] E did not start dialogue");
+  const conversation = [...runtime.conversations.values()][0];
+  assert(conversation, "[anatomy] E did not start a conversation");
   assert(
-    runtime.snapshot().dialogue?.speaker === "Neuron Keeper",
-    "[anatomy] wrong dialogue speaker",
+    runtime.snapshot().state === "level",
+    "[anatomy] conversation must not enter a blocking state",
+  );
+  assert(
+    conversation.session.dialogueId === "dlg-neuron-01",
+    "[anatomy] wrong dialogue id",
   );
 
-  runtime.advanceDialogue();
-  runtime.advanceDialogue();
-  runtime.advanceDialogue();
-  assert(
-    runtime.snapshot().dialogue?.choices.length === 2,
-    "[anatomy] dialogue choices missing",
-  );
-  runtime.chooseDialogue("right");
-  assert(runtime.snapshot().state === "level", "[anatomy] choice did not close dialogue");
+  runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  const choices = runtime
+    .snapshot()
+    .feedback.surfaces.find((surface) => surface.id === conversation.surfaceId)
+    ?.content.choices;
+  assert(choices?.length === 2, "[anatomy] conversation choices missing");
+  runtime.surfaceAction(conversation.surfaceId, {
+    type: "choose",
+    choiceId: "right",
+  });
   assert(
     runtime.snapshot().knownConceptIds.includes("CON-3"),
-    "[anatomy] dialogue did not reveal the neuron concept",
+    "[anatomy] conversation did not reveal the neuron concept",
+  );
+  runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  assert(
+    runtime.conversations.size === 0,
+    "[anatomy] final conversation surface did not close",
   );
 
   // Scan.
@@ -768,7 +781,7 @@ function main(): void {
 
     const runtime = runAnatomyRuntime();
     console.log(
-      `  [anatomy runtime] PASS — ${runtime.assets} IDs, ${runtime.placeholders} placeholders, dialogue/scan/Node Run/transition/Endplate Ferry/exit/debrief/save/dash/co-op`,
+      `  [anatomy runtime] PASS — ${runtime.assets} IDs, ${runtime.placeholders} placeholders, conversation/scan/Node Run/transition/Endplate Ferry/exit/debrief/save/dash/co-op`,
     );
     console.log(`  [anatomy runtime] evidence: ${runtime.events} events exported`);
 

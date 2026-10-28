@@ -3,11 +3,13 @@ export { createGame, VIEWPORT } from "./create-game";
 export type { GameMountOptions } from "./create-game";
 export { KeyboardIntentSource } from "./input";
 export type { FrameInput } from "./input";
-export { emptyRuntimeInput } from "./runtime-port";
+export { emptyRuntimeInput, emptyPlayerUiActions } from "./runtime-port";
 export type {
   FrameActions,
   PlayerActionInput,
+  PlayerUiActions,
   RuntimeInput,
+  WorldEffectPlan,
   WorldRuntime,
 } from "./runtime-port";
 export { RoomScene } from "./room-scene";

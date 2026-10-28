@@ -52,6 +52,7 @@ export type {
   DialogueDocument,
   DialogueEffect,
   DialogueNode,
+  EntityAnchorPoint,
   EntityBodyComponent,
   EntityGateComponent,
   EntityPropComponent,

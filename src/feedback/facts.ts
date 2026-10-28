@@ -55,6 +55,7 @@ const SOLVED_RECIPE: CueRecipe = {
   priority: 100,
   anchor: { kind: "screen" },
   owner: "shared",
+  text: "Signal restored",
 };
 
 /**
@@ -182,11 +183,22 @@ function presentationFor(
   recipe: CueRecipe,
   node: PuzzleNode | undefined,
   actor: PlayerId | null,
+  targeted: boolean,
 ): FeedbackPresentation {
   if (recipe.presentation) return recipe.presentation;
+  if (actor && targeted) return "speechBubble";
+  if (actor) return "playerCaption";
+  if (recipe.anchor?.kind === "screen") return "screenCaption";
   if (node) return "hudStatus";
-  return actor ? "playerCaption" : "hudStatus";
+  return "hudStatus";
 }
+
+const TARGETED_EVENTS: ReadonlySet<PuzzleEvent["type"]> = new Set([
+  "receptorBound",
+  "receptorRejected",
+  "gateOpen",
+  "gateClose",
+]);
 
 function priorityFor(
   recipe: CueRecipe,
@@ -215,6 +227,7 @@ function cueFromPuzzleEvent(
     (entry) => entry.id === fact.event.nodeId,
   );
   const actor = fact.actor ?? asPlayerId(fact.event.actorId);
+  const targeted = TARGETED_EVENTS.has(fact.event.type) && Boolean(node?.entityId);
   const state = recipe.state ?? "idle";
   const reason = recipe.reason ?? reasonForEvent(fact.event);
   const subject = nodeSubject(context.document, node, context.labels);
@@ -231,12 +244,14 @@ function cueFromPuzzleEvent(
     }).text;
   const anchor =
     recipe.anchor ??
-    (node
+    (actor && targeted && node?.entityId
       ? nodeAnchor(node)
       : actor
         ? { kind: "player", playerId: actor }
-        : { kind: "hud", slot: "top" });
-  const presentation = presentationFor(recipe, node, actor);
+        : node
+          ? nodeAnchor(node)
+          : { kind: "hud", slot: "top" });
+  const presentation = presentationFor(recipe, node, actor, targeted);
 
   return {
     cause:
@@ -315,12 +330,17 @@ function cueFromActionOutcome(
   const subject = fact.target?.id
     ? context.labels?.[fact.target.id] ?? nodeLabel(fact.target.id)
     : actorLabel;
-  const text = feedbackLexicon({
-    capability,
-    state,
-    ...(fact.reason ? { reason: fact.reason } : {}),
-    labels: { subject, actor: actorLabel },
-  }).text;
+  const text =
+    fact.text ??
+    feedbackLexicon({
+      capability,
+      state,
+      ...(fact.reason ? { reason: fact.reason } : {}),
+      labels: { subject, actor: actorLabel },
+    }).text;
+  const a11yText = fact.text
+    ? `${actorLabel}: ${fact.text}`
+    : text;
   const anchor: FeedbackAnchor = fact.target
     ? sourceAnchor(fact.target)
     : { kind: "player", playerId: fact.actor };
@@ -342,7 +362,7 @@ function cueFromActionOutcome(
     severity: severityForResult(fact.result),
     priority: fact.result === "rejected" ? 80 : 50,
     ttlTicks: context.defaultTtlTicks,
-    a11y: { announce: true, textAlternative: text },
+    a11y: { announce: true, textAlternative: a11yText },
   };
 }
 
@@ -382,7 +402,7 @@ function cueFromSystemOutcome(
   fact: Extract<FeedbackFact, { kind: "system.outcome" }>,
   context: FactProjectionContext,
 ): FeedbackCueSpec {
-  const text = humanizeOutcome(fact.outcome);
+  const text = fact.text ?? humanizeOutcome(fact.outcome);
 
   return {
     cause: `system:${fact.source.kind}:${fact.source.id}:${fact.outcome}`,
@@ -394,7 +414,7 @@ function cueFromSystemOutcome(
     presentation: "hudStatus",
     content: { text },
     state: "complete",
-    severity: "positive",
+    severity: fact.severity ?? "positive",
     priority: 70,
     ttlTicks: context.defaultTtlTicks,
     a11y: { announce: true, textAlternative: text },

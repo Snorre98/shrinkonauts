@@ -78,6 +78,29 @@ describe("dev room content", () => {
     expect(room.spawns.player2).toEqual({ x: 8, y: 30 });
   });
 
+  it("parses authored entity anchors with default fallbacks", () => {
+    const raw = structuredClone(readJson("room.json")) as Record<string, unknown>;
+    const entities = Array.isArray(raw.entities) ? raw.entities : [];
+    entities.push({
+      id: "anchor-test",
+      type: "body",
+      x: 1,
+      y: 1,
+      components: {
+        body: { width: 36, height: 36 },
+        anchors: { muzzle: { x: 18, y: 8, direction: 0 } },
+      },
+    });
+    raw.entities = entities;
+    const parsed = parseRoom(raw);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value.entities?.[0]?.components?.anchors).toEqual({
+        muzzle: { x: 18, y: 8, direction: 0 },
+      });
+    }
+  });
+
   it("declares every content and player asset ID in the final manifest", () => {
     const declared = new Set(Object.keys(finalManifest.assets));
     for (const id of allIds) {

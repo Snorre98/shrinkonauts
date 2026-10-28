@@ -49,3 +49,4 @@ export {
   type FeedbackLexiconEntry,
 } from "./lexicon";
 export type * from "./types";
+export type { SourceRef as SourceRefValue } from "./types";
