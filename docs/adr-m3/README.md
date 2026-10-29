@@ -7,6 +7,8 @@
 
 This directory adds new records only. It does not rewrite accepted history.
 
+> **Re-alignment (2026-10-29):** these records were re-aligned with the v0.3 M1.8 asset scope: 21 visible images, two material atlases, 32×32 atlas frames at 1:1 with 2×2 clusters, and `theme.json` schema 1.1 UI material/pattern slots.
+
 ## Numbering note
 
 The last accepted record is ADR-0046 in
@@ -20,8 +22,8 @@ force for licensing and audio.
 
 | # | Decision | Status |
 |---|---|---|
-| [0047](0047-pixel-art-visual-direction.md) | Pixel-art visual direction for the whole game | Accepted |
-| [0048](0048-half-resolution-pixel-rendering.md) | Half-resolution authoring with 2× nearest-neighbour display | Accepted |
+| [0047](0047-pixel-art-visual-direction.md) | Pixel-art visual direction for the whole game (21-image M3 scope) | Accepted |
+| [0048](0048-half-resolution-pixel-rendering.md) | Half-resolution authoring with 2× nearest-neighbour display, including 32×32 atlas frames | Accepted |
 | [0049](0049-pixel-ui-chrome-and-typography.md) | Pixel UI chrome and typography | Accepted |
 
 ## Related accepted records
@@ -34,6 +36,8 @@ force for licensing and audio.
 - ADR-0031: Layered background composition
 - ADR-0032: Audio cue abstraction
 - ADR-0033: Final asset integration timing
+- ADR-0014–0017 (puzzle-engine): material/pattern vocabulary, tile material grid, pattern surfaces, atlas manifest
+- [`docs/m1.8/README.md`](../m1.8/README.md): material and pattern layer
 
 ## Format
 

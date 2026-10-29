@@ -99,7 +99,7 @@ audio.cue.hub.click / door / spin /
 
 Work:
 
-- [ ] Produce the assets in the existing "Dank Anatomy Cartoon" style.
+- [ ] Produce the assets in the **“Dank Anatomy Pixel Art”** style (ADR-0047): 2× half-res sprites, pixel atlas frames, ramp palette, no anti-aliasing.
 - [ ] Put the real `src` paths in
   `public/hub/bathroom/assets.final.json`.
 - [ ] Add licences and update the prompt/asset log.

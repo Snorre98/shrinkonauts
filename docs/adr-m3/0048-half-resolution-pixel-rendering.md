@@ -26,7 +26,7 @@ Author pixel art at **half the display size** and let Phaser upscale it by exact
 |---|---|---|
 | Player | 14×22 | 28×44 |
 | Entity | 18×18 | 36×36 |
-| Tile | 16×16 | 32×32 |
+| Material atlas frame | 32×32, 2×2 clusters | 32×32 |
 | Badge | 16×16 | 32×32 |
 | Sky | 640×368 | 1280×736 cover |
 | Parallax | 1024×512, 2×2 clusters | tile 1:1 |
@@ -36,6 +36,7 @@ Render and background rules:
 - `pixelArt: true`, `antialias: false`, `roundPixels: true`.
 - Round the sky's cover scale to an integer; remove the fractional `1.4` bleed for pixel mode.
 - Parallax layers stay 1:1 and use a 2×2 minimum cluster grid so their effective density matches the sprites.
+- Material atlas frames keep the engine’s existing **32×32 frame size** and use a 2×2 minimum cluster grid. Do not change the frame grid to 16×16; only the pixel density inside each frame changes.
 - Add `image-rendering: pixelated` to the canvas and UI images.
 - These are the only approved render changes under ADR-0033. No gameplay, physics, puzzle, or level-layout code changes.
 
@@ -70,7 +71,7 @@ Render and background rules:
 
 ## References
 
-- [`docs/m3/asset-requirements.md`](../m3/asset-requirements.md), §3 and §6
+- [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md), §3 and §6
 - [`src/world/create-game.ts`](../../src/world/create-game.ts), [`src/world/background.ts`](../../src/world/background.ts), [`src/world/physics.ts`](../../src/world/physics.ts), [`src/world/room-scene.ts`](../../src/world/room-scene.ts)
 - [ADR-0033](../shrinkonauts/base-game/adr/0033-final-asset-integration-timing.md)
 - [ADR-0047](0047-pixel-art-visual-direction.md)

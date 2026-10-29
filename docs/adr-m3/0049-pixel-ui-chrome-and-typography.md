@@ -20,9 +20,9 @@ Adopt an **8-bit pixel UI** that preserves accessibility:
 - Self-host two OFL 1.1 fonts: **Silkscreen** (display, headings, labels) and **Pixelify Sans** (body, dialogue, long text). No external font CDN.
 - Minimum 12 px labels and 15–16 px body text. Dialogue stays mixed case, not all-caps.
 - Integer-friendly text scales: 1, 1.25, 1.5, 2.
-- Badge: 16×16 source displayed at 32×32 with `image-rendering: pixelated`.
+- Badge: 16×16 source; the current HUD displays a ~45×27 pill with `cover`, and the pixel-UI target is a 32×32 stamp with `image-rendering: pixelated`.
 - Focus rings, keyboard navigation, reduced motion, contrast, and text scaling remain first-class.
-- Theme tokens remain the only pack-specific colour input; no pack-specific CSS.
+- Theme tokens remain the only pack-specific colour input; no pack-specific CSS. The `theme.json` schema 1.1 `ui.materials` and `ui.patterns` slots use the same pixel ramps and dither; reduced-motion keeps a static material identity.
 - Deferred panels, portraits, and icons use the same pixel language when they are generated: 16×16 or 32×32 icons, 9-slice pixel panels, no anti-aliasing.
 
 ## Consequences
@@ -57,7 +57,7 @@ Adopt an **8-bit pixel UI** that preserves accessibility:
 
 ## References
 
-- [`docs/m3/asset-requirements.md`](../m3/asset-requirements.md), §7 and §9
+- [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md), §7 and §9
 - [`src/ui/styles.css`](../../src/ui/styles.css), [`src/ui/hud.ts`](../../src/ui/hud.ts)
 - [Silkscreen](https://fonts.google.com/specimen/Silkscreen) — Jason Kottke, SIL Open Font License 1.1
 - [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans) — Stefie Justprince, SIL Open Font License 1.1

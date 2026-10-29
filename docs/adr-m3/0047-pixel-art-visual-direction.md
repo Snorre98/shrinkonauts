@@ -12,15 +12,15 @@ The M3 art direction was **“Dank Anatomy Cartoon”**, a hand-drawn style with
 
 AI image generators can produce concepts but not reliable final pixel art. They mix pixel sizes, anti-alias edges, add high-resolution detail, and drift off-palette. A production-ready direction therefore needs a native pixel grid, a limited ramp palette, a fixed set of source sizes, and a manual cleanup step.
 
-The existing asset architecture is unaffected: logical IDs, the placeholder-first provider chain, late asset integration, and the licence record all stay.
+The existing asset architecture is unaffected: logical IDs, the placeholder-first provider chain, late asset integration, and the licence record all stay. The M1.8 material layer adds material grids, autotiling, variants, atlas regions, and UI material slots; the pixel direction must cover those too.
 
 ## Decision
 
-Adopt **“Dank Anatomy Pixel Art”** for the whole game: world sprites, backgrounds, tile, badge, and UI chrome.
+Adopt **“Dank Anatomy Pixel Art”** for the whole game: world sprites, backgrounds, the bone and nerve material atlases, the badge, and UI chrome. The M3 scope stays at 21 visible images (2 players, 12 entities, 4 backgrounds, 2 atlases, 1 badge).
 
 - Native pixel grid; 1 px dark teal-brown source outlines; no anti-aliasing.
 - Three-step ramps per hue; 50% dither for damp, grimy texture; no smooth gradients.
-- Minimum 2×2 colour blocks at display size.
+- Minimum 2×2 colour blocks at display size. Material atlas frames keep their 32×32 frame size and use a 2×2 cluster grid so the autotile/variant map does not change.
 - Keep the tone, palette identity, characters, asset IDs, and scope from `DESIGN.md` and the M3 asset brief.
 - Use Ludo.ai for concepts and reference only. Final pixels are cleaned at source size in Aseprite, Piskel, or LibreSprite.
 - The visual-style portion of ADR-0027 is superseded. Licensing and audio decisions in ADR-0027 remain.
@@ -36,7 +36,7 @@ Adopt **“Dank Anatomy Pixel Art”** for the whole game: world sprites, backgr
 
 **Harder:**
 
-- Manual pixel cleanup for 20 images.
+- Manual pixel cleanup for 21 images, plus assembly of 47 bone and 16 nerve atlas frames.
 - No soft gradients, painterly texture, or high-resolution detail.
 - The UI and fonts must be redone in pixel style (ADR-0049).
 - AI concepts need disciplined simplification; the generator cannot be the final renderer.
@@ -57,7 +57,7 @@ Adopt **“Dank Anatomy Pixel Art”** for the whole game: world sprites, backgr
 
 ## References
 
-- [`docs/m3/asset-requirements.md`](../m3/asset-requirements.md)
+- [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md)
 - [ADR-0027](../shrinkonauts/base-game/adr/0027-art-audio-direction-and-licensing.md)
 - [ADR-0048](0048-half-resolution-pixel-rendering.md)
 - [ADR-0049](0049-pixel-ui-chrome-and-typography.md)
