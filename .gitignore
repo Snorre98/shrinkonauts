@@ -66,6 +66,10 @@ Thumbs.db
 !.vscode/settings.json
 !.vscode/extensions.json
 
+# --- Generated art intermediates ---
+art-source/**/working/frames/
+art-source/**/working/tmp/
+
 # --- Misc ---
 ._*
 *.pid

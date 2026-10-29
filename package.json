@@ -18,6 +18,7 @@
     "pack:validate": "tsx scripts/pack-validate.ts",
     "pack:map": "tsx scripts/pack-map.ts",
     "pack:smoke": "tsx scripts/pack-smoke.ts",
+    "art:slice": "tsx scripts/art-slice.ts",
     "smoke:e2e": "playwright test"
   },
   "dependencies": {
@@ -28,6 +29,8 @@
     "@playwright/test": "^1.64.1",
     "@types/matter-js": "^0.20.2",
     "@types/node": "^24.19.2",
+    "@types/pngjs": "^6.0.5",
+    "pngjs": "^7.0.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "vite": "^7.3.7",
