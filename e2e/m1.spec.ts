@@ -355,14 +355,14 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await page.getByRole("button", { name: "Reset puzzle" }).click();
   await expect(page.locator(".hud__save")).toContainText("Puzzle reset");
 
-  await page.getByRole("button", { name: "130%" }).click();
+  await page.getByRole("button", { name: "125%" }).click();
   await expect
     .poll(() =>
       page.evaluate(() =>
         getComputedStyle(document.documentElement).getPropertyValue("--ui-font-scale").trim(),
       ),
     )
-    .toBe("1.3");
+    .toBe("1.25");
 
   await page.getByRole("button", { name: "Off", exact: true }).click();
   await expect

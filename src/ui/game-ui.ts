@@ -12,6 +12,7 @@ import {
   type FeedbackSurfaceRenderer,
 } from "./feedback-renderer";
 import type { CanvasRect } from "./anchors";
+import { snapTextScale, TEXT_SCALES } from "./text-scale";
 
 export interface GameUiDiagnostics {
   modeLabel: string;
@@ -65,7 +66,6 @@ interface Overlay {
   update?: OverlayUpdater;
 }
 
-const TEXT_SCALES = [0.9, 1, 1.1, 1.3, 1.5] as const;
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -203,10 +203,12 @@ export function mountGameUi(
   /* ---------------------------------------------------------------- */
 
   function applySettings(settings: SettingsView): void {
+    const scale = snapTextScale(settings.accessibility.textScale);
     document.documentElement.style.setProperty(
       "--ui-font-scale",
-      String(settings.accessibility.textScale),
+      String(scale),
     );
+    document.documentElement.dataset.textScale = String(scale);
     document.documentElement.dataset.reducedMotion = String(
       settings.accessibility.reducedMotion,
     );
@@ -804,9 +806,9 @@ export function mountGameUi(
     node.dataset.autofocus = "true";
 
     const update = (next: RuntimeSnapshot): void => {
+      const activeScale = snapTextScale(next.settings.accessibility.textScale);
       for (const control of scaleControls) {
-        const active =
-          Math.abs(control.scale - next.settings.accessibility.textScale) < 0.01;
+        const active = Math.abs(control.scale - activeScale) < 0.01;
         control.node.dataset.active = String(active);
         control.node.setAttribute("aria-pressed", String(active));
       }

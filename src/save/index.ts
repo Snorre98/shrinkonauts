@@ -190,7 +190,7 @@ function parseSettings(raw: string | null): GameSettings {
     },
     accessibility: {
       textScale: isFiniteNumber(accessibility.textScale)
-        ? clamp(accessibility.textScale, 0.8, 1.6)
+        ? clamp(accessibility.textScale, 0.8, 2)
         : fallback.accessibility.textScale,
       reducedMotion: accessibility.reducedMotion === true,
     },
@@ -424,7 +424,7 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
         volume: clamp(next.audio.volume, 0, 1),
       },
       accessibility: {
-        textScale: clamp(next.accessibility.textScale, 0.8, 1.6),
+        textScale: clamp(next.accessibility.textScale, 0.8, 2),
         reducedMotion: next.accessibility.reducedMotion === true,
       },
     };

@@ -15,11 +15,11 @@
     "danger": "#ef476f"
   },
   "fonts": {
-    "ui": "Inter, system-ui, sans-serif",
-    "display": "Space Grotesk, Inter, system-ui, sans-serif"
+    "ui": "Pixelify Sans, monospace",
+    "display": "Silkscreen, Pixelify Sans, monospace"
   },
   "ui": {
-    "radius": 14,
+    "radius": 0,
     "border": 2,
     "fontScale": 1,
     "reducedMotion": false,

@@ -123,6 +123,7 @@ test("boots into the bathroom, starts a solo anatomy cycle, and returns to the h
     .toBe(false);
 
   // Pause and leave the level; the bathroom shell is rebuilt.
+  await expect(page.locator(".hub-skip")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Leave to bathroom" }).click();
   await page.waitForFunction(() => {

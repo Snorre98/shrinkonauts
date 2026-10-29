@@ -235,9 +235,10 @@ export class LayeredBackground {
             break;
           case "cover":
           default:
-            // Extra bleed keeps the layer covering the viewport while the
-            // slower scroll factors drift across the room.
-            object.setScale(coverScale * 1.4);
+            // Pixel mode: snap the cover scale to an integer so a 640×368
+            // sky displays at an exact 2× over the 1280×736 room. The old
+            // 1.4 bleed was fractional and blurred the pixel grid.
+            object.setScale(Math.max(1, Math.ceil(coverScale)));
             break;
         }
       }
@@ -294,8 +295,15 @@ export class LayeredBackground {
         continue;
       }
 
-      view.object.tilePositionX = camera.scrollX * view.layer.parallaxX;
-      view.object.tilePositionY = camera.scrollY * view.layer.parallaxY;
+      // Parallax textures are authored 1:1 for pixel mode. Rounding the
+      // tile origin keeps the nearest-neighbour sample on whole texels and
+      // stops the layers shimmering as the camera lerps.
+      view.object.tilePositionX = Math.round(
+        camera.scrollX * view.layer.parallaxX,
+      );
+      view.object.tilePositionY = Math.round(
+        camera.scrollY * view.layer.parallaxY,
+      );
     }
 
     for (const overlay of this.patternOverlays) {
@@ -310,7 +318,10 @@ export class LayeredBackground {
         overlay.options.parallaxX ?? 0,
         overlay.options.parallaxY ?? 0,
       );
-      overlay.sprite.setTilePosition(position.x, position.y);
+      overlay.sprite.setTilePosition(
+        Math.round(position.x),
+        Math.round(position.y),
+      );
     }
   }
 

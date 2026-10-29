@@ -189,6 +189,16 @@ export interface ThemePalette {
   muted: string;
   accent: string;
   danger: string;
+  /** Optional pixel ramp tokens (theme schema 1.1). */
+  tealDark?: string;
+  tealLight?: string;
+  boneDark?: string;
+  boneLight?: string;
+  nerveDark?: string;
+  jointDark?: string;
+  jointLight?: string;
+  muscleDark?: string;
+  muscleLight?: string;
 }
 
 export interface ThemeFonts {

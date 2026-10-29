@@ -68,6 +68,18 @@ const PALETTE_KEYS: readonly (keyof ThemePalette)[] = [
   "danger",
 ];
 
+const PALETTE_RAMP_KEYS: readonly (keyof ThemePalette)[] = [
+  "tealDark",
+  "tealLight",
+  "boneDark",
+  "boneLight",
+  "nerveDark",
+  "jointDark",
+  "jointLight",
+  "muscleDark",
+  "muscleLight",
+];
+
 const FIT_MODES: readonly BackgroundFit[] = [
   "cover",
   "tile",
@@ -941,6 +953,17 @@ function parsePalette(value: unknown): Result<ThemePalette> {
   const palette = {} as ThemePalette;
   for (const key of PALETTE_KEYS) {
     const color = value[key];
+    if (!isHexColor(color)) {
+      return err(`${code}: palette.${key} must be a 6-digit hex colour`);
+    }
+    palette[key] = color;
+  }
+
+  for (const key of PALETTE_RAMP_KEYS) {
+    const color = value[key];
+    if (color === undefined) {
+      continue;
+    }
     if (!isHexColor(color)) {
       return err(`${code}: palette.${key} must be a 6-digit hex colour`);
     }

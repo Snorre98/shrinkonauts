@@ -14,6 +14,8 @@ export type {
 } from "./material-css";
 export type { Hud, HudModel, HudOptions } from "./hud";
 export { mountGameUi } from "./game-ui";
+export { snapTextScale, TEXT_SCALES } from "./text-scale";
+export type { TextScale } from "./text-scale";
 export { mountHubUi } from "./hub-ui";
 export type { HubUi, HubUiOptions } from "./hub-ui";
 export type {

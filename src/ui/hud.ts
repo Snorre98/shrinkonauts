@@ -78,8 +78,11 @@ function styleBadge(node: HTMLElement, asset: ResolvedAsset | undefined): void {
 
   if (asset.src) {
     node.style.backgroundImage = `url("${asset.src}")`;
-    node.style.backgroundSize = "cover";
+    // The badge is authored at 16×16 and displayed at an exact 2× stamp.
+    node.style.backgroundSize = "32px 32px";
+    node.style.backgroundRepeat = "no-repeat";
     node.style.backgroundPosition = "center";
+    node.style.imageRendering = "pixelated";
     node.classList.add("hud__stamp--image");
     return;
   }
@@ -93,6 +96,7 @@ function styleBadge(node: HTMLElement, asset: ResolvedAsset | undefined): void {
   node.style.color = spec.color;
   node.style.borderColor = spec.border;
   node.style.borderRadius = `${spec.radius}px`;
+  node.style.imageRendering = "pixelated";
 }
 
 function badgeLabel(asset: ResolvedAsset | undefined): string {

@@ -35,6 +35,7 @@ import {
   mountGameUi,
   mountHubUi,
   resolveUiMaterialStyles,
+  snapTextScale,
   type GameUi,
   type GameUiDiagnostics,
   type HubMode,
@@ -374,10 +375,12 @@ export class AppController {
 
   private applySettings(): void {
     const settings = this.saveData.settings;
+    const scale = snapTextScale(settings.accessibility.textScale);
     document.documentElement.style.setProperty(
       "--ui-font-scale",
-      String(settings.accessibility.textScale),
+      String(scale),
     );
+    document.documentElement.dataset.textScale = String(scale);
     document.documentElement.dataset.reducedMotion = String(
       settings.accessibility.reducedMotion,
     );
@@ -633,6 +636,11 @@ export class AppController {
     } finally {
       skipButton?.remove();
       if (skipKey) window.removeEventListener("keydown", skipKey);
+      // The launch button was focused and then removed. Re-focus the live
+      // room canvas so the shared keyboard controls keep working.
+      document
+        .querySelector<HTMLCanvasElement>(`#${this.parentId} canvas[data-room-id]`)
+        ?.focus({ preventScroll: true });
     }
   }
 
@@ -913,6 +921,9 @@ export class AppController {
               "aria-label",
               "Shrinkonauts game canvas. Use the listed keyboard controls.",
             );
+            // Starting from the hub leaves focus on a removed button. Focus
+            // the game surface so shared keyboard controls work immediately.
+            canvas.focus({ preventScroll: true });
           }
           resolve();
         },
