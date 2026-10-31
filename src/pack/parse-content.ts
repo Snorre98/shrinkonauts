@@ -27,6 +27,11 @@ import type {
   GateType,
   LevelDocument,
   LevelEvidenceRule,
+  LevelFeedback,
+  LevelFeedbackBeat,
+  LevelFeedbackNodeOverride,
+  LevelFeedbackPuzzle,
+  LevelFeedbackTileTarget,
   LevelMapEdge,
   LevelUnlock,
   LevelUnlockType,
@@ -127,6 +132,8 @@ export function parsePack(value: unknown): Result<PackDocument> {
   if (!mapping.ok) return err(mapping.error);
   const licenses = readNonEmptyString(value, "licenses", PACK_CODE);
   if (!licenses.ok) return err(licenses.error);
+  const materials = readOptionalString(value, "materials", PACK_CODE);
+  if (!materials.ok) return err(materials.error);
 
   if (!isRecord(value.assetManifests)) {
     return err(`${PACK_CODE}: assetManifests must be an object`);
@@ -191,6 +198,7 @@ export function parsePack(value: unknown): Result<PackDocument> {
     theme: theme.value,
     mapping: mapping.value,
     licenses: licenses.value,
+    ...(materials.value ? { materials: materials.value } : {}),
     assetManifests: {
       ...(placeholder.value ? { placeholder: placeholder.value } : {}),
       ...(final.value ? { final: final.value } : {}),
@@ -279,6 +287,221 @@ function parseLevelUnlock(
   return ok({ type: type.value as LevelUnlockType, id: id.value });
 }
 
+function rejectUnknownKeys(
+  value: UnknownRecord,
+  allowed: readonly string[],
+  code: string,
+  label: string,
+): Result<undefined> {
+  const allowedKeys = new Set(allowed);
+  for (const key of Object.keys(value)) {
+    if (!allowedKeys.has(key)) {
+      return err(`${code}: ${label}.${key} is not supported`);
+    }
+  }
+  return ok(undefined);
+}
+
+function parseFeedbackTileTarget(
+  value: unknown,
+  label: string,
+): Result<LevelFeedbackTileTarget> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const kind = readNonEmptyString(value, "kind", LEVEL_CODE, `${label}.kind`);
+  if (!kind.ok) return err(kind.error);
+  if (kind.value !== "tile" && kind.value !== "tileRegion") {
+    return err(`${LEVEL_CODE}: ${label}.kind "${kind.value}" is not supported`);
+  }
+  const allowed =
+    kind.value === "tile"
+      ? ["kind", "layer", "x", "y"]
+      : ["kind", "layer", "x1", "y1", "x2", "y2"];
+  const keys = rejectUnknownKeys(value, allowed, LEVEL_CODE, label);
+  if (!keys.ok) return err(keys.error);
+  const layer = readNonEmptyString(value, "layer", LEVEL_CODE, `${label}.layer`);
+  if (!layer.ok) return err(layer.error);
+
+  if (kind.value === "tile") {
+    const x = readInteger(value, "x", LEVEL_CODE, `${label}.x`);
+    if (!x.ok) return err(x.error);
+    const y = readInteger(value, "y", LEVEL_CODE, `${label}.y`);
+    if (!y.ok) return err(y.error);
+    if (x.value < 0 || y.value < 0) {
+      return err(`${LEVEL_CODE}: ${label} coordinates must be non-negative`);
+    }
+    return ok({ kind: "tile", layer: layer.value, x: x.value, y: y.value });
+  }
+
+  const x1 = readInteger(value, "x1", LEVEL_CODE, `${label}.x1`);
+  if (!x1.ok) return err(x1.error);
+  const y1 = readInteger(value, "y1", LEVEL_CODE, `${label}.y1`);
+  if (!y1.ok) return err(y1.error);
+  const x2 = readInteger(value, "x2", LEVEL_CODE, `${label}.x2`);
+  if (!x2.ok) return err(x2.error);
+  const y2 = readInteger(value, "y2", LEVEL_CODE, `${label}.y2`);
+  if (!y2.ok) return err(y2.error);
+  if (x1.value < 0 || y1.value < 0 || x2.value < 0 || y2.value < 0) {
+    return err(`${LEVEL_CODE}: ${label} coordinates must be non-negative`);
+  }
+  if (x1.value > x2.value || y1.value > y2.value) {
+    return err(`${LEVEL_CODE}: ${label} region must be ordered`);
+  }
+  return ok({
+    kind: "tileRegion",
+    layer: layer.value,
+    x1: x1.value,
+    y1: y1.value,
+    x2: x2.value,
+    y2: y2.value,
+  });
+}
+
+function parseFeedbackNodeOverride(
+  value: unknown,
+  label: string,
+): Result<LevelFeedbackNodeOverride> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(
+    value,
+    ["label", "text", "effectPreset", "tileTarget"],
+    LEVEL_CODE,
+    label,
+  );
+  if (!keys.ok) return err(keys.error);
+
+  const labelValue = readOptionalString(value, "label", LEVEL_CODE, `${label}.label`);
+  if (!labelValue.ok) return err(labelValue.error);
+  const text = readOptionalString(value, "text", LEVEL_CODE, `${label}.text`);
+  if (!text.ok) return err(text.error);
+  const effectPreset = readOptionalString(
+    value,
+    "effectPreset",
+    LEVEL_CODE,
+    `${label}.effectPreset`,
+  );
+  if (!effectPreset.ok) return err(effectPreset.error);
+
+  let tileTarget: LevelFeedbackTileTarget | undefined;
+  if (value.tileTarget !== undefined) {
+    const parsed = parseFeedbackTileTarget(value.tileTarget, `${label}.tileTarget`);
+    if (!parsed.ok) return err(parsed.error);
+    tileTarget = parsed.value;
+  }
+
+  return ok({
+    ...(labelValue.value ? { label: labelValue.value } : {}),
+    ...(text.value ? { text: text.value } : {}),
+    ...(effectPreset.value ? { effectPreset: effectPreset.value } : {}),
+    ...(tileTarget ? { tileTarget } : {}),
+  });
+}
+
+function parseFeedbackPuzzle(
+  value: unknown,
+  label: string,
+): Result<LevelFeedbackPuzzle> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(value, ["beats", "nodes"], LEVEL_CODE, label);
+  if (!keys.ok) return err(keys.error);
+
+  let beats: LevelFeedbackBeat[] | undefined;
+  if (value.beats !== undefined) {
+    if (!Array.isArray(value.beats)) {
+      return err(`${LEVEL_CODE}: ${label}.beats must be an array`);
+    }
+    beats = [];
+    const seen = new Set<string>();
+    for (const [index, raw] of value.beats.entries()) {
+      const beatLabel = `${label}.beats[${index}]`;
+      if (!isRecord(raw)) {
+        return err(`${LEVEL_CODE}: ${beatLabel} must be an object`);
+      }
+      const beatKeys = rejectUnknownKeys(
+        raw,
+        ["id", "label", "nodes"],
+        LEVEL_CODE,
+        beatLabel,
+      );
+      if (!beatKeys.ok) return err(beatKeys.error);
+      const id = readNonEmptyString(raw, "id", LEVEL_CODE, `${beatLabel}.id`);
+      if (!id.ok) return err(id.error);
+      if (seen.has(id.value)) {
+        return err(`${LEVEL_CODE}: ${beatLabel}.id "${id.value}" is duplicated`);
+      }
+      seen.add(id.value);
+      const beatText = readNonEmptyString(
+        raw,
+        "label",
+        LEVEL_CODE,
+        `${beatLabel}.label`,
+      );
+      if (!beatText.ok) return err(beatText.error);
+      const nodes = readStringArray(raw, "nodes", LEVEL_CODE, `${beatLabel}.nodes`);
+      if (!nodes.ok) return err(nodes.error);
+      beats.push({ id: id.value, label: beatText.value, nodes: nodes.value });
+    }
+  }
+
+  let nodes: Record<string, LevelFeedbackNodeOverride> | undefined;
+  if (value.nodes !== undefined) {
+    if (!isRecord(value.nodes)) {
+      return err(`${LEVEL_CODE}: ${label}.nodes must be an object`);
+    }
+    nodes = {};
+    for (const [nodeId, raw] of Object.entries(value.nodes)) {
+      if (nodeId.trim() === "") {
+        return err(`${LEVEL_CODE}: ${label}.nodes keys must be non-empty`);
+      }
+      const parsed = parseFeedbackNodeOverride(
+        raw,
+        `${label}.nodes.${nodeId}`,
+      );
+      if (!parsed.ok) return err(parsed.error);
+      nodes[nodeId] = parsed.value;
+    }
+  }
+
+  return ok({
+    ...(beats ? { beats } : {}),
+    ...(nodes ? { nodes } : {}),
+  });
+}
+
+function parseLevelFeedback(value: unknown): Result<LevelFeedback> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: feedback must be an object`);
+  }
+  const keys = rejectUnknownKeys(value, ["puzzles"], LEVEL_CODE, "feedback");
+  if (!keys.ok) return err(keys.error);
+
+  let puzzles: Record<string, LevelFeedbackPuzzle> | undefined;
+  if (value.puzzles !== undefined) {
+    if (!isRecord(value.puzzles)) {
+      return err(`${LEVEL_CODE}: feedback.puzzles must be an object`);
+    }
+    puzzles = {};
+    for (const [puzzleId, raw] of Object.entries(value.puzzles)) {
+      if (puzzleId.trim() === "") {
+        return err(`${LEVEL_CODE}: feedback.puzzles keys must be non-empty`);
+      }
+      const parsed = parseFeedbackPuzzle(
+        raw,
+        `feedback.puzzles.${puzzleId}`,
+      );
+      if (!parsed.ok) return err(parsed.error);
+      puzzles[puzzleId] = parsed.value;
+    }
+  }
+
+  return ok({ ...(puzzles ? { puzzles } : {}) });
+}
+
 export function parseLevel(value: unknown): Result<LevelDocument> {
   if (!isRecord(value)) {
     return err(`${LEVEL_CODE}: level must be an object`);
@@ -321,6 +544,11 @@ export function parseLevel(value: unknown): Result<LevelDocument> {
     "puzzleIds",
   );
   if (!puzzleIds.ok) return err(puzzleIds.error);
+
+  const feedback = value.feedback === undefined
+    ? ok(undefined)
+    : parseLevelFeedback(value.feedback);
+  if (!feedback.ok) return err(feedback.error);
 
   if (!isRecord(value.map)) {
     return err(`${LEVEL_CODE}: map must be an object`);
@@ -427,6 +655,7 @@ export function parseLevel(value: unknown): Result<LevelDocument> {
       ...(coopNotes.value ? { notes: coopNotes.value } : {}),
     },
     ...(authoring ? { authoring } : {}),
+    ...(feedback.value ? { feedback: feedback.value } : {}),
   });
 }
 

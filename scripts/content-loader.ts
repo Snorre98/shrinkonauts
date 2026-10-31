@@ -7,6 +7,7 @@ import {
   parseLevel,
   parseLicences,
   parseMapping,
+  parseMaterials,
   parsePack,
   parsePuzzle,
   parseRoom,
@@ -21,6 +22,7 @@ import {
   type RoomDocument,
   type ThemeDocument,
 } from "../src/pack";
+import type { MaterialsDocument } from "../src/materials";
 import type { PuzzleDocument } from "../src/puzzle";
 import { parseSyllabus, type Syllabus } from "../src/syllabus";
 
@@ -78,6 +80,12 @@ export function loadContent(
     parseTheme(readJson(themePath)),
     themePath,
   );
+
+  let materials: MaterialsDocument | undefined;
+  if (pack.materials) {
+    const materialsPath = join(directory, pack.materials);
+    materials = expectOk(parseMaterials(readJson(materialsPath)), materialsPath);
+  }
 
   const syllabus = loadSyllabusFile(
     pack.syllabusId,
@@ -165,6 +173,7 @@ export function loadContent(
     dialogues,
     gates,
     puzzles,
+    ...(materials ? { materials } : {}),
   };
 }
 

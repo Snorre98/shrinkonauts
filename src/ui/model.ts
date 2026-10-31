@@ -1,4 +1,5 @@
 import type { DebriefPrompt, ObjectiveProgress } from "../curriculum";
+import type { FeedbackFrame } from "../feedback";
 import type { GateDocument } from "../pack";
 
 /**
@@ -14,6 +15,8 @@ export interface PlayerView {
   id: PlayerId;
   x: number;
   y: number;
+  width: number;
+  height: number;
   facing: -1 | 1;
   active: boolean;
   dashing: boolean;
@@ -34,21 +37,6 @@ export interface InteractionView {
   id: string;
   label: string;
   key?: string;
-}
-
-export interface DialogueChoiceView {
-  id: string;
-  text: string;
-}
-
-export interface DialogueView {
-  id: string;
-  speaker: string;
-  text: string;
-  portrait?: string;
-  nodeId: string;
-  choices: DialogueChoiceView[];
-  atEnd: boolean;
 }
 
 export interface GateFeedbackView {
@@ -130,11 +118,41 @@ export interface SettingsView {
   accessibility: { textScale: number; reducedMotion: boolean };
 }
 
+export interface WorldAnchorPoint {
+  x: number;
+  y: number;
+  direction?: number;
+}
+
+export interface WorldEntityView {
+  id: string;
+  /** World pixels, centre-bottom, matching the room renderer. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  anchors: Record<string, WorldAnchorPoint>;
+}
+
+export interface WorldView {
+  camera: CameraView;
+  /** Logical game resolution; the canvas may be scaled/letterboxed. */
+  viewport: { width: number; height: number };
+  tileSize: number;
+  players: Record<PlayerId, PlayerView>;
+  entities: Record<string, WorldEntityView>;
+  props: Record<string, WorldEntityView>;
+}
+
+export type SurfaceAction =
+  | { type: "confirm" }
+  | { type: "cancel" }
+  | { type: "choose"; choiceId: string };
+
 export interface RuntimeSnapshot {
   state:
     | "boot"
     | "level"
-    | "dialogue"
     | "gate"
     | "map"
     | "conceptLog"
@@ -147,12 +165,13 @@ export interface RuntimeSnapshot {
   roomId: string;
   players: Record<PlayerId, PlayerView>;
   camera: CameraView;
+  world: WorldView;
+  feedback: FeedbackFrame;
   abilities: string[];
   knownConceptIds: string[];
   interaction: InteractionView | null;
   checkpointId: string | null;
   activeP2: boolean;
-  dialogue: DialogueView | null;
   gate: GateView | null;
   debrief: DebriefView | null;
   map: MapView;

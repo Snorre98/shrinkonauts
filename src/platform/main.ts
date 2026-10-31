@@ -1,15 +1,15 @@
 import "../ui/styles.css";
-import { bootGame, type BootResult } from "../game/boot";
+import { bootApp, type AppController } from "../game/boot";
 
 declare global {
   interface Window {
-    __shrinkonauts?: BootResult;
+    __shrinkonauts?: AppController;
   }
 }
 
-bootGame()
-  .then((result) => {
-    window.__shrinkonauts = result;
+bootApp()
+  .then((app) => {
+    window.__shrinkonauts = app;
   })
   .catch((error: unknown) => {
     console.error("[shrinkonauts] boot failed", error);

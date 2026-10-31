@@ -1,4 +1,13 @@
 {
   "schemaVersion": "1.0",
-  "assets": []
+  "assets": [
+    {
+      "file": "shared/tiles/anatomy-atlas.svg",
+      "type": "image",
+      "source": "Generated in-repo placeholder",
+      "author": "Snorre",
+      "license": "CC0-1.0",
+      "modified": "M1.8 placeholder atlas; replace with final art"
+    }
+  ]
 }

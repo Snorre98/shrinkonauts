@@ -3,15 +3,54 @@ export { createGame, VIEWPORT } from "./create-game";
 export type { GameMountOptions } from "./create-game";
 export { KeyboardIntentSource } from "./input";
 export type { FrameInput } from "./input";
-export { emptyRuntimeInput } from "./runtime-port";
+export { emptyRuntimeInput, emptyPlayerUiActions } from "./runtime-port";
 export type {
+  EffectCancelPolicy,
+  EffectEasing,
   FrameActions,
   PlayerActionInput,
+  PlayerUiActions,
   RuntimeInput,
+  TileVisualOp,
+  TileVisualPort,
+  TileVisualValue,
+  WorldAnchorRef,
+  WorldDirection,
+  WorldEffectBinding,
+  WorldEffectLayer,
+  WorldEffectLifetime,
+  WorldEffectOperator,
+  WorldEffectPath,
+  WorldEffectPathKind,
+  WorldEffectPlan,
+  WorldEffectPort,
+  WorldEffectSource,
+  WorldEffectStage,
+  WorldEffectTiming,
+  WorldEffectVisual,
   WorldRuntime,
+  WorldTileTarget,
+  WorldVec2,
 } from "./runtime-port";
+export {
+  defaultEntityAnchors,
+  effectStageProgress,
+  entityAnchorPoint,
+  isMovementVisual,
+  simplifyForReducedMotion,
+} from "./effect-types";
+export { createTileVisualState, composeTileVisual } from "./tile-visuals";
+export type {
+  TileBaseVisual,
+  TileKey,
+  TileVisualComposition,
+  TileVisualRecord,
+  TileVisualState,
+} from "./tile-visuals";
 export { RoomScene } from "./room-scene";
 export type { RoomSceneConfig } from "./room-scene";
+export { HubScene } from "./hub-scene";
+export type { HubLaunchOptions, HubSceneConfig, HubSelectionView } from "./hub-scene";
 export { PLAYER_ASSET_IDS } from "./ids";
 export {
   cameraTarget,

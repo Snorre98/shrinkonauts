@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "1.0",
+  "id": "anatomy-reflex.materials",
+  "materials": {
+    "bone": {
+      "family": "mineral",
+      "palette": ["bone", "boneShadow"],
+      "edge": "hard",
+      "patternId": "bone-cortex",
+      "autotile": "blob47",
+      "tint": "bone"
+    },
+    "nerve": {
+      "family": "organic",
+      "palette": ["nerve", "joint"],
+      "edge": "soft",
+      "patternId": "nerve-fibers",
+      "direction": 0.35,
+      "autotile": "edge",
+      "variantSet": "nerve-edge",
+      "tint": "nerve"
+    },
+    "muscle": {
+      "family": "organic",
+      "palette": ["muscle", "bone"],
+      "edge": "soft",
+      "patternId": "muscle-fibers",
+      "direction": 0,
+      "autotile": "edge",
+      "tint": "muscle"
+    },
+    "membrane": {
+      "family": "organic",
+      "palette": ["muted", "bone"],
+      "edge": "soft",
+      "patternId": "membrane-cells",
+      "autotile": "corner",
+      "tint": "muted"
+    }
+  },
+  "patterns": {
+    "bone-cortex": {
+      "family": "mineral",
+      "source": {
+        "kind": "procedural",
+        "generator": "cellular",
+        "seed": 12
+      },
+      "space": "world",
+      "scale": 0.75,
+      "contrast": 0.35
+    },
+    "nerve-fibers": {
+      "family": "organic",
+      "source": {
+        "kind": "procedural",
+        "generator": "fibers",
+        "seed": 7
+      },
+      "space": "world",
+      "scale": 0.5,
+      "direction": 0.35,
+      "contrast": 0.4
+    },
+    "muscle-fibers": {
+      "family": "organic",
+      "source": {
+        "kind": "procedural",
+        "generator": "fibers",
+        "seed": 9
+      },
+      "space": "world",
+      "scale": 0.75,
+      "direction": 0,
+      "contrast": 0.38
+    },
+    "membrane-cells": {
+      "family": "organic",
+      "source": {
+        "kind": "procedural",
+        "generator": "cellular",
+        "seed": 21
+      },
+      "space": "world",
+      "scale": 0.6,
+      "contrast": 0.2
+    }
+  },
+  "variantSets": {
+    "nerve-edge": {
+      "id": "nerve-edge",
+      "materialId": "nerve",
+      "rule": "edge",
+      "atlas": "tile.anatomy.atlas",
+      "frames": {
+        "0": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-0" },
+        "1": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-1" },
+        "2": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-2" },
+        "3": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-3" },
+        "4": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-4" },
+        "5": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-5" },
+        "6": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-6" },
+        "7": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-7" },
+        "8": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-8" },
+        "9": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-9" },
+        "10": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-10" },
+        "11": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-11" },
+        "12": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-12" },
+        "13": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-13" },
+        "14": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-14" },
+        "15": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-15" }
+      },
+      "fallback": { "kind": "atlas", "assetId": "tile.anatomy.atlas", "frame": "mask-0" }
+    }
+  }
+}

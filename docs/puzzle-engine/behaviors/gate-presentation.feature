@@ -1,6 +1,9 @@
 # language: en
 # Source: ADR-0003
 Feature: Gate and prop presentation state
+  Implementation status: partial. Feedback state projection is implemented;
+  authored open/closed sprite swaps and physical gate bodies are deferred.
+
   The room scene projects simulation state without owning puzzle logic.
   Normative per ADR-0003. A presentation is valid when it matches the current
   gate/prop state and adds no simulation delay.

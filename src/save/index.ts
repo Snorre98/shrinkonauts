@@ -1,11 +1,21 @@
 import type { LearningEvent } from "../curriculum";
 import type { ProgressionSnapshot } from "../progression";
-import type { PuzzleRunState } from "../puzzle";
+import type { PropRunState, PuzzleRunState } from "../puzzle";
 
-export const RUN_SCHEMA_VERSION = "2.0";
+export const RUN_SCHEMA_VERSION = "2.1";
 export const SAVE_SCHEMA_VERSION = "2.0";
 export const RUN_STORAGE_KEY = "shrinkonauts.run";
+export const RUN_STORAGE_KEY_PREFIX = "shrinkonauts.run.";
 export const SETTINGS_STORAGE_KEY = "shrinkonauts.settings";
+
+/**
+ * Every pack owns its own run slot. The legacy key is kept as a migration
+ * source for saves written before M1.9 and is removed after a successful
+ * migration.
+ */
+export function runStorageKey(packId: string): string {
+  return `${RUN_STORAGE_KEY_PREFIX}${packId}`;
+}
 
 /** Structural copy of the audio module's storage seam, owned by save. */
 export interface SaveAudioStorage {
@@ -30,9 +40,17 @@ export interface BodySnapshot {
 
 export interface PropSnapshot {
   bodyId: string;
-  state: "free" | "carried" | "placed" | "docked";
+  state: PropRunState;
   carriedBy: "p1" | "p2" | null;
   placedOn: string | null;
+}
+
+export interface ConversationSnapshot {
+  surfaceId: string;
+  dialogueId: string;
+  nodeId: string;
+  owner: "p1" | "p2";
+  entityId: string;
 }
 
 export interface RunSnapshot {
@@ -58,6 +76,9 @@ export interface RunSnapshot {
     puzzles: Record<string, PuzzleRunState>;
   };
   audio: { muted: boolean };
+  /** Conversation sessions survive a reload; feedback ECS state does not. */
+  conversations?: ConversationSnapshot[];
+  /** Legacy single-dialogue save; migrated to one P1 conversation on load. */
   dialogue?: { dialogueId: string; nodeId: string };
 }
 
@@ -207,7 +228,8 @@ function isPropSnapshot(value: unknown): value is PropSnapshot {
     (value.state === "free" ||
       value.state === "carried" ||
       value.state === "placed" ||
-      value.state === "docked") &&
+      value.state === "docked" ||
+      value.state === "cleared") &&
     (value.carriedBy === null ||
       value.carriedBy === "p1" ||
       value.carriedBy === "p2") &&
@@ -225,6 +247,21 @@ function isPuzzleState(value: unknown): value is PuzzleRunState {
     isRecord(value.counters) &&
     Array.isArray(value.pulses) &&
     (value.lastError === null || typeof value.lastError === "string")
+  );
+}
+
+function isConversationSnapshot(value: unknown): value is ConversationSnapshot {
+  return (
+    isRecord(value) &&
+    typeof value.surfaceId === "string" &&
+    value.surfaceId !== "" &&
+    typeof value.dialogueId === "string" &&
+    value.dialogueId !== "" &&
+    typeof value.nodeId === "string" &&
+    value.nodeId !== "" &&
+    (value.owner === "p1" || value.owner === "p2") &&
+    typeof value.entityId === "string" &&
+    value.entityId !== ""
   );
 }
 
@@ -282,6 +319,19 @@ function isRunSnapshot(value: unknown): value is RunSnapshot {
   if (!isRecord(value.audio) || typeof value.audio.muted !== "boolean") {
     return false;
   }
+  if (value.conversations !== undefined) {
+    if (!Array.isArray(value.conversations)) return false;
+    if (!value.conversations.every(isConversationSnapshot)) return false;
+  }
+  if (value.dialogue !== undefined) {
+    if (
+      !isRecord(value.dialogue) ||
+      typeof value.dialogue.dialogueId !== "string" ||
+      typeof value.dialogue.nodeId !== "string"
+    ) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -318,7 +368,7 @@ export interface SaveModule {
     packVersion?: string,
     contentVersion?: string,
   ): boolean;
-  clearRun(): void;
+  clearRun(packId?: string): void;
   loadSettings(): GameSettings;
 }
 
@@ -382,21 +432,60 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
     return settings;
   }
 
+  function readStoredRun(packId?: string): { raw: string | null; unavailable: boolean } {
+    const key = packId === undefined ? RUN_STORAGE_KEY : runStorageKey(packId);
+    let raw: string | null;
+    let legacy: string | null;
+    try {
+      raw = storage?.getItem(key) ?? null;
+      legacy = storage?.getItem(RUN_STORAGE_KEY) ?? null;
+    } catch {
+      return { raw: null, unavailable: true };
+    }
+    if (raw || packId === undefined) {
+      return { raw, unavailable: false };
+    }
+    if (!legacy) {
+      return { raw: null, unavailable: false };
+    }
+
+    // Migrate a pre-M1.9 single-slot save once, but only when it belongs to
+    // the pack being loaded.
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(legacy);
+    } catch {
+      // Return the malformed payload so `loadRun` can report INVALID_SAVE.
+      return { raw: legacy, unavailable: false };
+    }
+    if (!isRecord(parsed) || parsed.packId !== packId) {
+      // Return the legacy payload so `loadRun` can report PACK_MISMATCH;
+      // do not migrate it into the wrong slot.
+      return { raw: legacy, unavailable: false };
+    }
+    try {
+      storage?.setItem(key, legacy);
+      storage?.removeItem?.(RUN_STORAGE_KEY);
+    } catch {
+      // Keep the legacy copy if the new slot cannot be written.
+    }
+    return { raw: legacy, unavailable: false };
+  }
+
   function loadRun(
     packId?: string,
     packVersion?: string,
     contentVersion?: string,
   ): RunLoadResult {
-    let raw: string | null;
-    try {
-      raw = storage?.getItem(RUN_STORAGE_KEY) ?? null;
-    } catch {
+    const stored = readStoredRun(packId);
+    if (stored.unavailable) {
       return {
         ok: false,
         reason: "INVALID_SAVE",
         message: "save storage is unavailable",
       };
     }
+    const raw = stored.raw;
     if (!raw) {
       return { ok: false, reason: "NO_SAVE", message: "no saved run" };
     }
@@ -517,7 +606,7 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
     saveRun(run) {
       try {
         storage?.setItem(
-          RUN_STORAGE_KEY,
+          runStorageKey(run.packId),
           JSON.stringify({ ...run, savedAt: now().toISOString() }),
         );
       } catch {
@@ -528,9 +617,25 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
     hasRun(packId, packVersion, contentVersion) {
       return loadRun(packId, packVersion, contentVersion).ok;
     },
-    clearRun() {
+    clearRun(packId) {
       try {
-        storage?.removeItem?.(RUN_STORAGE_KEY);
+        if (packId === undefined) {
+          storage?.removeItem?.(RUN_STORAGE_KEY);
+          return;
+        }
+        storage?.removeItem?.(runStorageKey(packId));
+        // Do not leave a stale legacy copy that could be migrated back.
+        const legacy = storage?.getItem(RUN_STORAGE_KEY) ?? null;
+        if (legacy) {
+          try {
+            const parsed: unknown = JSON.parse(legacy);
+            if (isRecord(parsed) && parsed.packId === packId) {
+              storage?.removeItem?.(RUN_STORAGE_KEY);
+            }
+          } catch {
+            // Leave malformed legacy data alone; it cannot be migrated.
+          }
+        }
       } catch {
         // Ignore.
       }

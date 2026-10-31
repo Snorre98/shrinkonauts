@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "id": "room-nerve-forest",
   "title": "Nerve Forest",
   "width": 40,
@@ -33,6 +33,37 @@
       "##################    ##################"
     ]
   },
+  "tileMaterials": [
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                 nnnn                 b",
+    "b               nn    nn               b",
+    "bbbbbbbbbbbbbbbbbb    bbbbbbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbb    bbbbbbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbb    bbbbbbbbbbbbbbbbbb"
+  ],
+  "tileMaterialLegend": {
+    "b": { "materialId": "bone", "autotile": "blob47" },
+    "n": { "materialId": "nerve", "autotile": "edge" }
+  },
+  "defaultMaterialId": "bone",
+  "materialSeed": 42,
   "background": {
     "id": "bg.nerve_forest",
     "layers": [
@@ -41,7 +72,15 @@
         "depth": -40,
         "parallaxX": 0.05,
         "parallaxY": 0.02,
-        "fit": "cover"
+        "fit": "cover",
+        "materialId": "nerve",
+        "pattern": {
+          "patternId": "nerve-fibers",
+          "space": "screen",
+          "scale": 0.6,
+          "opacity": 0.14,
+          "blend": "overlay"
+        }
       },
       {
         "assetId": "bg.nerve_forest.far",
@@ -55,7 +94,15 @@
         "depth": -20,
         "parallaxX": 0.45,
         "parallaxY": 0.2,
-        "fit": "tile"
+        "fit": "tile",
+        "materialId": "bone",
+        "pattern": {
+          "patternId": "bone-cortex",
+          "space": "world",
+          "scale": 0.75,
+          "opacity": 0.12,
+          "blend": "overlay"
+        }
       },
       {
         "assetId": "bg.nerve_forest.near",
@@ -158,6 +205,9 @@
       "components": {
         "gate": {
           "gateId": "gate-threshold"
+        },
+        "anchors": {
+          "center": { "x": 18, "y": 18 }
         }
       }
     },
@@ -171,6 +221,9 @@
       "components": {
         "gate": {
           "gateId": "gate-behind"
+        },
+        "anchors": {
+          "center": { "x": 18, "y": 18 }
         }
       }
     },
@@ -184,6 +237,9 @@
       "components": {
         "gate": {
           "gateId": "gate-exit"
+        },
+        "anchors": {
+          "center": { "x": 18, "y": 18 }
         }
       }
     },

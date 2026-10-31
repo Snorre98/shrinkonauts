@@ -9,10 +9,10 @@
 **Win:** `gateOpen gate-muscle`
 **Transition:** [`ADR-0046`](../../../../../docs/adr-m1.5/0046-level-transitions.md)
 
-> The engine capabilities that remove the deviations recorded below —
-> physical gates, gate/prop presentation, prop unlock/clear, conditional links,
-> per-level debrief prompts, and side-level map travel — are planned in
-> [`docs/puzzle-engine/`](../../../../../docs/puzzle-engine/README.md).
+> The feedback/effect layer now provides authored labels, beats, persistent
+> state surfaces, socket-anchored effects, tile visuals, and the ACh clearance
+> state. Physical gate collision, final art, and final audio remain out of
+> scope; see [`docs/puzzle-engine/`](../../../../../docs/puzzle-engine/README.md).
 
 ## Player-facing goal
 
@@ -63,11 +63,22 @@ spawn (checkpoint-muscle-entry)
 6. `response-relay` requires **both** `ca-gate` and the bound receptor. When
    both are active it opens `muscle-gate`, which is latched. The win predicate
    is `gateOpen muscle-gate`.
-7. `ache-timer` elapses after the response, resets the Ca²⁺ timer, and closes
-   `ca-gate`. `muscle-gate` stays latched. The timer cannot undo the solve.
-8. Reset clears the graph, returns the packet to the dock, and returns the
+7. `ache-timer` elapses after the response, resets the Ca²⁺ timer, closes
+   `ca-gate`, and clears the ACh packet. `muscle-gate` stays latched. The timer
+   cannot undo the solve.
+8. The clearance link is `ache-timer → ach-packet` type `clear`. The packet
+   enters `cleared`: its body and collision are removed and its sprite is
+   hidden, while the persistent `ACh packet cleared` surface remains.
+9. Reset clears the graph, restores the packet to the dock, and returns the
    Ca²⁺ gate, receptor, timers, and relay to their initial state. Players stay
    where they are; this is the existing M1.5 reset behaviour.
+
+AChE open-before-close is the recovery invariant: `evaluateGates` checks `open`
+before `close`, so an elapsed Ca²⁺ timer always opens the gate. AChE resets the
+Ca²⁺ timer and closes the gate only as the clearance beat; pressing the plate
+again re-arms the window. If the receptor was bound before the window opened,
+the bound receptor remains the response input and the later Ca²⁺ window can
+still complete the relay. Reset restores the cleared packet.
 
 The relay is the implementation safeguard. Because the engine's puzzle gates
 are logic/visual state and have no collision, `ca-gate` cannot physically block
@@ -96,8 +107,9 @@ trace do.
 | Tether | `off`; puzzle geometry spans about 768 × 40 px, inside 1280 × 720 |
 
 Visible pads and labels are `scanTarget` entities aligned with the puzzle
-sensors. The engine does not render plate/zone sensor rects or animate puzzle
-gates, so these entities are the player-facing surface.
+sensors. The engine does not render plate/zone sensor rects, and puzzle gates
+have no collision bodies. Gate state now projects to persistent surfaces and
+cosmetic bursts; these are presentation, not physical doors.
 
 ## Evidence and debrief
 
@@ -153,26 +165,25 @@ pause/close, `M` mute.
 
 ## Authoring notes and deviations
 
-- `puzzle-endplate-ferry` uses only M1.5 node/link types: plate, timer, gate,
-  prop, receptor, pulseSource, relay. No engine or schema change for the puzzle
-  itself.
+- `puzzle-endplate-ferry` is now a 1.1 puzzle document because it uses the
+  `clear` link action. The engine feedback layer is content-driven by the
+  `feedback` block in `level.json`; no per-level runtime branch was added.
 - The Ca²⁺ gate is logic/visual state, not a collision body. The relay enforces
   the Ca²⁺ requirement for the win, but the player can walk across the cleft
   before the gate opens. The dialogue and hints state the intended order; the
   README records the gap.
-- The AChE timer resets the Ca²⁺ timer and closes the Ca²⁺ gate. The engine has
-  no prop-clear/despawn action, so the docked ACh packet sprite remains on the
-  nicotinic receptor. ACh clearance is taught by the dialogue, hints, and
-  debrief, not by a disappearing sprite.
-- A pulse is broadcast to both receptors. The runtime suppresses the
-  empty-receptor "rejects that shape" toast so a correct pulse is not
-  contradicted by the empty wrong socket. A rejection with a packet on the
-  wrong receptor still increments `wrongReceptor` and shows the feedback.
-- Prop prompts and toasts use the room entity label, so the HUD says "ACh
-  packet (signal token)" and "nicotinic receptor" rather than the generic
-  "tracer" copy.
-- `ca-gate` and `muscle-gate` are `puzzleGate` entities without collision or
-  animation. The lever is decor; the exit is the actual level transition.
+- The AChE timer resets the Ca²⁺ timer, closes the Ca²⁺ gate, and clears the ACh
+  packet. The packet body/collision are removed and the sprite hides; the
+  persistent `ACh packet cleared` surface and the `fx.ach.dissolve` ring/burst
+  remain visible. Reset restores the packet at the dock.
+- A pulse is broadcast to both receptors. The wrong receptor can emit an
+  explicit empty/wrong-socket cue; the nicotinic bind is a separate persistent
+  state, so the two outcomes are not collapsed into one toast.
+- Puzzle labels come from the level feedback block, so the HUD uses "ACh packet"
+  and "Nicotinic receptor" rather than the room entity's longer fallback label.
+- `ca-gate` and `muscle-gate` are `puzzleGate` entities without collision. Gate
+  state projects to persistent surfaces and cosmetic bursts/waves. The lever is
+  decor; the exit is the actual level transition.
 - The exit points to `05-reflex-core`, which is not authored in this chunk.
   `pack:validate` reports the expected forward reference. The pack's
   `endLevelId` is 04, so finishing the 04 debrief completes the slice even
@@ -194,15 +205,24 @@ pause/close, `M` mute.
   runtime source; the vault syllabus and the EV-5/EV-6 numbering conflict were
   not edited.
 
+## M1.8 material proof
+
+The room is fully materialized for M1.8: muscle walls/floor use `edge`
+autotiling and the entrance strip uses membrane `corner` autotiling. The
+`muscle-gate` carries a world-space `muscle-fibers` overlay that shares phase
+with the muscle floor. The near background layer uses the same pattern in
+world space. Materials are visual only; collision comes from `layers.tiles`.
+Human visual review is pending.
+
 ## Remaining implementation gaps (M2 chunk boundary)
 
 - Full M2 is not implemented. `05-reflex-core`, the Silicon fixture,
   `01-bone-gate`, and `02-joint-chamber` remain unauthored.
 - The 04 exit / next-level / map-edge references to `05-reflex-core` are
   expected forward-reference warnings.
-- The Ca²⁺ bridge has no physical collision; the ACh packet has no visual
-  clear; the shared `prompt-obj-2` means 03 shows OBJ-2 as partial. These are
-  recorded deviations, not hidden claims.
+- The Ca²⁺ bridge has no physical collision; the ACh packet now has a visual
+  clear plus a persistent cleared surface. The shared `prompt-obj-2` still means
+  03 shows OBJ-2 as partial. These are recorded deviations, not hidden claims.
 - Human playtesting and the optional advanced NERV-02#3 debrief are pending.
   The required dialogue includes the receptor-specificity line as optional
   reading; it is not a required assessment.

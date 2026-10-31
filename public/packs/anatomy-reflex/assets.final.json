@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "id": "anatomy-reflex.final",
   "assets": {
     "sprite.player.p1": {
@@ -16,6 +16,36 @@
       "type": "image",
       "placeholder": true,
       "license": "Placeholder until final art"
+    },
+    "tile.anatomy.atlas": {
+      "type": "atlas",
+      "src": "shared/tiles/anatomy-atlas.svg",
+      "placeholder": true,
+      "width": 192,
+      "height": 128,
+      "license": "Placeholder in-repo (CC0-1.0)",
+      "regions": {
+        "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
+        "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
+        "mask-2": { "x": 64, "y": 0, "width": 32, "height": 32 },
+        "mask-3": { "x": 96, "y": 0, "width": 32, "height": 32 },
+        "mask-4": { "x": 128, "y": 0, "width": 32, "height": 32 },
+        "mask-5": { "x": 160, "y": 0, "width": 32, "height": 32 },
+        "mask-6": { "x": 0, "y": 32, "width": 32, "height": 32 },
+        "mask-7": { "x": 32, "y": 32, "width": 32, "height": 32 },
+        "mask-8": { "x": 64, "y": 32, "width": 32, "height": 32 },
+        "mask-9": { "x": 96, "y": 32, "width": 32, "height": 32 },
+        "mask-10": { "x": 128, "y": 32, "width": 32, "height": 32 },
+        "mask-11": { "x": 160, "y": 32, "width": 32, "height": 32 },
+        "mask-12": { "x": 0, "y": 64, "width": 32, "height": 32 },
+        "mask-13": { "x": 32, "y": 64, "width": 32, "height": 32 },
+        "mask-14": { "x": 64, "y": 64, "width": 32, "height": 32 },
+        "mask-15": { "x": 96, "y": 64, "width": 32, "height": 32 },
+        "mask-69": { "x": 128, "y": 64, "width": 32, "height": 32 },
+        "mask-84": { "x": 160, "y": 64, "width": 32, "height": 32 },
+        "mask-85": { "x": 0, "y": 96, "width": 32, "height": 32 },
+        "mask-255": { "x": 32, "y": 96, "width": 32, "height": 32 }
+      }
     },
     "bg.nerve_forest.sky": {
       "type": "background",
@@ -154,6 +184,10 @@
       "placeholder": true
     },
     "audio.cue.unlock": {
+      "type": "audio",
+      "placeholder": true
+    },
+    "audio.cue.wrong": {
       "type": "audio",
       "placeholder": true
     },

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "packs": [
+    {
+      "id": "anatomy-reflex",
+      "path": "anatomy-reflex/",
+      "status": "available",
+      "online": true,
+      "order": 10,
+      "title": "Anatomy: The Reflex Arc",
+      "subtitle": "Nervous system",
+      "description": "Shrink into the nerve forest, drive a signal past threshold, cross the neuromuscular junction, and reach the muscle."
+    },
+    {
+      "id": "silicon-reflex",
+      "path": "silicon-reflex/",
+      "status": "coming-soon",
+      "online": false,
+      "order": 20,
+      "title": "Silicon: Interrupt Loop",
+      "subtitle": "Hardware transfer",
+      "description": "A one-room transfer fixture: sensor, interrupt line, controller, CPU, actuator. Arrives with the M2 content pass."
+    }
+  ]
+}

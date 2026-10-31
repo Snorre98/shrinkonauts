@@ -1,7 +1,17 @@
 import Phaser from "phaser";
 import type { AssetsModule, ResolvedAsset } from "../assets";
-import type { RoomBackgroundLayer, RoomDocument, ThemeDocument } from "../pack";
-import { roomPixelHeight, roomPixelWidth } from "./simulation";
+import {
+  resolveMaterialBinding,
+  type MaterialCatalog,
+  type PatternProvider,
+  type ResolvedMaterialBinding,
+} from "../materials";
+import type { RoomBackgroundLayer, ThemeDocument } from "../pack";
+import {
+  createPatternOverlay,
+  patternTilePosition,
+  type PatternOverlay,
+} from "./pattern-layer";
 import { resolveTexture } from "./textures";
 
 interface ImageLayerView {
@@ -55,18 +65,76 @@ function textureSize(
   };
 }
 
+export interface LayeredBackgroundOptions {
+  materials?: MaterialCatalog;
+  patterns?: PatternProvider;
+}
+
+function backgroundBinding(
+  layer: RoomBackgroundLayer,
+  catalog: MaterialCatalog | undefined,
+): ResolvedMaterialBinding | undefined {
+  if (!catalog || !layer.materialId) return undefined;
+  const pattern = layer.pattern;
+  const resolved = resolveMaterialBinding(catalog, {
+    materialId: layer.materialId,
+    ...(pattern ? { patternId: pattern.patternId } : {}),
+    ...(pattern
+      ? {
+          pattern: {
+            ...(pattern.space ? { space: pattern.space } : {}),
+            ...(pattern.scale !== undefined ? { scale: pattern.scale } : {}),
+            ...(pattern.rotation !== undefined
+              ? { rotation: pattern.rotation }
+              : {}),
+            ...(pattern.offset ? { offset: pattern.offset } : {}),
+            ...(pattern.seed !== undefined ? { seed: pattern.seed } : {}),
+            ...(pattern.opacity !== undefined
+              ? { opacity: pattern.opacity }
+              : {}),
+            ...(pattern.blend ? { blend: pattern.blend } : {}),
+          },
+        }
+      : {}),
+  });
+  return resolved.ok ? resolved.value : undefined;
+}
+
+function tintFor(
+  theme: ThemeDocument,
+  binding: ResolvedMaterialBinding | undefined,
+  fallback: string | undefined,
+): string | undefined {
+  const token =
+    binding?.tint ??
+    binding?.material.tint ??
+    binding?.material.palette[0];
+  if (token) {
+    return theme.palette[token as keyof ThemeDocument["palette"]];
+  }
+  return fallback;
+}
+
 export class LayeredBackground {
   private readonly views: LayerView[] = [];
+  private readonly patternOverlays: PatternOverlay[] = [];
+  private readonly catalog?: MaterialCatalog;
+  private readonly patterns?: PatternProvider;
 
   constructor(
     scene: Phaser.Scene,
-    room: RoomDocument,
+    layers: readonly RoomBackgroundLayer[],
+    roomWidth: number,
+    roomHeight: number,
     theme: ThemeDocument,
     assets: AssetsModule,
+    options: LayeredBackgroundOptions = {},
   ) {
     const camera = scene.cameras.main;
+    this.catalog = options.materials;
+    this.patterns = options.patterns;
 
-    for (const layer of room.background.layers) {
+    for (const layer of layers) {
       const asset: ResolvedAsset = assets.image(layer.assetId);
       const key = resolveTexture(scene, asset, theme.fonts.ui);
       if (!key) {
@@ -94,6 +162,40 @@ export class LayeredBackground {
         }
 
         this.views.push({ kind: "tile", layer, object });
+
+        const binding = backgroundBinding(layer, this.catalog);
+        if (binding?.pattern && this.patterns) {
+          const overlay = createPatternOverlay(
+            scene,
+            assets,
+            this.patterns,
+            theme,
+            binding,
+            {
+              x: 0,
+              y: 0,
+              width: scene.scale.width,
+              height: scene.scale.height,
+              depth: layer.depth + 0.01,
+              space: binding.pattern.space,
+              scale: binding.pattern.scale,
+              offset: binding.pattern.offset,
+              opacity: binding.pattern.opacity,
+              blend: binding.pattern.blend,
+              ...(tintFor(theme, binding, layer.tint)
+                ? { tint: tintFor(theme, binding, layer.tint) }
+                : {}),
+              parallaxX:
+                binding.pattern.space === "world" ? layer.parallaxX : 0,
+              parallaxY:
+                binding.pattern.space === "world" ? layer.parallaxY : 0,
+              scrollFactorX: 0,
+              scrollFactorY: 0,
+              cull: false,
+            },
+          );
+          if (overlay) this.patternOverlays.push(overlay);
+        }
         continue;
       }
 
@@ -115,8 +217,6 @@ export class LayeredBackground {
 
       const size = textureSize(scene, key);
       if (size.width > 0 && size.height > 0) {
-        const roomWidth = roomPixelWidth(room);
-        const roomHeight = roomPixelHeight(room);
         const coverScale = Math.max(
           roomWidth / size.width,
           roomHeight / size.height,
@@ -148,6 +248,43 @@ export class LayeredBackground {
       }
 
       this.views.push({ kind: "image", layer, object });
+
+      const binding = backgroundBinding(layer, this.catalog);
+      if (binding?.pattern && this.patterns) {
+        const screenSpace = binding.pattern.space === "screen";
+        const width = screenSpace ? scene.scale.width : object.displayWidth;
+        const height = screenSpace ? scene.scale.height : object.displayHeight;
+        const overlay = createPatternOverlay(
+          scene,
+          assets,
+          this.patterns,
+          theme,
+          binding,
+          {
+            x: screenSpace ? 0 : object.x - width / 2,
+            y: screenSpace ? 0 : object.y - height / 2,
+            width,
+            height,
+            depth: layer.depth + 0.01,
+            space: binding.pattern.space,
+            scale: binding.pattern.scale,
+            offset: binding.pattern.offset,
+            opacity: binding.pattern.opacity,
+            blend: binding.pattern.blend,
+            ...(tintFor(theme, binding, layer.tint)
+              ? { tint: tintFor(theme, binding, layer.tint) }
+              : {}),
+            parallaxX:
+              binding.pattern.space === "world" ? layer.parallaxX : 0,
+            parallaxY:
+              binding.pattern.space === "world" ? layer.parallaxY : 0,
+            scrollFactorX: screenSpace ? 0 : layer.parallaxX,
+            scrollFactorY: screenSpace ? 0 : layer.parallaxY,
+            cull: false,
+          },
+        );
+        if (overlay) this.patternOverlays.push(overlay);
+      }
     }
   }
 
@@ -160,9 +297,28 @@ export class LayeredBackground {
       view.object.tilePositionX = camera.scrollX * view.layer.parallaxX;
       view.object.tilePositionY = camera.scrollY * view.layer.parallaxY;
     }
+
+    for (const overlay of this.patternOverlays) {
+      const position = patternTilePosition(
+        overlay.options.space,
+        overlay.baseX,
+        overlay.baseY,
+        overlay.options.scale,
+        overlay.options.offset,
+        camera.scrollX,
+        camera.scrollY,
+        overlay.options.parallaxX ?? 0,
+        overlay.options.parallaxY ?? 0,
+      );
+      overlay.sprite.setTilePosition(position.x, position.y);
+    }
   }
 
   destroy(): void {
+    for (const overlay of this.patternOverlays) {
+      overlay.sprite.destroy();
+    }
+    this.patternOverlays.length = 0;
     for (const view of this.views) {
       view.object.destroy();
     }

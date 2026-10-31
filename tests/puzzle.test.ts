@@ -103,6 +103,57 @@ describe("puzzle runtime", () => {
     const tick = runtime.tickResult(emptySnapshot());
     expect(tick.solvedNow).toBe(false);
   });
+
+  it("applies propCleared events to the replay mock world", () => {
+    const document: PuzzleDocument = {
+      schemaVersion: "1.1",
+      id: "fixture-replay-clear",
+      title: "Replay Clear Fixture",
+      objectiveIds: [],
+      conceptIds: [],
+      activation: { mode: "roomStart" },
+      tether: "off",
+      nodes: [
+        {
+          id: "plate",
+          type: "plate",
+          rect: { x: 0, y: 0, width: 64, height: 64 },
+          detects: ["player"],
+          minimum: 1,
+          countCarried: false,
+        },
+        { id: "timer", type: "timer", durationTicks: 2, repeat: false },
+        {
+          id: "packet",
+          type: "prop",
+          entityId: "packet",
+          tags: ["packet"],
+          shape: "triangle",
+          spawn: { x: 100, y: 100 },
+        },
+      ],
+      links: [
+        { from: "plate", to: "timer", type: "start" },
+        { from: "timer", to: "packet", type: "clear" },
+      ],
+      win: { type: "propState", propId: "packet", state: "cleared" },
+      reset: { props: ["packet"], nodes: ["plate", "timer", "packet"] },
+      evidence: { onSolve: [], counters: [] },
+      rewards: {},
+      solution: [
+        { action: "move", actor: "p1", x: 20, y: 20 },
+        { action: "wait", ticks: 3 },
+      ],
+      hints: [],
+    };
+
+    const result = replaySolution(document);
+    expect(result.ok).toBe(true);
+    expect(result.events).toContainEqual(
+      expect.objectContaining({ type: "propCleared", propId: "packet" }),
+    );
+    expect(result.state.nodes["packet"]?.state).toBe("cleared");
+  });
 });
 
 describe("puzzle validation", () => {

@@ -1,4 +1,11 @@
 import type { AssetId } from "../assets";
+import type {
+  MaterialBinding,
+  MaterialId,
+  MaterialsDocument,
+  PatternBinding,
+  TileMaterialRule,
+} from "../materials";
 import type { PuzzleDocument } from "../puzzle";
 import type { Syllabus } from "../syllabus";
 
@@ -15,6 +22,8 @@ export interface RoomBackgroundLayer {
   tint?: string;
   opacity?: number;
   blend?: BackgroundBlend;
+  materialId?: MaterialId;
+  pattern?: PatternBinding;
 }
 
 export interface RoomSpawn {
@@ -75,12 +84,21 @@ export interface EntityGateComponent {
   gateId: string;
 }
 
+export interface EntityAnchorPoint {
+  x: number;
+  y: number;
+  /** Direction in radians; used by Phase 6 effect emitters. */
+  direction?: number;
+}
+
 export interface RoomEntityComponents {
   body?: EntityBodyComponent;
   prop?: EntityPropComponent;
   receptor?: EntityReceptorComponent;
   pulseSource?: EntityPulseSourceComponent;
   gate?: EntityGateComponent;
+  anchors?: Record<string, EntityAnchorPoint>;
+  material?: MaterialBinding;
 }
 
 export interface RoomEntity {
@@ -138,6 +156,11 @@ export interface RoomDocument {
   layers: {
     tiles: string[];
   };
+  /** Optional visual material grid; `layers.tiles` still owns collision. */
+  tileMaterials?: string[];
+  tileMaterialLegend?: Record<string, TileMaterialRule>;
+  defaultMaterialId?: MaterialId;
+  materialSeed?: number;
   background: {
     id: AssetId;
     layers: RoomBackgroundLayer[];
@@ -184,6 +207,8 @@ export interface ThemeDocument {
     fontScale: number;
     reducedMotion: boolean;
     assets: Record<string, AssetId>;
+    materials?: Record<string, MaterialId>;
+    patterns?: Record<string, PatternBinding>;
   };
   audio?: {
     music?: AssetId;
@@ -219,6 +244,8 @@ export interface PackDocument {
   theme: string;
   mapping: string;
   licenses: string;
+  /** Optional pack-level materials document path. */
+  materials?: string;
   assetManifests: PackAssetManifests;
   assets?: PackAssetIndex;
   ageRating?: string;
@@ -273,6 +300,39 @@ export interface LevelAuthoring {
   notes?: string;
 }
 
+export type LevelFeedbackTileTarget =
+  | { kind: "tile"; layer: string; x: number; y: number }
+  | {
+      kind: "tileRegion";
+      layer: string;
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+    };
+
+export interface LevelFeedbackBeat {
+  id: string;
+  label: string;
+  nodes: string[];
+}
+
+export interface LevelFeedbackNodeOverride {
+  label?: string;
+  text?: string;
+  effectPreset?: string;
+  tileTarget?: LevelFeedbackTileTarget;
+}
+
+export interface LevelFeedbackPuzzle {
+  beats?: LevelFeedbackBeat[];
+  nodes?: Record<string, LevelFeedbackNodeOverride>;
+}
+
+export interface LevelFeedback {
+  puzzles?: Record<string, LevelFeedbackPuzzle>;
+}
+
 export interface LevelDocument {
   schemaVersion: string;
   id: string;
@@ -292,6 +352,7 @@ export interface LevelDocument {
   nextLevelIds: string[];
   coop: LevelCoop;
   authoring?: LevelAuthoring;
+  feedback?: LevelFeedback;
 }
 
 /* ------------------------------------------------------------------ */
@@ -461,6 +522,7 @@ export interface PackContent {
   dialogues: Record<string, DialogueDocument>;
   gates: Record<string, GateDocument>;
   puzzles: Record<string, PuzzleDocument>;
+  materials?: MaterialsDocument;
 }
 
 export interface LevelBundle {

@@ -6,16 +6,19 @@ import { PLAYER_ASSET_IDS } from "../src/assets/ids";
 import { parseManifest } from "../src/assets/manifest";
 import type { AssetManifest } from "../src/assets/types";
 import { silentLogger } from "../src/core/logger";
+import { NODE_EFFECT_SOCKETS, effectPresetIds } from "../src/feedback";
 import { GameRuntime, type AudioPort, type RuntimeInput } from "../src/game/runtime";
 import {
+  collectMaterialAssetIds,
   collectRoomAssetIds,
+  collectRoomMaterialAssetIds,
   collectThemeAssetIds,
   parseRoom,
   parseTheme,
 } from "../src/pack/load";
 import type { RoomDocument, ThemeDocument } from "../src/pack/types";
 import { validatePack } from "../src/pack/validate";
-import { createSave, MemorySaveStorage, RUN_STORAGE_KEY } from "../src/save";
+import { createSave, MemorySaveStorage, runStorageKey } from "../src/save";
 import {
   createRoomSimulation,
   emptyIntents,
@@ -30,6 +33,11 @@ import { loadContent, packDirectory } from "./content-loader";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CONTENT_DIR = join(HERE, "..", "public", "content", "dev");
 const VIEWPORT = { width: 1280, height: 720 };
+const FEEDBACK_VOCABULARY = {
+  effectPresetIds: effectPresetIds(),
+  tilePathPreset: "fx.tile.path",
+  nodeEffectSockets: NODE_EFFECT_SOCKETS,
+} as const;
 
 function contentFile(file: string): string {
   return join(CONTENT_DIR, file);
@@ -100,6 +108,7 @@ function runMode(
   const ids = [
     ...new Set([
       ...collectRoomAssetIds(room),
+      ...collectRoomMaterialAssetIds(room),
       ...collectThemeAssetIds(theme),
       ...Object.values(PLAYER_ASSET_IDS),
     ]),
@@ -127,6 +136,7 @@ function runMode(
     finalManifest,
     packManifest,
     fileExists,
+    feedbackVocabulary: FEEDBACK_VOCABULARY,
   });
   if (!validation.ok) {
     const issues = validation.issues
@@ -435,6 +445,8 @@ function assertAnatomyAssets(content: ReturnType<typeof loadContent>): {
   const ids = [
     ...new Set([
       ...Object.values(content.rooms).flatMap(collectRoomAssetIds),
+      ...Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds),
+      ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
       ...Object.values(PLAYER_ASSET_IDS),
     ]),
@@ -462,6 +474,7 @@ function assertAnatomyAssets(content: ReturnType<typeof loadContent>): {
       finalManifest,
       packManifest: placeholderManifest,
       fileExists,
+      feedbackVocabulary: FEEDBACK_VOCABULARY,
     });
     if (!validation.ok) {
       const issues = validation.issues
@@ -518,7 +531,8 @@ function runAnatomyRuntime(): RuntimeResult {
     "[anatomy] start checkpoint missing",
   );
   assert(
-    storage.getItem(RUN_STORAGE_KEY)?.includes("03-nerve-forest") === true,
+    storage.getItem(runStorageKey("anatomy-reflex"))?.includes("03-nerve-forest") ===
+      true,
     "[anatomy] boot did not autosave the run",
   );
 
@@ -542,7 +556,7 @@ function runAnatomyRuntime(): RuntimeResult {
   runtime.step(1 / 60, frameInput({ pause: true }));
   assert(runtime.snapshot().state === "level", "[anatomy] Esc did not resume");
 
-  // Dialogue + choice.
+  // Conversation + choice.
   walkTo(runtime, "agent-neuron");
   assert(
     runtime.interactionId() === "agent-neuron",
@@ -554,24 +568,37 @@ function runAnatomyRuntime(): RuntimeResult {
       p1: { interact: true, scan: false, pulse: false, carry: false, throw: false },
     }),
   );
-  assert(runtime.snapshot().state === "dialogue", "[anatomy] E did not start dialogue");
+  const conversation = [...runtime.conversations.values()][0];
+  assert(conversation, "[anatomy] E did not start a conversation");
   assert(
-    runtime.snapshot().dialogue?.speaker === "Neuron Keeper",
-    "[anatomy] wrong dialogue speaker",
+    runtime.snapshot().state === "level",
+    "[anatomy] conversation must not enter a blocking state",
+  );
+  assert(
+    conversation.session.dialogueId === "dlg-neuron-01",
+    "[anatomy] wrong dialogue id",
   );
 
-  runtime.advanceDialogue();
-  runtime.advanceDialogue();
-  runtime.advanceDialogue();
-  assert(
-    runtime.snapshot().dialogue?.choices.length === 2,
-    "[anatomy] dialogue choices missing",
-  );
-  runtime.chooseDialogue("right");
-  assert(runtime.snapshot().state === "level", "[anatomy] choice did not close dialogue");
+  runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  const choices = runtime
+    .snapshot()
+    .feedback.surfaces.find((surface) => surface.id === conversation.surfaceId)
+    ?.content.choices;
+  assert(choices?.length === 2, "[anatomy] conversation choices missing");
+  runtime.surfaceAction(conversation.surfaceId, {
+    type: "choose",
+    choiceId: "right",
+  });
   assert(
     runtime.snapshot().knownConceptIds.includes("CON-3"),
-    "[anatomy] dialogue did not reveal the neuron concept",
+    "[anatomy] conversation did not reveal the neuron concept",
+  );
+  runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  assert(
+    runtime.conversations.size === 0,
+    "[anatomy] final conversation surface did not close",
   );
 
   // Scan.
@@ -768,7 +795,7 @@ function main(): void {
 
     const runtime = runAnatomyRuntime();
     console.log(
-      `  [anatomy runtime] PASS — ${runtime.assets} IDs, ${runtime.placeholders} placeholders, dialogue/scan/Node Run/transition/Endplate Ferry/exit/debrief/save/dash/co-op`,
+      `  [anatomy runtime] PASS — ${runtime.assets} IDs, ${runtime.placeholders} placeholders, conversation/scan/Node Run/transition/Endplate Ferry/exit/debrief/save/dash/co-op`,
     );
     console.log(`  [anatomy runtime] evidence: ${runtime.events} events exported`);
 

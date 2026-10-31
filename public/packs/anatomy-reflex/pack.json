@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "id": "anatomy-reflex",
   "title": "Anatomy: The Reflex Arc",
   "domain": "anatomy",
@@ -14,6 +14,7 @@
   "theme": "theme.json",
   "mapping": "mapping.json",
   "licenses": "licenses.json",
+  "materials": "materials.json",
   "assetManifests": {
     "placeholder": "assets.placeholder.json",
     "final": "assets.final.json"

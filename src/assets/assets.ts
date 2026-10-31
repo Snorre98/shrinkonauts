@@ -7,12 +7,16 @@ import type { AssetProvider } from "./provider";
 import {
   ASSET_TYPES,
   inferCategory,
+  textureKey,
   type AssetCategory,
   type AssetDescriptor,
   type AssetId,
   type AssetManifest,
+  type AtlasFrameRef,
+  type AtlasRegion,
   type PreloadPlan,
   type ResolvedAsset,
+  type ResolvedFrame,
   type ValidationIssue,
   type ValidationResult,
 } from "./types";
@@ -31,6 +35,8 @@ export interface AssetsModule {
   audio(id: AssetId): ResolvedAsset;
   font(id: AssetId): ResolvedAsset;
   resolveById(id: AssetId): ResolvedAsset | null;
+  resolveFrame(ref: AtlasFrameRef): ResolvedFrame | null;
+  atlasRegion(assetId: AssetId, frame: string): AtlasRegion | null;
   preload(ids: AssetId[]): PreloadPlan;
   invalidate(id?: AssetId): void;
   validate(ids: AssetId[], manifest?: AssetManifest): ValidationResult;
@@ -86,6 +92,52 @@ export class DefaultAssetsModule implements AssetsModule {
     return this.resolve(category, id);
   }
 
+  atlasRegion(assetId: AssetId, frame: string): AtlasRegion | null {
+    const asset = this.resolveById(assetId);
+    if (!asset || asset.type !== "atlas") {
+      return null;
+    }
+    return asset.regions?.[frame] ?? null;
+  }
+
+  resolveFrame(ref: AtlasFrameRef): ResolvedFrame | null {
+    const asset = this.resolveById(ref.assetId);
+    if (!asset || asset.type === "audio" || asset.type === "font") {
+      return null;
+    }
+
+    if (ref.kind === "asset") {
+      const width = asset.width ?? asset.frameWidth ?? 32;
+      const height = asset.height ?? asset.frameHeight ?? 32;
+      return {
+        assetId: asset.id,
+        textureKey: textureKey(asset.id),
+        width,
+        height,
+        source: asset.source,
+        ...(asset.src ? { src: asset.src } : {}),
+      };
+    }
+
+    if (asset.type !== "atlas") {
+      return null;
+    }
+    const region = asset.regions?.[ref.frame];
+    if (!region) {
+      return null;
+    }
+    return {
+      assetId: asset.id,
+      textureKey: textureKey(asset.id),
+      frame: ref.frame,
+      width: region.width,
+      height: region.height,
+      source: asset.source,
+      ...(asset.src ? { src: asset.src } : {}),
+      region,
+    };
+  }
+
   preload(ids: AssetId[]): PreloadPlan {
     const uniqueIds = [...new Set(ids)];
     const descriptors: ResolvedAsset[] = [];
@@ -102,7 +154,7 @@ export class DefaultAssetsModule implements AssetsModule {
       }
 
       descriptors.push(resolved);
-      if (resolved.source === "placeholder") {
+      if (resolved.source === "placeholder" || resolved.placeholder === true) {
         placeholders.push(id);
       }
     }
@@ -162,6 +214,53 @@ export class DefaultAssetsModule implements AssetsModule {
             code: "ASSET_MANIFEST_INVALID",
             id,
             message: `${id} is a sheet without frame metadata`,
+          });
+        }
+
+        if (entry.type === "atlas") {
+          if (!entry.regions || Object.keys(entry.regions).length === 0) {
+            issues.push({
+              code: "ASSET_MANIFEST_INVALID",
+              id,
+              message: `${id} is an atlas without regions`,
+            });
+          }
+          if (
+            entry.frameWidth !== undefined ||
+            entry.frameHeight !== undefined ||
+            entry.frames !== undefined ||
+            entry.fps !== undefined ||
+            entry.loop !== undefined
+          ) {
+            issues.push({
+              code: "ASSET_MANIFEST_INVALID",
+              id,
+              message: `${id} atlas carries animation metadata`,
+            });
+          }
+          if (entry.width !== undefined && entry.height !== undefined) {
+            for (const [name, region] of Object.entries(entry.regions ?? {})) {
+              if (
+                region.x < 0 ||
+                region.y < 0 ||
+                region.width <= 0 ||
+                region.height <= 0 ||
+                region.x + region.width > entry.width ||
+                region.y + region.height > entry.height
+              ) {
+                issues.push({
+                  code: "ASSET_MANIFEST_INVALID",
+                  id,
+                  message: `${id} atlas region "${name}" is outside ${entry.width}×${entry.height}`,
+                });
+              }
+            }
+          }
+        } else if (entry.regions !== undefined) {
+          issues.push({
+            code: "ASSET_MANIFEST_INVALID",
+            id,
+            message: `${id} declares atlas regions but is not an atlas`,
           });
         }
       }

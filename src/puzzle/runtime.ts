@@ -5,7 +5,9 @@ import type {
   PropNode,
   PuzzleDocument,
   PuzzleEvent,
+  PuzzleEventType,
   PuzzleLink,
+  PuzzleLinkType,
   PuzzleNode,
   PuzzleNodeRunState,
   PuzzlePredicate,
@@ -20,13 +22,35 @@ import type {
   ZoneNode,
 } from "./types";
 
-const EVENT_EXCLUDED = new Set([
-  "pulse",
-  "activate",
-  "deactivate",
-  "open",
-  "close",
-]);
+/**
+ * Event -> link dispatch table.
+ *
+ * A link may only run for the event that matches its authored meaning. Link
+ * types that are not event-driven (`pulse`, `activate`, `deactivate`, `open`,
+ * `close`) are resolved by their dedicated evaluators and never appear here.
+ *
+ * `satisfies` keeps this exhaustive: adding a new `PuzzleEventType` is a
+ * compile error until its dispatch is decided.
+ */
+export const EVENT_LINKS = {
+  pulse: [],
+  pulseArrived: [],
+  receptorBound: ["bind"],
+  receptorRejected: [],
+  platePress: ["press", "start"],
+  plateRelease: ["release", "stop"],
+  zoneEnter: ["enter", "start"],
+  zoneExit: ["exit", "stop"],
+  triggerFired: ["increment", "start"],
+  timerElapsed: ["elapsed", "reset", "clear"],
+  counterReached: ["reached"],
+  gateOpen: [],
+  gateClose: [],
+  relayActive: [],
+  relayInactive: [],
+  propCleared: [],
+  solved: [],
+} satisfies Record<PuzzleEventType, readonly PuzzleLinkType[]>;
 
 function initialState(node: PuzzleNode): PuzzleNodeRunState {
   const base: PuzzleNodeRunState = {
@@ -100,6 +124,12 @@ export class PuzzleRuntime {
   private counters = new Map<string, number>();
   private pulses: PuzzlePulseState[] = [];
   private lastError: string | null = null;
+  /**
+   * Best-effort causal attribution. This is intentionally ephemeral: it never
+   * changes logical state and is not serialized. When the cause is ambiguous
+   * the entry is absent, which makes the feedback layer fall back to shared.
+   */
+  private readonly nodeActor = new Map<string, string>();
 
   constructor(document: PuzzleDocument) {
     this.document = document;
@@ -158,6 +188,7 @@ export class PuzzleRuntime {
       remainingTicks: Math.max(1, node.travelTicks),
       ...(actorId ? { actorId } : {}),
     });
+    this.setNodeActor(sourceId, actorId);
     this.note("pulses");
     return true;
   }
@@ -196,6 +227,7 @@ export class PuzzleRuntime {
     this.counters = new Map(Object.entries(state.counters ?? {}));
     this.pulses = (state.pulses ?? []).map((pulse) => ({ ...pulse }));
     this.lastError = state.lastError ?? null;
+    this.nodeActor.clear();
 
     this.nodes = new Map();
     for (const node of this.document.nodes) {
@@ -277,6 +309,7 @@ export class PuzzleRuntime {
     this.solved = false;
     this.pulses = [];
     this.lastError = null;
+    this.nodeActor.clear();
     this.nodes = new Map(
       this.document.nodes.map((node) => [node.id, initialState(node)]),
     );
@@ -284,6 +317,50 @@ export class PuzzleRuntime {
 
   private findNode(nodeId: string): PuzzleNode | undefined {
     return this.document.nodes.find((node) => node.id === nodeId);
+  }
+
+  private setNodeActor(nodeId: string, actorId: string | undefined): void {
+    if (actorId) {
+      this.nodeActor.set(nodeId, actorId);
+    } else {
+      this.nodeActor.delete(nodeId);
+    }
+  }
+
+  private actorForSources(nodeIds: readonly string[]): string | undefined {
+    if (nodeIds.length === 0) return undefined;
+    let actor: string | undefined;
+    for (const nodeId of nodeIds) {
+      const current = this.nodeActor.get(nodeId);
+      if (!current) return undefined;
+      if (actor && actor !== current) return undefined;
+      actor = current;
+    }
+    return actor;
+  }
+
+  private actorsOn(
+    node: PlateNode | ZoneNode,
+    snapshot: PuzzleWorldSnapshot,
+  ): string[] {
+    if (!node.detects.includes("player")) return [];
+    return snapshot.players
+      .filter((player) => player.active && intersects(player, node.rect))
+      .map((player) => player.id);
+  }
+
+  private propsOn(
+    node: PlateNode | ZoneNode,
+    snapshot: PuzzleWorldSnapshot,
+  ): number {
+    if (!node.detects.includes("prop")) return 0;
+    let count = 0;
+    for (const prop of snapshot.props) {
+      if (!prop.active) continue;
+      if (prop.state === "carried" && !node.countCarried) continue;
+      if (intersects(prop, node.rect)) count += 1;
+    }
+    return count;
   }
 
   private advanceCooldowns(): void {
@@ -315,7 +392,12 @@ export class PuzzleRuntime {
       state.state = "elapsed";
       state.active = true;
       state.remaining = 0;
-      events.push({ type: "timerElapsed", nodeId: node.id });
+      const actorId = this.nodeActor.get(node.id);
+      events.push({
+        type: "timerElapsed",
+        nodeId: node.id,
+        ...(actorId ? { actorId } : {}),
+      });
       if (node.repeat) {
         repeatTimers.add(node.id);
       }
@@ -337,30 +419,6 @@ export class PuzzleRuntime {
     }
   }
 
-  private countActors(
-    node: PlateNode | ZoneNode,
-    snapshot: PuzzleWorldSnapshot,
-  ): number {
-    let count = 0;
-    if (node.detects.includes("player")) {
-      for (const player of snapshot.players) {
-        if (player.active && intersects(player, node.rect)) {
-          count += 1;
-        }
-      }
-    }
-    if (node.detects.includes("prop")) {
-      for (const prop of snapshot.props) {
-        if (!prop.active) continue;
-        if (prop.state === "carried" && !node.countCarried) continue;
-        if (intersects(prop, node.rect)) {
-          count += 1;
-        }
-      }
-    }
-    return count;
-  }
-
   private updatePlate(
     node: PlateNode,
     snapshot: PuzzleWorldSnapshot,
@@ -368,15 +426,26 @@ export class PuzzleRuntime {
   ): void {
     const state = this.nodes.get(node.id);
     if (!state) return;
-    const pressed = this.countActors(node, snapshot) >= node.minimum;
+    const actors = this.actorsOn(node, snapshot);
+    const propCount = this.propsOn(node, snapshot);
+    const pressed = actors.length + propCount >= node.minimum;
     if (pressed === state.active) return;
 
+    const previousActor = this.nodeActor.get(node.id);
+    const actor =
+      pressed && actors.length === 1 && propCount === 0
+        ? actors[0]
+        : pressed
+          ? undefined
+          : previousActor;
     state.active = pressed;
     state.state = pressed ? "pressed" : "released";
     events.push({
       type: pressed ? "platePress" : "plateRelease",
       nodeId: node.id,
+      ...(actor ? { actorId: actor } : {}),
     });
+    this.setNodeActor(node.id, actor);
   }
 
   private updateZone(
@@ -386,15 +455,26 @@ export class PuzzleRuntime {
   ): void {
     const state = this.nodes.get(node.id);
     if (!state) return;
-    const occupied = this.countActors(node, snapshot) >= node.minimum;
+    const actors = this.actorsOn(node, snapshot);
+    const propCount = this.propsOn(node, snapshot);
+    const occupied = actors.length + propCount >= node.minimum;
     if (occupied === state.active) return;
 
+    const previousActor = this.nodeActor.get(node.id);
+    const actor =
+      occupied && actors.length === 1 && propCount === 0
+        ? actors[0]
+        : occupied
+          ? undefined
+          : previousActor;
     state.active = occupied;
     state.state = occupied ? "occupied" : "empty";
     events.push({
       type: occupied ? "zoneEnter" : "zoneExit",
       nodeId: node.id,
+      ...(actor ? { actorId: actor } : {}),
     });
+    this.setNodeActor(node.id, actor);
   }
 
   private updatePropNode(
@@ -407,8 +487,12 @@ export class PuzzleRuntime {
       (entry) => entry.id === node.entityId || entry.id === node.id,
     );
     if (!prop) return;
+    if (state.state === "cleared" && prop.state !== "cleared") return;
     state.state = prop.state;
-    state.active = prop.state !== "free";
+    state.active =
+      prop.state === "carried" ||
+      prop.state === "placed" ||
+      prop.state === "docked";
   }
 
   private updateReceptors(snapshot: PuzzleWorldSnapshot): void {
@@ -454,6 +538,7 @@ export class PuzzleRuntime {
         nodeId: pulse.sourceId,
         ...(pulse.actorId ? { actorId: pulse.actorId } : {}),
       });
+      this.setNodeActor(pulse.sourceId, pulse.actorId);
 
       const links = this.document.links.filter(
         (link) => link.from === pulse.sourceId && link.type === "pulse",
@@ -461,7 +546,7 @@ export class PuzzleRuntime {
       for (const link of links) {
         const target = this.findNode(link.to);
         if (target?.type !== "receptor") continue;
-        this.resolvePulse(target, events);
+        this.resolvePulse(target, events, pulse.actorId);
       }
     }
 
@@ -471,6 +556,7 @@ export class PuzzleRuntime {
   private resolvePulse(
     receptor: ReceptorNode,
     events: PuzzleEvent[],
+    actorId?: string,
   ): void {
     const receptorState = this.nodes.get(receptor.id);
     if (!receptorState || receptorState.state === "bound") return;
@@ -481,7 +567,9 @@ export class PuzzleRuntime {
         type: "receptorRejected",
         nodeId: receptor.id,
         message: "no prop on receptor",
+        ...(actorId ? { actorId } : {}),
       });
+      this.setNodeActor(receptor.id, actorId);
       return;
     }
 
@@ -501,7 +589,9 @@ export class PuzzleRuntime {
         nodeId: receptor.id,
         propId,
         message: "shape or tag does not fit",
+        ...(actorId ? { actorId } : {}),
       });
+      this.setNodeActor(receptor.id, actorId);
       this.note("wrongReceptor");
       return;
     }
@@ -517,7 +607,9 @@ export class PuzzleRuntime {
       type: "receptorBound",
       nodeId: receptor.id,
       propId,
+      ...(actorId ? { actorId } : {}),
     });
+    this.setNodeActor(receptor.id, actorId);
   }
 
   private drainEvents(
@@ -535,31 +627,59 @@ export class PuzzleRuntime {
       emitted.add(signature);
       output.push(event);
 
+      const allowed: readonly PuzzleLinkType[] = EVENT_LINKS[event.type];
+      if (allowed.length === 0) continue;
+
       for (const link of this.document.links) {
         if (link.from !== event.nodeId) continue;
-        if (EVENT_EXCLUDED.has(link.type)) continue;
-        this.applyLink(link, events);
+        if (!allowed.includes(link.type)) continue;
+        this.applyLink(link, events, event.actorId);
       }
     }
   }
 
-  private applyLink(link: PuzzleLink, events: PuzzleEvent[]): void {
+  private applyLink(
+    link: PuzzleLink,
+    events: PuzzleEvent[],
+    actorId?: string,
+  ): void {
     const target = this.findNode(link.to);
     if (!target) return;
 
     switch (target.type) {
       case "trigger":
-        this.fireTrigger(target, events);
+        this.fireTrigger(target, events, actorId);
         break;
       case "timer":
-        this.applyTimerAction(target, link.type);
+        this.applyTimerAction(target, link.type, actorId);
         break;
       case "counter":
-        this.applyCounterAction(target, link.type, events);
+        this.applyCounterAction(target, link.type, events, actorId);
         break;
       case "gate":
-        this.setGate(target, link.type === "close" ? "close" : "open", events);
+        this.setGate(
+          target,
+          link.type === "close" ? "close" : "open",
+          events,
+          actorId,
+        );
         break;
+      case "prop": {
+        if (link.type !== "clear") break;
+        const state = this.nodes.get(target.id);
+        if (!state || state.state === "cleared") break;
+        state.state = "cleared";
+        state.active = false;
+        state.occupiedBy = null;
+        events.push({
+          type: "propCleared",
+          nodeId: target.id,
+          propId: target.id,
+          ...(actorId ? { actorId } : {}),
+        });
+        this.setNodeActor(target.id, actorId);
+        break;
+      }
       default:
         break;
     }
@@ -568,6 +688,7 @@ export class PuzzleRuntime {
   private fireTrigger(
     trigger: TriggerNode,
     events: PuzzleEvent[],
+    actorId?: string,
   ): void {
     const state = this.nodes.get(trigger.id);
     if (!state) return;
@@ -576,12 +697,18 @@ export class PuzzleRuntime {
     state.fired = true;
     state.active = true;
     state.state = "fired";
-    events.push({ type: "triggerFired", nodeId: trigger.id });
+    events.push({
+      type: "triggerFired",
+      nodeId: trigger.id,
+      ...(actorId ? { actorId } : {}),
+    });
+    this.setNodeActor(trigger.id, actorId);
   }
 
   private applyTimerAction(
     timer: TimerNode,
-    linkType: string,
+    linkType: PuzzleLinkType,
+    actorId?: string,
   ): void {
     const state = this.nodes.get(timer.id);
     if (!state) return;
@@ -589,26 +716,32 @@ export class PuzzleRuntime {
     if (linkType === "stop") {
       state.state = "stopped";
       state.active = false;
+      this.setNodeActor(timer.id, actorId);
       return;
     }
     if (linkType === "reset") {
       state.state = "idle";
       state.active = false;
       state.remaining = timer.durationTicks;
+      this.setNodeActor(timer.id, actorId);
       return;
     }
-    if (state.state === "running" || state.state === "elapsed") {
+    // Recovery invariant: only a running timer ignores a new start. An
+    // elapsed or stopped one-shot timer must always be re-armable.
+    if (state.state === "running") {
       return;
     }
     state.state = "running";
     state.active = false;
     state.remaining = timer.durationTicks;
+    this.setNodeActor(timer.id, actorId);
   }
 
   private applyCounterAction(
     counter: CounterNode,
     linkType: string,
     events: PuzzleEvent[],
+    actorId?: string,
   ): void {
     const state = this.nodes.get(counter.id);
     if (!state) return;
@@ -617,6 +750,7 @@ export class PuzzleRuntime {
       state.count = 0;
       state.active = false;
       state.state = "idle";
+      this.setNodeActor(counter.id, actorId);
       return;
     }
     if (linkType !== "increment") return;
@@ -630,13 +764,19 @@ export class PuzzleRuntime {
 
     state.active = true;
     state.state = "reached";
-    events.push({ type: "counterReached", nodeId: counter.id });
+    events.push({
+      type: "counterReached",
+      nodeId: counter.id,
+      ...(actorId ? { actorId } : {}),
+    });
+    this.setNodeActor(counter.id, actorId);
   }
 
   private setGate(
     gate: GateNode,
     action: "open" | "close",
     events: PuzzleEvent[],
+    actorId?: string,
   ): void {
     const state = this.nodes.get(gate.id);
     if (!state) return;
@@ -645,7 +785,12 @@ export class PuzzleRuntime {
       if (state.state === "open") return;
       state.state = "open";
       state.active = true;
-      events.push({ type: "gateOpen", nodeId: gate.id });
+      events.push({
+        type: "gateOpen",
+        nodeId: gate.id,
+        ...(actorId ? { actorId } : {}),
+      });
+      this.setNodeActor(gate.id, actorId);
       return;
     }
 
@@ -653,7 +798,12 @@ export class PuzzleRuntime {
     if (gate.latched) return;
     state.state = "closed";
     state.active = false;
-    events.push({ type: "gateClose", nodeId: gate.id });
+    events.push({
+      type: "gateClose",
+      nodeId: gate.id,
+      ...(actorId ? { actorId } : {}),
+    });
+    this.setNodeActor(gate.id, actorId);
   }
 
   private evaluateRelays(events: PuzzleEvent[]): void {
@@ -670,25 +820,38 @@ export class PuzzleRuntime {
         .map((link) => {
           const source = this.nodes.get(link.from);
           const active = source?.active === true;
-          return link.type === "deactivate" ? !active : active;
+          return {
+            sourceId: link.from,
+            value: link.type === "deactivate" ? !active : active,
+          };
         });
 
       let active: boolean;
       if (relay.mode === "allOf") {
-        active = inputs.length > 0 && inputs.every(Boolean);
+        active = inputs.length > 0 && inputs.every((input) => input.value);
       } else if (relay.mode === "anyOf") {
-        active = inputs.some(Boolean);
+        active = inputs.some((input) => input.value);
       } else {
-        active = !inputs.some(Boolean);
+        active = !inputs.some((input) => input.value);
       }
 
       if (active === state.active) continue;
+      const actorId =
+        relay.mode === "not"
+          ? undefined
+          : this.actorForSources(
+              inputs
+                .filter((input) => input.value)
+                .map((input) => input.sourceId),
+            );
       state.active = active;
       state.state = active ? "active" : "inactive";
       events.push({
         type: active ? "relayActive" : "relayInactive",
         nodeId: relay.id,
+        ...(actorId ? { actorId } : {}),
       });
+      this.setNodeActor(relay.id, actorId);
     }
   }
 
@@ -727,23 +890,42 @@ export class PuzzleRuntime {
       const state = this.nodes.get(node.id);
       if (!state) continue;
 
-      const open = this.document.links.some(
-        (link) =>
-          link.to === node.id &&
-          link.type === "open" &&
-          this.nodes.get(link.from)?.active === true,
-      );
-      const close = this.document.links.some(
-        (link) =>
-          link.to === node.id &&
-          link.type === "close" &&
-          this.nodes.get(link.from)?.active === true,
-      );
+      const openSources = this.document.links
+        .filter(
+          (link) =>
+            link.to === node.id &&
+            link.type === "open" &&
+            this.nodes.get(link.from)?.active === true,
+        )
+        .map((link) => link.from);
+      const closeSources = this.document.links
+        .filter(
+          (link) =>
+            link.to === node.id &&
+            link.type === "close" &&
+            this.nodes.get(link.from)?.active === true,
+        )
+        .map((link) => link.from);
+      const open = openSources.length > 0;
+      const close = closeSources.length > 0;
 
+      // Open-before-close is the recovery invariant: an elapsed Ca²⁺ timer
+      // must be able to reopen the gate even while a close source such as the
+      // AChE clearance timer is still active.
       if (open) {
-        this.setGate(node, "open", events);
+        this.setGate(
+          node,
+          "open",
+          events,
+          this.actorForSources(openSources),
+        );
       } else if (close) {
-        this.setGate(node, "close", events);
+        this.setGate(
+          node,
+          "close",
+          events,
+          this.actorForSources(closeSources),
+        );
       }
     }
   }

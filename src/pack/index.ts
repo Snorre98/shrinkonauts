@@ -1,9 +1,12 @@
 export {
+  collectMaterialAssetIds,
   collectRoomAssetIds,
+  collectRoomMaterialAssetIds,
   collectThemeAssetIds,
   isAssetId,
   loadRoom,
   loadTheme,
+  parseBackgroundLayer,
   parseRoom,
   parseTheme,
 } from "./load";
@@ -25,7 +28,26 @@ export {
   parsePack,
 } from "./parse-content";
 export { loadPackContent } from "./load-pack";
+export {
+  catalogEntry,
+  loadPackCatalog,
+  parsePackCatalog,
+} from "./catalog";
+export type {
+  PackAvailability,
+  PackCatalog,
+  PackCatalogEntry,
+} from "./catalog";
 export { parsePuzzle } from "./parse-puzzle";
+export {
+  loadMaterials,
+  parseAtlasFrameRef,
+  parseMaterialBinding,
+  parseMaterials,
+  parsePatternBinding,
+  parsePatternOverrides,
+  parseTileMaterialRule,
+} from "./parse-materials";
 export type {
   LoadedPackContent,
   LoadPackContentOptions,
@@ -38,6 +60,7 @@ export {
 export type { MappingInput } from "./mapping";
 export { validatePack } from "./validate";
 export type {
+  FeedbackValidationVocabulary,
   PackIssue,
   PackIssueCode,
   PackValidationInput,
@@ -52,6 +75,7 @@ export type {
   DialogueDocument,
   DialogueEffect,
   DialogueNode,
+  EntityAnchorPoint,
   EntityBodyComponent,
   EntityGateComponent,
   EntityPropComponent,

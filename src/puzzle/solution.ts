@@ -216,6 +216,20 @@ export function replaySolution(
       snapshot(players, props, runtime.tick + 1, flags),
     );
     events.push(...result.events);
+    for (const event of result.events) {
+      if (event.type !== "propCleared" || !event.propId) continue;
+      const node = document.nodes.find(
+        (entry) => entry.type === "prop" && entry.id === event.propId,
+      );
+      const prop = props.find(
+        (entry) => entry.id === (node?.entityId ?? event.propId),
+      );
+      if (prop) {
+        prop.state = "cleared";
+        prop.active = false;
+        prop.carriedBy = null;
+      }
+    }
     if (result.solvedNow) solved = true;
   };
 

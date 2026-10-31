@@ -8,7 +8,7 @@
  * loading.
  */
 
-export const PUZZLE_SCHEMA_VERSION = "1.0";
+export const PUZZLE_SCHEMA_VERSION = "1.1";
 
 export type TetherPolicy = "normal" | "stretch" | "off";
 
@@ -40,7 +40,8 @@ export type PuzzleLinkType =
   | "activate"
   | "deactivate"
   | "open"
-  | "close";
+  | "close"
+  | "clear";
 
 export type PuzzleActivationMode = "roomStart" | "zoneEnter" | "interact";
 
@@ -217,7 +218,12 @@ export interface PuzzleDocument {
   hints: string[];
 }
 
-export type PropRunState = "free" | "carried" | "placed" | "docked";
+export type PropRunState =
+  | "free"
+  | "carried"
+  | "placed"
+  | "docked"
+  | "cleared";
 
 export interface PuzzleActorSnapshot {
   id: string;
@@ -258,6 +264,7 @@ export type PuzzleEventType =
   | "gateClose"
   | "relayActive"
   | "relayInactive"
+  | "propCleared"
   | "solved";
 
 export interface PuzzleEvent {

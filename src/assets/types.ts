@@ -7,6 +7,7 @@ export type AssetType =
   | "webp"
   | "image"
   | "background"
+  | "atlas"
   | "audio"
   | "font";
 
@@ -17,6 +18,28 @@ export type AssetSource = "final" | "pack" | "placeholder";
 export interface GradientStop {
   offset: number;
   color: string;
+}
+
+export interface AtlasRegion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type AtlasFrameRef =
+  | { kind: "asset"; assetId: AssetId }
+  | { kind: "atlas"; assetId: AssetId; frame: string };
+
+export interface ResolvedFrame {
+  assetId: AssetId;
+  textureKey: string;
+  frame?: string;
+  width: number;
+  height: number;
+  source: AssetSource;
+  src?: string;
+  region?: AtlasRegion;
 }
 
 export type PlaceholderSpec =
@@ -82,6 +105,9 @@ export interface AssetDescriptor {
   anchor?: [number, number];
   placeholder?: boolean;
   license?: string;
+  regions?: Record<string, AtlasRegion>;
+  width?: number;
+  height?: number;
   source: AssetSource;
   placeholderSpec?: PlaceholderSpec;
 }
@@ -101,6 +127,9 @@ export interface ManifestAssetEntry {
   anchor?: [number, number];
   placeholder?: boolean;
   license?: string;
+  regions?: Record<string, AtlasRegion>;
+  width?: number;
+  height?: number;
 }
 
 export interface AssetManifest {
@@ -139,7 +168,7 @@ export interface ValidationResult {
   issues: ValidationIssue[];
 }
 
-export const ASSET_SCHEMA_VERSION = "1.0";
+export const ASSET_SCHEMA_VERSION = "1.1";
 
 export const VISUAL_TYPES: readonly AssetType[] = [
   "sprite",
@@ -148,6 +177,7 @@ export const VISUAL_TYPES: readonly AssetType[] = [
   "webp",
   "image",
   "background",
+  "atlas",
 ];
 
 export const ASSET_TYPES: readonly AssetType[] = [
@@ -180,7 +210,8 @@ export function inferCategory(id: AssetId): AssetCategory | null {
   if (
     id.startsWith("bg.") ||
     id.startsWith("ui.") ||
-    id.startsWith("tileset.")
+    id.startsWith("tileset.") ||
+    id.startsWith("tile.")
   ) {
     return "image";
   }

@@ -1,14 +1,17 @@
 # Shrinkonauts
 
-A two-player co-op platformer about shrinking into the body. This repository now
-contains the **M1 runtime and first vertical slice**: one complete placeholder
-loop through `03-nerve-forest` with pack/syllabus loading, dialogue, scanning, a
-concept gate, an ability unlock, map and concept log, debrief, save/load, co-op,
-content validation, and evidence export.
+A two-player co-op platformer about shrinking into the body. This repository
+contains the **M1.9 bathroom hub**, the M1.8 material/pattern layer, and the
+`03-nerve-forest → 04-muscle-effector` vertical slice: pack/syllabus loading,
+entity conversations, scanning, Node Run, Endplate Ferry, debrief, save/load,
+co-op attribution, anchored feedback surfaces, cosmetic effects, material
+autotiling and variants, world/object/background pattern projection, UI material
+slots, content validation, and evidence export.
 
-The app boots directly into the Nerve Forest. There is no pack select or intro
-in M1, and no second core gate: the concept gate opens the exit, and the exit
-leads to the debrief.
+The app boots into a real-world bathroom hub. The washing machine menu selects
+the Anatomy cycle or shows Silicon as a gated M2 cycle, chooses Solo or Local
+co-op, and starts a launch cinematic into the selected pack. Direct boot remains
+available with `?skipMenu=1&pack=anatomy-reflex`.
 
 ## Quick start
 
@@ -20,12 +23,12 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 13 files, 74 unit/integration tests
+npm test               # 32 files, 317 unit/integration tests
 npm run smoke          # room boot + module boundary tests
 npm run build          # type check and production build
-npm run pack:validate  # dev fixture + anatomy pack validation
+npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
 npm run pack:map       # regenerate the mapping document
-npm run pack:smoke     # dev simulation + headless M1 runtime loop
+npm run pack:smoke     # dev simulation + headless runtime loop
 npm run smoke:e2e      # Playwright browser smoke using system Chrome
 npm run preview        # serve the production build
 ```
@@ -72,127 +75,197 @@ CI runs on Node 24 (pinned by `.nvmrc`) and installs with `npm ci`, so
 
 ## Controls
 
-| Player | Move | Jump | Interact | Scan | Dash |
-| --- | --- | --- | --- | --- | --- |
-| P1 | `A` / `D` | `W` or `Space` | `E` | `Q` | `Shift` |
-| P2 | `←` / `→` | `↑` | `,` | `.` | `/` |
+| Player | Move | Jump | Interact | Scan | Dash | Pulse | Carry | Throw |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| P1 | `A` / `D` | `W` or `Space` | `E` | `Q` | `Shift` | `F` | `G` | `H` |
+| P2 | `←` / `→` | `↑` | `,` | `.` | `/` | — | `'` | `;` |
+
+Hub: `Tab` / `Shift+Tab` move focus, `Enter` / `Space` activate, `M` mute,
+`Esc` / `Space` / `Enter` skip the launch cinematic.
 
 Shared: `P` join/rest P2 at a checkpoint, `Tab` map, `C` concept log, `Esc`
-pause/close, `M` mute.
+pause/close, `M` mute. P1 confirms soft surfaces with `E`/`Enter`; P2 uses `,`.
+Conversation choices are owned by the player who started the conversation and do
+not block the other player.
 
 Both players are active at boot. The co-op tether keeps them within 560 px of
-each other. `signal-dash` unlocks after the Nerve Forest gate; `scan` is
-available from the start. Input latches keydown events so a tap shorter than one
-render frame is never lost.
+each other. `signal-dash` unlocks after Node Run; `scan` is available from the
+start. Input latches keydown events so a tap shorter than one render frame is
+never lost.
 
-## The M1 slice
+## The M1.9 bathroom hub
 
-`03-nerve-forest` is the only authored level in `anatomy-reflex` for now:
+1. **Bathroom.** The player stands in front of a washing machine. The machine's
+   control panel is the DOM menu, anchored over the bathroom scene.
+2. **Cycle.** Anatomy is available. Silicon is visible but gated until its M2
+   pack exists. Each cycle has its own save slot.
+3. **Players.** Solo starts with P2 inactive; Local co-op starts both players.
+   Online co-op is visible but disabled with the M4 Cloudflare explanation.
+4. **Start.** Continue resumes the selected cycle; New cycle asks for
+   confirmation. Start plays the climb-in, spin, shrink, and tiny-astronaut
+   transition, which can be skipped or reduced.
+5. **Return.** Pause and completion both offer "Leave to bathroom"; the selected
+   cycle's progress remains available.
 
-1. Talk to the **Neuron Keeper** (`dlg-neuron-01`) and answer the neuron-direction
-   check. The correct answer reveals CON-3, CON-4, and CON-5.
-2. Scan the glowing structures for the remaining concepts (CON-3 through CON-7).
-3. Open **Signal Gate** (`gate-nerve-01`), a `sequence` puzzle. The answer is
-   `Receptor → Sensory neuron → Spinal cord → Motor neuron → Muscle`.
-4. Solving the gate unlocks `signal-dash`, reveals the muscle-effector map node,
-   and records the OBJ-2 gate evidence.
-5. Walk into the exit together. The debrief asks for a teach-back answer; finish
-   it to record `debrief_completed`, then export the evidence JSON.
+The hub loads only `public/packs/index.json` and `public/hub/bathroom/`. Pack
+content and assets load when a cycle starts; a failure returns to the hub with
+the error and a working Start button.
 
-Autosave runs at level start, checkpoint changes, gate solves, and debrief
-updates. Run state lives in `shrinkonauts.run`; audio and accessibility settings
-live in `shrinkonauts.settings`. Both are owned by the `save` module.
+## The M1.8 material and pattern layer
 
-### Screenshots
+`src/materials/` resolves material/pattern definitions, autotile masks,
+deterministic variants, and cached procedural pattern resources. `materials.json`
+is optional and declared by `pack.json`; rooms may author `tileMaterials` and a
+legend, entities may author `components.material`, backgrounds may author
+`materialId`/`pattern`, and the theme may map UI slots. `layers.tiles` remains
+the sole collision authority. Atlases extend the asset manifest with named
+regions and storage-agnostic `AtlasFrameRef` values. See
+[`docs/m1.8/README.md`](docs/m1.8/README.md).
 
-All three are placeholder assets from the M1 build:
+## The M1.75 slice
 
-| Nerve Forest | Dialogue | Signal gate |
-| --- | --- | --- |
-| ![Nerve Forest](screenshots/m1-nerve-forest.png) | ![Neuron Keeper dialogue](screenshots/m1-dialogue.png) | ![Sequence gate](screenshots/m1-gate.png) |
+1. **03 — Nerve Forest (`puzzle-node-run`).** Talk to the Neuron Keeper, scan
+   the pathway concepts, press both dendrite inputs, reach threshold, run the
+   axon, and open the exit. The feedback layer shows persistent counter/gate
+   state, attributed cues, beat progress, and a tile-path effect.
+2. **04 — Endplate Ferry (`puzzle-endplate-ferry`).** Interact at the motor
+   terminal, trigger the plate to open the Ca²⁺ window, carry the ACh packet to
+   the nicotinic receptor, and pulse from the terminal. The AChE clearance beat,
+   rejected-receptor reasons, Ca²⁺/gate state, and muscle wave are visible.
+3. **Debrief and evidence.** Answer the teach-back prompt, finish the level, and
+   export the evidence JSON.
 
-The earlier M0.1/M0.2 captures remain in `screenshots/` for comparison.
+Autosave runs at level start, checkpoint changes, puzzle events, conversation
+updates, and debrief updates. Run state lives in `shrinkonauts.run`; audio and
+accessibility settings live in `shrinkonauts.settings`. Feedback ECS entities are
+ephemeral and are rebuilt from puzzle/world state after restore.
 
-### M1 deviations
+### Current deviations
 
-- Direct boot; no PackSelect or Intro.
-- One level used as both start and end; no second core gate.
+- Default boot is the bathroom hub; direct boot remains available with
+  `?skipMenu=1&pack=anatomy-reflex`.
+- Silicon is a visible `coming-soon` cycle until the M2 pack exists.
+- Online co-op is a disabled M4 placeholder; no Worker/DO client is wired yet.
+- Two authored levels; `05-reflex-core` and later map nodes are forward
+  references reported as warnings.
 - Audio is limited to short cues (no music or ambience loops).
-- Full key rebinding is deferred; pause, text scale, reduced motion, mute, and
-  focus management are implemented.
-- Forward references to `04-muscle-effector` and later map nodes are warnings in
-  `pack:validate`, not failures.
-- Unattempted objectives/concepts produce advisory coverage warnings.
+- Full key rebinding is deferred.
+- Final art/audio, the bathroom hub art pass (M3.5), and human M1.8 visual
+  review are deferred. M1.8 `wang` transitions, pattern animation,
+  image/atlas-sourced UI patterns, final material atlases, and editor tooling are
+  deferred within the accepted architecture.
+- Physical puzzle-gate bodies, `locked`/`unlock` props, conditional links,
+  per-level debrief overrides, and side-level travel are accepted ADR targets but
+  are **not implemented** in this branch. See
+  [`docs/puzzle-engine/architecture.md`](docs/puzzle-engine/architecture.md).
 
 ## Content and asset modes
 
-The runtime loads:
+The app loads:
 
 ```text
-public/packs/anatomy-reflex/     pack, theme, level, room, dialogue, gate, mapping, licences
+public/packs/index.json          cycle catalog
+public/hub/bathroom/             hub document, theme, placeholder/final manifests
+public/packs/anatomy-reflex/     pack, theme, level, room, dialogue, gate, puzzle,
+                                 feedback content, mapping, licences
 public/syllabi/anatomy-reflex.json
 ```
 
-`public/content/dev/` remains the M0 regression fixture. It is exercised by
-`pack:validate`, `pack:smoke`, and the room/boot tests, but the M1 app no longer
-boots it.
+The selected pack loads when a cycle starts. `public/content/dev/` remains the
+M0 regression fixture. It is exercised by `pack:validate`, `pack:smoke`, and the
+room/boot tests, but the app does not boot it.
 
 | URL | Behaviour |
 | --- | --- |
-| `/` | Anatomy pack; every logical ID resolves to a procedural placeholder |
-| `/?assets=fixture` | Loads an anatomy `assets.fixture.json` if present; otherwise warns and keeps placeholders |
-| `/?assets=final` | Selects the final manifest; shipped entries are still placeholders |
+| `/` | Bathroom hub; Anatomy available, Silicon gated, online placeholder |
+| `/?skipMenu=1&pack=anatomy-reflex` | Direct boot into the selected pack |
+| `/?pack=silicon-reflex` | Preselects the gated Silicon cycle in the hub; Start is disabled |
+| `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
+| `/?assets=final` | Selects the final manifests; shipped entries are still placeholders |
 
-All 35 anatomy IDs resolve as placeholders (35/35). The dev fixture still
-resolves 10/10 placeholders, or 7/10 with its fixture manifest selected by the
-scripts. Unknown `?assets=` values fall back to placeholder mode.
+The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 44/44
+placeholders. The dev fixture still resolves 10/10 placeholders, or 7/10 with
+its fixture manifest selected by the scripts. Unknown `?assets=` values fall back
+to placeholder mode.
 
 ## Project layout
 
 ```text
 src/
   core/          Result, logger, event bus, shared learning-event vocabulary
+  ecs/           Deterministic entity/component/system kernel
+  feedback/      Facts, director, descriptors, lexicon, beats, effect presets
   syllabus/      Syllabus schema, parser, lookups
   assets/        Logical IDs, manifests, provider chain, preload, validation
-  pack/          Pack/level/room/dialogue/gate/mapping schemas, parsers,
+  pack/          Pack/level/room/dialogue/gate/puzzle schemas, parsers,
                  browser loader, mapping generation, pure validator
   progression/   Abilities, gates, revealed map nodes/edges
   narrative/     Dialogue graph traversal, choices, effects
   curriculum/    Evidence, objective progress, debrief, evidence export
-  save/          Versioned run slot + audio/accessibility settings
+  save/          Per-pack run slots, conversations, settings
   audio/         Cue playback, Web Audio, mute/volume, providers
-  world/         Phaser scene, fixed-step simulation, rendering, keyboard input
-  ui/            HUD, dialogue/gate/map/log/debrief/pause overlays, theme tokens
-  game/          Pure runtime orchestrator + adapter-heavy browser boot
+  hub/           Bathroom hub document, loader, validation
+  world/         Phaser scenes, fixed-step simulation, effects, tile visuals
+  ui/            HUD, bathroom menu, anchored feedback surfaces, overlays
+  game/          App shell, pack runtime orchestrator, surface router, boot
   platform/      Browser entry point
 scripts/
-  pack-validate.ts   Dev fixture + anatomy pack validation
+  pack-validate.ts   Dev fixture + anatomy + catalog/hub validation
   pack-map.ts        Mapping generation/drift check
-  pack-smoke.ts      Dev simulation + headless M1 runtime loop
+  pack-smoke.ts      Dev simulation + headless runtime loop
 e2e/
-  m1.spec.ts         System-Chrome smoke: boot → dialogue → scan → gate → debrief
+  hub.spec.ts        Bathroom → cycle → launch skip → level → return
+  m1.spec.ts         System-Chrome smoke: 03 → 04, conversations, reduced motion
 public/content/dev/  M0 regression fixture (not booted by the app)
+public/hub/bathroom/ Bathroom scene, theme, manifests
+public/packs/index.json  Cycle catalog
 public/packs/anatomy-reflex/
 public/syllabi/
 ```
 
-Only `src/world/` imports Phaser. Only `src/assets/` knows media file paths;
-gameplay, audio, and UI ask for logical IDs such as `sprite.agent.neuron` or
-`audio.cue.scan`. `game/runtime.ts` is pure TypeScript and never touches the DOM,
+Only `src/world/` imports Phaser, and only `src/world/` imports Matter.js. Only
+`src/assets/` knows media file paths; gameplay, audio, UI, and feedback ask for
+logical IDs. `game/runtime.ts` is pure TypeScript and never touches the DOM,
 Phaser, Web Audio, or storage, which is why `pack:smoke` can drive the complete
 loop headlessly.
 
+`pack` never imports `feedback`; `validatePack` receives an injected structural
+feedback vocabulary. `world` never imports `feedback`; effects enter through
+`WorldEffectPlan` and tile visual ports.
+
 ## Documentation
 
-See [IMPLEMENTATION.md](IMPLEMENTATION.md) for the runtime lifecycle, module
-graph, pack/validation model, save format, accessibility baseline, test matrix,
-and documented deviations.
+- [`IMPLEMENTATION.md`](IMPLEMENTATION.md) — runtime lifecycle, module graph,
+  validation, save format, accessibility, test matrix, and verification.
+- [`docs/puzzle-engine/README.md`](docs/puzzle-engine/README.md) — engine
+  upgrade index, implementation status, and reading order.
+- [`docs/m1.75/README.md`](docs/m1.75/README.md) — milestone status, definition
+  of done, and remaining playtest checks.
+- [`docs/m1.9/README.md`](docs/m1.9/README.md) — bathroom hub, pack catalog,
+  per-pack saves, and launch transition.
+- [`docs/m1.9/remaining-work.md`](docs/m1.9/remaining-work.md) — what is
+  deliberately missing and which milestone owns it.
+- [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
+  pre-game shell and save/catalog model.
 
-The design source of truth lives in the project vault (ADRs 0001–0033). The
-`docs/` entry is a symlink to that vault and is not modified by this codebase.
+`docs/puzzle-engine/` and `docs/adr-m1.5/` are maintained in this repository.
+`docs/shrinkonauts` is a symlink into the read-only Obsidian vault and is not
+modified by this codebase.
 
 ## Status
 
-M1 is complete for the one-level vertical slice. Still deferred: final art and
-audio, the Silicon fixture, levels 2–5, capture mode, a separate core gate,
-music/ambience loops, full key rebinding, and conditional dialogue-node skipping.
+M1.9's bathroom hub is **core implementation complete; manual visual and
+accessibility playtest pending**. M1.8's material/pattern layer is implemented
+with placeholder proof content; human visual review is pending. The automated
+suite passes (37 files / 362 tests), pack validation/smoke pass, and the browser
+smoke passes 7/7. The hub starts Anatomy in Solo or Local co-op, returns to the
+bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
+M2 and M4.
+
+M1.75 remains **implementation complete; manual solo/co-op playtest pending**.
+`authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until a
+human performs the checks in the M1.75 milestone document.
+
+Final art and audio, the Silicon fixture, levels 5+, capture mode, music/ambience
+loops, the M3.5 hub art pass, full key rebinding, and the deferred puzzle-engine
+ADR features remain out of scope for this branch.

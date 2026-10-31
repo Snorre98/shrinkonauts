@@ -1,7 +1,8 @@
 # Puzzle Engine Upgrade — Implementation Plan
 
-**Status:** plan only; no engine code is changed by this document
-**Source decisions:** [ADR-0001–0008](adr/)
+**Status:** historical M1.5 plan; the implemented subset and deferred targets are recorded below and in [`architecture.md`](architecture.md)
+**Source decisions:** [ADR-0001–0008](adr/); the feedback layer is
+[ADR-0009–0013](adr/) in [`feedback-implementation-plan.md`](feedback-implementation-plan.md)
 **Contracts:** [module boundaries](contracts/module-boundaries.md),
 [data model](contracts/data-model.md), [interface](contracts/interface.md),
 [state machine](contracts/state-machine.md),
@@ -12,6 +13,37 @@
 
 The plan is deliberately phased so each phase leaves the pack valid and the
 existing 03/04 flow playable. Do not merge phases 1–4 into one change.
+
+### Implementation status (2026-10-28)
+
+This plan is not a claim that every phase shipped. The current branch implements
+the M1.75 feedback/effect layer and a subset of the M1.5 plan:
+
+| M1.5 area | Status |
+|---|---|
+| Puzzle `clear` link, `cleared` prop state, `propCleared` event | Implemented |
+| Puzzle `locked`/`initial`, `unlock`/`propReleased` | Deferred |
+| `requires`, authored `message`, `linkBlocked` | Deferred |
+| Physical `puzzleGate` bodies and open/closed sprite swaps | Deferred |
+| Debrief prompt fallback | Implemented |
+| Per-level `debrief.prompts` overrides and EV-9 | Deferred |
+| Side-level `kind`, map travel, `returnTo` | Deferred |
+| Additive schema versioning and old-save compatibility | Implemented |
+| ECS kernel, feedback surfaces, conversations, effects | Implemented separately in M1.75 |
+
+The detailed phase text below remains the accepted target/history; where it
+conflicts with the table, the table and
+[`contracts/data-model.md`](contracts/data-model.md) win.
+
+> The feedback and effect layer from ADR-0009–0013 is accepted separately in
+> [`feedback-implementation-plan.md`](feedback-implementation-plan.md). Phase 0
+> is complete and the Phase 1 correctness fixes and stable-state reachability
+> guard are in place; the feedback layer remains a prerequisite for
+> feedback-dependent content migration, not an optional polish pass.
+>
+> The material and pattern layer from ADR-0014–0017 is planned separately in
+> [`material-pattern-implementation-plan.md`](material-pattern-implementation-plan.md).
+> It is the visual-language foundation and must precede final tile/UI art.
 
 ---
 
@@ -245,6 +277,10 @@ to side levels.
 
 ### 4.1 Synchronization and feedback
 
+> Feedback transport for blocked links is superseded by ADR-0009–0013. The
+> immediate toast remains the M1.5 adapter until the feedback plan's Phase 4;
+> see [`feedback-implementation-plan.md`](feedback-implementation-plan.md) §7.1.
+
 Files:
 
 - `src/game/runtime.ts`
@@ -447,15 +483,19 @@ Close-out:
 
 ## Acceptance summary
 
-The upgrade is done when:
+The M1.5 plan would be complete when all of the following are true. Items marked
+**deferred** are not implemented in this branch.
 
-- ADR-0001–0008 are accepted and traceable.
-- Old 1.0/2.0 content and saves load with old behavior.
-- Physical gates block/open and stay synchronized after reset/restore.
-- Locked/cleared props unlock/clear and survive save/restore.
+- ADR-0001–0008 are accepted and traceable. **Met.**
+- Old 1.0/2.0 content and saves load with old behavior. **Met.**
+- Physical gates block/open and stay synchronized after reset/restore. **Deferred.**
+- Locked props unlock and survive save/restore. **Deferred.**
+- Cleared props clear and survive save/restore. **Met.**
 - Conditional links enforce the 04 Ca²⁺ ordering and show authored feedback.
-- 04 uses its NMJ debrief prompt and EV-9; 03 keeps EV-7.
-- A side excursion returns to the exact main snapshot.
+  **Deferred.**
+- 04 uses its NMJ debrief prompt and EV-9; 03 keeps EV-7. **Deferred; both use
+  the syllabus-derived prompt.**
+- A side excursion returns to the exact main snapshot. **Deferred.**
 - `npm test`, `pack:validate`, `pack:smoke`, `pack:map`, `build`, `git diff
-  --check`, and `smoke:e2e` pass.
-- Human playtest status is recorded honestly.
+  --check`, and `smoke:e2e` pass. **Met for the implemented subset.**
+- Human playtest status is recorded honestly. **M1.75 playtest remains pending.**

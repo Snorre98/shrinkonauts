@@ -19,6 +19,7 @@ import {
   roomPixelWidth,
   stepRoomSimulation,
 } from "../src/world/simulation";
+import { entityAnchorPoint } from "../src/world/effect-types";
 
 const CONTENT_DIR = new URL("../public/content/dev/", import.meta.url);
 const VIEWPORT = { width: 1280, height: 720 };
@@ -76,6 +77,29 @@ describe("dev room content", () => {
     ]);
     expect(room.spawns.player1).toEqual({ x: 5, y: 30 });
     expect(room.spawns.player2).toEqual({ x: 8, y: 30 });
+  });
+
+  it("parses authored entity anchors with default fallbacks", () => {
+    const raw = structuredClone(readJson("room.json")) as Record<string, unknown>;
+    const entities = Array.isArray(raw.entities) ? raw.entities : [];
+    entities.push({
+      id: "anchor-test",
+      type: "body",
+      x: 1,
+      y: 1,
+      components: {
+        body: { width: 36, height: 36 },
+        anchors: { muzzle: { x: 18, y: 8, direction: 0 } },
+      },
+    });
+    raw.entities = entities;
+    const parsed = parseRoom(raw);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value.entities?.[0]?.components?.anchors).toEqual({
+        muzzle: { x: 18, y: 8, direction: 0 },
+      });
+    }
   });
 
   it("declares every content and player asset ID in the final manifest", () => {
@@ -224,5 +248,105 @@ describe("room simulation", () => {
     expect(simulation.players.p1.x).toBeLessThanOrEqual(
       roomPixelWidth(room) - 14,
     );
+  });
+});
+
+describe("anatomy level anchors", () => {
+  const ANATOMY_DIR = new URL(
+    "../public/packs/anatomy-reflex/levels/",
+    import.meta.url,
+  );
+
+  function anatomyRoom(levelId: string) {
+    const parsed = parseRoom(
+      JSON.parse(
+        readFileSync(new URL(`${levelId}/room.json`, ANATOMY_DIR), "utf8"),
+      ),
+    );
+    if (!parsed.ok) throw new Error(parsed.error);
+    return parsed.value;
+  }
+
+  it("parses the authored gate, terminal, and receptor sockets", () => {
+    const nerve = anatomyRoom("03-nerve-forest");
+    for (const gateId of ["gate-threshold", "gate-behind", "gate-exit"]) {
+      const gate = nerve.entities?.find((entity) => entity.id === gateId);
+      expect(gate?.components?.anchors?.center, gateId).toEqual({
+        x: 18,
+        y: 18,
+      });
+    }
+
+    const muscle = anatomyRoom("04-muscle-effector");
+    const terminal = muscle.entities?.find(
+      (entity) => entity.id === "motor-terminal",
+    );
+    expect(terminal?.components?.anchors?.muzzle).toEqual({
+      x: 32,
+      y: 16,
+      direction: 0,
+    });
+    for (const receptorId of ["nicotinic-receptor", "wrong-receptor"]) {
+      const receptor = muscle.entities?.find(
+        (entity) => entity.id === receptorId,
+      );
+      expect(receptor?.components?.anchors?.mouth, receptorId).toEqual({
+        x: 4,
+        y: 16,
+        direction: 3.14159,
+      });
+    }
+    for (const gateId of ["ca-gate", "muscle-gate"]) {
+      const gate = muscle.entities?.find((entity) => entity.id === gateId);
+      expect(gate?.components?.anchors?.center, gateId).toEqual({
+        x: 18,
+        y: 18,
+      });
+    }
+  });
+
+  it("parses fully materialized proof rooms without changing dimensions", () => {
+    for (const levelId of ["03-nerve-forest", "04-muscle-effector"]) {
+      const room = anatomyRoom(levelId);
+      expect(room.tileMaterials, levelId).toHaveLength(room.height);
+      expect(
+        room.tileMaterials?.every((row) => row.length === room.width),
+        levelId,
+      ).toBe(true);
+      expect(room.tileMaterialLegend, levelId).toBeDefined();
+      expect(room.defaultMaterialId, levelId).toBeTruthy();
+      expect(Number.isInteger(room.materialSeed), levelId).toBe(true);
+    }
+
+    const muscle = anatomyRoom("04-muscle-effector");
+    const gate = muscle.entities?.find((entity) => entity.id === "muscle-gate");
+    expect(gate?.components?.material).toEqual({
+      materialId: "muscle",
+      patternId: "muscle-fibers",
+      pattern: {
+        space: "world",
+        scale: 0.75,
+        opacity: 0.35,
+        blend: "overlay",
+      },
+    });
+  });
+
+  it("resolves authored sockets and falls back to centre", () => {
+    const muscle = anatomyRoom("04-muscle-effector");
+    const terminal = muscle.entities?.find(
+      (entity) => entity.id === "motor-terminal",
+    );
+    expect(
+      entityAnchorPoint(
+        36,
+        36,
+        terminal?.components?.anchors,
+        "muzzle",
+      ),
+    ).toEqual({ x: 32, y: 16, direction: 0 });
+    expect(
+      entityAnchorPoint(36, 36, terminal?.components?.anchors, "missing"),
+    ).toEqual({ x: 18, y: 18 });
   });
 });

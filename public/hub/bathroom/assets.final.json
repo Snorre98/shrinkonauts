@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "id": "bathroom.final",
+  "assets": {
+    "bg.bathroom.wall": {
+      "type": "background",
+      "placeholder": true
+    },
+    "bg.bathroom.far": {
+      "type": "background",
+      "placeholder": true
+    },
+    "bg.bathroom.mid": {
+      "type": "background",
+      "placeholder": true
+    },
+    "bg.bathroom.near": {
+      "type": "background",
+      "placeholder": true
+    },
+    "sprite.prop.washer": {
+      "type": "sprite",
+      "placeholder": true
+    },
+    "sprite.prop.washer.door": {
+      "type": "sprite",
+      "placeholder": true
+    },
+    "sprite.prop.washer.drum": {
+      "type": "sprite",
+      "placeholder": true
+    },
+    "sprite.player.civilian": {
+      "type": "sprite",
+      "placeholder": true
+    },
+    "sprite.player.p1": {
+      "type": "sprite",
+      "placeholder": true
+    },
+    "audio.cue.hub.click": {
+      "type": "audio",
+      "placeholder": true
+    },
+    "audio.cue.hub.door": {
+      "type": "audio",
+      "placeholder": true
+    },
+    "audio.cue.hub.spin": {
+      "type": "audio",
+      "placeholder": true
+    },
+    "audio.cue.hub.shrink": {
+      "type": "audio",
+      "placeholder": true
+    },
+    "audio.cue.hub.arrive": {
+      "type": "audio",
+      "placeholder": true
+    },
+    "audio.cue.hub.hum": {
+      "type": "audio",
+      "placeholder": true
+    }
+  }
+}

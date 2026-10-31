@@ -123,6 +123,68 @@ describe("createAssets", () => {
     expect(assets.resolveById("player.one")).toBeNull();
   });
 
+  it("resolves atlas and asset frame references", () => {
+    const assets = createAssets({
+      finalManifest: manifest("assets.atlas", {
+        "tile.test.atlas": {
+          type: "atlas",
+          placeholder: true,
+          width: 64,
+          height: 32,
+          regions: {
+            left: { x: 0, y: 0, width: 32, height: 32 },
+            right: { x: 32, y: 0, width: 32, height: 32 },
+          },
+        },
+        "sprite.player.p1": {
+          type: "sprite",
+          placeholder: true,
+        },
+      }),
+      logger: silentLogger,
+    });
+
+    expect(assets.resolveFrame({
+      kind: "atlas",
+      assetId: "tile.test.atlas",
+      frame: "right",
+    })?.region).toEqual({ x: 32, y: 0, width: 32, height: 32 });
+    expect(assets.resolveFrame({
+      kind: "atlas",
+      assetId: "tile.test.atlas",
+      frame: "missing",
+    })).toBeNull();
+    expect(assets.resolveFrame({
+      kind: "asset",
+      assetId: "sprite.player.p1",
+    })?.textureKey).toBe("asset:sprite.player.p1");
+    expect(assets.atlasRegion("tile.test.atlas", "left")?.x).toBe(0);
+  });
+
+  it("validates atlas entries and counts declared placeholders", () => {
+    const atlas = manifest("assets.atlas", {
+      "tile.test.atlas": {
+        type: "atlas",
+        placeholder: true,
+        regions: { cell: { x: 0, y: 0, width: 32, height: 32 } },
+      },
+      "tile.broken.atlas": {
+        type: "atlas",
+        placeholder: true,
+      },
+    });
+    const assets = createAssets({ finalManifest: atlas, logger: silentLogger });
+
+    expect(assets.preload(["tile.test.atlas"]).placeholders).toEqual([
+      "tile.test.atlas",
+    ]);
+    const validation = assets.validate(["tile.test.atlas"], atlas);
+    expect(validation.ok).toBe(false);
+    expect(validation.issues.map((issue) => issue.id)).toContain(
+      "tile.broken.atlas",
+    );
+  });
+
   it("validates manifests and requested IDs", () => {
     const broken = manifest("assets.broken", {
       "sprite.player.p1": { type: "sheet", src: "http://localhost/p.png" },

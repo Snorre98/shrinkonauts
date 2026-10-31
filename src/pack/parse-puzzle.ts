@@ -57,9 +57,10 @@ const LINK_TYPES: readonly PuzzleLinkType[] = [
   "deactivate",
   "open",
   "close",
+  "clear",
 ];
 
-const PROP_STATES = ["free", "carried", "placed", "docked"] as const;
+const PROP_STATES = ["free", "carried", "placed", "docked", "cleared"] as const;
 
 function readOptionalBoolean(
   record: UnknownRecord,

@@ -6,6 +6,11 @@
 **Reported state:** packet bound, `Endplate Ferry` in the HUD without ✓, player unable to finish
 **Recovery used:** refresh / reset puzzle state, then complete the intended order
 
+> **Resolution status (2026-10-28):** the engine defects in §2.3 are fixed in
+> commit `464ca63`. This document preserves the pre-fix analysis and fix plan;
+> see §2.8 for the frozen baseline and current behaviour. The remaining work in
+> this document is feedback presentation, tracked in M1.75 Phases 4–7.
+
 This document covers two things:
 
 1. The feedback graphics that would have made the puzzle legible while it was working normally.
@@ -205,7 +210,7 @@ The engine allows a link's action to run on events that have nothing to do with 
 
 ### 2.5 Fix plan
 
-#### Fix 1 — explicit event → link dispatch table (core fix)
+#### Fix 1 — explicit event → link dispatch table (core fix) — **done**
 
 Replace the `EVENT_EXCLUDED` filter with an explicit mapping, for example:
 
@@ -229,7 +234,7 @@ Notes:
 - Node Run uses `input-a:press->input-a-trigger` and `input-b:press->input-b-trigger`; after the change they fire on press only, which is the intended semantics.
 - Keep the mapping in one place and derive it from `PuzzleEvent["type"]` so a new event type forces an explicit decision.
 
-#### Fix 2 — allow restart from `elapsed` and `stopped`
+#### Fix 2 — allow restart from `elapsed` and `stopped` — **done**
 
 ```ts
 if (state.state === "running") return;
@@ -237,7 +242,7 @@ if (state.state === "running") return;
 
 This is the recovery invariant: a plate press must always be able to re-arm the Ca²⁺ window.
 
-#### Fix 3 — make the Ca²⁺ gate open level-triggered
+#### Fix 3 — make the Ca²⁺ gate open level-triggered — **done**
 
 Prefer the content change:
 
@@ -253,23 +258,26 @@ Prefer the content change:
 
 Alternative engine-level change: make `evaluateGates` treat `elapsed` links as open sources. The content change is smaller and testable; the engine change is more general but blurs link semantics.
 
-#### Fix 4 — do not let AChE close a prerequisite before the response
+#### Fix 4 — do not let AChE close a prerequisite before the response — **retained, open-first**
 
-Two options:
+Two options were considered:
 
 - Treat AChE clearance as visual-only until conditional links (ADR-0005) exist; remove the `close` link.
 - Keep the close link but condition it on `muscle-gate` being open (requires conditional links).
 
-The design intent is “clearance happens after the response”; closing a required gate before the response is the hazard.
+Resolution for M1.75: keep the close link. `evaluateGates` checks `open` before
+`close`, so an elapsed Ca²⁺ timer always wins and AChE cannot hold the gate shut.
+After AChE resets the Ca²⁺ timer, the gate closes as the intended clearance beat;
+the next plate press reopens it. Conditional closure remains out of scope.
 
-#### Fix 5 — regression tests
+#### Fix 5 — regression tests — **done**
 
 Add to `tests/endplate-ferry.test.ts`:
 
 1. Pulsing an empty receptor does **not** start `ache-timer`.
 2. Pulsing the wrong receptor with a mismatched packet does **not** start `ache-timer`.
 3. `plateRelease` does not start `ca-timer`.
-4. `plate press → timer elapsed → AChE elapsed → bind → plate press` solves.
+4. `bind → AChE elapsed → plate press` solves.
 5. Existing: `bind → wait AChE → plate press` solves.
 6. Existing: `plate → elapsed → place → pulse` solves.
 
@@ -277,7 +285,7 @@ Add a unit test for dispatch:
 
 - for each event type, only the allowed link types apply (table-driven).
 
-#### Fix 6 — recoverability property test (class-level guard)
+#### Fix 6 — recoverability property test (class-level guard) — **done as stable-state BFS**
 
 Enumerate reachable states with `PuzzleRuntime.snapshot()` / `restore()` over a small action alphabet:
 
@@ -285,9 +293,14 @@ Enumerate reachable states with `PuzzleRuntime.snapshot()` / `restore()` over a 
 - prop free/placed on each receptor;
 - pulse attempt.
 
-Assert that every reachable unsolved state has a path to `solved: true` within a bounded number of ticks. Deduplicate by node/pulse state, cap the state count, and mark the test as slow. The seeded search in this report is a cheap approximation; the bounded BFS is the real guard.
+Assert that every reachable unsolved **stable decision state** has a path to
+`solved: true`. Apply one action, settle timers/pulses/cooldowns, deduplicate by
+node state, counter counts, in-flight pulses, and world placement, then run
+reverse reachability from solved transitions. Cap the state count; a cap hit is
+inconclusive, not a pass. The landed guard lives in `tests/helpers/recoverability.ts`
+and `tests/recoverability.test.ts`.
 
-#### Fix 7 — static validation in `pack:validate`
+#### Fix 7 — static validation in `pack:validate` — **done**
 
 Warn when a non-latched gate has:
 
@@ -296,7 +309,7 @@ Warn when a non-latched gate has:
 
 because that gate can close before it can reopen. Also warn on `bind` links whose source can emit `receptorRejected`.
 
-#### Fix 8 — UX safety net
+#### Fix 8 — UX safety net — **deferred to M1.75 Phase 4.6**
 
 If the active puzzle is unsolved and no node state changes for ~10 seconds while the player is in the room, surface “Show hint / Reset puzzle” inline. Pause already has both, but the reset button was easy to miss, and refreshing the page should not be the recovery path.
 
@@ -304,23 +317,39 @@ Optional follow-up: put the reset control in the HUD while a puzzle is active, a
 
 ### 2.6 Verification checklist
 
-- [ ] `npm test` — new dispatch, timer and softlock regressions pass.
-- [ ] `npm run pack:validate` — static gate-recovery warning does not fire for `puzzle-endplate-ferry` after the content fix.
-- [ ] `npm run pack:smoke -- --level 04-muscle-effector` — full loop.
-- [ ] `npm run smoke:e2e` — browser flow still passes.
-- [ ] Re-run the seeded/recoverability search; no reachable dead state.
+- [x] `npm test` — dispatch, timer, gate, and stable-state reachability tests pass.
+- [x] `npm run pack:validate` — static gate-recovery warning does not fire for `puzzle-endplate-ferry`.
+- [x] `npm run pack:smoke` — full loop.
+- [x] `npm run smoke:e2e` — browser flow still passes.
+- [x] Re-run the stable-state reachability search; no reachable dead state.
 - [ ] Manual: pulse an empty receptor, step off the plate, wait past AChE, then complete via plate → place → pulse.
 
 ### 2.7 Suggested commit breakdown
 
-1. `fix(puzzle): dispatch links by event type` + tests.
-2. `fix(puzzle): allow restarting elapsed and stopped timers` + tests.
-3. `fix(pack): open the Ca gate from the timer state` + softlock regression test.
-4. `test(puzzle): add bounded recoverability search`.
-5. `feat(ui): expose puzzle node state and effects` (feedback graphics).
+1. `fix(puzzle): dispatch links by event type` + tests. **Landed.**
+2. `fix(puzzle): allow restarting elapsed and stopped timers` + tests. **Landed.**
+3. `fix(pack): open the Ca gate from the timer state` + softlock regression test. **Landed.**
+4. `test(puzzle): exhaustively enumerate stable reachability`. **Landed.**
+5. `feat(ui): expose puzzle node state and effects` (feedback graphics; M1.75 Phases 4–7).
+
+### 2.8 Resolution baseline
+
+- **Commit:** `464ca63` fixes event→link dispatch, restartable one-shot timers,
+  and the level-triggered Ca²⁺ gate open.
+- **Historical dead state:** seeded in `tests/endplate-ferry.test.ts`
+  (“recovers from the reported dead state by re-arming the Ca²⁺ window”).
+- **Reported sequence:** replayed headlessly; the current engine reaches
+  `solved: true`. Natural reproduction of the pre-fix deadlock now requires
+  reverting `464ca63`.
+- **AChE:** the `close` link is retained. `evaluateGates` checks `open` before
+  `close`, so AChE cannot hold the gate shut while the Ca²⁺ timer is elapsed.
+- **Baseline commands:** `npm test`, `npm run pack:validate`,
+  `npm run pack:smoke`, `npm run smoke:e2e`, `npm run build`, and
+  `git diff --check` pass.
+- **Remaining:** the visual/feedback gaps in §1 are tracked by M1.75 Phases 4–7.
 
 ---
 
 ## 3. One-paragraph summary
 
-The level is solvable, but three engine defects combine to produce a permanent dead state: links fire on unrelated events (empty-receptor pulses start the AChE timer; plate releases restart the Ca timer), an elapsed timer can never be restarted, and the Ca gate opens on an edge while AChE closes it every tick forever. A player can reach that state by pulsing before placing the packet and moving on and off the plate. The correct fix is an explicit event→link dispatch table, restartable one-shot timers, a level-triggered Ca gate open, regression tests for the exact sequence, and a bounded recoverability test across all puzzles. Separately, the puzzle lacks almost all visual feedback: the plate, Ca timer, gate, pulse travel, socket states and AChE clear are invisible; a persistent Ca²⁺ window indicator and node-state-driven animations would have made the correct sequence obvious and the failure legible.
+The level was solvable, but three engine defects combined to produce a permanent dead state: links fired on unrelated events (empty-receptor pulses started the AChE timer; plate releases restarted the Ca timer), an elapsed timer could never be restarted, and the Ca gate opened on an edge while AChE closed it every tick forever. A player could reach that state by pulsing before placing the packet and moving on and off the plate. The fix is an explicit event→link dispatch table, restartable one-shot timers, a level-triggered Ca gate open, regression tests for the exact sequence, and an exhaustive stable-state reachability test across all puzzles. Separately, the puzzle still lacks most visual feedback: the plate, Ca timer, gate, pulse travel, socket states and AChE clear are invisible; a persistent Ca²⁺ window indicator and node-state-driven animations would make the correct sequence obvious and the failure legible.

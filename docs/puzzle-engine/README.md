@@ -1,10 +1,13 @@
 # Puzzle Engine Upgrade
 
-**Status:** accepted design; implementation not started
+**Status:** accepted design; M1.75 implementation complete, playtest pending
 **Scope:** the engine capabilities required by the intended M2 nervous-system
 puzzle design (`03`–`05`, Silicon, optional `01`/`02`)
-**Authority:** accepted ADR-0001–0008 in [`adr/`](adr/)
-**Implementation:** phased plan in [`implementation-plan.md`](implementation-plan.md)
+**Authority:** accepted ADR-0001–0013 in [`adr/`](adr/)
+**Implementation:** the status table in [`architecture.md`](architecture.md);
+feedback plan in [`feedback-implementation-plan.md`](feedback-implementation-plan.md),
+earlier puzzle-engine plan in [`implementation-plan.md`](implementation-plan.md)
+**Post-M3 online co-op:** [`../m4/README.md`](../m4/README.md) and [`../adr-online/README.md`](../adr-online/README.md) (Proposed)
 
 This documentation set turns the engine gaps found during the M2 level work
 into explicit, testable capabilities. It is not a new game and not a scripting
@@ -26,23 +29,38 @@ enforce:
 | Optional 01/02 from the map | Main path is linear after the debrief | Side-level map travel with return snapshot (ADR-0007) |
 | Old content/saves keep working | New fields could break 03/04 | Minor-version compatibility (ADR-0008) |
 
+The table records the original design gaps. Rows for physical gates, locked
+props, conditional links, debrief overrides, and side travel describe accepted
+but deferred targets; the M1.75 feedback rows are implemented.
+
 ## Decision summary
 
-- **Physical gates are opt-in.** Only a `puzzleGate` with `components.body`
-  gets collision. Existing 03 gates remain visual-only until migrated.
-- **Gate and prop state stay in `puzzle`.** `world` derives bodies and sprites;
-  `GameRuntime` is the single synchronizer.
-- **Props gain `locked` and `cleared`** plus `unlock`/`clear` event links and
-  optional initial state.
-- **Event links can carry `requires` + `message`.** A blocked link is skipped,
-  emits `linkBlocked`, and shows the authored toast; it is not evidence or a
-  fail state.
-- **A level can override its debrief prompts.** 04 adds
-  `prompt-obj-2-nmj`/EV-9; 03 keeps `prompt-obj-2`/EV-7.
-- **Map travel is a side excursion.** Main progression stays linear; optional
-  01/02 return to a saved main snapshot. No full per-level cache.
+- **Physical gates are opt-in (deferred).** Only a `puzzleGate` with
+  `components.body` would get collision. Logical gate state is implemented;
+  physical gate bodies are not in the current branch.
+- **Gate and prop state stay in `puzzle`.** `world` derives prop bodies and the
+  scene projection; `GameRuntime` is the single synchronizer. Implemented
+  `clear`/`cleared` is real; `locked`/`unlock` is deferred.
+- **Event links can carry `requires` + `message` (deferred).** The accepted
+  target skips a blocked link, emits `linkBlocked`, and surfaces authored copy
+  through feedback. Those fields and events do not exist in the current schema.
+- **A level can override its debrief prompts (deferred).** The runtime currently
+  derives prompts from the syllabus; 04 uses `prompt-obj-2`/EV-7. The proposed
+  `prompt-obj-2-nmj`/EV-9 override remains deferred.
+- **Map travel is a side excursion (deferred).** Main progression stays linear;
+  optional 01/02 were designed to return to a saved main snapshot. Side travel
+  and `returnTo` are not implemented.
 - **Schemas move by minor version:** puzzle 1.1, level 1.1, run 2.1. Old content
   and saves default to old behavior.
+- **Feedback is state projection, not toast text.** Persistent surfaces are
+  rebuilt from state; transient cues are sequenced and attributed to P1/P2
+  (ADR-0009, ADR-0010).
+- **Entity conversations replace the global dialogue overlay.** A conversation
+  is an owned speech-bubble surface; blocking modes such as debrief and pause
+  remain explicit (ADR-0011).
+- **Effects are cosmetic and composable.** Direction, A→B paths, persistent
+  beams, and tile visuals use closed operators; tile visuals never change
+  collision (ADR-0013).
 
 ## Field reports
 
@@ -68,6 +86,17 @@ enforce:
 9. [`traceability.md`](traceability.md) — ADR → arc42 → behavior → contract.
 10. [`implementation-plan.md`](implementation-plan.md) — phased changes, tests,
     migration, acceptance.
+11. [`feedback-implementation-plan.md`](feedback-implementation-plan.md) — the
+    M1.75 feedback/effect layer plan.
+12. [`material-pattern-implementation-plan.md`](material-pattern-implementation-plan.md)
+    — the implemented M1.8 material/pattern plan and deferrals.
+13. [`../m1.75/README.md`](../m1.75/README.md) — the M1.75 milestone boundary
+    and definition of done.
+14. [`../m1.8/README.md`](../m1.8/README.md) — the M1.8 material/pattern
+    milestone boundary and definition of done.
+15. [`../m4/README.md`](../m4/README.md) and
+    [`../adr-online/README.md`](../adr-online/README.md) — proposed post-M3
+    online co-op, explicitly after M1.75/M1.8/M2/M3.
 
 ## Relationship to existing decisions
 
@@ -95,6 +124,14 @@ enforce:
 
 ## Status of implementation
 
-This is a design/plan artifact. No engine code is changed by this document set.
-The implementation plan starts with schema/types/validators and keeps the
-existing 03 → 04 pack as the regression baseline.
+The M1.75 feedback layer is implemented through Phase 8 validation,
+accessibility, and documentation. The existing 03 → 04 pack is the regression
+baseline: 29 test files / 303 tests, build, pack validation, pack smoke, and
+4/4 browser checks pass. Human solo/co-op playtesting remains pending.
+
+The earlier M1.5 targets are not all implemented. Physical gate bodies,
+`locked`/`unlock`, `requires`/`message`/`linkBlocked`, per-level debrief
+overrides, and side-level travel are deferred; see the implementation status
+table in [`architecture.md`](architecture.md) before treating an accepted ADR as
+runtime behavior. The documents describe the implemented system and label
+deferred targets explicitly.

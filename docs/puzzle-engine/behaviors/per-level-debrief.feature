@@ -1,6 +1,9 @@
 # language: en
 # Source: ADR-0006
 Feature: Per-level debrief prompts
+  Implementation status: partial. The syllabus-derived fallback is implemented;
+  level overrides and EV-9 are deferred.
+
   A level may override the syllabus-derived debrief prompt.
   Normative per ADR-0006. A prompt is valid when its ID, objective, evidence
   rule, and displayed question agree.

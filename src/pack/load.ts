@@ -20,6 +20,7 @@ import {
 import type {
   BackgroundBlend,
   BackgroundFit,
+  EntityAnchorPoint,
   EntityBodyComponent,
   EntityGateComponent,
   EntityPropComponent,
@@ -39,6 +40,17 @@ import type {
   ThemeFonts,
   ThemePalette,
 } from "./types";
+import {
+  parseMaterialBinding,
+  parsePatternBinding,
+  parseTileMaterialRule,
+} from "./parse-materials";
+import type {
+  MaterialId,
+  MaterialsDocument,
+  PatternBinding,
+  TileMaterialRule,
+} from "../materials";
 
 export { isAssetId } from "./parse-common";
 
@@ -101,7 +113,7 @@ function parseSpawn(
   return ok({ x: value.x, y: value.y });
 }
 
-function parseBackgroundLayer(
+export function parseBackgroundLayer(
   value: unknown,
   index: number,
   code: string,
@@ -161,6 +173,26 @@ function parseBackgroundLayer(
       return err(`${code}: background.layers[${index}] has invalid blend mode`);
     }
     layer.blend = value.blend as BackgroundBlend;
+  }
+
+  if (value.materialId !== undefined) {
+    const materialId = readNonEmptyString(
+      value,
+      "materialId",
+      code,
+      `background.layers[${index}].materialId`,
+    );
+    if (!materialId.ok) return err(materialId.error);
+    layer.materialId = materialId.value;
+  }
+
+  if (value.pattern !== undefined) {
+    const pattern = parsePatternBinding(
+      value.pattern,
+      `background.layers[${index}].pattern`,
+    );
+    if (!pattern.ok) return err(pattern.error);
+    layer.pattern = pattern.value;
   }
 
   return ok(layer);
@@ -450,6 +482,54 @@ function parseReceptorComponent(
   return ok(receptor);
 }
 
+function parseAnchors(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<Record<string, EntityAnchorPoint>> {
+  if (!isRecord(value)) {
+    return err(`${code}: entities[${index}].components.anchors must be an object`);
+  }
+  const anchors: Record<string, EntityAnchorPoint> = {};
+  for (const [name, raw] of Object.entries(value)) {
+    if (!name) {
+      return err(`${code}: entities[${index}].components.anchors needs non-empty names`);
+    }
+    if (!isRecord(raw)) {
+      return err(
+        `${code}: entities[${index}].components.anchors.${name} must be an object`,
+      );
+    }
+    const x = readNumber(
+      raw,
+      "x",
+      code,
+      `entities[${index}].components.anchors.${name}.x`,
+    );
+    if (!x.ok) return err(x.error);
+    const y = readNumber(
+      raw,
+      "y",
+      code,
+      `entities[${index}].components.anchors.${name}.y`,
+    );
+    if (!y.ok) return err(y.error);
+    const anchor: EntityAnchorPoint = { x: x.value, y: y.value };
+    if (raw.direction !== undefined) {
+      const direction = readNumber(
+        raw,
+        "direction",
+        code,
+        `entities[${index}].components.anchors.${name}.direction`,
+      );
+      if (!direction.ok) return err(direction.error);
+      anchor.direction = direction.value;
+    }
+    anchors[name] = anchor;
+  }
+  return ok(anchors);
+}
+
 function parseEntityComponents(
   value: unknown,
   index: number,
@@ -460,7 +540,15 @@ function parseEntityComponents(
     return err(`${code}: entities[${index}].components must be an object`);
   }
 
-  const known = new Set(["body", "prop", "receptor", "pulseSource", "gate"]);
+  const known = new Set([
+    "body",
+    "prop",
+    "receptor",
+    "pulseSource",
+    "gate",
+    "anchors",
+    "material",
+  ]);
   for (const key of Object.keys(value)) {
     if (!known.has(key)) {
       return err(
@@ -503,6 +591,19 @@ function parseEntityComponents(
     if (!gateId.ok) return err(gateId.error);
     const gate: EntityGateComponent = { gateId: gateId.value };
     components.gate = gate;
+  }
+  if (value.anchors !== undefined) {
+    const anchors = parseAnchors(value.anchors, index, code);
+    if (!anchors.ok) return err(anchors.error);
+    components.anchors = anchors.value;
+  }
+  if (value.material !== undefined) {
+    const material = parseMaterialBinding(
+      value.material,
+      `entities[${index}].components.material`,
+    );
+    if (!material.ok) return err(material.error);
+    components.material = material.value;
   }
   return ok(components);
 }
@@ -644,6 +745,60 @@ export function parseRoom(value: unknown): Result<RoomDocument> {
     tiles.push(row);
   }
 
+  let tileMaterials: string[] | undefined;
+  if (value.tileMaterials !== undefined) {
+    if (!Array.isArray(value.tileMaterials)) {
+      return err(`${code}: tileMaterials must be an array of strings`);
+    }
+    if (value.tileMaterials.length !== value.height) {
+      return err(`${code}: tileMaterials row count must equal height`);
+    }
+    tileMaterials = [];
+    for (const [rowIndex, row] of value.tileMaterials.entries()) {
+      if (typeof row !== "string" || row.length !== value.width) {
+        return err(
+          `${code}: tileMaterials row ${rowIndex} must be ${value.width} characters`,
+        );
+      }
+      tileMaterials.push(row);
+    }
+  }
+
+  let tileMaterialLegend: Record<string, TileMaterialRule> | undefined;
+  if (value.tileMaterialLegend !== undefined) {
+    if (!isRecord(value.tileMaterialLegend)) {
+      return err(`${code}: tileMaterialLegend must be an object`);
+    }
+    tileMaterialLegend = {};
+    for (const [character, raw] of Object.entries(value.tileMaterialLegend)) {
+      if (character.length !== 1 || character === " ") {
+        return err(
+          `${code}: tileMaterialLegend keys must be single non-space characters`,
+        );
+      }
+      const rule = parseTileMaterialRule(
+        raw,
+        `tileMaterialLegend.${character}`,
+      );
+      if (!rule.ok) return err(rule.error);
+      tileMaterialLegend[character] = rule.value;
+    }
+  }
+
+  let defaultMaterialId: MaterialId | undefined;
+  if (value.defaultMaterialId !== undefined) {
+    const parsed = readNonEmptyString(value, "defaultMaterialId", code);
+    if (!parsed.ok) return err(parsed.error);
+    defaultMaterialId = parsed.value;
+  }
+
+  let materialSeed: number | undefined;
+  if (value.materialSeed !== undefined) {
+    const parsed = readInteger(value, "materialSeed", code);
+    if (!parsed.ok) return err(parsed.error);
+    materialSeed = parsed.value;
+  }
+
   if (!isRecord(value.background)) {
     return err(`${code}: background must be an object`);
   }
@@ -680,6 +835,10 @@ export function parseRoom(value: unknown): Result<RoomDocument> {
     tileSize: value.tileSize,
     tileset: tileset.value,
     layers: { tiles },
+    ...(tileMaterials ? { tileMaterials } : {}),
+    ...(tileMaterialLegend ? { tileMaterialLegend } : {}),
+    ...(defaultMaterialId ? { defaultMaterialId } : {}),
+    ...(materialSeed !== undefined ? { materialSeed } : {}),
     background: { id: backgroundId.value, layers },
     spawns: { player1: player1.value, player2: player2.value },
   };
@@ -822,6 +981,41 @@ function parseUiAssets(value: unknown): Result<Record<string, AssetId>> {
   return ok(assets);
 }
 
+function parseUiMaterials(value: unknown): Result<Record<string, MaterialId>> {
+  const code = "THEME_SCHEMA_INVALID";
+  if (value === undefined) {
+    return ok({});
+  }
+  if (!isRecord(value)) {
+    return err(`${code}: ui.materials must be an object`);
+  }
+  const materials: Record<string, MaterialId> = {};
+  for (const [slot, materialId] of Object.entries(value)) {
+    if (typeof materialId !== "string" || materialId.trim() === "") {
+      return err(`${code}: ui.materials.${slot} must be a non-empty material ID`);
+    }
+    materials[slot] = materialId;
+  }
+  return ok(materials);
+}
+
+function parseUiPatterns(value: unknown): Result<Record<string, PatternBinding>> {
+  const code = "THEME_SCHEMA_INVALID";
+  if (value === undefined) {
+    return ok({});
+  }
+  if (!isRecord(value)) {
+    return err(`${code}: ui.patterns must be an object`);
+  }
+  const patterns: Record<string, PatternBinding> = {};
+  for (const [slot, raw] of Object.entries(value)) {
+    const parsed = parsePatternBinding(raw, `ui.patterns.${slot}`);
+    if (!parsed.ok) return err(`${code}: ${parsed.error}`);
+    patterns[slot] = parsed.value;
+  }
+  return ok(patterns);
+}
+
 function parseAudio(value: unknown): Result<ThemeDocument["audio"]> {
   const code = "THEME_SCHEMA_INVALID";
   if (value === undefined) {
@@ -891,6 +1085,10 @@ export function parseTheme(value: unknown): Result<ThemeDocument> {
 
   const uiAssets = parseUiAssets(value.ui.assets);
   if (!uiAssets.ok) return err(uiAssets.error);
+  const uiMaterials = parseUiMaterials(value.ui.materials);
+  if (!uiMaterials.ok) return err(uiMaterials.error);
+  const uiPatterns = parseUiPatterns(value.ui.patterns);
+  if (!uiPatterns.ok) return err(uiPatterns.error);
 
   const audio = parseAudio(value.audio);
   if (!audio.ok) return err(audio.error);
@@ -906,6 +1104,12 @@ export function parseTheme(value: unknown): Result<ThemeDocument> {
       fontScale: value.ui.fontScale,
       reducedMotion: value.ui.reducedMotion,
       assets: uiAssets.value,
+      ...(Object.keys(uiMaterials.value).length > 0
+        ? { materials: uiMaterials.value }
+        : {}),
+      ...(Object.keys(uiPatterns.value).length > 0
+        ? { patterns: uiPatterns.value }
+        : {}),
     },
     ...(audio.value ? { audio: audio.value } : {}),
   });
@@ -959,6 +1163,37 @@ export function collectThemeAssetIds(theme: ThemeDocument): AssetId[] {
   }
   for (const cue of Object.values(theme.audio?.cues ?? {})) {
     ids.add(cue);
+  }
+  return [...ids];
+}
+
+export function collectRoomMaterialAssetIds(room: RoomDocument): AssetId[] {
+  const ids = new Set<AssetId>();
+  for (const rule of Object.values(room.tileMaterialLegend ?? {})) {
+    for (const variant of rule.variants ?? []) {
+      ids.add(variant.assetId);
+    }
+  }
+  return [...ids];
+}
+
+export function collectMaterialAssetIds(
+  materials: MaterialsDocument | undefined,
+): AssetId[] {
+  const ids = new Set<AssetId>();
+  if (!materials) return [];
+  for (const pattern of Object.values(materials.patterns ?? {})) {
+    if (pattern.source.kind === "image" || pattern.source.kind === "atlas") {
+      ids.add(pattern.source.assetId);
+    }
+  }
+  for (const set of Object.values(materials.variantSets ?? {})) {
+    if (set.atlas) ids.add(set.atlas);
+    for (const frame of Object.values(set.frames)) ids.add(frame.assetId);
+    ids.add(set.fallback.assetId);
+  }
+  for (const material of Object.values(materials.materials)) {
+    for (const variant of material.variants ?? []) ids.add(variant.assetId);
   }
   return [...ids];
 }

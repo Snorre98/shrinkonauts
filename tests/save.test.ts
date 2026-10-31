@@ -5,6 +5,7 @@ import {
   MemorySaveStorage,
   RUN_SCHEMA_VERSION,
   RUN_STORAGE_KEY,
+  runStorageKey,
   SAVE_SCHEMA_VERSION,
   SETTINGS_STORAGE_KEY,
 } from "../src/save";
@@ -83,7 +84,63 @@ describe("save", () => {
       expect(loaded.run.checkpointId).toBe("checkpoint-entry");
       expect(loaded.run.savedAt).toBe("2026-10-26T12:00:00.000Z");
     }
-    expect(storage.getItem(RUN_STORAGE_KEY)).toContain("anatomy-reflex");
+    expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
+      "anatomy-reflex",
+    );
+  });
+
+  it("round-trips a cleared prop and keeps old prop snapshots valid", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+
+    save.saveRun({
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: "anatomy-reflex",
+      packVersion: "0.3.0",
+      contentVersion: "0.3.0",
+      levelId: "04-muscle-effector",
+      roomId: "room-muscle-effector",
+      checkpointId: null,
+      progression: createProgression(),
+      events: [],
+      elapsed: 10,
+      players: {
+        activeP2: true,
+        bodies: { p1: body(0, 0), p2: body(0, 0) },
+      },
+      world: {
+        bodies: { "body-ach-packet": body(720, 610) },
+        props: {
+          "ach-packet": {
+            bodyId: "body-ach-packet",
+            state: "cleared",
+            carriedBy: null,
+            placedOn: null,
+          },
+        },
+        puzzles: {},
+      },
+      audio: { muted: false },
+      status: "playing",
+    });
+
+    const loaded = save.loadRun("anatomy-reflex", "0.3.0");
+    expect(loaded.ok).toBe(true);
+    if (loaded.ok) {
+      expect(loaded.run.world.props["ach-packet"]?.state).toBe("cleared");
+    }
+
+    const raw = JSON.parse(
+      storage.getItem(runStorageKey("anatomy-reflex")) ?? "{}",
+    );
+    raw.world.props["ach-packet"] = {
+      bodyId: "body-ach-packet",
+      state: "docked",
+      carriedBy: null,
+      placedOn: "nicotinic-receptor",
+    };
+    storage.setItem(runStorageKey("anatomy-reflex"), JSON.stringify(raw));
+    expect(save.loadRun("anatomy-reflex")).toMatchObject({ ok: true });
   });
 
   it("returns the parsed run for a content-version mismatch", () => {
@@ -165,6 +222,159 @@ describe("save", () => {
     });
   });
 
+  it("keeps pack run slots isolated and migrates the legacy slot once", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+
+    const run = {
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: "anatomy-reflex",
+      packVersion: "0.1.0",
+      contentVersion: "0.1.0",
+      levelId: "03-nerve-forest",
+      roomId: "room-nerve-forest",
+      checkpointId: null,
+      progression: createProgression(),
+      events: [],
+      elapsed: 0,
+      players: {
+        activeP2: true,
+        bodies: { p1: body(0, 0), p2: body(0, 0) },
+      },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
+      status: "playing" as const,
+    };
+
+    save.saveRun(run);
+    save.saveRun({
+      ...run,
+      packId: "silicon-reflex",
+      levelId: "01-interrupt-loop",
+      roomId: "room-interrupt-loop",
+    });
+
+    expect(save.hasRun("anatomy-reflex")).toBe(true);
+    expect(save.hasRun("silicon-reflex")).toBe(true);
+    expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
+      "03-nerve-forest",
+    );
+    expect(storage.getItem(runStorageKey("silicon-reflex"))).toContain(
+      "01-interrupt-loop",
+    );
+
+    // A save written by the pre-M1.9 single-slot build migrates into the pack
+    // slot named by the save itself.
+    storage.removeItem?.(runStorageKey("anatomy-reflex"));
+    storage.setItem(RUN_STORAGE_KEY, JSON.stringify(run));
+    expect(save.loadRun("anatomy-reflex")).toMatchObject({ ok: true });
+    expect(storage.getItem(RUN_STORAGE_KEY)).toBeNull();
+    expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
+      "anatomy-reflex",
+    );
+    expect(save.loadRun("silicon-reflex")).toMatchObject({ ok: true });
+
+    save.clearRun("anatomy-reflex");
+    expect(save.hasRun("anatomy-reflex")).toBe(false);
+    expect(save.hasRun("silicon-reflex")).toBe(true);
+  });
+
+  it("round-trips optional conversation sessions and accepts legacy dialogue", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+    const base = {
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: "anatomy-reflex",
+      packVersion: "0.1.0",
+      contentVersion: "0.1.0",
+      levelId: "03-nerve-forest",
+      roomId: "room-nerve-forest",
+      checkpointId: "checkpoint-entry",
+      progression: createProgression({ abilities: ["scan"] }),
+      events: [],
+      elapsed: 12,
+      players: {
+        activeP2: true,
+        bodies: { p1: body(112, 618), p2: body(176, 618) },
+      },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
+      status: "playing" as const,
+    };
+    save.saveRun({
+      ...base,
+      conversations: [
+        {
+          surfaceId: "conversation:p1:agent-neuron",
+          dialogueId: "dlg-neuron-01",
+          nodeId: "problem",
+          owner: "p1",
+          entityId: "agent-neuron",
+        },
+      ],
+    });
+    const loaded = save.loadRun("anatomy-reflex", "0.1.0");
+    expect(loaded.ok).toBe(true);
+    if (loaded.ok) {
+      expect(loaded.run.conversations).toEqual([
+        {
+          surfaceId: "conversation:p1:agent-neuron",
+          dialogueId: "dlg-neuron-01",
+          nodeId: "problem",
+          owner: "p1",
+          entityId: "agent-neuron",
+        },
+      ]);
+    }
+
+    save.saveRun({
+      ...base,
+      schemaVersion: "2.0",
+      dialogue: { dialogueId: "dlg-neuron-01", nodeId: "problem" },
+    });
+    const legacy = save.loadRun("anatomy-reflex", "0.1.0");
+    expect(legacy.ok).toBe(true);
+    if (legacy.ok) {
+      expect(legacy.run.dialogue).toEqual({
+        dialogueId: "dlg-neuron-01",
+        nodeId: "problem",
+      });
+    }
+  });
+
+  it("rejects malformed conversation snapshots", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+    save.saveRun({
+      schemaVersion: RUN_SCHEMA_VERSION,
+      packId: "anatomy-reflex",
+      packVersion: "0.1.0",
+      contentVersion: "0.1.0",
+      levelId: "03-nerve-forest",
+      roomId: "room-nerve-forest",
+      checkpointId: null,
+      progression: createProgression(),
+      events: [],
+      elapsed: 0,
+      players: {
+        activeP2: true,
+        bodies: { p1: body(0, 0), p2: body(0, 0) },
+      },
+      world: { bodies: {}, props: {}, puzzles: {} },
+      audio: { muted: false },
+      status: "playing",
+    });
+    const raw = JSON.parse(
+      storage.getItem(runStorageKey("anatomy-reflex")) ?? "{}",
+    );
+    raw.conversations = [{ surfaceId: "x", owner: "p3" }];
+    storage.setItem(runStorageKey("anatomy-reflex"), JSON.stringify(raw));
+    expect(save.loadRun("anatomy-reflex")).toMatchObject({
+      ok: false,
+      reason: "INVALID_SAVE",
+    });
+  });
+
   it("clears the run without touching settings", () => {
     const storage = new MemorySaveStorage();
     const save = createSave({ storage });
@@ -189,8 +399,11 @@ describe("save", () => {
       status: "playing",
     });
 
-    save.clearRun();
-    expect(save.loadRun()).toMatchObject({ ok: false, reason: "NO_SAVE" });
+    save.clearRun("anatomy-reflex");
+    expect(save.loadRun("anatomy-reflex")).toMatchObject({
+      ok: false,
+      reason: "NO_SAVE",
+    });
     expect(save.settings.audio.muted).toBe(true);
   });
 });

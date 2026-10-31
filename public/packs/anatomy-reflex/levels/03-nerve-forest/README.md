@@ -23,9 +23,9 @@ to the Neuron Keeper, press both dendrite inputs to reach threshold, then run th
 axon to the terminal. The threshold gate latches; the terminal relay opens the
 exit to the Muscle Effector.
 
-This level replaces the M1.5 Signal Ferry at 03. The ferry pattern moves to 04 in
-the approved M2 design; 04 is not authored in this chunk, so its map and level
-references remain warnings.
+This level replaces the M1.5 Signal Ferry at 03. The ferry pattern moved to
+`04-muscle-effector` in the approved M2 design and is authored there; the 03
+exit still gates the 03 → 04 transition.
 
 ## Flow
 
@@ -60,6 +60,25 @@ spawn (checkpoint-entry)
 The relay is an implementation safeguard. The current engine's puzzle gates are
 logic/visual state, not collision bodies, so the relay makes the threshold
 requirement real rather than relying on a physical threshold door.
+
+## Feedback and effects
+
+`level.json` owns the player-facing labels and the five-step beat tracker:
+press a dendrite input, reach threshold, run the axon, reach the terminal, open
+the exit. Persistent surfaces show plate, counter, gate, zone and relay state
+without relying on a toast.
+
+The feedback layer also drives the cosmetic effect coverage:
+
+- plate press and release rings;
+- a counter burst at threshold;
+- gate bursts anchored to the gate centres;
+- the `fx.tile.path` tint along the axon tiles when the relay activates;
+- the shared solved exit ping.
+
+The gates remain logic/visual state only. They have no collision body, so the
+relay and exit gate are the authoritative puzzle conditions and the gate
+bursts are presentation, not physical doors.
 
 ## Room facts
 
@@ -121,13 +140,16 @@ pause/close, `M` mute.
 
 ## Authoring notes and deviations
 
-- `puzzle-node-run` uses only M1.5 node/link types: plates, counter, relay,
-  zones, gates. No engine or schema change.
-- The threshold/behind gates are logic and visual cues; the engine does not
-  animate puzzle gates or give them collision. The `spike-relay` enforces the
-  threshold + terminal combination.
-- No automated "below threshold" HUD message exists. Authored hints and dialogue
-  carry that feedback, consistent with ADR-0043.
+- `puzzle-node-run` remains a 1.0 puzzle document. The engine feedback layer is
+  content-driven by the `feedback` block in `level.json`; no per-level runtime
+  branch was added.
+- The threshold/behind gates are logic and visual cues. The engine does not give
+  puzzle gates collision bodies. Gate state now projects to persistent surfaces
+  and cosmetic gate bursts; the `spike-relay` still enforces the threshold +
+  terminal combination.
+- Persistent counter, plate, zone, gate and relay surfaces carry the current
+  state. Authored hints and dialogue still explain why one input is below
+  threshold; there is no separate "below threshold" toast.
 - The current plate event model emits both press and release transitions. Each
   dendrite pad therefore feeds a one-shot trigger before the counter. The
   two-plate path is required; pressing the same pad twice does not increment the
@@ -140,15 +162,24 @@ pause/close, `M` mute.
 - Human solo/co-op playtesting has not been performed. `level.json` records
   `playtestedSolo: false` and `playtestedCoop: false`.
 
+## M1.8 material proof
+
+The room is fully materialized for M1.8: bone walls/floor use `blob47`
+placeholder variants, the central platform uses `edge` autotiling backed by the
+`nerve-edge` atlas variant set, and the tile material grid never changes
+collision. The sky uses a screen-space nerve pattern and the mid background
+layer uses a world-space bone pattern. See `materials.json` and `theme.json` for
+the shared world/UI definitions. Human visual review is pending.
+
 ## Remaining implementation gaps (M2 chunk boundary)
 
-- Full M2 is not implemented. `04-muscle-effector`, `05-reflex-core`, the
-  Silicon fixture, `01-bone-gate`, and `02-joint-chamber` are still unauthored.
-  The 04 exit, next-level, and map warnings are expected.
-- The ferry runtime integration tests were replaced by Node Run tests. The
-  ferry dataflow is still covered by `tests/puzzle.test.ts` and the prop
-  lifecycle by `tests/physics.test.ts`; 04 should restore the full runtime ferry
-  flow and its carry/place/pulse integration tests.
+- Full M2 is not implemented. `05-reflex-core`, the Silicon fixture,
+  `01-bone-gate`, and `02-joint-chamber` are still unauthored. `04-muscle-effector`
+  is authored; the 04 exit and map-edge references to `05-reflex-core` are the
+  expected forward-reference warnings.
+- The ferry runtime integration tests now cover the authored 04 flow, including
+  the ACh clearance beat. `tests/puzzle.test.ts` and `tests/physics.test.ts`
+  continue to cover the generic prop lifecycle.
 - Documentation outside this chunk is stale: the top-level `README.md` and
   `IMPLEMENTATION.md` still describe the older M1 concept-gate slice, and the
   untracked `docs/m3/asset-requirements.md` still assumes the ferry assets.

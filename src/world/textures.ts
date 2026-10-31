@@ -1,5 +1,11 @@
 import Phaser from "phaser";
-import { textureKey, type PlaceholderSpec, type ResolvedAsset } from "../assets";
+import {
+  textureKey,
+  type AssetsModule,
+  type PlaceholderSpec,
+  type ResolvedAsset,
+} from "../assets";
+import type { PatternResource } from "../materials";
 
 function roundedRect(
   context: CanvasRenderingContext2D,
@@ -135,13 +141,86 @@ export function textureIfLoaded(
   return scene.textures.exists(key) ? key : null;
 }
 
+export function ensureAtlasFrames(
+  scene: Phaser.Scene,
+  asset: ResolvedAsset,
+): void {
+  if (asset.type !== "atlas" || !asset.regions) return;
+  const key = textureKey(asset.id);
+  const texture = scene.textures.exists(key)
+    ? scene.textures.get(key)
+    : null;
+  if (!texture) return;
+  for (const [name, region] of Object.entries(asset.regions)) {
+    if (!texture.has(name)) {
+      texture.add(
+        name,
+        0,
+        region.x,
+        region.y,
+        region.width,
+        region.height,
+      );
+    }
+  }
+}
+
+export function ensurePatternTexture(
+  scene: Phaser.Scene,
+  resource: PatternResource,
+): string | null {
+  if (!resource.bitmap || !resource.textureKey) return null;
+  const key = resource.textureKey;
+  if (scene.textures.exists(key)) return key;
+  const texture = scene.textures.createCanvas(
+    key,
+    resource.bitmap.width,
+    resource.bitmap.height,
+  );
+  if (!texture) return null;
+  const image = texture.context.createImageData(
+    resource.bitmap.width,
+    resource.bitmap.height,
+  );
+  image.data.set(resource.bitmap.data);
+  texture.context.putImageData(image, 0, 0);
+  texture.refresh();
+  return key;
+}
+
+export interface PatternTextureView {
+  key: string;
+  frame?: string;
+}
+
+export function resolvePatternTexture(
+  scene: Phaser.Scene,
+  assets: AssetsModule,
+  resource: PatternResource,
+  fontFamily: string,
+): PatternTextureView | null {
+  if (resource.kind === "procedural") {
+    const key = ensurePatternTexture(scene, resource);
+    return key ? { key } : null;
+  }
+  if (!resource.assetId) return null;
+  const asset = assets.resolveById(resource.assetId);
+  if (!asset) return null;
+  const key = resolveTexture(scene, asset, fontFamily);
+  if (!key) return null;
+  return resource.frame ? { key, frame: resource.frame } : { key };
+}
+
 export function resolveTexture(
   scene: Phaser.Scene,
   asset: ResolvedAsset,
   fontFamily: string,
 ): string | null {
-  return (
+  const key =
     textureIfLoaded(scene, asset) ??
-    ensurePlaceholderTexture(scene, asset, fontFamily)
-  );
+    ensurePlaceholderTexture(scene, asset, fontFamily);
+  if (key && asset.type === "atlas") {
+    ensureAtlasFrames(scene, asset);
+  }
+  return key;
 }

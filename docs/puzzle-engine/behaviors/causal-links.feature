@@ -1,6 +1,9 @@
 # language: en
 # Source: ADR-0005
 Feature: Conditional links and blocked feedback
+  Implementation status: deferred. `requires`, authored messages, and
+  `linkBlocked` are accepted targets but are not in the current schema.
+
   A link with requires applies only when the referenced node is active.
   Normative per ADR-0005. A blocked link is feedback, not a fail state, and
   never mutates its target.

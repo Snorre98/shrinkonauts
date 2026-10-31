@@ -2,11 +2,16 @@ import type { ResolvedAsset } from "../assets";
 import type { GateAnswer } from "../pack";
 import type {
   ConceptView,
-  DialogueView,
   GateView,
   RuntimeSnapshot,
   SettingsView,
+  SurfaceAction,
 } from "./model";
+import {
+  mountFeedbackSurfaces,
+  type FeedbackSurfaceRenderer,
+} from "./feedback-renderer";
+import type { CanvasRect } from "./anchors";
 
 export interface GameUiDiagnostics {
   modeLabel: string;
@@ -17,8 +22,7 @@ export interface GameUiDiagnostics {
 }
 
 export interface GameUiCallbacks {
-  onAdvanceDialogue(): void;
-  onChooseDialogue(choiceId: string): void;
+  onSurfaceAction(surfaceId: string, action: SurfaceAction): void;
   onGateSubmit(answer: GateAnswer): void;
   onGateHint(): void;
   onCloseGate(): void;
@@ -35,6 +39,7 @@ export interface GameUiCallbacks {
   onDebriefFinish(): void;
   onExport(): void;
   onNewRun(): void;
+  onExitToHub(): void;
 }
 
 export interface GameUiOptions {
@@ -129,8 +134,8 @@ export function mountGameUi(
   const helpHeading = el("h2", "hud__heading", "Controls");
   const helpList = el("dl", "hud__controls");
   const rows: ReadonlyArray<[string, string]> = [
-    ["Player 1", "A / D · W / Space · Shift · E · Q · F"],
-    ["Player 2", "← / → · ↑ · / · , · . · ' · ;"],
+    ["Player 1", "A / D · W / Space · Shift · E/Enter · Q · F · 1–5 choices"],
+    ["Player 2", "← / → · ↑ · / · , confirm · . · ' · ; · Delete cancel"],
     ["Shared", "P join · Tab map · C log · Esc pause · M mute"],
   ];
   for (const [label, keys] of rows) {
@@ -149,11 +154,49 @@ export function mountGameUi(
   toast.setAttribute("role", "status");
   toast.setAttribute("aria-live", "polite");
 
+  const worldLayer = el("div", "surface-layer");
+  worldLayer.id = "world-surface-layer";
+  const hudLayer = el("div", "surface-layer");
+  hudLayer.id = "hud-surface-layer";
+
   const overlayRoot = el("div", "overlay-root");
+  overlayRoot.id = "modal-layer";
   overlayRoot.hidden = true;
 
   hud.append(bar, help, prompt, toast);
-  root.append(hud, overlayRoot);
+  root.append(worldLayer, hudLayer, hud, overlayRoot);
+
+  const feedbackRenderer: FeedbackSurfaceRenderer = mountFeedbackSurfaces(
+    worldLayer,
+    hudLayer,
+    {
+      onSurfaceAction: (surfaceId, action) =>
+        callbacks.onSurfaceAction(surfaceId, action),
+    },
+  );
+
+  function canvasRect(): CanvasRect {
+    const canvas = document.querySelector<HTMLCanvasElement>(
+      "#game-root canvas",
+    );
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        return {
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: rect.height,
+        };
+      }
+    }
+    return {
+      x: 0,
+      y: 0,
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight,
+    };
+  }
 
   /* ---------------------------------------------------------------- */
   /* Settings                                                         */
@@ -258,19 +301,6 @@ export function mountGameUi(
       callbacks.onMute();
       return;
     }
-
-    const dialogueActive =
-      overlay?.element.dataset.overlay === "dialogue" && snapshot?.dialogue;
-    if (
-      dialogueActive &&
-      event.target === overlay?.element &&
-      (event.key === "Enter" || event.key === " ")
-    ) {
-      if (snapshot?.dialogue && snapshot.dialogue.choices.length === 0) {
-        event.preventDefault();
-        callbacks.onAdvanceDialogue();
-      }
-    }
   });
 
   /* ---------------------------------------------------------------- */
@@ -300,45 +330,6 @@ export function mountGameUi(
     const node = button(label, "overlay__close", action);
     node.setAttribute("aria-label", `${label} and return to the level`);
     return node;
-  }
-
-  function renderDialogue(dialogue: DialogueView): Overlay {
-    const { root: node, body } = panel(
-      "overlay--dialogue",
-      "Dialogue",
-      dialogue.speaker,
-    );
-    node.dataset.autofocus = "true";
-
-    const text = el("p", "dialogue__text", dialogue.text);
-    body.append(text);
-
-    if (dialogue.choices.length > 0) {
-      const list = el("div", "dialogue__choices");
-      list.setAttribute("role", "group");
-      list.setAttribute("aria-label", "Choose a reply");
-      for (const choice of dialogue.choices) {
-        const option = button(
-          choice.text,
-          "button button--choice",
-          () => callbacks.onChooseDialogue(choice.id),
-        );
-        list.append(option);
-      }
-      body.append(list);
-    } else {
-      const advance = button(
-        dialogue.atEnd ? "Close dialogue" : "Continue",
-        "button button--primary",
-        () => callbacks.onAdvanceDialogue(),
-      );
-      body.append(advance);
-      body.append(
-        el("p", "overlay__hint", "Enter or Space advances. Esc closes."),
-      );
-    }
-
-    return { key: `dialogue:${dialogue.id}:${dialogue.nodeId}`, element: node };
   }
 
   function renderGate(gate: GateView): Overlay {
@@ -719,6 +710,7 @@ export function mountGameUi(
         callbacks.onExport(),
       ),
       button("Play again", "button", () => callbacks.onNewRun()),
+      button("Leave to bathroom", "button", () => callbacks.onExitToHub()),
     );
     body.append(actions);
     node.dataset.autofocus = "true";
@@ -806,6 +798,7 @@ export function mountGameUi(
         ? [button("Reset puzzle", "button", () => callbacks.onResetPuzzle())]
         : []),
       button("Restart level", "button", () => callbacks.onNewRun()),
+      button("Leave to bathroom", "button", () => callbacks.onExitToHub()),
     );
     body.append(actions);
     node.dataset.autofocus = "true";
@@ -846,9 +839,6 @@ export function mountGameUi(
 
   function desiredOverlay(next: RuntimeSnapshot): Overlay | null {
     if (fatalError) return renderError(fatalError);
-    if (next.state === "dialogue" && next.dialogue) {
-      return renderDialogue(next.dialogue);
-    }
     if (next.state === "gate" && next.gate) return renderGate(next.gate);
     if (next.state === "map") return renderMap(next);
     if (next.state === "conceptLog") return renderConceptLog(next);
@@ -928,10 +918,17 @@ export function mountGameUi(
     applySettings(next.settings);
   }
 
+  window.addEventListener("resize", () => {
+    if (snapshot) {
+      feedbackRenderer.update(snapshot.feedback, snapshot.world, canvasRect());
+    }
+  });
+
   return {
     update(next) {
       snapshot = next;
       updateHud(next);
+      feedbackRenderer.update(next.feedback, next.world, canvasRect());
       const wanted = desiredOverlay(next);
       if (wanted && overlay?.key === wanted.key) {
         overlay.update?.(next);

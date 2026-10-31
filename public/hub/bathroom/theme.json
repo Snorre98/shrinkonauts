@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "id": "bathroom-atlas",
+  "palette": {
+    "bg": "#142022",
+    "bone": "#e9e2d1",
+    "boneShadow": "#7f918b",
+    "nerve": "#f4c95d",
+    "nerveGlow": "#fff3b0",
+    "joint": "#7bdff2",
+    "muscle": "#e07178",
+    "text": "#f5f0e6",
+    "muted": "#aab8b0",
+    "accent": "#7bdff2",
+    "danger": "#ef476f"
+  },
+  "fonts": {
+    "ui": "Inter, system-ui, sans-serif",
+    "display": "Space Grotesk, Inter, system-ui, sans-serif"
+  },
+  "ui": {
+    "radius": 14,
+    "border": 2,
+    "fontScale": 1,
+    "reducedMotion": false,
+    "assets": {}
+  },
+  "audio": {
+    "cues": {
+      "click": "audio.cue.hub.click",
+      "door": "audio.cue.hub.door",
+      "spin": "audio.cue.hub.spin",
+      "shrink": "audio.cue.hub.shrink",
+      "arrive": "audio.cue.hub.arrive",
+      "hum": "audio.cue.hub.hum"
+    }
+  }
+}

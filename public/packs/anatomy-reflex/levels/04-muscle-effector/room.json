@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "id": "room-muscle-effector",
   "title": "Muscle Effector",
   "width": 40,
@@ -32,6 +32,36 @@
       "########################################"
     ]
   },
+  "tileMaterials": [
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "m                                      m",
+    "eeeemmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+  ],
+  "tileMaterialLegend": {
+    "m": { "materialId": "muscle", "autotile": "edge" },
+    "e": { "materialId": "membrane", "autotile": "corner" }
+  },
+  "defaultMaterialId": "muscle",
+  "materialSeed": 7,
   "background": {
     "id": "bg.muscle_endplate",
     "layers": [
@@ -62,7 +92,15 @@
         "parallaxX": 0.75,
         "parallaxY": 0.35,
         "fit": "tile",
-        "opacity": 0.9
+        "opacity": 0.9,
+        "materialId": "muscle",
+        "pattern": {
+          "patternId": "muscle-fibers",
+          "space": "world",
+          "scale": 0.75,
+          "opacity": 0.15,
+          "blend": "overlay"
+        }
       }
     ]
   },
@@ -103,6 +141,9 @@
       "components": {
         "pulseSource": {
           "ability": "pulse"
+        },
+        "anchors": {
+          "muzzle": { "x": 32, "y": 16, "direction": 0 }
         }
       }
     },
@@ -160,6 +201,9 @@
       "components": {
         "gate": {
           "gateId": "ca-gate"
+        },
+        "anchors": {
+          "center": { "x": 18, "y": 18 }
         }
       }
     },
@@ -187,6 +231,9 @@
             "x": 720,
             "y": 620
           }
+        },
+        "anchors": {
+          "mouth": { "x": 4, "y": 16, "direction": 3.14159 }
         }
       }
     },
@@ -214,6 +261,9 @@
             "x": 848,
             "y": 620
           }
+        },
+        "anchors": {
+          "mouth": { "x": 4, "y": 16, "direction": 3.14159 }
         }
       }
     },
@@ -236,6 +286,19 @@
       "components": {
         "gate": {
           "gateId": "muscle-gate"
+        },
+        "anchors": {
+          "center": { "x": 18, "y": 18 }
+        },
+        "material": {
+          "materialId": "muscle",
+          "patternId": "muscle-fibers",
+          "pattern": {
+            "space": "world",
+            "scale": 0.75,
+            "opacity": 0.35,
+            "blend": "overlay"
+          }
         }
       }
     },
