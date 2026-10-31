@@ -6,6 +6,7 @@ import type {
   RuntimeSnapshot,
   SettingsView,
   SurfaceAction,
+  SurfaceAction,
 } from "./model";
 import {
   mountFeedbackSurfaces,
@@ -24,6 +25,7 @@ export interface GameUiDiagnostics {
 
 export interface GameUiCallbacks {
   onSurfaceAction(surfaceId: string, action: SurfaceAction): void;
+  onSurfaceAction(surfaceId: string, action: SurfaceAction): void;
   onGateSubmit(answer: GateAnswer): void;
   onGateHint(): void;
   onCloseGate(): void;
@@ -40,6 +42,7 @@ export interface GameUiCallbacks {
   onDebriefFinish(): void;
   onExport(): void;
   onNewRun(): void;
+  onExitToHub(): void;
   onExitToHub(): void;
 }
 
@@ -136,6 +139,8 @@ export function mountGameUi(
   const rows: ReadonlyArray<[string, string]> = [
     ["Player 1", "A / D · W / Space · Shift · E/Enter · Q · F · 1–5 choices"],
     ["Player 2", "← / → · ↑ · / · , confirm · . · ' · ; · Delete cancel"],
+    ["Player 1", "A / D · W / Space · Shift · E/Enter · Q · F · 1–5 choices"],
+    ["Player 2", "← / → · ↑ · / · , confirm · . · ' · ; · Delete cancel"],
     ["Shared", "P join · Tab map · C log · Esc pause · M mute"],
   ];
   for (const [label, keys] of rows) {
@@ -159,11 +164,50 @@ export function mountGameUi(
   const hudLayer = el("div", "surface-layer");
   hudLayer.id = "hud-surface-layer";
 
+  const worldLayer = el("div", "surface-layer");
+  worldLayer.id = "world-surface-layer";
+  const hudLayer = el("div", "surface-layer");
+  hudLayer.id = "hud-surface-layer";
+
   const overlayRoot = el("div", "overlay-root");
+  overlayRoot.id = "modal-layer";
   overlayRoot.id = "modal-layer";
   overlayRoot.hidden = true;
 
   hud.append(bar, help, prompt, toast);
+  root.append(worldLayer, hudLayer, hud, overlayRoot);
+
+  const feedbackRenderer: FeedbackSurfaceRenderer = mountFeedbackSurfaces(
+    worldLayer,
+    hudLayer,
+    {
+      onSurfaceAction: (surfaceId, action) =>
+        callbacks.onSurfaceAction(surfaceId, action),
+    },
+  );
+
+  function canvasRect(): CanvasRect {
+    const canvas = document.querySelector<HTMLCanvasElement>(
+      "#game-root canvas",
+    );
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        return {
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: rect.height,
+        };
+      }
+    }
+    return {
+      x: 0,
+      y: 0,
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight,
+    };
+  }
   root.append(worldLayer, hudLayer, hud, overlayRoot);
 
   const feedbackRenderer: FeedbackSurfaceRenderer = mountFeedbackSurfaces(
@@ -713,6 +757,7 @@ export function mountGameUi(
       ),
       button("Play again", "button", () => callbacks.onNewRun()),
       button("Leave to bathroom", "button", () => callbacks.onExitToHub()),
+      button("Leave to bathroom", "button", () => callbacks.onExitToHub()),
     );
     body.append(actions);
     node.dataset.autofocus = "true";
@@ -800,6 +845,7 @@ export function mountGameUi(
         ? [button("Reset puzzle", "button", () => callbacks.onResetPuzzle())]
         : []),
       button("Restart level", "button", () => callbacks.onNewRun()),
+      button("Leave to bathroom", "button", () => callbacks.onExitToHub()),
       button("Leave to bathroom", "button", () => callbacks.onExitToHub()),
     );
     body.append(actions);
@@ -926,10 +972,17 @@ export function mountGameUi(
     }
   });
 
+  window.addEventListener("resize", () => {
+    if (snapshot) {
+      feedbackRenderer.update(snapshot.feedback, snapshot.world, canvasRect());
+    }
+  });
+
   return {
     update(next) {
       snapshot = next;
       updateHud(next);
+      feedbackRenderer.update(next.feedback, next.world, canvasRect());
       feedbackRenderer.update(next.feedback, next.world, canvasRect());
       const wanted = desiredOverlay(next);
       if (wanted && overlay?.key === wanted.key) {

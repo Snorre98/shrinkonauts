@@ -12,6 +12,19 @@ export type {
   UiMaterialSlotStyle,
   UiMaterialStyles,
 } from "./material-css";
+export {
+  applyUiMaterialStyles,
+  clearUiMaterialStyles,
+  contrastRatio,
+  mixHex,
+  resolveUiMaterialStyles,
+} from "./material-css";
+export type {
+  ResolvedUiMaterialStyles,
+  ResolveUiMaterialStylesInput,
+  UiMaterialSlotStyle,
+  UiMaterialStyles,
+} from "./material-css";
 export type { Hud, HudModel, HudOptions } from "./hud";
 export { mountGameUi } from "./game-ui";
 export { snapTextScale, TEXT_SCALES } from "./text-scale";
@@ -42,6 +55,10 @@ export type {
   PuzzleView,
   RuntimeSnapshot,
   SettingsView,
+  SurfaceAction,
+  WorldAnchorPoint,
+  WorldEntityView,
+  WorldView,
   SurfaceAction,
   WorldAnchorPoint,
   WorldEntityView,
