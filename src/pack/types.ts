@@ -199,6 +199,9 @@ export interface ThemePalette {
   jointLight?: string;
   muscleDark?: string;
   muscleLight?: string;
+  orange?: string;
+  orangeDark?: string;
+  orangeLight?: string;
 }
 
 export interface ThemeFonts {

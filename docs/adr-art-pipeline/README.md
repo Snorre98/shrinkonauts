@@ -29,14 +29,19 @@ these records before acceptance; accepted records are immutable.
 | [0061](adr-0061-palette-lut-sprite-variants.md) | Palette-LUT sprite variants | Accepted |
 | [0062](adr-0062-data-driven-sprite-animation.md) | Data-driven sprite animation and runtime state machine | Accepted |
 | [0063](adr-0063-build-time-animation-previews.md) | Build-time animation previews, not runtime GIFs | Accepted |
+| [0064](adr-0064-orange-p2-suit-palette-swap.md) | Orange P2 suit and visor palette swap | Accepted |
 
 ## Implementation status
 
 - **ADR-0060:** the source layer exists at `art-source/`; the first Ludo slicer
   is `scripts/art-slice.ts`.
 - **ADR-0063:** `npm run art:slice` writes frame PNGs and a GIF preview.
-- **ADR-0061 / ADR-0062:** not implemented yet. The next slice is frame
-  normalization to 14×22, palette quantization, and the P1/P2 LUT.
+- **ADR-0061 / ADR-0064:** `scripts/art-normalize.ts` validates and quantizes a
+  cleaned cell to the semantic ramps; `scripts/art-variant.ts` applies the
+  single-pass palette LUT. The canonical P2 palette swap is defined in
+  `art-source/characters/player-p1/working/palette.json`.
+- **ADR-0062:** not implemented yet. `working/clips.json` is a static scaffold;
+  animation playback and the clips validator remain a later slice.
 
 ## Relationship to existing decisions
 
@@ -68,4 +73,4 @@ This domain is accepted when:
 - **Rejected:** considered and not adopted.
 
 All records in this domain start as **Proposed**. ADR-0060–0063 were accepted
-on 29 October 2026.
+on 29 October 2026; ADR-0064 was accepted on 31 October 2026.

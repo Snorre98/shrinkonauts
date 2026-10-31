@@ -1,10 +1,10 @@
 # M3 Asset Requirements — Shrinkonauts: The Reflex Arc
 
-**Status:** Draft v0.4 · 29 October 2026 (M1.8 pixel re-alignment)
+**Status:** Draft v0.7 · 31 October 2026 (subject-first prompt pass + biology-to-shape lexicon)
 **Owner:** Snorre  
 **Scope:** Final 2D pixel art and audio for the M3 vertical slice  
 **Target milestone:** M3 — Art/audio pass + capture (4–5 November 2026)  
-**Governing decisions:** ADR-0029 (asset provider), ADR-0030 (sprite format), ADR-0031 (layered backgrounds), ADR-0032 (audio cues), ADR-0033 (final asset timing), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0049 (pixel UI chrome), ADR-0060–0063 (source/working/runtime art pipeline, palette variants, animation, previews)
+**Governing decisions:** ADR-0029 (asset provider), ADR-0030 (sprite format), ADR-0031 (layered backgrounds), ADR-0032 (audio cues), ADR-0033 (final asset timing), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0049 (pixel UI chrome), ADR-0060–0064 (source/working/runtime art pipeline, palette variants, animation, previews, P2 palette swap)
 
 **Related:** [`implementation-plan.md`](../shrinkonauts/base-game/implementation-plan.md) · [`contracts/pack-schema.md`](../shrinkonauts/base-game/contracts/pack-schema.md) · [`level-authoring.md`](../shrinkonauts/base-game/level-authoring.md) · [`DESIGN.md`](../shrinkonauts/DESIGN.md) · [`learning-design-brief.md`](../shrinkonauts/learning-design-brief.md) · [`cards/`](../shrinkonauts/base-game/cards/) · [`adr-m3/`](../adr-m3/README.md)
 
@@ -12,7 +12,17 @@
 
 > **Visual pivot (2026-10-29).** The project has moved from the hand-drawn “Dank Anatomy Cartoon” direction to **“Dank Anatomy Pixel Art”** across the world and the UI. This revision keeps the v0.3 M1.8 scope: 21 visible images, two material atlases, 04 authored, and the M1.9/M4 boundaries. §4, §6, §7, §8, §9 and ADR-0047–0049 replace the hand-drawn rendering rules; ADR-0027 remains in force for licensing and audio.
 >
-> **Pipeline note (2026-10-29).** ADR-0060–0063 define the source/working/runtime asset pipeline, palette variants, data-driven animation, and build-time previews. They do not change the M3 static-only scope; animation playback remains a later engine task.
+> **Pipeline note (2026-10-31).** ADR-0060–0064 define the source/working/runtime asset pipeline, palette variants, data-driven animation, build-time previews, and the P2 palette permutation. Source sheets are captured and sliced offline; M3 still ships static runtime sprites, and animation playback remains a later engine task.
+>
+> **P2 palette note (2026-10-31).** ADR-0064 amends the P2 rule. P2 is now an
+> orange-suit, bone-visor/tank, muscle-accent palette permutation of P1. Orange
+> is an approved ramp for the P2 suit only.
+>
+> **Prompt-language note (2026-10-31).** The prompt pack is now subject-first and
+> uses a biology-to-shape lexicon (§4.10). Anatomical terms follow a visual noun
+> (“fleshy tentacles (dendrites)”), and the export grid is kept out of the Ludo
+> concept prompt. This is a wording and ordering change only; the asset scope,
+> anatomy facts and runtime constraints are unchanged.
 
 ---
 
@@ -26,17 +36,17 @@
 | Total M3 assets | **32** |
 | Style | **Dank Anatomy Pixel Art** |
 | Rendering | **Half-res source, 2× nearest-neighbour display** |
-| Tool | **Ludo.ai concepts + Aseprite/Piskel pixel cleanup; Ludo.ai Audio Generator** |
+| Tool | **Ludo.ai source sheets/concepts + local slice/normalize/palette-LUT pipeline + Aseprite/Piskel cleanup; Ludo.ai Audio Generator** |
 | Ludo plan | **Indie, $20/mo** (Pro only if automation or scope grows) |
 | Free-tier use | Six-asset concept/style gate only |
-| Animation | **None** — the runtime renders single images |
+| Animation | **None at runtime** — source sheets may be captured and sliced; the M3 runtime uses one static frame; playback is deferred |
 | UI | **8-bit pixel chrome; Silkscreen + Pixelify Sans; badge is the only rendered UI image** |
 | UI panels/portraits | **Deferred** — not rendered by the current UI |
 | Music | **Deferred** — not played by the current runtime |
 | Levels 01, 02, 05, Silicon | **Deferred** — design proposals exist, but the pack content is not implemented |
 | Level 04 | **Authored**; shares the final entity sprites, but its backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder art |
 | Material atlases | **2 final atlases**: bone (`blob47`, 47 regions) and nerve (`edge`, 16 regions), authored as 32×32 frames at 1:1 with 2×2 clusters. The current pack still has one `tile.anatomy.atlas` placeholder |
-| Prompt version | **`m3-2026-10-29.2`** (pixel re-alignment) |
+| Prompt version | **`m3-2026-10-31.2`** (subject-first prompts + biology-to-shape lexicon) |
 | Content dependency | **Puzzle-specific props are checked against the authored 03/04 rooms**; do not generate props the rooms do not reference |
 
 > **Content dependency.** The pack implements Node Run in `03-nerve-forest` and
@@ -54,7 +64,7 @@ This document defines exactly what final pixel art and audio the M3 art pass req
 
 1. **Scope creep** — trying to art five levels plus a Silicon fixture.
 2. **Style drift** — producing assets that do not share one pixel grid, palette, and silhouette language.
-3. **Engine mismatch** — producing animated spritesheets, fractional scales, or UI skin assets the runtime cannot display cleanly.
+3. **Engine mismatch** — producing runtime-animated spritesheets, fractional scales, or UI skin assets the runtime cannot display cleanly. Source sheets are allowed; they are sliced and normalized offline.
 4. **Faux-pixel output** — AI images with mixed pixel sizes, anti-aliased edges, or painterly detail pretending to be pixel art.
 5. **Licensing ambiguity** — shipping AI-generated assets or fonts without a clear tool, plan, prompt, and licence record.
 6. **Readability loss** — chunky pixels that stop reading at 28×44, 36×36, 32×32 atlas frames, or 16 px UI text.
@@ -90,7 +100,7 @@ This is a production document, not a GDD. The game design source remains [`DESIG
 | `sprite.checkpoint` | 1 | Declared but not referenced by the authored rooms |
 | `sprite.gate.nerve` | 1 | Referenced by 04's Ca²⁺ gate, but 04 props stay placeholder art in M3 |
 | `audio.cue.wrong` | 1 | Declared in the theme and manifest; outside the 11-cue M3 scope |
-| Animated sprite sheets / GIF loops | — | The runtime loads sheets but does not create animations |
+| Runtime animation playback / GIF loops | — | Source sheets may be captured and sliced for static frames; the runtime does not create animations |
 | Music loop / ambience | — | Music playback is deferred |
 | Levels `01-bone-gate`, `02-joint-chamber`, `05-reflex-core` | 3 | Design proposals exist in [`docs/m2/nervous-puzzles/`](../m2/nervous-puzzles/), but the pack content is not implemented |
 | Silicon fixture | 1 | Design proposal exists; not implemented in the pack |
@@ -103,7 +113,7 @@ The deferred UI assets remain declared as placeholders. They will not appear in 
 1. **One environment.** Final environment art is produced for `03-nerve-forest`. The shared entity sprites are final because 03/04 reference them; 04 backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder. Other levels get art only after they are authored, pass validation, and appear in the capture list.
 2. **No new asset IDs during M3.** If a level needs a new ID, that is a content/engine task with an ADR, not an art-pass improvisation.
 3. **No gameplay code changes.** ADR-0033 forbids mixing the art pass with gameplay changes. The pixel pivot needs a small, recorded render change (`pixelArt`, `antialias`, `roundPixels`, integer background scaling) under ADR-0048; nothing in `src/game`, `src/puzzle`, or the physics/runtime modules changes.
-4. **Static sprites only.** The current `world` adapter uses Phaser images, not animations. Animated sheets would display frame 0 only.
+4. **Static runtime sprites only.** The current `world` adapter uses Phaser images, not animations. Source sheets are allowed; they are sliced offline and M3 uses one frame. Animated playback is a later engine task.
 5. **Reuse the shared kit.** Players, material atlases, badge, and audio cues are shared. Do not generate per-level duplicates.
 6. **Placeholders are an acceptable fallback.** A coherent placeholder build is better than a half-finished final build. The validator already supports declared placeholders.
 7. **Three pixel anchors.** Characters and props derive from the approved P1 pixel anchor; backgrounds derive from the approved sky; atlases derive from approved material swatches. The category style blocks in §8 are the same for every asset in a category, and every source pixel is placed on the 2× grid.
@@ -175,7 +185,7 @@ These are current implementation facts plus the render changes recorded in ADR-0
 | Background far/mid/near use `fit: "tile"` | `room.json`, `src/world/background.ts` (`TileSprite`) | Author **1024×512** with a 2×2 minimum cluster grid; tile on **both axes**. |
 | The sky uses `fit: "cover"` | `src/world/background.ts` | Author **640×368**, displayed at an integer 2× cover. The current `coverScale * 1.4` path must be replaced by integer cover (ADR-0048). |
 | The renderer is currently smooth-scaled | `src/world/create-game.ts` (`pixelArt: false`, `antialias: true`) | Target config: `pixelArt: true`, `antialias: false`, `roundPixels: true`. |
-| Spritesheets are loaded but not animated | `room-scene.ts` loads `type: "sheet"` but creates `this.add.image(...)`; no `this.anims.create(...)` | Use static `sprite` entries and single PNG/WebP images. |
+| Spritesheets are loaded but not animated | `room-scene.ts` loads `type: "sheet"` but creates `this.add.image(...)`; no `this.anims.create(...)` | Source sheets are sliced offline; M3 uses static `sprite` entries and one normalized PNG. |
 | Only the badge UI asset is rendered | `src/ui/hud.ts` (`styleBadge`, `.hud__stamp--image`) and `src/game/boot.ts` | Author **16×16**; the current HUD displays a ~45×27 CSS px pill with `cover`. The pixel UI target is a 32×32 square stamp. |
 | Entity sprites are briefly tinted on interaction | `room-scene.ts` (`applyInteractionHighlight`, `0xffe08a`) | Check every entity sprite under a warm tint; cyan/yellow details must survive. |
 | Capture mode is deferred | `IMPLEMENTATION.md` status table | Clean 16:9 capture is an M2/M3 engine task; do not assume `?capture=1` exists. |
@@ -204,7 +214,7 @@ These are current implementation facts plus the render changes recorded in ADR-0
 
 ### 4.3 Palette
 
-Eight hue families, each with a shadow/base/highlight ramp. Every pixel comes from this table.
+Nine hue families, each with a shadow/base/highlight ramp. Every pixel comes from this table.
 
 | Family | Shadow | Base | Highlight | Use |
 |---|---|---|---|---|
@@ -214,12 +224,14 @@ Eight hue families, each with a shadow/base/highlight ramp. Every pixel comes fr
 | Nerve | `#b8862b` | `#ffd166` | `#fff3b0` | Signals, key light, pickups |
 | Joint | `#3f9fb5` | `#7bdff2` | `#c9f7ff` | P1 accents, scan UI, cool rim |
 | Muscle | `#a82a4a` | `#ef476f` | `#ff9fb2` | P2 accents, muscle, danger |
+| Orange | `#813115` | `#e59b34` | `#ffd28a` | P2 suit only |
 | Sage | `#6f847d` | `#9db4ad` | `#c4d4ce` | Muted tissue, secondary text |
 | Ink | `#000000` | `#05090b` | `#2a3f47` | Outlines, deepest shadow |
 
 Rules:
 
-- Use the ramp steps only. Do not introduce purple, neon green, orange, pure red, or intermediate blends.
+- Use the ramp steps only. Do not introduce purple, neon green, unapproved orange, pure red, or intermediate blends.
+- Orange is reserved for the P2 suit. Do not use it on other sprites, materials, backgrounds, effects, or UI.
 - Dither with adjacent ramp steps, never with a new colour.
 - Black/white only for tiny alpha edges.
 - The UI uses the same palette through the theme tokens; no pack-specific CSS.
@@ -227,17 +239,20 @@ Rules:
 
 ### 4.4 Character rules
 
-- **Player:** bulky retro-futuristic life-support suit; cream/bone shell; dark teal joints; round helmet with warm amber visor; yellow backpack tanks; cyan chest light; scanner gauntlet; short legs; big boots; scuffed and patched. No visible face. No sleek armour. No shiny plastic.
+- **Player:** bulky retro-futuristic life-support suit; P1 has a cream/bone shell, P2 has an orange shell; dark teal joints; round helmet with a visor (amber on P1, bone on P2); backpack tanks (yellow on P1, bone on P2); chest light; scanner gauntlet; short legs; big boots; scuffed and patched. No visible face. No sleek armour. No shiny plastic.
 - **Player pixel build:** 14×22 source grid; 1px outline; helmet 7–8 px across; visor 3–4 px; torso 8–10 px wide; boots 3 px; backpack 4×6 px; scanner gauntlet 2×2 px. The silhouette must read at 28×44.
-- **P1/P2 differentiation:** P1 uses joint-cyan accents; P2 uses muscle-pink accents. Keep the silhouette identical.
+- **P1/P2 differentiation:** P1 uses a bone suit, amber visor, nerve-yellow tanks, and joint-cyan accents. P2 uses the approved orange suit, bone visor, bone tanks, and muscle-pink accents. Keep the silhouette, frame cell, and timing identical. P2 is a palette permutation of P1, not a new pose.
+- **P2 visor:** bone ramp with the ink rim; no cyan glint. Muscle-pink accents stay on the chest light and shoulder trim, not on the visor rim.
 - **Cells:** characters first, diagrams second. Big expressive eyes built from 2×2 blocks, simple body, tiny 1–2 px limbs, one job prop, one personality prop. No human faces, no sexualised cells, no gore.
+- **Neuron visual grammar:** one round jelly-bean cell body; one dark oval nucleus inside it; a crown of 5–7 short, soft, fleshy tentacles with forked tips for dendrites; one long, thin, bare tail for the axon; a small forked twig at the tail tip for the axon terminals. Arms, foot stalk and lantern are character props, not anatomy. Do not draw dendrites as hair or fur. Do not put myelin on the Neuron Keeper character; myelin is a glial sheath shown on the scan icons.
+- **Anatomy-to-shape rule:** every anatomical term in a Ludo prompt follows a visual noun: shape first, term second, job third. Example: “short fleshy tentacles (dendrites) that receive the signal.” The full lexicon is §4.10.
 - **Cell colour families:** neuron = nerve/bone; osteocyte = bone/dust; synoviocyte = amber/cyan; muscle effector = muscle/rust; reflex core = bone/danger pink; Silicon = graphite/cyan.
 - **Props:** 18×18 source grid; strong iconic silhouette; 1px dashed cyan scan rim for scannable objects; nerve-yellow core for interactables.
 - **No text on any sprite.** Labels and numbers are UI, not art.
 
 ### 4.5 Environment and material rules
 
-- The body is a **landscape**, not a cutaway textbook diagram. Anatomy is architecture: nerve bundles as trees, myelin as bark, synapses as lanterns, bone as cliffs, cartilage as glass, membranes as wet fabric.
+- The body is a **landscape**, not a cutaway textbook diagram. Anatomy is architecture: nerve bundles as thick cable-like trees, myelin as pale segmented sheath plates, synapses as lanterns, bone as cliffs, cartilage as glass, membranes as wet fabric.
 - **Damp, humid, breathing.** Build condensation, sheen, dust, and membrane folds from dither patterns; no smooth gradients.
 - **Dark enough for HUD.** Keep the centre and lower third of the sky relatively dark so the yellow/cyan HUD and player silhouettes read.
 - **No labels, arrows, or diagram lines.** The scan system supplies meaning.
@@ -277,7 +292,8 @@ Do not put living artists’ names or copyrighted character names into Ludo prom
 | Use 1px source outlines and hard pixel edges | Use anti-aliasing, soft vector lines, or blurry edges |
 | Use three-step ramps and 50% dither | Use smooth gradients, 3D shading, or glossy plastic |
 | Make silhouettes readable at 28–44 px | Add fine detail, fingers, lace, or tiny text |
-| Use the eight ramp families only | Introduce neon, purple, orange, pure red, or mixed pixel sizes |
+| Use the nine ramp families only | Introduce neon, purple, unapproved orange, pure red, or mixed pixel sizes |
+| Use the approved Orange ramp only on the P2 suit | Use orange on any other asset, material, background, effect, or UI |
 | Make cells look like tired workers | Make cells look like monsters or gore |
 | Use damp membrane dither and grime | Use blood, wounds, or exposed organs |
 | Keep the suit scuffed and practical | Make it sleek, shiny, or Iron Man-like |
@@ -296,6 +312,42 @@ These are for future levels. **Do not generate them until the level is authored 
 | `04-muscle-effector` | Muscle pink, warm rust, bone | Fibrous, warm, taut |
 | `05-reflex-core` | Bone white, danger pink, bright yellow | Spinal, bright core, high contrast |
 | Silicon fixture | Graphite, cyan, bone | Clean-room, cold, no gore |
+
+### 4.10 Biology-to-shape lexicon
+
+Ludo does not reliably parse anatomical terms as visual nouns. “Soma”, “dendrite”, “axon”, “myelin”, “presynaptic” and “nicotinic” are not guarantees of a shape. Every prompt therefore uses **shape → term → job**: a visual noun first, the biological term second, and the function third. The technical term stays in the prompt log, fact anchor and acceptance criteria, so the art remains auditable.
+
+**Accuracy rule.** Accuracy means the parts and their relationships, not literal proportions. The Neuron Keeper can be cute and fictional — eyes, arms, a foot stalk and a lantern are allowed — but it must have one cell body, one nucleus, 5–7 dendrite tentacles, one bare axon tail and forked terminals. It must not have hair, fur, two axons, myelin it made itself, or a humanoid body.
+
+| Biological term | Draw this in Ludo | Accuracy guard / do not draw |
+|---|---|---|
+| Soma | “plump jelly-bean body” | one cell body; not a head/torso |
+| Nucleus | “dark oval stone inside the jelly” | inside the body; not a chest light or a hole |
+| Dendrites | “crown of 5–7 short, soft, fleshy tentacles with forked tips, like a sea anemone” | receiving branches; not hair, fur or octopus arms |
+| Axon | “one long, thin, bare tail, like a tadpole tail” | exactly one; not furry; no second tail |
+| Myelin sheath | “pale bead-like sleeves around the cable” | made by glial cells; not on the Neuron Keeper character |
+| Nodes of Ranvier | “small dark gaps between the sleeves” | gaps, not a continuous tube |
+| Axon terminals | “small forked twig at the tail tip” | not hands or fingers |
+| Synapse / synaptic cleft | “two cells facing a narrow dark gap” | cells do not touch; not a relay switch |
+| Synaptic vesicles | “small round bubbles inside the nerve knob” | vesicles stay inside the presynaptic terminal |
+| Neurotransmitter | “tiny glowing dots crossing the gap” | not large packets carried by cells |
+| Receptors | “socket shapes on the receiving wall” | on the postsynaptic side; not a mechanical keyhole |
+| Muscle spindle | “tiny spindle-shaped capsule wrapped in a spiral wire” | stretch sensor in muscle; not a joint capsule or pain receptor |
+| Dorsal root / ventral root | “cables entering the back / leaving the front of a short cord segment” | two roots, opposite sides; no brain |
+| Neuromuscular junction / ACh | “nerve knob touching a bundle of pink rope-like fibres; a triangular packet with a glowing core” | ACh is a game token; not the only neurotransmitter |
+| Bone cortex / nerve fibres | “wet chalky stone with pores”; “bundles of pale wet cables” | material texture; no directional edge |
+
+**Prompt rules.**
+
+1. Start every asset prompt with the subject and its core silhouette. Style, palette and frame come after it.
+2. Pair every anatomical term with a visual noun and a job. Do not leave a bare term in the positive prompt.
+3. Count the silhouette where it matters. For the Neuron Keeper: one body, one tail, six tentacles, two arms, one foot, one lantern. State the limb budget.
+4. Separate anatomy from fiction: “the arms and lantern are props; the body, nucleus, tentacles and tail are anatomy.”
+5. Put what to draw in the positive prompt and what to avoid in the negative prompt. Do not write “no extra limbs” in a prompt that also asks for arms, a tail and tentacles.
+6. Use analogies that keep the category: sea anemone, tadpole, cable, beads, sockets, bubbles, ropes, lanterns. For cell characters, do not use fur, hair, plant roots, octopus arms or brain shapes; landscape layers may use root-like cables.
+7. Say “soft, fleshy tentacles”, not “furry tentacles”. “Furry” adds fur and turns the cell into an animal.
+8. Keep export specs out of the Ludo prompt. Ludo draws a large concept; Aseprite applies the 18×18/36×36 grid.
+9. Apply the core-silhouette test: if only the first sentence were read, would Ludo draw the right object?
 
 ---
 
@@ -509,7 +561,7 @@ Use static types for M3:
 | `tileset.*`, `ui.*` | `image` |
 | `audio.*` | `audio` |
 
-Do not use `sheet`, `gif`, or `webp` animation types in M3. They are valid formats but the current view layer will not animate them.
+Do not use `sheet`, `gif`, or `webp` animation types for runtime assets in M3. They are valid formats but the current view layer will not animate them. Source sheets are captured in `art-source/` and normalized to static `sprite` entries; they are not manifest assets.
 
 ---
 
@@ -517,7 +569,8 @@ Do not use `sheet`, `gif`, or `webp` animation types in M3. They are valid forma
 
 ### 7.1 Tool, plan, and source of truth
 
-- **Ludo.ai → Image Generator** for concepts, silhouettes, palette studies, and material swatches. Ludo is not the final pixel renderer.
+- **Ludo.ai → Image Generator** for concepts, silhouettes, palette studies, material swatches, and source sprite sheets. Ludo is not the final pixel renderer.
+- **Local art pipeline** for slicing source sheets (`npm run art:slice`), future frame normalization, palette quantization, and palette-LUT variants (ADR-0060–0064).
 - **Aseprite, Piskel, or LibreSprite** for the final pixel pass at source size, palette quantisation, and atlas assembly.
 - **Ludo.ai → Audio Generator** for the 11 SFX.
 - The source of truth is this document, the category style blocks in §8, and the prompt version. Do not improvise a new style per asset.
@@ -527,7 +580,7 @@ Do not use `sheet`, `gif`, or `webp` animation types in M3. They are valid forma
 
 ### 7.2 What Ludo can and cannot produce
 
-Ludo can produce a concept, a silhouette, a palette study, a seamless material swatch concept, and a readable composition.
+Ludo can produce a concept, a silhouette, a palette study, a seamless material swatch concept, a readable composition, and a source sprite sheet. A source sheet is still a concept plate: it must be sliced, normalized, and quantized offline before it can become a runtime asset.
 
 Ludo cannot reliably produce:
 
@@ -536,66 +589,74 @@ Ludo cannot reliably produce:
 - a runtime-sized sprite with the correct alpha box;
 - a guaranteed transparent cutout;
 - a consistent 2×2 pixel grid;
-- an exact palette without cleanup.
+- an exact palette without cleanup;
+- a reliable visual interpretation of anatomical jargon such as “soma”, “dendrite”, “myelin” or “presynaptic terminal”.
 
-Treat every Ludo output as a concept. The final asset is authored or cleaned at source size in Aseprite/Piskel.
+Treat every Ludo output — including a multi-frame sheet — as a concept. The final asset is authored or cleaned at source size in Aseprite/Piskel, then normalized and packed by the local pipeline. Write prompts with visual nouns first and technical terms second; the lexicon is §4.10.
 
 ### 7.3 Settings
 
 | Setting | Value |
 |---|---|
-| Asset type | Sprite / Background / Parallax layer / Texture or Pattern / Icon, as appropriate |
+| Asset type | Sprite / **Sprite sheet** / Background / Parallax layer / Texture or Pattern / Icon, as appropriate |
+| Sprite-sheet mode | One character and one action per sheet; uniform grid; consistent scale, orientation, and baseline in every frame; flat magenta background; no labels or grid lines |
 | Style | Pixel art: hard edges, limited palette, 1px outlines, no anti-aliasing |
-| Reference | `style-anchor-p1.png` for characters/props; `style-anchor-sky.png` for backgrounds; approved bone/nerve swatch for atlases |
-| Variations | 4 per prompt |
-| Resolution | 1024 px on the long edge for concepts; final art authored at source size |
-| Aspect | 1:1 sprites/props/atlas swatches/badge; wide sky; 2:1 parallax |
+| Reference | `style-anchor-p1.png` for characters/props; `style-anchor-sky.png` for backgrounds; approved bone/nerve swatch for atlases. Use P1 as a **style/palette reference only**. If Ludo's reference field performs image-to-image, leave it empty for cell characters; otherwise it may copy the astronaut silhouette. |
+| Variations | 4 per single-image prompt; one sheet per action |
+| Resolution | 1024 px on the long edge for concepts; capture sheets at Ludo's highest usable resolution and resample offline |
+| Aspect | 1:1 sprites/props/atlas swatches/badge; wide sky; 2:1 parallax; uniform grid for sheets |
 | Background | Flat magenta `#FF00FF` |
-| Negative prompt | Use the matching block in §8.6–8.9 if the field exists; otherwise append it to the prompt |
+| Negative prompt | Use the matching block in §8.6–8.9 plus the asset delta in §8.18–8.22 if the field exists; otherwise append it to the prompt |
 
 If Ludo’s UI labels differ, map to the closest equivalent. The prompt blocks are the source of truth for the concept; the pixel pass is the source of truth for the final asset.
 
 ### 7.4 Reference images and approval gates
 
-1. Generate **P1** first, four concepts.
-2. Pick the one that reads best as a 14×22 silhouette and matches the palette.
-3. Pixel-clean it at 14×22; approve it at 28×44 on a dark teal background.
-4. Save it as `style-anchor-p1.png`; keep a 4× nearest-neighbour preview for review.
-5. Use it as the style reference for every later character, prop, and icon. Do not use it as an image-to-image base for NPCs — it may copy the astronaut.
-6. Generate the **sky** next; approve `style-anchor-sky.png` at 1280×720 and use it for far/mid/near.
-7. Generate the **bone and nerve swatches**; approve each at 32×32 before assembling the atlas.
-8. Approve the **badge** at its current pill crop and at the 32×32 pixel-UI target.
+1. Generate **P1** first: four single-image concepts or one walk source sheet.
+2. Pick the best; for a sheet, choose the frame that reads best as a 14×22 idle. It must match the palette.
+3. Pixel-clean the chosen frame at 14×22; approve it at 28×44 on a dark teal background.
+4. Save the cleaned 14×22 master under `art-source/characters/player-p1/working/` and export `shared/sprites/player-p1.png`; keep `style-anchor-p1.png` as the review reference and a 4× nearest-neighbour preview.
+5. Use it as the style reference for every later character, prop, and icon. Do not use it as an image-to-image generation base for NPCs — it may copy the astronaut. For colour variants of the same character, derive from the indexed P1 master with the palette LUT (ADR-0061/0064).
+6. Derive **P2** from the indexed P1 master with the ADR-0064 palette permutation. Do not generate P2 in Ludo.
+7. Generate the **sky** next; approve `style-anchor-sky.png` at 1280×720 and use it for far/mid/near.
+8. Generate the **bone and nerve swatches**; approve each at 32×32 before assembling the atlas.
+9. Approve the **badge** at its current pill crop and at the 32×32 pixel-UI target.
 
 ### 7.5 Batch order
 
 | Batch | Assets | Purpose |
 |---|---|---|
-| 0 | P1 | Pixel style anchor |
-| 1 | P2, Neuron Keeper, `scan.neuron`, `sprite.exit` | Character/prop style gate |
+| 0 | P1 idle + optional P1 walk source sheet | Pixel style anchor and animation source |
+| 1 | P2 (derived from P1), Neuron Keeper, `scan.neuron`, `sprite.exit` | Character/prop style gate |
 | 2 | Sky, mid layer | Environment style gate |
 | 3 | Bone and nerve material swatches | Material style gate |
 | 4 | Remaining scans, tracer, pulse terminal, receptors, gate ferry | Complete visible entity set — only after the 03/04 room check |
 | 5 | Far, near, badge | Complete environment/UI kit |
 | 6 | 11 SFX and atlas assembly | Audio and atlas finish |
 
-Do not start Batch 4 until Batches 1–3 are signed off. Do not assemble the final atlases until the tint decision in §8.21.1 is made.
+P2 is not a Ludo generation; derive it after P1 is approved. Do not start Batch 4 until Batches 1–3 are signed off. Do not assemble the final atlases until the tint decision in §8.21.1 is made.
 
 ### 7.6 How to run a prompt
 
-1. Copy the complete prompt for the asset from §8: `STYLE_<CATEGORY>` + asset prompt + `FRAME_<CATEGORY>`.
-2. Add the matching `NEGATIVE_<CATEGORY>` to Ludo’s negative field, or append it when no field exists.
-3. Generate four concepts.
-4. Pick the best; download the full-resolution concept.
-5. Pixel the asset at source size: 14×22 player, 18×18 entity, 640×368 sky, 1024×512 parallax, 512×512 material swatch, 16×16 badge.
-6. Quantise to the ramp palette; remove anti-aliasing; enforce the 2×2 cluster rule on 1:1 layers and atlas frames.
-7. Export at source size; inspect at 400%; check at display size on a dark teal contact sheet.
-8. Record the prompt, concept file, pixel-cleanup notes, palette, and chosen file in the prompt log.
-9. If it fails, change one variable (prompt phrase, reference, or cleanup step), not five.
-10. Stop after three attempts; use a placeholder if still failing.
+1. Choose the prompt path:
+   - **Single image:** `SUBJECT_<ASSET>` + `STYLE_<CATEGORY>` + `PALETTE` + `FRAME_<CATEGORY>_CONCEPT` (`FRAME_PLAYER_CONCEPT`, `FRAME_ENTITY_CONCEPT`, `FRAME_BADGE_CONCEPT`, `FRAME_SKY`, `FRAME_PARALLAX`, `FRAME_ATLAS`).
+   - **Source sheet:** `SUBJECT_PLAYER_P1_WALK` + `STYLE_SPRITE` + `PALETTE` + `FRAME_SHEET_PLAYER`; one character and one action per sheet.
+2. Add the matching `NEGATIVE_<CATEGORY>` to Ludo’s negative field, or append it when no field exists. Add the asset’s `NEGATIVE DELTA`; sheet prompts use `NEGATIVE_SPRITE`.
+3. Generate four concepts for a single image, or one source sheet per action. Keep the Ludo PNG and JSON together.
+4. Pick the best; download the full-resolution concept or sheet.
+5. Single image: pixel the asset at source size: 14×22 player, 18×18 entity, 640×368 sky, 1024×512 parallax, 512×512 material swatch, 16×16 badge. The export frames in §8.10a, §8.11a and §8.15a are for this step, not for the Ludo concept prompt.
+6. Source sheet: keep the Ludo PNG+JSON, slice with `npm run art:slice`, review the GIF, then normalize each frame to the fixed cell and baseline in the working layer (ADR-0060). Do not ship the raw sheet.
+7. Quantise to the ramp palette; remove anti-aliasing; enforce the 2×2 cluster rule on 1:1 layers and atlas frames.
+8. Export at source size; inspect at 400%; check at display size on a dark teal contact sheet.
+9. Record the prompt, source sheet, frame range, variant map, pixel-cleanup notes, palette, and chosen file in the prompt log.
+10. If it fails, change one variable (prompt phrase, reference, or cleanup step), not five.
+11. Stop after three attempts; use a placeholder if still failing.
 
 ### 7.7 Post-processing and export
 
 - **Sprites/entities:** trim to the alpha bounding box, pad to 14×22 or 18×18, feet/base on the bottom line; export PNG.
+- **Source sheets:** slice with the Ludo JSON, trim and align every frame to a common baseline, resample long cycles to 6–10 key frames, and pack the runtime sheet; frame 0 is the M3 static fallback. Keep the raw sheet in `art-source/`, never in `public/`.
+- **Palette variants:** derive from the indexed master with a semantic LUT; do not re-prompt Ludo. P2 uses the ADR-0064 orange permutation.
 - **Backgrounds:** sky 640×368 opaque; far/mid/near 1024×512 with alpha and 2×2 clusters; export lossless WebP or PNG.
 - **Atlases:** assemble 32×32 cells at 1:1 from the approved swatch; 8×6 bone grid (47 regions + one opaque empty cell), 4×4 nerve grid (16 regions); every cell opaque; export PNG. Do not add gutters or transparent seams.
 - **Badge:** 16×16 source, transparent or magenta-keyed; critical detail inside the middle 60% vertical band; export PNG.
@@ -615,6 +676,7 @@ Do not start Batch 4 until Batches 1–3 are signed off. Do not assemble the fin
 ### 7.9 Stop rules
 
 - Maximum **three attempts** per asset on free tier; maximum **two prompt revisions** per asset on paid.
+- If the output is a furry or humanoid cell, do not iterate on style: fix the subject-first sentence and the negative delta (§4.10).
 - If a whole category fails, stop and revise the style anchor, not individual assets.
 - If the generator cannot produce a usable concept, trace or draw the asset manually at source size. Do not ship faux-pixel output.
 - If an asset needs new rendering behaviour beyond ADR-0048, stop; it is an engine task, not an art task.
@@ -627,58 +689,71 @@ Do not start Batch 4 until Batches 1–3 are signed off. Do not assemble the fin
 ### 8.1 Assembly formula and versioning
 
 ```text
-FINAL IMAGE PROMPT = STYLE_<CATEGORY> + ASSET PROMPT + FRAME_<CATEGORY>
-NEGATIVE PROMPT     = NEGATIVE_<CATEGORY> (+ any asset delta)
+CONCEPT PROMPT      = SUBJECT_<ASSET> + STYLE_<CATEGORY> + PALETTE + FRAME_<CATEGORY>_CONCEPT
+SHEET PROMPT        = SUBJECT_PLAYER_P1_WALK + STYLE_SPRITE + PALETTE + FRAME_SHEET_PLAYER
+EXPORT SPEC         = FRAME_<CATEGORY> (for Aseprite/Piskel; do not paste into Ludo)
+NEGATIVE PROMPT     = NEGATIVE_<CATEGORY> + NEGATIVE_<ASSET>
 ```
 
-- Copy the three blocks exactly. Do not paste the headings or the backticks.
-- If Ludo has one prompt field, paste style, asset, frame, then `Negative prompt: ...` on a new line.
+- Copy the blocks in the order shown. The subject must be first; the style and palette must not precede it.
+- Each single-image prompt in §8.17–8.22 is already assembled in this order; copy the code block directly, or rebuild it from §8.2–8.15 if you are editing the shared style. The P1 walk sheet uses `FRAME_SHEET_PLAYER`.
+- `FRAME_<CATEGORY>_CONCEPT` is `FRAME_PLAYER_CONCEPT`, `FRAME_ENTITY_CONCEPT` or `FRAME_BADGE_CONCEPT`; backgrounds use `FRAME_SKY` or `FRAME_PARALLAX`; atlases use `FRAME_ATLAS`.
+- If Ludo has one prompt field, paste `SUBJECT`, `STYLE`, `PALETTE`, `FRAME`, then `Negative prompt: ...` on a new line.
+- If Ludo has a separate style field, put `STYLE` there and keep `SUBJECT` + `PALETTE` + `FRAME` in the prompt field.
 - If Ludo has a separate negative field, use it. Do not repeat the negative text inside the positive prompt.
-- Prompt version: `m3-2026-10-29.2`. Increment the suffix on any text change.
-- Style version: `style-pixel-v1` for all blocks in this revision. Increment when a style block changes.
+- Prompt version: `m3-2026-10-31.2`. Increment the suffix on any text change.
+- Style version: `style-pixel-v2` for all blocks in this revision. Increment when a style block changes.
 - Ludo produces a concept. The final asset is pixel-cleaned at source size in Aseprite/Piskel (§7).
-- One prompt produces one asset. Do not ask for a set, a grid, or a contact sheet in a sprite prompt.
+- One single-image prompt produces one asset. Do not ask for a set or grid in a single-image sprite prompt.
+- One sheet prompt produces one character and one action. Do not mix actions or characters in a sheet. The sheet is a source plate, not a runtime asset.
+- Every prompt starts with a `SUBJECT` line. The first 1–2 sentences must describe the object and its core silhouette. If the first sentence were the only thing Ludo read, it should still draw the right object.
 
 ### 8.2 STYLE_SPRITE
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
+```
+
+### 8.2a PALETTE
+
+```text
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
 ```
 
 ### 8.3 STYLE_BACKGROUND
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. No single directional light, no hard cast shadows, no god rays, no text, no logo, no watermark, no border, no UI, no labels, no arrows, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. The body is a landscape, not a textbook cutaway; use cable-like nerves, segmented sheath plates and membrane folds as architecture.
 ```
 
 ### 8.4 STYLE_ATLAS
 
 ```text
-Pixel-art seamless material texture for a side-view platformer set inside a living human body. Native pixel grid, hard square pixels, every colour block at least 2×2 pixels, no anti-aliasing, no smoothing. Flat fills from three-step ramps; 50% dither; no smooth gradients. Uniform flat lighting; no directional highlight, no vignette, no baked edge shading, no bevel, no drop shadow, no grid. Orthographic surface, seamless material swatch. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Gross-cute biology, wry deadpan tone, 12+ friendly. No text, no logo, no watermark, no border, no UI, no characters, no scene, no perspective, no 3D, no photorealism, no baked directional edge.
+Pixel-art seamless material texture for a side-view platformer set inside a living human body. Native pixel grid, hard square pixels, every colour block at least 2×2 pixels, no anti-aliasing, no smoothing. Flat fills from three-step ramps; 50% dither. Uniform flat lighting; orthographic surface, seamless material swatch. Gross-cute biology, wry deadpan tone, 12+ friendly. The material reads as one coherent surface; no characters or scene.
 ```
 
 ### 8.5 STYLE_BADGE
 
 ```text
-Pixel-art game emblem for a dark-teal HUD. Native pixel grid, hard square pixels, 1px dark outline, no anti-aliasing, no smoothing. Flat fills from three-step ramps; one hard form shadow; one warm highlight; subtle grime. Gross-cute biology, wry deadpan tone, 12+ friendly. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Simple, bold, readable at 32×32 and in a ~45×27 pill crop. No text, no logo, no watermark, no UI, no rectangular frame, no photorealism, no 3D, no painterly rendering, no smooth gradients, no high-res detail.
+Pixel-art game emblem for a dark-teal HUD. Native pixel grid, hard square pixels, 1px dark outline, no anti-aliasing, no smoothing. Flat fills from three-step ramps; one hard form shadow; one warm highlight; subtle grime. Gross-cute biology, wry deadpan tone, 12+ friendly. Simple, bold, readable at 32×32 and in a ~45×27 pill crop.
 ```
 
 ### 8.6 NEGATIVE_SPRITE
 
 ```text
-text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lines, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, open wound, viscera, exposed organs, extra limbs, detailed fingers, human face, multiple characters, scene background, ground, floor, pedestal, cast shadow, drop shadow, checkerboard, frame
+text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lines, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, open wound, viscera, exposed organs, extra arms, extra tails, wings, detailed fingers, human face, multiple characters, scene background, ground, floor, pedestal, cast shadow, drop shadow, checkerboard, frame
 ```
 
 ### 8.7 NEGATIVE_BACKGROUND
 
 ```text
-text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram, characters, creatures, astronaut, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, viscera, exposed organs, hard horizon line, single focal landmark, high-contrast centre, opaque near-layer centre, obvious repeating object, frame
+text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram, diagram lines, textbook anatomy diagram, cutaway, cross-section, characters, creatures, astronaut, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, viscera, exposed organs, hard horizon line, single focal landmark, high-contrast centre, opaque near-layer centre, obvious repeating object, frame
 ```
 
 ### 8.8 NEGATIVE_ATLAS
 
 ```text
-text, letters, numbers, labels, grid lines, gutters, border, UI, logo, watermark, characters, scene, perspective, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, directional light, baked highlight, baked edge, vignette, bevel, drop shadow, single dark top edge, checkerboard, frame, mixed pixel sizes, faux pixel art
+text, letters, numbers, labels, grid lines, gutters, border, UI, logo, watermark, characters, scene, perspective, textbook diagram, anatomical label, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, directional light, baked highlight, baked edge, vignette, bevel, drop shadow, single dark top edge, checkerboard, frame, mixed pixel sizes, faux pixel art
 ```
 
 ### 8.9 NEGATIVE_BADGE
@@ -687,16 +762,34 @@ text, letters, numbers, labels, grid lines, gutters, border, UI, logo, watermark
 text, letters, numbers, logo, watermark, UI, rectangular frame, outer frame line, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, extra characters, cast shadow, drop shadow, pedestal, scene, checkerboard
 ```
 
-### 8.10 FRAME_PLAYER
+### 8.10 FRAME_PLAYER_CONCEPT
 
 ```text
-Full body, standing, facing right, feet on the bottom padding line, centred horizontally, 0–1 px transparent margin on a 14×22 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 14×22 source at 28×44.
+Full body, standing, facing right, centred horizontally, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the character large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
 
-### 8.11 FRAME_ENTITY
+### 8.10a FRAME_PLAYER (export)
 
 ```text
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Export spec: 14×22 source, feet on the bottom padding line, centred horizontally, 0–1 px transparent margin; the engine displays it at 28×44. Do not paste this block into Ludo.
+```
+
+### 8.10b FRAME_SHEET_PLAYER
+
+```text
+Uniform sprite sheet, one character and one action per sheet, consistent character scale, orientation and baseline in every frame, flat solid magenta #FF00FF background, no labels, no grid lines, no frame border, no ground, no cast shadow. Hard pixel edges; no anti-aliasing. The sheet is a source plate; the engine never loads it directly. Slice it with the Ludo JSON, normalize each frame to the player cell, and use frame 0 as the M3 static fallback unless another idle frame is approved.
+```
+
+### 8.11 FRAME_ENTITY_CONCEPT
+
+```text
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
+```
+
+### 8.11a FRAME_ENTITY (export)
+
+```text
+Export spec: 18×18 source, base of the lowest visible element on the bottom padding line, 1 px transparent margin; the engine displays it at 36×36. Do not paste this block into Ludo.
 ```
 
 ### 8.12 FRAME_SKY
@@ -717,10 +810,16 @@ Full object, centred, base of the lowest visible element on the bottom padding l
 1024×1024 seamless material swatch concept, uniform flat lighting, no grid, no labels, no frame, no directional highlight, no baked edge. Hard pixel edges; every colour block at least 2×2 pixels. Pixel-clean to a 512×512 working swatch; assemble 32×32 frames offline.
 ```
 
-### 8.15 FRAME_BADGE
+### 8.15 FRAME_BADGE_CONCEPT
 
 ```text
-16×16, 1:1, centred emblem, transparent or flat magenta #FF00FF background, no rectangular frame. Keep the helmet and visor inside the middle 60% vertical band; the current HUD displays a ~45×27 pill crop, the pixel UI target is 32×32. Hard pixel edges; no anti-aliasing.
+Centred emblem, large and clear, flat magenta #FF00FF background, no rectangular frame. Keep the helmet and visor inside the middle 60% vertical band; the outer ring may crop. Hard pixel edges; no anti-aliasing.
+```
+
+### 8.15a FRAME_BADGE (export)
+
+```text
+Export spec: 16×16 source, 1:1, centred emblem, transparent or flat magenta #FF00FF background, no rectangular frame. Keep the helmet and visor inside the middle 60% vertical band; the current HUD displays a ~45×27 pill crop, the pixel UI target is 32×32. Do not paste this block into Ludo.
 ```
 
 ### 8.16 Reference lock
@@ -728,310 +827,478 @@ Full object, centred, base of the lowest visible element on the bottom padding l
 | Asset group | Reference | Use | Do not |
 |---|---|---|---|
 | `sprite.player.p1` | None | Creates the pixel character anchor | Do not copy a known character |
-| `sprite.player.p2` | `style-anchor-p1.png` | Image reference; accent-only change | Do not prompt a new character or pose |
-| Agent, scans, gate, exit, props, receptors | `style-anchor-p1.png` | Pixel style reference | Do not use as an image-to-image base for cells |
-| Sky | Style block; optional P1 at low strength | Creates the pixel environment anchor | Do not copy the astronaut into the scene |
+| `sprite.player.p1.walk` (source) | `style-anchor-p1.png` | Sheet source; identical character and walk cycle | Do not change suit, gear, silhouette, or timing |
+| `sprite.player.p2` | Cleaned P1 master + `palette.json` | Palette permutation (ADR-0064); no Ludo generation | Do not prompt a new character, pose, or Ludo image |
+| Agent, scans, gate, exit, props, receptors | `style-anchor-p1.png` | Pixel style and palette reference only | Do not use as an image-to-image generation base for new cell characters; do not let the astronaut silhouette or suit bleed into a cell. Palette LUTs are allowed for colour variants |
+| Sky | Style block; no character reference | Creates the pixel environment anchor | Do not copy the astronaut into the scene |
 | Far, mid, near | `style-anchor-sky.png` | Pixel style and palette reference | Do not introduce a new palette |
-| Bone atlas | P1 for palette/line; approved bone swatch for frames | Style reference; self-reference for frames | Do not bake a directional edge or final tint |
-| Nerve atlas | P1 for palette/line; approved nerve swatch for frames | Style reference; self-reference for frames | Do not bake a directional edge or final tint |
-| Badge | `style-anchor-p1.png` | Style reference | Do not include a character scene |
+| Bone atlas | P1 for style/palette only; approved bone swatch for frames | Style reference; self-reference for frames | Do not bake a directional edge or final tint |
+| Nerve atlas | P1 for style/palette only; approved nerve swatch for frames | Style reference; self-reference for frames | Do not bake a directional edge or final tint |
+| Badge | `style-anchor-p1.png` | Style/palette reference only | Do not include a character scene |
 
-If a reference is missing, do not substitute another character. Either generate the anchor first or use the style block only.
+If a reference is missing, do not substitute another character. Either generate the anchor first or use the style block only. A palette LUT is not image-to-image generation: it operates on the indexed P1 master and changes only the mapped palette roles. For cell characters, the `SUBJECT` block is the composition authority; P1 is never the composition reference.
 
 ### 8.17 Player prompts
 
 #### `sprite.player.p1` — style anchor
 
-**Reference:** none. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_PLAYER`. **Source:** 14×22 PNG; 28×44 display. **File:** `shared/sprites/player-p1.png`.
+**Reference:** none. **Style:** `STYLE_SPRITE`. **Palette:** `PALETTE`. **Frame:** `FRAME_PLAYER_CONCEPT`. **Negative:** `NEGATIVE_SPRITE`. **Export:** 14×22 PNG; 28×44 display. **File:** `shared/sprites/player-p1.png`.
+
+**COMPLETION STATUS:** `/shrinkonauts/art-source/characters/player-p1`
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A full-body Shrinkonaut astronaut — a human, not a cell creature — facing right in a neutral idle. Round helmet with a warm amber visor and no visible face; cream bone-coloured suit; dark teal joints; joint-cyan chest light; yellow backpack tanks; one scanner gauntlet; short legs; big boots; scuffed, patched and grimy. Chunky readable silhouette, big helmet, short body, strong dark outline, fills the canvas vertically. Flat fills from the ramps; one hard shadow shape; one warm highlight.
 
-Pixel-art player character sprite designed on a 14×22 source grid: full-body Shrinkonaut astronaut, facing right in a neutral idle. Round helmet with a warm amber visor and no visible face; cream bone-coloured suit; dark teal joints; joint-cyan chest light; yellow backpack tanks; one scanner gauntlet; short legs; big boots; scuffed, patched and grimy. Chunky readable silhouette, big helmet, short body, strong 1px outline, fills the canvas vertically. Flat fills from the ramps; one hard shadow shape; one warm highlight. The silhouette must read at 28×44.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full body, standing, facing right, feet on the bottom padding line, centred horizontally, 0–1 px transparent margin on a 14×22 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 14×22 source at 28×44.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full body, standing, facing right, centred horizontally, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the character large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
 
 **Acceptance**
 
 - Reads at 28×44 on `#101a20`; helmet, visor, tanks and boots are legible.
 - Source is 14×22; feet on the bottom padding line; silhouette fills ~90% of the height.
+- The subject reads as a human astronaut, not a cell creature: no tentacles, no tail, no nucleus.
 - No visible face, no cast shadow, no ground, no text.
 - Hard pixel edges; palette-only colours; alpha clean at 400%; ≤16 KB.
-- The approved file is saved as `style-anchor-p1.png` and used for every later sprite.
+- The approved 14×22 master is saved under `art-source/characters/player-p1/working/` and exported to `shared/sprites/player-p1.png`; `style-anchor-p1.png` is the review reference.
 
-#### `sprite.player.p2` — accent variant
+#### `sprite.player.p1.walk` — source sheet (not a runtime asset)
 
-**Reference:** `style-anchor-p1.png` as an image reference. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_PLAYER`. **Source:** 14×22 PNG; 28×44 display. **File:** `shared/sprites/player-p2.png`.
+**Reference:** `style-anchor-p1.png` for style and palette only. **Style:** `STYLE_SPRITE`. **Palette:** `PALETTE`. **Frame:** `FRAME_SHEET_PLAYER`. **Negative:** `NEGATIVE_SPRITE`. **Mode:** Ludo sprite-sheet source. **Output:** sheet PNG + JSON; slice with `npm run art:slice`; frame 0 is the static M3 fallback.
+
+**COMPLETION STATUS:** `/shrinkonauts/art-source/characters/player-p1/ludo/`
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: The same Shrinkonaut as the approved P1 anchor — a human astronaut, not a cell creature — with identical silhouette, suit, helmet, visor, backpack, boots, scanner gauntlet, palette and outline weight. Full-body side view, facing right, one continuous walk cycle. Uniform sprite-sheet grid, consistent character scale, orientation, baseline and frame spacing in every frame. Flat solid magenta #FF00FF background, no labels, no grid lines, no frame border, no ground, no cast shadow. Do not add equipment, change proportions, or introduce a second character.
 
-Same Shrinkonaut as the reference image: identical silhouette, proportions, pose, helmet, backpack, boots and outline weight. Change only the accent colour: muscle-pink #ef476f chest light, shoulder trim and visor trim replace the joint-cyan accents. Keep the suit bone cream, joints dark teal, tanks nerve yellow, grime and outline identical. No new equipment, no new shape, no extra detail. Pixel-art sprite designed on a 14×22 source grid; readable at 28×44.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full body, standing, facing right, feet on the bottom padding line, centred horizontally, 0–1 px transparent margin on a 14×22 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 14×22 source at 28×44.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Uniform sprite sheet, one character and one action per sheet, consistent character scale, orientation and baseline in every frame, flat solid magenta #FF00FF background, no labels, no grid lines, no frame border, no ground, no cast shadow. Hard pixel edges; no anti-aliasing. The sheet is a source plate; the engine never loads it directly. Slice it with the Ludo JSON, normalize each frame to the player cell, and use frame 0 as the M3 static fallback unless another idle frame is approved.
 ```
 
 **Acceptance**
 
-- At 28×44, the silhouette is indistinguishable from P1; only the accent hue changes.
-- Source is 14×22; no pink spill onto the suit, no new gear, no new pose.
+- One character and one walk cycle; identical suit, helmet, visor, backpack, boots, scanner gauntlet, palette and outline weight to P1.
+- Uniform grid; consistent scale, orientation, baseline and frame spacing.
+- Flat magenta background; no labels, grid lines, frame border, ground, or shadow.
+- The Ludo JSON matches the PNG; every frame slices cleanly.
+- Frame 0 reads as a neutral idle; no new equipment or pose drift.
+
+#### `sprite.player.p2` — orange suit and bone visor variant (derived)
+
+**Reference:** cleaned P1 master + `palette.json`. **Source:** 14×22 PNG; 28×44 display. **File:** `shared/sprites/player-p2.png`.
+
+**Do not generate P2 in Ludo.** Derive it from the indexed P1 master with the ADR-0064 palette LUT:
+
+| Role | P1 | P2 |
+|---|---|---|
+| Suit | bone | orange (`#813115` / `#e59b34` / `#ffd28a`) |
+| Visor | nerve/amber | bone |
+| Tanks | nerve/yellow | bone |
+| Accent | joint/cyan | muscle/pink |
+| Joints | teal | teal (unchanged) |
+| Outline / grime | ink / bone shadow | ink / bone shadow (unchanged) |
+
+**Acceptance**
+
+- At 28×44, the silhouette is indistinguishable from P1; only the approved suit, visor/tank, and accent ramps change.
+- The suit is orange; the visor and tanks are bone; the accents are muscle pink; joints, outline, and grime are byte-identical to P1.
+- Orange appears nowhere outside the suit; no pink spill onto the suit or visor rim.
+- The bone visor reads as glass through the ink rim; no cyan glint.
+- Source is 14×22; no new gear, no new pose.
 - Both players read side by side on the contact sheet.
 - No text, no cast shadow, hard pixel edges, alpha clean; ≤16 KB.
 
 ### 8.18 Shared entity prompts
 
-**Common settings:** `STYLE_SPRITE` + `FRAME_ENTITY`; source **18×18 PNG**, display **36×36**; design for 36×36 readability with no fine detail; base of the lowest visible element on the bottom padding line; 1 px margin; no baked shadow or glow. Filenames are in §5.3.
+**Common settings:** `SUBJECT` + `STYLE_SPRITE` + `PALETTE` + `FRAME_ENTITY_CONCEPT`; source **18×18 PNG**, display **36×36**; design for 36×36 readability with no fine detail. The export spec in `FRAME_ENTITY` is for Aseprite/Piskel, not Ludo. Filenames are in §5.3.
 
-**Common acceptance:** reads at 36×36 on `#101a20`; silhouette distinct from every other entity; survives the warm interaction tint; hard pixel edges; palette-only colours; no text; alpha clean; ≤16 KB.
+**Common acceptance:** reads at 36×36 on `#101a20`; silhouette distinct from every other entity; survives the warm interaction tint; hard pixel edges; palette-only colours; no text; alpha clean; ≤16 KB; the `SUBJECT` block is the first text in the prompt and the anatomy in plain shapes is accurate.
 
 | Asset ID | Style / negative | Frame | Source | File |
 |---|---|---|---|---|
-| `sprite.agent.neuron` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/agent-neuron.png` |
-| `sprite.scan.neuron` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/scan-neuron.png` |
-| `sprite.scan.synapse` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/scan-synapse.png` |
-| `sprite.scan.pathway` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/scan-pathway.png` |
-| `sprite.scan.muscle` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/scan-muscle.png` |
-| `sprite.scan.reflex` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/scan-reflex.png` |
-| `sprite.gate.ferry` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/gate-ferry.png` |
-| `sprite.exit` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/exit.png` |
+| `sprite.agent.neuron` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/agent-neuron.png` |
+| `sprite.scan.neuron` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-neuron.png` |
+| `sprite.scan.synapse` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-synapse.png` |
+| `sprite.scan.pathway` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-pathway.png` |
+| `sprite.scan.muscle` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-muscle.png` |
+| `sprite.scan.reflex` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-reflex.png` |
+| `sprite.gate.ferry` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/gate-ferry.png` |
+| `sprite.exit` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/exit.png` |
 
 #### `sprite.agent.neuron` — Neuron Keeper
 
-**Fact anchor:** NERV-01#1 (dendrites, soma, one axon, terminals); character fiction. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-01#1 (dendrites, soma, one axon, terminals); character fiction. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: One single neuron cell creature — a plump, jelly-bean-shaped body in bone cream, about as tall as it is wide. It is a single rounded body with no separate head, torso, legs, clothes or hood. Two big tired oval eyes sit directly in the body, with heavy lids; no mouth, no nose, no ears. One dark teal oval nucleus shows inside the body, like a stone in a jellybean — this is the nucleus, not a chest light. A crown of six short, soft, fleshy tentacles with forked tips grows from the top and upper sides, like a tiny sea-anemone crown; these are the dendrites, the receiving branches. One long, thin, bare tail trails behind, like a tadpole tail, ending in a small forked tip; this is the single axon and its terminals. Exactly two short, rounded arms, no fingers; one arm holds a tiny round nerve-yellow lantern on a short handle, the other hangs limp. The body rests on one short, fleshy foot stalk at the bottom centre — not two legs. Slight 3/4 side view, facing right; slumped, fussy, tired posture; friendly and weird, not monstrous.
 
-Pixel-art character sprite designed on an 18×18 source grid: full-body cell character, the Neuron Keeper — a plump bone-cream neuron soma with a dark teal central core, big tired expressive eyes, short dendrite hair, one long axon-like tail trailing behind, two tiny arms, and a small glowing nerve-yellow signal lantern. Slight 3/4 side view, standing on a small root-like foot, fussy tired posture, friendly and weird, not monstrous. One soma, one axon, no extra limbs, no human face.
+IN PLAIN SHAPES: the round body is the soma; the dark oval inside is the nucleus; the six tentacles are the dendrites; the single tail is the axon; the forked tail tip is the axon terminals; the arms and lantern are character props, not anatomy; the foot stalk is a base, not a leg. The tail is bare and smooth, with no sleeve segments.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
 
-**Acceptance:** Big eyes and lantern read at 36×36; one soma and one axon; distinct from `scan.neuron`; base contact is clear; no text; no gore.
+**Negative:** NEGATIVE_SPRITE + humanoid body, person, keeper, robe, hood, clothes, legs, boots, hands with fingers, fur, hair, fluffy, feathers, scales, brain shape, generic animal cell, organelles, mitochondria, extra arms, extra tails, wings, long octopus arms, extra tentacles beyond the crown, second lantern, second cell body, myelin on the character.
+
+**Acceptance:** Big eyes and lantern read at 36×36; one cell body and one tail; distinct from `scan.neuron`; base contact is clear; no text; no gore.
+
+**Biology check:** one cell body; one nucleus; 5–7 dendrite tentacles; one bare axon; forked terminals; no myelin on the character; arms and lantern are props.
+
+**Visual check:** at 36×36 the round body, tentacle crown, one tail and lantern read; no fur, no humanoid body, no extra limbs.
 
 #### `sprite.scan.neuron` — neuron and myelin scan
 
-**Fact anchor:** NERV-01#1, #3. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-01#1, #3. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A diagrammatic scan icon of one nerve cell — not a character. A round bone-cream cell body on the left, with a burst of five short, branching tentacles on its left and top; these are the dendrites. One long, thin, cable-like tail runs to the right; this is the single axon. The tail is wrapped in three pale, bead-like sleeves with small dark gaps between them — the myelin sheath and the nodes of Ranvier. The tail ends in a small forked twig — the axon terminals. A bright nerve-yellow glow sits in the cell body; a thin joint-cyan rim traces the silhouette. Flat side view, left-to-right reading. No eyes, no face, no arms, no lantern, no character pose.
 
-Pixel-art scan-target prop designed on an 18×18 source grid: a single neuron with many branching dendrites, one plump bone-cream soma, one long myelinated axon with visible node gaps, and branching axon terminals. Nerve-yellow core, thin joint-cyan scan rim, strong iconic silhouette, slight 3/4 side view. One axon only, no face, no labels.
+IN PLAIN SHAPES: the round body is the soma; the five tentacles are the dendrites; the single cable tail is the axon; the three pale sleeves are myelin; the dark gaps are the nodes of Ranvier; the forked twig is the axon terminals. Myelin is a sheath around the axon, not part of the cell body.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
 
-**Acceptance:** One axon, dendrites, soma and myelin nodes read at 36×36; distinct from the agent; the cyan rim reads as scannable; no text; no arrow.
+**Negative:** NEGATIVE_SPRITE + character, face, eyes, arms, lantern, humanoid, fur, hair, second axon, second cell body, labels, arrows.
+
+**Acceptance:** One axon, dendrites, cell body and myelin gaps read at 36×36; distinct from the agent; the cyan rim reads as scannable; no text; no arrow.
+
+**Biology check:** one cell body; 4–6 dendrites; one axon; 3+ myelin sleeves with gaps; forked terminals; no face, no character pose.
+
+**Visual check:** the silhouette reads as a flat neuron icon, not the Neuron Keeper; the beaded tail and forked tip are visible; no arms or lantern.
 
 #### `sprite.scan.synapse` — synapse and cleft scan
 
-**Fact anchor:** NERV-02#1, #2. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-02#1, #2. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A diagrammatic scan icon of two cells facing each other across a narrow dark gap, flat side view. A bulbous nerve ending on the left — the presynaptic terminal — faces a thick receiving wall on the right — the postsynaptic membrane. They do not touch: the gap between them is the synaptic cleft. Inside the left bulb are four round bubbles — synaptic vesicles. In the gap are three tiny glowing dots — neurotransmitter. On the right wall are three small socket shapes — receptors. Nerve-yellow glow, thin joint-cyan rim. No brain, no face, no labels, no arrows.
 
-Pixel-art scan-target prop designed on an 18×18 source grid: a presynaptic nerve terminal on the left and a postsynaptic membrane on the right, separated by a visible synaptic cleft. A few round vesicles sit inside the presynaptic terminal; a few small transmitter dots cross the cleft; small receptor shapes sit on the postsynaptic membrane. Nerve-yellow core, thin joint-cyan scan rim, side view. No labels, no arrows, no gore.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
 
-**Acceptance:** Two membranes and the cleft read at 36×36; vesicles are inside the presynaptic terminal, not in the cleft; receptors are on the postsynaptic side; distinct from `pulse.terminal`; no text.
+**Negative:** NEGATIVE_SPRITE + character, face, eyes, arms, lantern, humanoid, fur, hair, brain, labels, arrows, cells touching.
+
+**Acceptance:** Two cells and the cleft read at 36×36; vesicles are inside the presynaptic terminal, not in the cleft; receptors are on the postsynaptic side; distinct from `pulse.terminal`; no text.
+
+**Biology check:** one presynaptic terminal; one postsynaptic membrane; visible cleft; vesicles inside; transmitter dots in the gap; receptors on the receiving side; the cells do not touch.
+
+**Visual check:** the narrow dark gap is the dominant negative space; the left bulb and right wall are clearly different shapes; no face.
 
 #### `sprite.scan.pathway` — one-way pathway scan
 
-**Fact anchor:** NERV-01#1, #6. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-01#1, #6. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A diagrammatic scan icon of a one-way nerve path reading left to right — not a character. A burst of five short, branching tentacles at the left; these are the dendrites. A round bone-cream cell body next; this is the soma. One long, thin, cable-like tail runs to the right; this is the single axon. The tail is wrapped in three pale, bead-like sleeves with small dark gaps between them — the myelin sheath and the nodes of Ranvier. The tail ends in a small forked twig — the axon terminals. A bright nerve-yellow pulse sits in one gap; the forked tip points right. Nerve-yellow glow, thin joint-cyan scan rim. Flat side view. No face, no arms, no lantern, no arrow, no labels, no diagram lines.
 
-Pixel-art scan-target prop designed on an 18×18 source grid: one one-way nerve pathway reading left to right — branching dendrites at the left, a plump soma, one long myelinated axon with node gaps, and branching terminals at the right. A bright nerve-yellow pulse sits at one node; the terminals taper toward the right. Nerve-yellow core, thin joint-cyan scan rim, side view. No arrow, no labels, no diagram lines.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_SPRITE + character, face, eyes, arms, lantern, humanoid, fur, hair, arrow, labels, second axon.
 
 **Acceptance:** The one-way reading comes from the dendrite-to-terminal shape, not an arrow; one axon; distinct from `scan.neuron`; no text.
 
+**Biology check:** dendrites on the left; one cell body; one myelinated axon; nodes between sleeves; forked terminals on the right; one pulse in a gap.
+
+**Visual check:** the left-to-right taper is obvious at 36×36; no arrow or label; no face.
+
 #### `sprite.scan.muscle` — muscle effector scan
 
-**Fact anchor:** NERV-02#5 (NMJ, ACh, muscle response); NERV-03#3 (muscle contraction). **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-02#5 (NMJ, ACh, muscle response); NERV-03#3 (muscle contraction). **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A diagrammatic scan icon of a muscle-nerve contact, flat side view. A bundle of three long muscle-pink fibres, like taut ropes, fills the lower half. A thin nerve cable comes from the upper left and ends in a round knob that touches the muscle surface — the motor-nerve terminal. A tiny nerve-yellow spark marks the contact. A thin joint-cyan rim traces the silhouette. No face, no labels, no arrows, no textbook striation diagram, no gore.
 
-Pixel-art scan-target prop designed on an 18×18 source grid: a bundle of muscle tissue in muscle-pink with bone-shadow shading, with one motor-nerve terminal landing close to it. A small nerve-yellow junction dot marks the contact; the terminal sits just above the muscle surface. Thin joint-cyan scan rim, side view. No labels, no arrows, no gore, no textbook diagram.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_SPRITE + character, face, eyes, humanoid, fur, hair, labels, arrows, textbook striation diagram, gore.
 
 **Acceptance:** Muscle bundle and nerve contact read at 36×36; distinct from `scan.synapse`; no striation textbook diagram; no text; no gore.
 
+**Biology check:** three rope-like muscle fibres; one nerve cable; one round terminal knob touching the surface; one yellow spark at the contact.
+
+**Visual check:** the knob meets the muscle; the fibres read as a bundle, not a steak; no labels.
+
 #### `sprite.scan.reflex` — reflex arc reserve
 
-**Fact anchor:** NERV-03#1–#3, #5. Status: not referenced by 03/04; generate only if 05 is authored or the capture needs it. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-03#1–#3, #5. Status: not referenced by 03/04; generate only if 05 is authored or the capture needs it. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A simple loop-shaped scan icon of a reflex circuit made of flesh — a sensor capsule on the left, a short cord segment in the middle, and a muscle bundle on the right, connected by two thin cables. On the left, a small spindle-shaped capsule wrapped in a spiral wire — the muscle spindle, a stretch sensor. In the middle, a short thick cord segment — the spinal cord. On the right, a pink muscle bundle. One thin cable enters the back of the cord — the sensory axon through the dorsal root. One thin cable leaves the front — the motor axon through the ventral root. The two cables meet at one small junction inside the cord — the single synapse of the reflex. No brain. Nerve-yellow glow, thin joint-cyan rim. No labels, no arrows, no diagram lines.
 
-Pixel-art scan-target prop designed on an 18×18 source grid: a compact two-neuron stretch-reflex loop. A muscle spindle sits at the left; a sensory axon enters a small spinal-cord segment through the dorsal root and synapses directly on a motor neuron; a motor axon leaves through the ventral root to a muscle bundle at the right. Do not include a brain in the icon; show the two-neuron arc only. No labels, no arrows, no diagram lines. Nerve-yellow core, thin joint-cyan scan rim.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_SPRITE + character, face, eyes, humanoid, fur, hair, brain, labels, arrows, diagram lines, more than two neurons.
 
 **Acceptance:** If generated, two neurons, the dorsal and ventral roots and the muscle spindle read at 36×36; no brain; no text. If it does not read at 36×36, keep the placeholder and do not force it.
 
+**Biology check:** one spindle sensor; one sensory cable entering the back of the cord; one motor cable leaving the front; one synapse inside the cord; one muscle bundle; no brain.
+
+**Visual check:** the loop reads as a simple two-cell circuit, not a textbook diagram; no labels or arrows.
+
 #### `sprite.gate.ferry` — organic gate
 
-**Fact anchor:** puzzle abstraction, not an anatomical valve. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** puzzle abstraction, not an anatomical valve. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A closed organic gate, flat side view. A thick bone-and-membrane frame around a closed opening; a taut curtain of wet teal tissue stretches across it; one nerve-yellow seam runs down the centre. Small bone plates at the hinges. Closed state only. No receptor sockets, no keyhole, no mechanical parts, no face, no label. Strong silhouette; base at the bottom.
 
-Pixel-art puzzle gate designed on an 18×18 source grid: a compact organic gate, side view — a thick bone-and-membrane frame around a closed aperture, with a taut curtain of wet teal tissue stretched across the opening and one nerve-yellow seam down the centre. Small bone plates at the hinges, damp sheen, no receptor sockets, no keyhole, no mechanical parts. Closed state only, strong silhouette, base at the bottom.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_SPRITE + receptor sockets, keyhole, mechanical parts, character, face, label.
 
 **Acceptance:** Reads as a closed gate at 36×36; no receptor sockets; distinct from `sprite.exit`; works over bone, nerve and muscle backgrounds; no text; no baked glow.
 
+**Biology check:** organic frame, wet tissue curtain, one central seam; this is a game gate, not an anatomical valve.
+
+**Visual check:** the closed state is obvious; the bone hinges and tissue curtain read; no keyhole.
+
 #### `sprite.exit` — membrane airlock
 
-**Fact anchor:** level fiction; no anatomical claim. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** level fiction; no anatomical claim. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A membrane airlock, flat side view. A ring of bone and teal tissue forms a round opening; warm nerve-yellow light glows beyond; wet folds and a few bone struts frame the opening. The opening fills most of the canvas. No character, no face, no label, no gore. Strong silhouette; base at the bottom.
 
-Pixel-art exit doorway designed on an 18×18 source grid: a membrane airlock, side view — a ring of bone and teal tissue forming an opening, soft warm nerve-yellow light beyond, wet folds, a few bone struts, no gore. The opening fills most of the square; no characters, no labels. Base at the bottom.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_SPRITE + character, face, label, gore.
 
 **Acceptance:** Reads as a destination at 36×36; warm light is visible; distinct from the gate; no character, no text.
 
+**Biology check:** bone-and-tissue ring, warm light beyond, wet folds; level fiction, no anatomical claim.
+
+**Visual check:** the opening dominates the silhouette; the warm centre reads against the dark frame; no face.
+
 ### 8.19 Prop and receptor prompts
 
-**Common settings:** `STYLE_SPRITE` + `FRAME_ENTITY`; source **18×18 PNG**, display **36×36**; design for 36×36 readability; base on the bottom padding line; 1 px margin; no baked shadow.
+**Common settings:** `SUBJECT` + `STYLE_SPRITE` + `PALETTE` + `FRAME_ENTITY_CONCEPT`; source **18×18 PNG**, display **36×36**; design for 36×36 readability. The export spec in `FRAME_ENTITY` is for Aseprite/Piskel, not Ludo.
 
 | Asset ID | Style / negative | Frame | Source | File |
 |---|---|---|---|---|
-| `sprite.prop.tracer` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/prop-tracer.png` |
-| `sprite.pulse.terminal` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/pulse-terminal.png` |
-| `sprite.receptor.triangle` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/receptor-triangle.png` |
-| `sprite.receptor.circle` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY` | 18×18 PNG | `shared/sprites/receptor-circle.png` |
+| `sprite.prop.tracer` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/prop-tracer.png` |
+| `sprite.pulse.terminal` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/pulse-terminal.png` |
+| `sprite.receptor.triangle` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/receptor-triangle.png` |
+| `sprite.receptor.circle` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/receptor-circle.png` |
 
 #### `sprite.prop.tracer` — ACh packet
 
-**Fact anchor:** NERV-02#1, #2, #5; game token, not a literal vesicle. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-02#1, #2, #5; game token, not a literal vesicle. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A small triangular signal packet, like a folded envelope made of wet flesh. A glowing nerve-yellow centre, a thin joint-cyan rim, and two tiny fleshy tabs at the back. Clear triangular silhouette. It is a game token for a chemical message (ACh), not a literal vesicle, not a creature. No face, no eyes, no mouth, no labels, no arrows.
 
-Pixel-art carry prop designed on an 18×18 source grid: a stylized ACh signal token — a small triangular chemical-message packet with a soft wet sheen, nerve-yellow core, thin joint-cyan rim and two tiny tendrils. Clearly triangular silhouette, no face, no label, no arrow. A game token, not a literal vesicle.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_SPRITE + face, eyes, mouth, character, humanoid, fur, hair, label, arrow, second packet.
 
 **Acceptance:** The triangular silhouette reads at 36×36 and matches `sprite.receptor.triangle`; no face; no text; no cast shadow.
 
+**Biology check:** a game token for a chemical message (ACh); triangular silhouette; no literal vesicle anatomy.
+
+**Visual check:** the triangle is unmistakable; the glowing core and two tabs read; no eyes or mouth.
+
 #### `sprite.pulse.terminal` — motor terminal
 
-**Fact anchor:** NERV-02#1, #2. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-02#1, #2. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A bulbous nerve ending, like a round knob at the end of a short cable, flat side view. A teal membrane bulb with four large round bubbles inside — synaptic vesicles. A small joint-cyan emitter at the mouth; a short cable stub at the back — the axon. One terminal only. No face, no labels, no gore. Base at the bottom.
 
-Pixel-art pulse source designed on an 18×18 source grid: a presynaptic motor-nerve terminal, side view — a bulbous teal membrane terminal with a few large round vesicles inside, a small joint-cyan pulse emitter at the mouth, and a short axon stub at the back. Wet sheen, one terminal only, no labels, no gore. Base at the bottom.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_SPRITE + face, eyes, character, humanoid, fur, hair, label, gore, multiple terminals.
 
 **Acceptance:** Terminal, vesicles and cyan emitter read at 36×36; distinct from `scan.synapse`; no text; no gore.
 
+**Biology check:** one presynaptic terminal; vesicles inside; emitter at the mouth; short axon stub at the back.
+
+**Visual check:** the knob shape and internal bubbles read; the cyan emitter is at the mouth, not the back; no face.
+
 #### `sprite.receptor.triangle` — nicotinic receptor
 
-**Fact anchor:** NERV-02#5; shape-matching is a game abstraction, not a literal protein structure. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-02#5; shape-matching is a game abstraction, not a literal protein structure. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A triangular socket in a wet membrane rim, like a natural opening in a soft wall — not a mechanical keyhole. A clean triangular opening, a bone-and-teal rim, a nerve-yellow inner glow, and three small organic clasps. This represents a nicotinic receptor, simplified for the game. No label, no key, no lock, no face. Base at the bottom.
 
-Pixel-art receptor lock designed on an 18×18 source grid: a stylized nicotinic receptor socket, side view — a triangular opening in a bone-and-teal membrane rim, with a nerve-yellow inner glow and small organic clasps. The triangular opening is the dominant shape; no mechanical keyhole, no label. Base at the bottom.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_SPRITE + mechanical keyhole, key, lock, label, character, face.
 
 **Acceptance:** Triangular opening reads at 36×36; distinct from the circle receptor; no mechanical key or lock; no text.
 
+**Biology check:** triangular socket in a wet membrane rim; a simplified nicotinic receptor, not a literal protein structure.
+
+**Visual check:** the triangle is the dominant shape; the rim is organic; no keyhole.
+
 #### `sprite.receptor.circle` — wrong receptor
 
-**Fact anchor:** NERV-02#3 is advanced and optional; this is the shape-mismatch socket. **Reference:** P1. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
+**Fact anchor:** NERV-02#3 is advanced and optional; this is the shape-mismatch socket. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY_CONCEPT`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. 1px dark teal-brown outlines at source resolution; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Strong readable shapes; characters and props must read at 28×44 and 36×36. Side view or slight 3/4 view. No text, no logo, no watermark, no border, no UI, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids, no blood, no gore, no open wounds, no extra limbs, no detailed fingers, no baked drop shadow, no ground shadow.
+SUBJECT: A circular socket in a wet membrane rim, like a natural opening in a soft wall — not a mechanical keyhole. A clean circular opening, a bone-and-teal rim, a nerve-yellow inner glow, and three small organic clasps. This represents a wrong-receptor socket, simplified for the game. No label, no key, no lock, no face. Base at the bottom.
 
-Pixel-art receptor lock designed on an 18×18 source grid: a stylized wrong-receptor socket, side view — a circular opening in a bone-and-teal membrane rim, with a nerve-yellow inner glow and small organic clasps. The circular opening is the dominant shape; no mechanical keyhole, no label. Base at the bottom.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
 
-Full object, centred, base of the lowest visible element on the bottom padding line, 1 px transparent margin on an 18×18 canvas, isolated on a flat solid magenta #FF00FF background, no ground, no pedestal, no cast shadow, no scene, no frame. Hard pixel edges; no anti-aliasing. The engine displays the 18×18 source at 36×36.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
 ```
 
+**Negative:** NEGATIVE_SPRITE + mechanical keyhole, key, lock, label, character, face.
+
 **Acceptance:** Circular opening reads at 36×36; distinct from the triangle receptor; no mechanical key or lock; no text.
+
+**Biology check:** circular socket in a wet membrane rim; a wrong-receptor socket, simplified for the game.
+
+**Visual check:** the circle is the dominant shape; the rim is organic; no keyhole.
 
 ### 8.20 Background prompts
 
 #### `bg.nerve_forest.sky` — sky plate
 
-**Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_SKY`. **Source:** 640×368 WebP/PNG, integer 2× cover. **File:** `shared/backgrounds/nerve-forest-sky.webp`.
+**Reference:** none; creates `style-anchor-sky.png`. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_SKY`. **Source:** 640×368 WebP/PNG, integer 2× cover. **File:** `shared/backgrounds/nerve-forest-sky.webp`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. No single directional light, no hard cast shadows, no god rays, no text, no logo, no watermark, no border, no UI, no labels, no arrows, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids.
+SUBJECT: A wide background plate: the interior of a living body as a damp nerve forest at night. Deep teal darkness; distant thick cable-like nerve trunks, like giant roots; pale segmented sheath plates, like stacked bone tiles, receding in dither haze; a faint nerve-yellow glow low in the distance; floating dust and condensation. No characters, no creatures, no labels, no arrows. Orthographic side view, soft atmospheric depth from layered values and dither, no single directional light, no hard horizon line at player height. Keep the upper corners and lower third dark and low-contrast for HUD and player silhouettes; keep important detail inside the central 70% for the 2× cover crop.
 
-Pixel-art wide background plate, 640×368 source, designed for an exact 2× cover: the interior of a living body as a damp nerve forest at night. Deep teal darkness, distant branching nerve trunks and pale myelin slabs receding in dither haze, a faint nerve-yellow glow low in the distance, floating dust and condensation. No characters, no creatures, no labels, no arrows. Orthographic side view, soft atmospheric depth from layered values and dither, no single directional light, no hard horizon line at player height. Keep the upper corners and lower third dark and low-contrast for HUD and player silhouettes; keep important detail inside the central 70% for the 2× cover crop.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. The body is a landscape, not a textbook cutaway; use cable-like nerves, segmented sheath plates and membrane folds as architecture.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
 
 640×368, wide, opaque, edge-to-edge background plate, no frame. Keep the upper corners and lower third dark and low-contrast; keep important detail inside the central 70% for the 2× cover crop. Hard pixel edges; no anti-aliasing.
 ```
 
+**Negative:** NEGATIVE_BACKGROUND + textbook cutaway, anatomical labels, diagram lines.
+
 **Acceptance:** At 1280×720 cover crop, the HUD text and player silhouettes read; no hard horizon at player height; no characters or text; no obvious focal landmark; ≤300 KB.
+
+**Biology check:** the body reads as a damp nerve landscape, not a textbook cutaway; no bone-innervation claim.
+
+**Visual check:** cable-like trunks and segmented sheath plates read as landscape; no labels or diagram lines.
 
 #### `bg.nerve_forest.far` — far parallax layer
 
-**Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** `shared/backgrounds/nerve-forest-far.webp`.
+**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** `shared/backgrounds/nerve-forest-far.webp`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. No single directional light, no hard cast shadows, no god rays, no text, no logo, no watermark, no border, no UI, no labels, no arrows, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids.
+SUBJECT: A seamless 2:1 far parallax layer: distant giant cable-like nerve trunks and pale segmented sheath plates, like stacked bone roof tiles, in very low contrast cool teal and sage, with soft dither haze and large slow shapes. No ground line, no characters, no labels, no arrows, no unique focal object. Orthographic side view; tile seamlessly on all four edges; no single directional light, no hard cast shadows.
 
-Pixel-art seamless 2:1 far parallax layer, 1024×512 source, every colour block at least 2×2 pixels: distant giant nerve trunks and pale myelin slabs, very low contrast cool teal and sage, soft dither haze, large slow shapes. No ground line, no characters, no labels, no arrows, no unique focal object. Orthographic side view; tile seamlessly on all four edges; no single directional light, no hard cast shadows.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. The body is a landscape, not a textbook cutaway; use cable-like nerves, segmented sheath plates and membrane folds as architecture.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
 
 1024×512, 2:1, transparent background, isolated layer, no frame. Tile seamlessly on all four edges; every colour block at least 2×2 pixels; verify as a 2×2 repeat at native size and at 1280×720. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_BACKGROUND + textbook cutaway, anatomical labels, diagram lines.
 
 **Acceptance:** Low contrast, large slow shapes; no focal landmark; both-axis seam check passes; no text.
 
+**Biology check:** distant nerve trunks and sheath plates read as landscape architecture, not a diagram.
+
+**Visual check:** no hard horizon; no unique focal object; no labels.
+
 #### `bg.nerve_forest.mid` — mid parallax layer
 
-**Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** `shared/backgrounds/nerve-forest-mid.webp`.
+**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** `shared/backgrounds/nerve-forest-mid.webp`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. No single directional light, no hard cast shadows, no god rays, no text, no logo, no watermark, no border, no UI, no labels, no arrows, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids.
+SUBJECT: A seamless 2:1 mid parallax layer: branching, tentacle-like nerve twigs; round nerve bulbs hanging like lanterns; wet membrane folds like draped fabric. Medium-contrast deep teal and sage, with a few nerve-yellow glow accents. No characters, no faces, no labels, no arrows, no unique focal object, no bone-cortex texture. Orthographic side view; tile on all four edges; soft ambient depth, no single directional light.
 
-Pixel-art seamless 2:1 mid parallax layer, 1024×512 source, every colour block at least 2×2 pixels: branching dendrites, synaptic bulbs and hanging membranes in medium-contrast deep teal and sage, with a few nerve-yellow glow accents. No characters, no labels, no arrows, no unique focal object, no bone-cortex texture. Orthographic side view; tile on all four edges; soft ambient depth, no single directional light.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. The body is a landscape, not a textbook cutaway; use cable-like nerves, segmented sheath plates and membrane folds as architecture.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
 
 1024×512, 2:1, transparent background, isolated layer, no frame. Tile seamlessly on all four edges; every colour block at least 2×2 pixels; verify as a 2×2 repeat at native size and at 1280×720. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_BACKGROUND + textbook cutaway, anatomical labels, diagram lines, bone-cortex texture.
 
 **Acceptance:** Medium contrast; no obvious repeat; no bone-cortex texture that fights the runtime overlay; both-axis seam check passes; no text.
 
+**Biology check:** branching nerve twigs, nerve bulbs and membrane folds; no labels or diagram lines.
+
+**Visual check:** the layer reads as a damp nerve forest; no faces; no focal landmark.
+
 #### `bg.nerve_forest.near` — near parallax layer
 
-**Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** `shared/backgrounds/nerve-forest-near.webp`.
+**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** `shared/backgrounds/nerve-forest-near.webp`.
 
 ```text
-Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. No single directional light, no hard cast shadows, no god rays, no text, no logo, no watermark, no border, no UI, no labels, no arrows, no photorealism, no 3D, no painterly rendering, no smooth gradients, no anti-aliasing, no high-res detail, no faux-pixel mixed grids.
+SUBJECT: A seamless 2:1 near foreground parallax layer: dark fibrous cable-like roots, wet membrane sacs like balloons, and membrane folds like draped fabric framing the left and right edges and the top; very high contrast deep teal silhouettes, with large fully transparent gaps across the centre and lower third. Occasional nerve-yellow glow. No characters, no faces, no labels, no arrows, no unique focal object, no opaque band across the play area. Orthographic side view; tile on all four edges.
 
-Pixel-art seamless 2:1 near foreground parallax layer, 1024×512 source, every colour block at least 2×2 pixels: dark fibrous roots, membrane bulbs and membrane folds framing the left and right edges and the top, very high contrast deep teal silhouettes, with large fully transparent gaps across the centre and lower third. Occasional nerve-yellow glow. No characters, no labels, no arrows, no unique focal object, no opaque band across the play area. Orthographic side view; tile on all four edges.
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. The body is a landscape, not a textbook cutaway; use cable-like nerves, segmented sheath plates and membrane folds as architecture.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
 
 1024×512, 2:1, transparent background, isolated layer, no frame. Tile seamlessly on all four edges; every colour block at least 2×2 pixels; verify as a 2×2 repeat at native size and at 1280×720. Hard pixel edges; no anti-aliasing.
 ```
 
+**Negative:** NEGATIVE_BACKGROUND + textbook cutaway, anatomical labels, diagram lines, opaque centre.
+
 **Acceptance:** Centre and lower third stay transparent; the layer does not hide platforms or players; both-axis seam check passes; no text.
+
+**Biology check:** dark cable-like roots, membrane sacs and folds; no diagram lines or labels.
+
+**Visual check:** the centre and lower third are clear; the framing is edge-biased; no faces.
 
 ### 8.21 Material atlas prompts
 
@@ -1039,15 +1306,19 @@ Ludo cannot output a named atlas. Generate **one seamless 1024×1024 material sw
 
 #### `tile.bone.atlas` — 47-frame `blob47`
 
-**Reference:** P1 for palette/line; approved bone swatch for frames. **Style:** `STYLE_ATLAS`. **Frame:** `FRAME_ATLAS`. **Source/export:** 256×192 PNG, 8×6 grid, 32×32 frames, 2×2 clusters, opaque cells. **File:** `shared/tiles/bone-atlas.png`.
+**Reference:** P1 for style/palette only; use the approved bone swatch for frame assembly after approval. **Style:** `STYLE_ATLAS`. **Frame:** `FRAME_ATLAS`. **Source/export:** 256×192 PNG, 8×6 grid, 32×32 frames, 2×2 clusters, opaque cells. **File:** `shared/tiles/bone-atlas.png`.
 
 ```text
-Pixel-art seamless material texture for a side-view platformer set inside a living human body. Native pixel grid, hard square pixels, every colour block at least 2×2 pixels, no anti-aliasing, no smoothing. Flat fills from three-step ramps; 50% dither; no smooth gradients. Uniform flat lighting; no directional highlight, no vignette, no baked edge shading, no bevel, no drop shadow, no grid. Orthographic surface, seamless material swatch. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Gross-cute biology, wry deadpan tone, 12+ friendly. No text, no logo, no watermark, no border, no UI, no characters, no scene, no perspective, no 3D, no photorealism, no baked directional edge.
+SUBJECT: A seamless pixel-art bone-material texture swatch for a side-view platformer: the hard outer surface of bone, like wet chalky stone. Bone cream and bone shadow, deep teal in the pores, fine mineral grit, subtle pores and grime, broad soft mottling. No large cracks, no embedded objects, no symbols, no labels, no grid, no border. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
 
-Seamless pixel-art bone-material texture swatch for a side-view platformer: damp bone cortex in bone cream and bone shadow, deep teal in the pores, fine mineral grit, subtle pores and grime, broad soft mottling. No large cracks, no embedded objects, no symbols, no labels, no grid, no border. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
+Pixel-art seamless material texture for a side-view platformer set inside a living human body. Native pixel grid, hard square pixels, every colour block at least 2×2 pixels, no anti-aliasing, no smoothing. Flat fills from three-step ramps; 50% dither. Uniform flat lighting; orthographic surface, seamless material swatch. Gross-cute biology, wry deadpan tone, 12+ friendly. The material reads as one coherent surface; no characters or scene.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
 
 1024×1024 seamless material swatch concept, uniform flat lighting, no grid, no labels, no frame, no directional highlight, no baked edge. Hard pixel edges; every colour block at least 2×2 pixels. Pixel-clean to a 512×512 working swatch; assemble 32×32 frames offline.
 ```
+
+**Negative:** `NEGATIVE_ATLAS`.
 
 **Bone delta:** restrict the palette to bone cream, bone shadow, deep teal and a little sage. Do not introduce muscle pink or nerve yellow. The material edge is hard and mineral, not a soft membrane rim.
 
@@ -1067,20 +1338,25 @@ Seamless pixel-art bone-material texture swatch for a side-view platformer: damp
 - Every frame tiles 2×2 on all four sides; a 3×3 patch of any frame shows no seam.
 - Mask variants are visually distinct; the edge direction matches the mask.
 - No text, labels, grid lines or baked directional edge.
+- The swatch reads as wet chalky bone, not generic stone or a diagram.
 - 256×192, opaque, 2×2 clusters, ≤80 KB.
 - The runtime tint decision in §8.21.1 is applied and checked.
 
 #### `tile.nerve.atlas` — 16-frame `edge`
 
-**Reference:** P1 for palette/line; approved nerve swatch for frames. **Style:** `STYLE_ATLAS`. **Frame:** `FRAME_ATLAS`. **Source/export:** 128×128 PNG, 4×4 grid, 32×32 frames, 2×2 clusters, opaque cells. **File:** `shared/tiles/nerve-atlas.png`.
+**Reference:** P1 for style/palette only; use the approved nerve swatch for frame assembly after approval. **Style:** `STYLE_ATLAS`. **Frame:** `FRAME_ATLAS`. **Source/export:** 128×128 PNG, 4×4 grid, 32×32 frames, 2×2 clusters, opaque cells. **File:** `shared/tiles/nerve-atlas.png`.
 
 ```text
-Pixel-art seamless material texture for a side-view platformer set inside a living human body. Native pixel grid, hard square pixels, every colour block at least 2×2 pixels, no anti-aliasing, no smoothing. Flat fills from three-step ramps; 50% dither; no smooth gradients. Uniform flat lighting; no directional highlight, no vignette, no baked edge shading, no bevel, no drop shadow, no grid. Orthographic surface, seamless material swatch. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Gross-cute biology, wry deadpan tone, 12+ friendly. No text, no logo, no watermark, no border, no UI, no characters, no scene, no perspective, no 3D, no photorealism, no baked directional edge.
+SUBJECT: A seamless pixel-art nerve-material texture swatch for a side-view platformer: bundles of pale wet nerve fibres, like bundled cables or wires. Nerve yellow and sage, joint-cyan edge sheen, fine fibrous grain, subtle pores and grime, broad soft mottling. No large cracks, no embedded objects, no symbols, no labels, no grid, no border. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
 
-Seamless pixel-art nerve-material texture swatch for a side-view platformer: damp nerve fibres in nerve yellow and sage, joint-cyan edge sheen, fine fibrous grain, subtle pores and grime, broad soft mottling. No large cracks, no embedded objects, no symbols, no labels, no grid, no border. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
+Pixel-art seamless material texture for a side-view platformer set inside a living human body. Native pixel grid, hard square pixels, every colour block at least 2×2 pixels, no anti-aliasing, no smoothing. Flat fills from three-step ramps; 50% dither. Uniform flat lighting; orthographic surface, seamless material swatch. Gross-cute biology, wry deadpan tone, 12+ friendly. The material reads as one coherent surface; no characters or scene.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
 
 1024×1024 seamless material swatch concept, uniform flat lighting, no grid, no labels, no frame, no directional highlight, no baked edge. Hard pixel edges; every colour block at least 2×2 pixels. Pixel-clean to a 512×512 working swatch; assemble 32×32 frames offline.
 ```
+
+**Negative:** `NEGATIVE_ATLAS`.
 
 **Nerve delta:** restrict the palette to nerve yellow, sage, joint cyan and deep teal. Do not introduce muscle pink. The material edge is soft and fibrous, not a hard mineral rim.
 
@@ -1098,6 +1374,7 @@ Seamless pixel-art nerve-material texture swatch for a side-view platformer: dam
 - Every frame tiles 2×2 on all four sides; a 3×3 patch shows no seam.
 - The soft edge matches the `edge` autotile rule; frames are visually distinct.
 - No text, labels, grid lines or baked directional edge.
+- The swatch reads as bundles of pale wet cables, not spaghetti or a diagram.
 - 128×128, opaque, 2×2 clusters, ≤80 KB.
 - The runtime tint decision in §8.21.1 is applied and checked.
 
@@ -1128,20 +1405,25 @@ Do not mix the two. If this decision is not made, generate the swatches only and
 
 #### `ui.icon.badge`
 
-**Reference:** `style-anchor-p1.png`. **Style:** `STYLE_BADGE`. **Frame:** `FRAME_BADGE`. **Source:** 16×16 PNG, alpha. **File:** `shared/ui/badge.png`. **Display:** current ~45×27 CSS px pill with `cover`; pixel-UI target 32×32.
+**Reference:** `style-anchor-p1.png` for style/palette only. **Style:** `STYLE_BADGE`. **Frame:** `FRAME_BADGE_CONCEPT`. **Export:** 16×16 PNG, alpha. **File:** `shared/ui/badge.png`. **Display:** current ~45×27 CSS px pill with `cover`; pixel-UI target 32×32.
 
 ```text
-Pixel-art game emblem for a dark-teal HUD. Native pixel grid, hard square pixels, 1px dark outline, no anti-aliasing, no smoothing. Flat fills from three-step ramps; one hard form shadow; one warm highlight; subtle grime. Gross-cute biology, wry deadpan tone, 12+ friendly. Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Simple, bold, readable at 32×32 and in a ~45×27 pill crop. No text, no logo, no watermark, no UI, no rectangular frame, no photorealism, no 3D, no painterly rendering, no smooth gradients, no high-res detail.
+SUBJECT: A pixel-art mission-patch emblem: a tiny astronaut helmet with a warm amber visor inside a broken ring of pale cable-like fibres and bone plates. Bone cream, deep teal, nerve yellow and joint cyan; bold shapes; one hard shadow; simple enough to read when small. Centred composition; keep the helmet and visor inside the middle 60% vertical band; the outer ring may crop. No text, no logo, no scene.
 
-Pixel-art mission-patch emblem designed on a 16×16 source grid: a tiny astronaut helmet with a warm amber visor inside a broken ring of nerve fibres and bone plates. Bone cream, deep teal, nerve yellow and joint cyan; 1px dark outline; flat fills from the ramps; one hard shadow shape; simple bold shapes that read when small. Centred composition; keep the helmet and visor inside the middle 60% vertical band; the outer ring may crop. No text, no logo.
+Pixel-art game emblem for a dark-teal HUD. Native pixel grid, hard square pixels, 1px dark outline, no anti-aliasing, no smoothing. Flat fills from three-step ramps; one hard form shadow; one warm highlight; subtle grime. Gross-cute biology, wry deadpan tone, 12+ friendly. Simple, bold, readable at 32×32 and in a ~45×27 pill crop.
 
-16×16, 1:1, centred emblem, transparent or flat magenta #FF00FF background, no rectangular frame. Keep the helmet and visor inside the middle 60% vertical band; the current HUD displays a ~45×27 pill crop, the pixel UI target is 32×32. Hard pixel edges; no anti-aliasing.
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Centred emblem, large and clear, flat magenta #FF00FF background, no rectangular frame. Keep the helmet and visor inside the middle 60% vertical band; the outer ring may crop. Hard pixel edges; no anti-aliasing.
 ```
+
+**Negative:** NEGATIVE_BADGE + character scene, labels, rectangular frame.
 
 **Acceptance**
 
 - At the ~45×27 pill crop, the helmet and amber visor read; the ring may be cropped.
 - At the 32×32 pixel-UI target, the emblem reads with hard pixel edges.
+- The emblem is a helmet and ring, not a full character; no body or scene.
 - No text, logo, watermark or rectangular frame.
 - Works on the dark teal HUD; alpha clean; ≤8 KB.
 
@@ -1173,7 +1455,7 @@ Short diegetic game sound effect, 48 kHz, dry, tactile, sci-fi suit plus wet org
 
 ### 8.24 Prompt log
 
-Every generated asset gets a row using the template in §10.3. At minimum record: `promptVersion`, `styleVersion`, asset ID, reference, negative block, model/seed, aspect/export, variations, chosen file, pixel cleanup, palette, grid check, runtime check, verdict and licence.
+Every generated asset gets a row using the template in §10.3. At minimum record: `promptVersion`, `styleVersion`, asset ID, subject block, anatomy in plain shapes, visual analogy, reference, negative block and negative delta, model/seed, aspect/export, variations, chosen file, pixel cleanup, palette, grid check, runtime check, verdict and licence.
 
 If an asset is retried, keep the failed row and add a new row. Do not overwrite history; the log is the evidence for the AI-generated asset record.
 
@@ -1187,7 +1469,7 @@ Prompts that depend on a decision or missing reference:
 - **`audio.cue.wrong`** is outside the 32-asset total; adding it makes 33.
 - **Badge** depends on accepting the ~45×27 pill crop and the 32×32 pixel-UI target.
 - **`sprite.gate.nerve`** is used by 04 but remains placeholder; do not generate it in M3.
-- **Vault visual anchors:** `DESIGN.md`, `learning-design-brief.md` and the NERV cards were not readable when this revision was written because `docs/shrinkonauts` points to an unavailable macOS path. The prompts use §4 and `anatomy-fidelity.md`; re-check the vault copies before final visual sign-off.
+- **Vault visual anchors:** `DESIGN.md`, `learning-design-brief.md` and the NERV cards were not readable when this revision was written because `docs/shrinkonauts` points to an unavailable macOS path. The prompts use §4, §4.10 and `anatomy-fidelity.md`; re-check the vault copies before final visual sign-off.
 
 Visual do-not-claim guard. Do not draw any of these:
 
@@ -1204,6 +1486,17 @@ Visual do-not-claim guard. Do not draw any of these:
 - a CPU as a brain, or an interrupt controller as a literal spinal cord;
 - text, labels, arrows, diagram lines, or a medical-textbook cutaway.
 
+**Visual fidelity guard.** Do not draw any of these either:
+
+- a humanoid Neuron Keeper, robe, hood, legs, boots, or human hands;
+- dendrites as hair or fur, or a fluffy/furry cell;
+- a second axon/tail, or myelin on the Neuron Keeper character;
+- a brain-shaped neuron, or a generic animal cell with organelles;
+- scan targets with faces, eyes, arms or a lantern;
+- a synapse where the two cells touch, or vesicles floating in the cleft;
+- a muscle spindle drawn as a joint capsule or a pain receptor;
+- a textbook cutaway, labels or diagram lines in a background.
+
 The art can be weird and fleshy, but it must stay inside the fidelity ledger and the 12+ tone guard.
 
 ---
@@ -1214,10 +1507,10 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 
 | Category | Must pass |
 |---|---|
-| Players | 14×22 source, 28×44 display; 2× grid; P1/P2 differ by accent only; helmet, backpack and boots readable; feet at baseline; no anti-aliasing; no baked shadow |
-| Entities | 18×18 source, 36×36 display; 2× grid; silhouette distinct from every other entity; base at the bottom padding line; survives the warm interaction tint; no text; no baked shadow |
-| Backgrounds | Sky 640×368 displayed at an exact integer 2×; supports HUD contrast at 1280×720; far/mid/near tile without seams at 2×2 on **both axes**; near layer leaves the centre and lower third transparent |
-| Material atlas | Bone has 47 `blob47` frames, nerve has 16 `edge` frames; every 32×32 frame is authored at 1:1 with a 2×2 cluster grid and tiles on all four sides; mask variants are visually distinct; no text or baked directional edge; tint path checked |
+| Players | 14×22 source, 28×44 display; 2× grid; P1 bone suit/amber visor/yellow tanks/cyan accents; P2 orange suit/bone visor/bone tanks/muscle accents; P1/P2 differ only by the approved palette masks; helmet, backpack and boots readable; feet at baseline; no anti-aliasing; no baked shadow |
+| Entities | 18×18 source, 36×36 display; 2× grid; silhouette distinct from every other entity; base at the bottom padding line; survives the warm interaction tint; no text; no baked shadow; the subject-first prompt and its biology check pass (Neuron Keeper: one cell body, one nucleus, 5–7 dendrite tentacles, one bare axon, forked terminals; scan targets: no face or character pose) |
+| Backgrounds | Sky 640×368 displayed at an exact integer 2×; supports HUD contrast at 1280×720; far/mid/near tile without seams at 2×2 on **both axes**; near layer leaves the centre and lower third transparent; the body reads as a landscape, not a textbook cutaway; no labels or diagram lines |
+| Material atlas | Bone has 47 `blob47` frames, nerve has 16 `edge` frames; every 32×32 frame is authored at 1:1 with a 2×2 cluster grid and tiles on all four sides; mask variants are visually distinct; no text or baked directional edge; tint path checked; the swatch reads as wet chalky bone or bundled wet cables, not a diagram |
 | Badge | 16×16 source reads in the ~45×27 HUD pill and at the 32×32 pixel-UI target; no text; central composition; works on dark teal |
 | UI | Pixel font at integer sizes (12 px labels minimum, 15–16 px body); square chrome; no radius, blur, or soft shadow; material/pattern slots use the same ramps; focus visible; text scale works |
 | Audio | Duration inside the cue window; short, dry, no long tail; no audio-only cue; no gore; no music |
@@ -1227,9 +1520,12 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - Same 2× pixel density across players, entities, sky, and badge; parallax and atlas frames use 2×2 minimum clusters.
 - Same 1 px source outline weight; no asset suddenly uses a 2 px or 0 px outline.
 - Same ramp palette; no purple/neon drift and no intermediate blends.
+- Orange appears only on the P2 suit; the P2 visor and tanks are bone.
 - Same level of detail; no asset is suddenly painterly, 3D, or faux-pixel with mixed sizes.
 - Same tone: gross-cute, not edgy.
 - Same camera language: side or slight 3/4 for characters; orthographic for backgrounds.
+- Same prompt language: the first sentence names the subject and core silhouette; every anatomical term follows a visual noun; the limb budget is explicit.
+- Neuron characters and scan targets keep the §4.10 grammar: tentacles for dendrites, a bare tail for the axon, sleeves and gaps for myelin, sockets for receptors. No hair, fur, humanoid body or second axon.
 - Material frames share the world’s material/pattern language; UI panels use the same ramps and dither.
 - All assets pass the “same game” test on one contact sheet.
 
@@ -1238,12 +1534,19 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - Correct source size: 14×22 player, 18×18 entity, 640×368 sky, 1024×512 parallax, 512×512 material swatch, 256×192 or 128×128 atlas, 16×16 badge.
 - Display lands on exact 2× for players, entities, sky, and badge; parallax tiles 1:1 with 2×2 clusters; atlas frames 1:1 with 2×2 clusters.
 - No anti-aliasing, blur, or fractional scaling.
-- Palette is quantised to the ramp table; no stray colours.
+- Palette is quantised to the ramp table; no stray colours. Orange is only on the P2 suit.
+- The P1→P2 pixel diff touches only the suit, visor/tank, and accent masks; joints, outline, and grime are identical.
+- The P2 bone visor and bone tanks read against the orange suit at 28×44.
 - Alpha is clean at 400%; no magenta fringe; no semi-transparent sprite edges.
 - No JPG or lossy WebP for pixel assets.
 - File size within budget.
 - File names match the asset register.
+- No raw Ludo sheet is referenced by a manifest or served from `public/`.
 - No text, logo, watermark, border, or checkerboard.
+- The Ludo prompt starts with `SUBJECT`; style, palette and frame follow it.
+- Every anatomical term in a positive prompt has a visual analogue; no bare “soma”, “dendrite”, “myelin” or “presynaptic” appears without one.
+- The Ludo concept prompt does not contain the 14×22/18×18 export grid; the export frame is recorded separately.
+- Each cell, scan, prop and background asset has a `NEGATIVE DELTA` that covers its likely failure mode (humanoid, fur, extra tail, face on a scan, textbook diagram, and so on).
 - Player/entity origins and paddings are consistent.
 - Background layers tile on both axes; the 2×2 check passes at native and runtime size.
 - Atlas region names and coordinates match §8.21; every frame passes the 3×3 edge check.
@@ -1259,6 +1562,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - No copied characters or copyrighted props.
 - No labels or arrows baked into the art.
 - The body reads as a place, not a textbook diagram.
+- The Neuron Keeper reads as a single cell creature, not a furry humanoid; scan targets read as flat icons, not characters.
 - The 12+ audience is respected.
 
 ### 9.5 Manifest and validator
@@ -1278,6 +1582,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 ### 9.6 Sign-off checklist
 
 - [ ] Six-asset pixel style gate passes.
+- [ ] Subject-first prompt gate: Neuron Keeper and `scan.neuron` each pass 4 variations at 36×36 with the §4.10 biology-to-shape grammar.
 - [ ] P1 and P2 approved at 28×44 from 14×22 sources.
 - [ ] Neuron Keeper approved.
 - [ ] Four visible scan targets approved; `sprite.scan.reflex` reserve is optional.
@@ -1393,19 +1698,30 @@ Keep a separate spreadsheet or Markdown table with:
 
 | Field | Example |
 |---|---|
-| Prompt version | `m3-2026-10-29.2` |
-| Style version | `style-pixel-v1` / `STYLE_SPRITE` |
+| Prompt version | `m3-2026-10-31.2` |
+| Style version | `style-pixel-v2` / `STYLE_SPRITE` |
 | Asset ID | `sprite.agent.neuron` |
+| Subject block | `SUBJECT: One single neuron cell creature...` |
+| Anatomy in plain shapes | `the round body is the soma; the six tentacles are the dendrites; the one tail is the axon` |
+| Visual analogy | `sea-anemone crown for dendrites; tadpole tail for axon` |
+| Prompt order | `SUBJECT → STYLE → PALETTE → FRAME` |
 | Category | sprite / background / parallax / atlas / badge / audio |
 | Tool and plan | Ludo.ai / Indie |
 | Model and seed | Ludo image model; seed `123456` |
-| Reference | `style-anchor-p1.png` |
+| Reference | `style-anchor-p1.png` for style/palette only |
 | Negative block | `NEGATIVE_SPRITE` |
-| Prompt | Full positive prompt text |
-| Frame block | `FRAME_ENTITY` |
+| Negative delta | `humanoid body, fur, hair, extra tails, myelin on the character` |
+| Prompt | Full positive prompt text, subject first |
+| Frame block | `FRAME_ENTITY_CONCEPT` / `FRAME_SHEET_PLAYER` |
+| Export frame | `FRAME_ENTITY` (Aseprite/Piskel only) |
+| Source sheet | `art-source/characters/player-p1/ludo/walk-49f.../sheet.png` |
+| Frame range | `all` / `0-11` / `frame 0` |
+| Variant of | `player-p1` for P2/civilian palette variants |
+| Palette map | `working/palette.json`; `working/variants/p2.json` |
 | Aspect and export | 1:1 / 18×18 source; 36×36 display |
-| Variations | 4 |
+| Variations | 4 for a single image; one sheet per action |
 | Chosen file | `shared/sprites/agent-neuron.png` |
+| Runtime export | `public/packs/.../shared/sprites/player-p1.png` |
 | Date | 2026-11-04 |
 | Pixel cleanup | Aseprite; 18×18; palette quantised; anti-aliasing removed |
 | Grid check | 2× display; 2×2 clusters where the layer is 1:1 |
@@ -1418,7 +1734,7 @@ Keep a separate spreadsheet or Markdown table with:
 Copy-paste row template:
 
 ```text
-| m3-2026-10-29.2 | style-pixel-v1 | asset.id | category | Ludo/Indie | model/seed | reference | negative | prompt | frame | aspect/export | 4 | chosen-file | date | pixel-cleanup | grid-check | post-process | runtime-check | verdict | licence | notes |
+| m3-2026-10-31.2 | style-pixel-v2 | asset.id | subject-block | anatomy-plain-shapes | visual-analogy | subject→style→palette→frame | category | Ludo/Indie | model/seed | reference | negative-block | negative-delta | prompt | frame-block | export-frame | source-sheet | frame-range | variant-of | palette-map | aspect/export | variations | chosen-file | runtime-export | date | pixel-cleanup | grid-check | post-process | runtime-check | verdict | licence | notes |
 ```
 
 The prompt log is the evidence for the GDD/video asset list and the AI-generated asset record. Keep failed rows; add a new row for each retry.
@@ -1441,7 +1757,7 @@ Assumptions:
 - Total ≈ **104 credits**
 - Pixel cleanup and atlas assembly are manual time in Aseprite/Piskel, not Ludo credits.
 
-The two atlas swatches are counted in the 21 images; assembling 47 + 16 frames consumes no image credits.
+The two atlas swatches are counted in the 21 images; assembling 47 + 16 frames consumes no image credits. A source-sheet generation counts as one image generation regardless of frame count; record the actual credits in the prompt log. The 21-image assumption covers asset families, not individual sheet frames.
 
 Ludo Indie includes **250 credits/month** for **$20**. This is enough. Buy extra credits only if the scope expands or the concept gate needs heavy iteration.
 
@@ -1456,7 +1772,8 @@ Ludo Indie includes **250 credits/month** for **$20**. This is enough. Buy extra
 | Stage | Work |
 |---|---|
 | 1 | Six-asset pixel gate; approve P1 at 14×22 / 28×44; lock palette ramps |
-| 2 | Batch 1: P2, Neuron Keeper, `scan.neuron`, exit; pixel-clean each |
+| 1b | Subject-first prompt pilot: 4 variations of Neuron Keeper and `scan.neuron`; check the §4.10 biology-to-shape grammar and negative delta at 36×36 |
+| 2 | Batch 1: P2 (derived), Neuron Keeper, `scan.neuron`, exit; pixel-clean each |
 | 3 | Batch 2: sky, mid; verify integer 2× and both-axis tiling |
 | 4 | Batch 3: bone and nerve swatches; approve 32×32 frames; assemble atlases after the tint decision |
 | 5 | Batch 4: remaining scans, gate, tracer, pulse, receptors after the 03/04 room check |
@@ -1481,6 +1798,10 @@ Never cut P1/P2, Neuron Keeper, the main interactive landmark (gate or exit), or
 | Risk | Mitigation |
 |---|---|
 | Ludo concepts are faux-pixel (mixed grids, anti-aliasing) | Treat Ludo as concept only; pixel-clean at source size in Aseprite/Piskel |
+| Ludo draws a generic furry/humanoid creature instead of a cell | Use the subject-first prompt + §4.10 lexicon; keep “hair”, “fur” and humanoid role names out of the positive prompt; add the asset negative delta |
+| Ludo sheet frames jitter or change proportions | Slice via the Ludo JSON; align every frame to a common baseline/bbox; drop bad frames; resample to 6–10 key frames |
+| Source sheet is shipped by mistake | Keep `art-source/` out of `public/`; validate that manifests never reference raw source paths |
+| Palette variant drifts from the base | LUT diff test; only the mapped suit/visor/tank/accent masks may change; joints, outline, and grime stay byte-identical |
 | Pixel-grid drift across 21 assets | P1 anchor + fixed source sizes + 400% check + contact sheet |
 | Palette drift | Quantise to the ramp table; reject intermediate blends |
 | Non-integer sky or background scaling | Integer 2× cover (ADR-0048); test at 1280×720 |
@@ -1496,7 +1817,7 @@ Never cut P1/P2, Neuron Keeper, the main interactive landmark (gate or exit), or
 | Puzzle prop art invalidated by room changes | Check gate/tracer/pulse/receptor art against the authored rooms; re-baseline §5.3 |
 | Credits exhausted | Indie 250 is enough; top up rather than upgrade |
 | Free-tier watermark | Free tier for the concept gate only; paid Indie for finals |
-| Engine can’t animate | Static sprites only; animation is a separate engine task |
+| Engine can’t animate | Static runtime sprites only; source sheets are sliced offline; animation playback is a separate engine task |
 
 ---
 
@@ -1508,8 +1829,8 @@ When a level is authored, validated, and in the capture list, instantiate:
 
 - 4 background layers: 640×368 sky, 1024×512 far/mid/near with 2×2 clusters
 - 1 material atlas per authored material (32×32 frames at 1:1 with 2×2 clusters, or a shared atlas with named regions)
-- 1 agent character: 18×18 source, 36×36 display
-- 3–5 scan targets: 18×18 source
+- 1 agent character: 18×18 source, 36×36 display; use the §4.10 biology-to-shape grammar
+- 3–5 scan targets: 18×18 source; flat icons, no faces or character pose
 - 1 gate: 18×18 source
 - 1 exit: 18×18 source
 - 1 checkpoint (if used): 18×18 source
@@ -1561,11 +1882,17 @@ Do not invent new prefixes without updating the asset contract.
 - [x] Adopt whole-game pixel art (ADR-0047).
 - [x] Adopt half-res source with 2× nearest-neighbour display (ADR-0048).
 - [x] Adopt pixel UI chrome and fonts (ADR-0049).
-- [x] Use three-step palette ramps; the eight hue families stay.
+- [x] Adopt source/working/runtime asset layers (ADR-0060).
+- [x] Adopt palette-LUT colour variants; colour-only changes are not Ludo generations (ADR-0061).
+- [x] Adopt data-driven animation and build-time previews as the target architecture; runtime playback remains out of M3 (ADR-0062–0063).
+- [x] Use three-step palette ramps; the eight general families stay, plus the P2-only Orange ramp (ADR-0064).
 - [x] Use Silkscreen + Pixelify Sans as the bundled UI fonts.
+- [x] Adopt subject-first prompt language and the §4.10 biology-to-shape lexicon (`m3-2026-10-31.2`).
 - [x] M3 environment art target = `03-nerve-forest`; 04 environment stays placeholder. Shared entity sprites are final because both rooms reference them.
-- [x] P1 uses joint cyan; P2 uses muscle-pink; silhouette identical.
-- [x] No animation work in M3.
+- [x] P1 uses joint cyan; P2 uses the ADR-0064 orange-suit/bone-visor permutation with muscle-pink accents; silhouette identical.
+- [x] P2 is derived from the indexed P1 master; no Ludo regeneration.
+- [x] No runtime animation work in M3; source sheets may be captured and sliced.
+- [ ] Confirm whether the M3 capture uses frame 0 of the P1 idle or a frame selected from the P1 walk sheet. Both are valid; the runtime asset remains one static frame.
 - [x] Ludo Indie ($20/mo), not Pro.
 - [x] Skip the eight deferred UI images; badge only.
 - [x] 21 declared images = 20 referenced by authored rooms + 1 reserve (`sprite.scan.reflex`).
@@ -1587,6 +1914,11 @@ Do not invent new prefixes without updating the asset contract.
 - [`adr-m3/0047-pixel-art-visual-direction.md`](../adr-m3/0047-pixel-art-visual-direction.md) — whole-game pixel-art direction.
 - [`adr-m3/0048-half-resolution-pixel-rendering.md`](../adr-m3/0048-half-resolution-pixel-rendering.md) — half-res authoring and 2× display.
 - [`adr-m3/0049-pixel-ui-chrome-and-typography.md`](../adr-m3/0049-pixel-ui-chrome-and-typography.md) — pixel UI and fonts.
+- [`adr-art-pipeline/0060-source-work-runtime-asset-layers.md`](../adr-art-pipeline/adr-0060-source-work-runtime-asset-layers.md) — source/working/runtime layers and normalization.
+- [`adr-art-pipeline/0061-palette-lut-sprite-variants.md`](../adr-art-pipeline/adr-0061-palette-lut-sprite-variants.md) — palette-LUT colour variants.
+- [`adr-art-pipeline/0062-data-driven-sprite-animation.md`](../adr-art-pipeline/adr-0062-data-driven-sprite-animation.md) — data-driven animation and runtime state machine.
+- [`adr-art-pipeline/0063-build-time-animation-previews.md`](../adr-art-pipeline/adr-0063-build-time-animation-previews.md) — build-time GIF/contact-sheet previews.
+- [`adr-art-pipeline/0064-orange-p2-suit-palette-swap.md`](../adr-art-pipeline/adr-0064-orange-p2-suit-palette-swap.md) — orange P2 suit and bone visor/tank permutation.
 - [`base-game/adr/0027-art-audio-direction-and-licensing.md`](../shrinkonauts/base-game/adr/0027-art-audio-direction-and-licensing.md) — licensing and audio decisions; visual-style portion superseded by ADR-0047.
 - [`m1.8/README.md`](../m1.8/README.md) — material and pattern layer, autotiling, variants, atlas regions, UI slots.
 - [`puzzle-engine/adr/0014-material-pattern-vocabulary.md`](../puzzle-engine/adr/0014-material-pattern-vocabulary.md), [`0015-tile-material-grid-autotiling.md`](../puzzle-engine/adr/0015-tile-material-grid-autotiling.md), [`0016-pattern-projection-surfaces.md`](../puzzle-engine/adr/0016-pattern-projection-surfaces.md), [`0017-tile-variant-atlas-manifest.md`](../puzzle-engine/adr/0017-tile-variant-atlas-manifest.md) — material/pattern decisions.
@@ -1628,6 +1960,8 @@ Do not invent new prefixes without updating the asset contract.
 | 2026-10-29 | M1.8 re-baseline: 21 visible images / 32 total; two material atlases replace the single tile; materials, variants, backgrounds, and UI slots added; 04 remains placeholder. |
 | 2026-10-29 | Prompt-pack revision: §7–8 rewritten with category style/negative/frame blocks, per-asset prompts, reference workflow, atlas region maps, badge pill crop, audio durations, and prompt-log template. Scope reconciled to 20 referenced images + 1 reserve, 11 M3 cues, and 04 placeholder boundaries. |
 | 2026-10-29 | Pixel re-alignment: v0.3 M1.8 scope preserved (21 images, two atlases, 04 authored); half-res 2× rendering; 21 pixel prompts; atlas frames 32×32 at 1:1 with 2×2 clusters; pixel UI and material/pattern slots; ADR-0047–0049. |
+| 2026-10-31 | Source-sheet and palette-variant alignment: ADR-0060–0064; sheet prompts and slicing workflow; P2 orange-suit/bone-visor palette permutation; LUT diff checks; prompt-log provenance fields; prompt version `m3-2026-10-31.1`. |
+| 2026-10-31 | Subject-first prompt pass and biology-to-shape lexicon: added §4.10; rewrote all visual prompts with visual nouns before anatomical terms; added anatomy-in-plain-shapes lines, negative deltas, biology/visual checks and a visual fidelity guard; split concept and export frames; moved the palette and negatives out of the subject position; prompt/style versions bumped to `m3-2026-10-31.2` / `style-pixel-v2`. |
 
 ---
 

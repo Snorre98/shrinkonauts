@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "character": "player-p1",
+  "cell": { "width": 14, "height": 22 },
+  "ramps": {
+    "teal": { "shadow": "#05090b", "base": "#101a20", "highlight": "#1d2f38" },
+    "bone": { "shadow": "#c9b79a", "base": "#f2e8d5", "highlight": "#fff8e8" },
+    "boneShadow": { "shadow": "#5f736e", "base": "#7a8f8a", "highlight": "#9db4ad" },
+    "nerve": { "shadow": "#b8862b", "base": "#ffd166", "highlight": "#fff3b0" },
+    "joint": { "shadow": "#3f9fb5", "base": "#7bdff2", "highlight": "#c9f7ff" },
+    "muscle": { "shadow": "#a82a4a", "base": "#ef476f", "highlight": "#ff9fb2" },
+    "orange": { "shadow": "#813115", "base": "#e59b34", "highlight": "#ffd28a" },
+    "sage": { "shadow": "#6f847d", "base": "#9db4ad", "highlight": "#c4d4ce" },
+    "ink": { "shadow": "#000000", "base": "#05090b", "highlight": "#2a3f47" }
+  },
+  "roles": {
+    "suit": "bone",
+    "visor": "nerve",
+    "tanks": "nerve",
+    "joints": "teal",
+    "accent": "joint",
+    "outline": "ink",
+    "grime": "boneShadow"
+  },
+  "variants": {
+    "p2": {
+      "suit": "orange",
+      "visor": "bone",
+      "tanks": "bone",
+      "accent": "muscle"
+    }
+  }
+}

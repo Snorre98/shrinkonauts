@@ -78,6 +78,9 @@ const PALETTE_RAMP_KEYS: readonly (keyof ThemePalette)[] = [
   "jointLight",
   "muscleDark",
   "muscleLight",
+  "orange",
+  "orangeDark",
+  "orangeLight",
 ];
 
 const FIT_MODES: readonly BackgroundFit[] = [

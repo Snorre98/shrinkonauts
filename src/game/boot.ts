@@ -16,26 +16,14 @@ import {
   type MaterialCatalog,
   type PatternProvider,
 } from "../materials";
-import { collectHubAssetIds, loadHubContent, type LoadedHubContent } from "../hub";
 import {
-  createMaterialCatalog,
-  createPatternProvider,
-  type MaterialCatalog,
-  type PatternProvider,
-} from "../materials";
-import {
-  catalogEntry,
-  collectMaterialAssetIds,
   catalogEntry,
   collectMaterialAssetIds,
   collectRoomAssetIds,
   collectRoomMaterialAssetIds,
-  collectRoomMaterialAssetIds,
   collectThemeAssetIds,
   loadPackCatalog,
-  loadPackCatalog,
   loadPackContent,
-  type PackCatalog,
   type PackCatalog,
   type PackContent,
 } from "../pack";
@@ -44,17 +32,12 @@ import {
   applyTheme,
   applyUiMaterialStyles,
   clearUiMaterialStyles,
-  applyUiMaterialStyles,
-  clearUiMaterialStyles,
   mountGameUi,
   mountHubUi,
   resolveUiMaterialStyles,
   snapTextScale,
   type GameUi,
   type GameUiDiagnostics,
-  type HubMode,
-  type HubUi,
-  type HubView,
   type HubMode,
   type HubUi,
   type HubView,
@@ -78,27 +61,7 @@ import {
   selectedPack,
   type AppState,
 } from "./app-state";
-import {
-  createGame,
-  HubScene,
-  RoomScene,
-  type GameplayCue,
-} from "../world";
-import {
-  beginStart,
-  canStart,
-  createAppState,
-  markError,
-  markHub,
-  markLaunching,
-  markPlaying,
-  selectMode,
-  selectPack,
-  selectedPack,
-  type AppState,
-} from "./app-state";
 import { parseAssetMode, modeLabel, type AssetMode } from "./asset-mode";
-import { GameRuntime, type AudioPort } from "./runtime";
 import { GameRuntime, type AudioPort } from "./runtime";
 
 export interface BootOptions {
@@ -106,23 +69,14 @@ export interface BootOptions {
   uiRoot?: HTMLElement | null;
   search?: string;
   fetchImpl?: typeof fetch;
-  fetchImpl?: typeof fetch;
 }
 
 export interface PackBundle {
   entryId: string;
   content: PackContent;
-export interface PackBundle {
-  entryId: string;
-  content: PackContent;
   assets: AssetsModule;
   plan: PreloadPlan;
-  plan: PreloadPlan;
   audio: AudioModule;
-  runtime: GameRuntime;
-  materials: MaterialCatalog;
-  patterns: PatternProvider;
-  warnings: string[];
   runtime: GameRuntime;
   materials: MaterialCatalog;
   patterns: PatternProvider;
@@ -149,11 +103,9 @@ function overrideLabel(source: string, mode: AssetMode): string {
 async function loadOptionalManifest(
   url: string,
   fetchImpl: typeof fetch,
-  fetchImpl: typeof fetch,
   warnings: string[],
   label: string,
 ): Promise<AssetManifest | null> {
-  const result = await loadManifest(url, fetchImpl);
   const result = await loadManifest(url, fetchImpl);
   if (!result.ok) {
     warnings.push(`${label} unavailable (${result.error}). Using the next provider.`);
@@ -189,7 +141,6 @@ function showFatal(root: HTMLElement, error: Error): void {
   const hint = document.createElement("p");
   hint.className = "hud__fatal-hint";
   hint.textContent =
-    "Check the pack catalog, the bathroom hub content, the syllabus, and the asset manifests.";
     "Check the pack catalog, the bathroom hub content, the syllabus, and the asset manifests.";
   panel.append(heading, message, hint);
   root.replaceChildren(panel);
@@ -702,23 +653,14 @@ export class AppController {
     const packUrl = new URL(`packs/${entry.path}`, assetBase()).toString();
     const loaded = await loadPackContent({
       packUrl,
-      packUrl,
       syllabusBaseUrl: syllabusBaseUrl().toString(),
-      fetchImpl: this.fetchImpl,
       fetchImpl: this.fetchImpl,
     });
     if (!loaded.ok) throw new Error(loaded.error);
-    if (!loaded.ok) throw new Error(loaded.error);
     const content = loaded.value;
-    const warnings = [...content.warnings];
     const warnings = [...content.warnings];
 
     const finalManifest = await loadOptionalManifest(
-      new URL(
-        content.pack.assetManifests.final ?? "assets.final.json",
-        packUrl,
-      ).toString(),
-      this.fetchImpl,
       new URL(
         content.pack.assetManifests.final ?? "assets.final.json",
         packUrl,
@@ -731,19 +673,14 @@ export class AppController {
       new URL(
         content.pack.assetManifests.placeholder ?? "assets.placeholder.json",
         packUrl,
-        packUrl,
       ).toString(),
-      this.fetchImpl,
       this.fetchImpl,
       warnings,
       "Placeholder manifest",
     );
     let fixtureManifest: AssetManifest | null = null;
     if (this.mode === "fixture") {
-    if (this.mode === "fixture") {
       fixtureManifest = await loadOptionalManifest(
-        new URL("assets.fixture.json", packUrl).toString(),
-        this.fetchImpl,
         new URL("assets.fixture.json", packUrl).toString(),
         this.fetchImpl,
         warnings,
@@ -763,13 +700,9 @@ export class AppController {
 
     const materials = createMaterialCatalog(content.materials);
     const patterns = createPatternProvider({ assets });
-    const materials = createMaterialCatalog(content.materials);
-    const patterns = createPatternProvider({ assets });
 
     const ids = [
       ...Object.values(content.rooms).flatMap(collectRoomAssetIds),
-      ...Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds),
-      ...collectMaterialAssetIds(content.materials),
       ...Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds),
       ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
@@ -782,7 +715,6 @@ export class AppController {
         `ASSET_IDS_UNRESOLVED: ${plan.missing.join(", ")} — expected a known asset ID prefix and a resolved provider`,
       );
     }
-    for (const issue of assets.validate(ids, finalManifest ?? undefined).issues) {
     for (const issue of assets.validate(ids, finalManifest ?? undefined).issues) {
       warnings.push(`${issue.code}: ${issue.message}`);
     }
@@ -905,130 +837,8 @@ export class AppController {
         onExitToHub: () => {
           void this.returnToHub();
         },
-    const audio = createAudio({
-      assets,
-      storage: this.saveData.audioStorage,
-      logger: consoleLogger,
-      onWarning: (message) => this.warn(message),
-    });
-    audio.setMuted(this.saveData.settings.audio.muted);
-    audio.setVolume(this.saveData.settings.audio.volume);
-
-    try {
-      const audioPort: AudioPort = {
-        play: (assetId) => audio.play(assetId),
-        setMuted: (muted) => audio.setMuted(muted),
-        get muted() {
-          return audio.muted;
-        },
-      };
-      const runtime = new GameRuntime({
-        content,
-        save: this.saveData,
-        audio: audioPort,
-        sessionId:
-          globalThis.crypto?.randomUUID?.() ??
-          `session-${Date.now().toString(36)}`,
-        onCue: (cue) => {
-          consoleLogger.debug(`[cue] ${cue}`);
-        },
-        onLevelChange: (levelId) => {
-          consoleLogger.debug(`[level change] ${levelId} restart`);
-          this.roomScene?.scene.restart();
-        },
-      });
-      runtime.start({
-        resume,
-        activeP2: this.state?.mode === "local",
-      });
-      return {
-        entryId: entry.id,
-        content,
-        assets,
-        plan,
-        audio,
-        runtime,
-        materials,
-        patterns,
-        warnings,
-      };
-    } catch (error) {
-      audio.dispose();
-      throw error;
-    }
-  }
-
-  private async transitionToRoom(
-    bundle: PackBundle,
-    skipIntro: boolean,
-  ): Promise<void> {
-    await this.setTransition(true, skipIntro);
-    this.destroyHub();
-    this.hubAudio?.dispose();
-    this.hubAudio = null;
-
-    applyTheme(bundle.content.theme);
-    document.title = `${bundle.content.pack.title} — Shrinkonauts`;
-    this.applySettings();
-
-    const uiMaterials = resolveUiMaterialStyles({
-      theme: bundle.content.theme,
-      catalog: bundle.materials,
-      patterns: bundle.patterns,
-      reducedMotion: this.saveData.settings.accessibility.reducedMotion,
-    });
-    applyUiMaterialStyles(uiMaterials.styles);
-    for (const warning of uiMaterials.warnings) this.warn(warning);
-
-    this.packContent = bundle.content;
-    this.packAssets = bundle.assets;
-    this.packPlan = bundle.plan;
-    this.packAudio = bundle.audio;
-    this.activeAudio = bundle.audio;
-
-    this.gameUiContainer?.remove();
-    this.gameUiContainer = document.createElement("div");
-    this.gameUiContainer.className = "game-ui-root";
-    this.uiRoot.replaceChildren(this.gameUiContainer);
-
-    const diagnostics = this.diagnosticsFor(bundle);
-    this.gameUi = mountGameUi(this.gameUiContainer, {
-      badge: bundle.content.theme.ui.assets.badge
-        ? bundle.assets.image(bundle.content.theme.ui.assets.badge)
-        : undefined,
-      diagnostics,
-      callbacks: {
-        onSurfaceAction: (surfaceId, action) =>
-          bundle.runtime.surfaceAction(surfaceId, action),
-        onGateSubmit: (answer) => bundle.runtime.submitGateAnswer(answer),
-        onGateHint: () => bundle.runtime.gateHint(),
-        onCloseGate: () => bundle.runtime.closeGate(),
-        onToggleMap: () => bundle.runtime.toggleMap(),
-        onToggleLog: () => bundle.runtime.toggleConceptLog(),
-        onResume: () => bundle.runtime.togglePause(),
-        onEscape: () => bundle.runtime.togglePause(),
-        onResetPuzzle: () => bundle.runtime.resetPuzzle(),
-        onPuzzleHint: () => bundle.runtime.puzzleHint(),
-        onMute: () => bundle.runtime.toggleMute(),
-        onTextScale: (scale) => bundle.runtime.setTextScale(scale),
-        onToggleReducedMotion: () => bundle.runtime.toggleReducedMotion(),
-        onDebriefAnswer: (promptId, answer) =>
-          bundle.runtime.submitDebrief(promptId, answer),
-        onDebriefFinish: () => bundle.runtime.finishDebrief(),
-        onExport: () => downloadEvidence(bundle.runtime.exportEvidence()),
-        onNewRun: () =>
-          bundle.runtime.newRun({
-            activeP2: this.state?.mode === "local",
-          }),
-        onExitToHub: () => {
-          void this.returnToHub();
-        },
       },
     });
-    this.gameUi.applySettings(this.saveData.settings);
-    this.gameUi.update(bundle.runtime.snapshot());
-    this.unsubscribe = bundle.runtime.subscribe((snapshot) => {
-      this.gameUi?.update(snapshot);
     this.gameUi.applySettings(this.saveData.settings);
     this.gameUi.update(bundle.runtime.snapshot());
     this.unsubscribe = bundle.runtime.subscribe((snapshot) => {
@@ -1222,13 +1032,9 @@ export async function bootApp(options: BootOptions = {}): Promise<AppController>
   } catch (error) {
     const fatal = toError(error);
     if (uiRoot) showFatal(uiRoot, fatal);
-    if (uiRoot) showFatal(uiRoot, fatal);
     throw fatal;
   }
 }
-
-/** Backwards-compatible alias for callers and tests that used the M1 entry point. */
-export const bootGame = bootApp;
 
 /** Backwards-compatible alias for callers and tests that used the M1 entry point. */
 export const bootGame = bootApp;

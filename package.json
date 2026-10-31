@@ -19,7 +19,9 @@
     "pack:map": "tsx scripts/pack-map.ts",
     "pack:smoke": "tsx scripts/pack-smoke.ts",
     "art:slice": "tsx scripts/art-slice.ts",
-    "smoke:e2e": "playwright test"
+    "smoke:e2e": "playwright test",
+    "art:normalize": "tsx scripts/art-normalize.ts",
+    "art:variant": "tsx scripts/art-variant.ts"
   },
   "dependencies": {
     "matter-js": "^0.20.0",

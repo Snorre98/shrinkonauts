@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "character": "player-p1",
+  "cell": { "width": 14, "height": 22 },
+  "origin": [0.5, 1],
+  "animations": {
+    "idle": { "frames": [0], "fps": 1, "loop": false }
+  },
+  "variants": {
+    "p1": { "texture": "sprite.player.p1" },
+    "p2": { "texture": "sprite.player.p2", "palette": "p2" }
+  }
+}

@@ -1,0 +1,31 @@
+GIMP Palette
+Name: Shrinkonauts Player P2 (P1 index order)
+Columns: 3
+#
+  5   9  11	teal-shadow
+ 16  26  32	teal-base
+ 29  47  56	teal-highlight
+129  49  21	suit-orange-shadow
+229 155  52	suit-orange-base
+255 210 138	suit-orange-highlight
+ 95 115 110	boneShadow-shadow
+122 143 138	boneShadow-base
+157 180 173	boneShadow-highlight
+201 183 154	visor-tank-bone-shadow
+242 232 213	visor-tank-bone-base
+255 248 232	visor-tank-bone-highlight
+168  42  74	accent-muscle-shadow
+239  71 111	accent-muscle-base
+255 159 178	accent-muscle-highlight
+168  42  74	muscle-shadow
+239  71 111	muscle-base
+255 159 178	muscle-highlight
+129  49  21	orange-shadow
+229 155  52	orange-base
+255 210 138	orange-highlight
+111 132 125	sage-shadow
+157 180 173	sage-base
+196 212 206	sage-highlight
+  0   0   0	ink-shadow
+  5   9  11	ink-base
+ 42  63  71	ink-highlight

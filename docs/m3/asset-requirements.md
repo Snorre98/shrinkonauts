@@ -1,5 +1,7 @@
 # M3 Asset Requirements — Shrinkonauts: The Reflex Arc
 
+> **Superseded (2026-10-31):** This v0.3 prompt pack is retained for history. The current prompt pack, scope, and subject-first biology-to-shape lexicon live in [`asset-requirements-v01.md`](asset-requirements-v01.md). Do not generate M3 assets from this file.
+
 **Status:** Draft v0.3 · 29 October 2026 (M1.8 prompt-pack revision)
 **Owner:** Snorre  
 **Scope:** Final 2D art and audio for the M3 vertical slice  

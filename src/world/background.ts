@@ -323,21 +323,6 @@ export class LayeredBackground {
         Math.round(position.y),
       );
     }
-
-    for (const overlay of this.patternOverlays) {
-      const position = patternTilePosition(
-        overlay.options.space,
-        overlay.baseX,
-        overlay.baseY,
-        overlay.options.scale,
-        overlay.options.offset,
-        camera.scrollX,
-        camera.scrollY,
-        overlay.options.parallaxX ?? 0,
-        overlay.options.parallaxY ?? 0,
-      );
-      overlay.sprite.setTilePosition(position.x, position.y);
-    }
   }
 
   destroy(): void {

@@ -40,5 +40,11 @@ npm run art:slice -- \
 ```
 
 `working/frames/` is ignored by git; previews are kept for review. The next
-step will normalize frames to the 14×22 source cell and generate palette
-variants (ADR-0061).
+step normalizes a cleaned 14×22 master and generates palette variants (ADR-0061
+and ADR-0064). See
+[`characters/player-p1/working/README.md`](characters/player-p1/working/README.md)
+for the Aseprite procedure and the `art:normalize` / `art:variant` commands.
+
+The canonical P1/P2 palette swap is defined in
+`characters/player-p1/working/palette.json`. Raw Ludo frames are never resized
+automatically into final art; the cleaned master is the input to the LUT.
