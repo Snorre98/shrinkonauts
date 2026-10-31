@@ -40,11 +40,15 @@ npm run art:slice -- \
 ```
 
 `working/frames/` is ignored by git; previews are kept for review. The next
-step normalizes a cleaned 14×22 master and generates palette variants (ADR-0061
-and ADR-0064). See
+step is a profile-driven remaster (`npm run art:remaster`) that classifies the
+source frame into semantic roles, samples a cleaned cell, and writes a
+palette-quantized P1 master. Palette variants are then derived with
+`npm run art:variant` from the indexed master (ADR-0061 and ADR-0064). See
 [`characters/player-p1/working/README.md`](characters/player-p1/working/README.md)
-for the Aseprite procedure and the `art:normalize` / `art:variant` commands.
+for the profile, the Aseprite/LibreSprite touch-up path, and the commands.
 
 The canonical P1/P2 palette swap is defined in
-`characters/player-p1/working/palette.json`. Raw Ludo frames are never resized
-automatically into final art; the cleaned master is the input to the LUT.
+`characters/player-p1/working/palette.json`; the reusable segmentation profile is
+`characters/player-p1/working/remaster.json`. Raw Ludo frames are never resized
+automatically into final art without the profile pass, and the original exports
+are never edited.

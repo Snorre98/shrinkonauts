@@ -36,9 +36,11 @@ these records before acceptance; accepted records are immutable.
 - **ADR-0060:** the source layer exists at `art-source/`; the first Ludo slicer
   is `scripts/art-slice.ts`.
 - **ADR-0063:** `npm run art:slice` writes frame PNGs and a GIF preview.
-- **ADR-0061 / ADR-0064:** `scripts/art-normalize.ts` validates and quantizes a
-  cleaned cell to the semantic ramps; `scripts/art-variant.ts` applies the
-  single-pass palette LUT. The canonical P2 palette swap is defined in
+- **ADR-0061 / ADR-0064:** `scripts/art-remaster.ts` makes a deterministic
+  14×22 master from a Ludo sheet using a reusable segmentation profile
+  (`working/remaster.json`); `scripts/art-normalize.ts` validates the palette;
+  `scripts/art-variant.ts` applies the single-pass palette LUT. The canonical
+  P2 palette swap is defined in
   `art-source/characters/player-p1/working/palette.json`.
 - **ADR-0062:** not implemented yet. `working/clips.json` is a static scaffold;
   animation playback and the clips validator remain a later slice.

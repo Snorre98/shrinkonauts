@@ -36,7 +36,7 @@
 | Total M3 assets | **32** |
 | Style | **Dank Anatomy Pixel Art** |
 | Rendering | **Half-res source, 2× nearest-neighbour display** |
-| Tool | **Ludo.ai source sheets/concepts + local slice/normalize/palette-LUT pipeline + Aseprite/Piskel cleanup; Ludo.ai Audio Generator** |
+| Tool | **Ludo.ai source sheets/concepts + local slice/remaster/normalize/palette-LUT pipeline + optional Aseprite/Piskel/LibreSprite cleanup; Ludo.ai Audio Generator** |
 | Ludo plan | **Indie, $20/mo** (Pro only if automation or scope grows) |
 | Free-tier use | Six-asset concept/style gate only |
 | Animation | **None at runtime** — source sheets may be captured and sliced; the M3 runtime uses one static frame; playback is deferred |
@@ -243,6 +243,7 @@ Rules:
 - **Player pixel build:** 14×22 source grid; 1px outline; helmet 7–8 px across; visor 3–4 px; torso 8–10 px wide; boots 3 px; backpack 4×6 px; scanner gauntlet 2×2 px. The silhouette must read at 28×44.
 - **P1/P2 differentiation:** P1 uses a bone suit, amber visor, nerve-yellow tanks, and joint-cyan accents. P2 uses the approved orange suit, bone visor, bone tanks, and muscle-pink accents. Keep the silhouette, frame cell, and timing identical. P2 is a palette permutation of P1, not a new pose.
 - **P2 visor:** bone ramp with the ink rim; no cyan glint. Muscle-pink accents stay on the chest light and shoulder trim, not on the visor rim.
+- **Held scanner (draft):** a separate held scanner and hand attachment are explored in [`player-scanner-draft-plan.md`](player-scanner-draft-plan.md). It is not part of the current 21-image scope or the scanner-gauntlet baseline.
 - **Cells:** characters first, diagrams second. Big expressive eyes built from 2×2 blocks, simple body, tiny 1–2 px limbs, one job prop, one personality prop. No human faces, no sexualised cells, no gore.
 - **Neuron visual grammar:** one round jelly-bean cell body; one dark oval nucleus inside it; a crown of 5–7 short, soft, fleshy tentacles with forked tips for dendrites; one long, thin, bare tail for the axon; a small forked twig at the tail tip for the axon terminals. Arms, foot stalk and lantern are character props, not anatomy. Do not draw dendrites as hair or fur. Do not put myelin on the Neuron Keeper character; myelin is a glial sheath shown on the scan icons.
 - **Anatomy-to-shape rule:** every anatomical term in a Ludo prompt follows a visual noun: shape first, term second, job third. Example: “short fleshy tentacles (dendrites) that receive the signal.” The full lexicon is §4.10.
@@ -570,7 +571,7 @@ Do not use `sheet`, `gif`, or `webp` animation types for runtime assets in M3. T
 ### 7.1 Tool, plan, and source of truth
 
 - **Ludo.ai → Image Generator** for concepts, silhouettes, palette studies, material swatches, and source sprite sheets. Ludo is not the final pixel renderer.
-- **Local art pipeline** for slicing source sheets (`npm run art:slice`), future frame normalization, palette quantization, and palette-LUT variants (ADR-0060–0064).
+- **Local art pipeline** for slicing source sheets (`npm run art:slice`), profile-driven remastering (`npm run art:remaster`), palette validation (`npm run art:normalize`), and palette-LUT variants (`npm run art:variant`) (ADR-0060–0064).
 - **Aseprite, Piskel, or LibreSprite** for the final pixel pass at source size, palette quantisation, and atlas assembly.
 - **Ludo.ai → Audio Generator** for the 11 SFX.
 - The source of truth is this document, the category style blocks in §8, and the prompt version. Do not improvise a new style per asset.
@@ -614,8 +615,8 @@ If Ludo’s UI labels differ, map to the closest equivalent. The prompt blocks a
 
 1. Generate **P1** first: four single-image concepts or one walk source sheet.
 2. Pick the best; for a sheet, choose the frame that reads best as a 14×22 idle. It must match the palette.
-3. Pixel-clean the chosen frame at 14×22; approve it at 28×44 on a dark teal background.
-4. Save the cleaned 14×22 master under `art-source/characters/player-p1/working/` and export `shared/sprites/player-p1.png`; keep `style-anchor-p1.png` as the review reference and a 4× nearest-neighbour preview.
+3. Run `npm run art:remaster` as the deterministic first pass; inspect the class map and 8× preview. If needed, touch up the 14×22 PNG in a free editor, then re-run `npm run art:normalize`. Approve the result at 28×44 on a dark teal background.
+4. Save the cleaned 14×22 master under `art-source/characters/player-p1/working/master/` and export `shared/sprites/player-p1.png`; keep `style-anchor-p1.png` as the review reference and a 4× nearest-neighbour preview.
 5. Use it as the style reference for every later character, prop, and icon. Do not use it as an image-to-image generation base for NPCs — it may copy the astronaut. For colour variants of the same character, derive from the indexed P1 master with the palette LUT (ADR-0061/0064).
 6. Derive **P2** from the indexed P1 master with the ADR-0064 palette permutation. Do not generate P2 in Ludo.
 7. Generate the **sky** next; approve `style-anchor-sky.png` at 1280×720 and use it for far/mid/near.
@@ -645,7 +646,7 @@ P2 is not a Ludo generation; derive it after P1 is approved. Do not start Batch 
 3. Generate four concepts for a single image, or one source sheet per action. Keep the Ludo PNG and JSON together.
 4. Pick the best; download the full-resolution concept or sheet.
 5. Single image: pixel the asset at source size: 14×22 player, 18×18 entity, 640×368 sky, 1024×512 parallax, 512×512 material swatch, 16×16 badge. The export frames in §8.10a, §8.11a and §8.15a are for this step, not for the Ludo concept prompt.
-6. Source sheet: keep the Ludo PNG+JSON, slice with `npm run art:slice`, review the GIF, then normalize each frame to the fixed cell and baseline in the working layer (ADR-0060). Do not ship the raw sheet.
+6. Source sheet: keep the Ludo PNG+JSON, slice with `npm run art:slice`, review the GIF, then run `npm run art:remaster` to normalize the chosen frame to the fixed cell and baseline. Use the class-map preview and report before accepting the master. Do not ship the raw sheet.
 7. Quantise to the ramp palette; remove anti-aliasing; enforce the 2×2 cluster rule on 1:1 layers and atlas frames.
 8. Export at source size; inspect at 400%; check at display size on a dark teal contact sheet.
 9. Record the prompt, source sheet, frame range, variant map, pixel-cleanup notes, palette, and chosen file in the prompt log.
@@ -655,7 +656,7 @@ P2 is not a Ludo generation; derive it after P1 is approved. Do not start Batch 
 ### 7.7 Post-processing and export
 
 - **Sprites/entities:** trim to the alpha bounding box, pad to 14×22 or 18×18, feet/base on the bottom line; export PNG.
-- **Source sheets:** slice with the Ludo JSON, trim and align every frame to a common baseline, resample long cycles to 6–10 key frames, and pack the runtime sheet; frame 0 is the M3 static fallback. Keep the raw sheet in `art-source/`, never in `public/`.
+- **Source sheets:** slice with the Ludo JSON, run the profile-driven remaster for the selected frame (or each frame for a future clip), and keep the raw sheet in `art-source/`, never in `public/`. Frame 0 is the M3 static fallback.
 - **Palette variants:** derive from the indexed master with a semantic LUT; do not re-prompt Ludo. P2 uses the ADR-0064 orange permutation.
 - **Backgrounds:** sky 640×368 opaque; far/mid/near 1024×512 with alpha and 2×2 clusters; export lossless WebP or PNG.
 - **Atlases:** assemble 32×32 cells at 1:1 from the approved swatch; 8×6 bone grid (47 regions + one opaque empty cell), 4×4 nerve grid (16 regions); every cell opaque; export PNG. Do not add gutters or transparent seams.
