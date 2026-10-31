@@ -23,13 +23,15 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 32 files, 317 unit/integration tests
+npm test               # 45 files, 423 unit/integration tests
 npm run smoke          # room boot + module boundary tests
 npm run build          # type check and production build
 npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
 npm run pack:map       # regenerate the mapping document
 npm run pack:smoke     # dev simulation + headless runtime loop
 npm run smoke:e2e      # Playwright browser smoke using system Chrome
+npm run art:key        # remove a flat magenta background from a concept plate
+npm run art:build-player # build P1/P2 POC animation sheets and previews
 npm run preview        # serve the production build
 ```
 
@@ -181,12 +183,13 @@ room/boot tests, but the app does not boot it.
 | `/?skipMenu=1&pack=anatomy-reflex` | Direct boot into the selected pack |
 | `/?pack=silicon-reflex` | Preselects the gated Silicon cycle in the hub; Start is disabled |
 | `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
-| `/?assets=final` | Selects the final manifests; shipped entries are still placeholders |
+| `/?assets=final` | Selects the final manifests; player sprites are final, other shipped entries remain placeholders |
 
-The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 44/44
-placeholders. The dev fixture still resolves 10/10 placeholders, or 7/10 with
-its fixture manifest selected by the scripts. Unknown `?assets=` values fall back
-to placeholder mode.
+The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 43/53
+placeholders; the two static player sprites and eight POC animation sheets are
+final. The dev fixture still resolves 10/10 placeholders, or 7/10 with its
+fixture manifest selected by the scripts. Unknown `?assets=` values fall back to
+placeholder mode.
 
 ## Project layout
 
@@ -257,10 +260,16 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (37 files / 362 tests), pack validation/smoke pass, and the browser
+suite passes (45 files / 423 tests), pack validation/smoke pass, and the browser
 smoke passes 7/7. The hub starts Anatomy in Solo or Local co-op, returns to the
 bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
 M2 and M4.
+
+M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, and land
+sheets play in `03-nerve-forest`, P2 uses the approved bone-suit/joint-cyan
+source sheets (ADR-0065), and `npm run art:key` removes magenta backgrounds from
+the nanobanan concept plates. Entity/background animation, final art approval,
+and the full ADR-0062 descriptor remain future work.
 
 M1.75 remains **implementation complete; manual solo/co-op playtest pending**.
 `authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until a

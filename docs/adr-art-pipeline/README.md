@@ -6,7 +6,7 @@
 runtime animation, and preview generation
 
 **Applies to:** M3 and later art passes; the pipeline supports static shipping
-by emitting a one-frame clip
+and the POC player-animation path
 
 **Format:** Nygard-style, matching `docs/adr-m3/` and `docs/adr-m1.5/`
 
@@ -29,21 +29,28 @@ these records before acceptance; accepted records are immutable.
 | [0061](adr-0061-palette-lut-sprite-variants.md) | Palette-LUT sprite variants | Accepted |
 | [0062](adr-0062-data-driven-sprite-animation.md) | Data-driven sprite animation and runtime state machine | Accepted |
 | [0063](adr-0063-build-time-animation-previews.md) | Build-time animation previews, not runtime GIFs | Accepted |
-| [0064](adr-0064-orange-p2-suit-palette-swap.md) | Orange P2 suit and visor palette swap | Accepted |
+| [0064](adr-0064-orange-p2-suit-palette-swap.md) | Orange P2 suit and visor palette swap | Superseded by 0065 |
+| [0065](adr-0065-p2-bone-suit-joint-visor.md) | P2 bone suit and joint-cyan visor | Accepted |
 
 ## Implementation status
 
 - **ADR-0060:** the source layer exists at `art-source/`; the first Ludo slicer
   is `scripts/art-slice.ts`.
 - **ADR-0063:** `npm run art:slice` writes frame PNGs and a GIF preview.
-- **ADR-0061 / ADR-0064:** `scripts/art-remaster.ts` makes a deterministic
+- **ADR-0061 / ADR-0065:** `scripts/art-remaster.ts` makes a deterministic
   14×22 master from a Ludo sheet using a reusable segmentation profile
   (`working/remaster.json`); `scripts/art-normalize.ts` validates the palette;
-  `scripts/art-variant.ts` applies the single-pass palette LUT. The canonical
-  P2 palette swap is defined in
+  `scripts/art-variant.ts` applies the single-pass palette LUT. P2 now uses the
+  approved bone-suit/joint-cyan source sheets; the palette LUT role map is in
   `art-source/characters/player-p1/working/palette.json`.
-- **ADR-0062:** not implemented yet. `working/clips.json` is a static scaffold;
-  animation playback and the clips validator remain a later slice.
+- **ADR-0062:** POC implemented. `scripts/art-build-player.ts` reads
+  `working/clips.json`, writes runtime walk/jump/fall/land sheets, and
+  `src/world/player-animator.ts` plays them from manifest sheet metadata. The
+  full generalized descriptor/state machine remains future work.
+- **ADR-0063:** `npm run art:build-player` writes build-time GIF and contact
+  strip previews from the same runtime sheets and clip timing.
+- **Background keying:** `npm run art:key` removes flat magenta backgrounds from
+  concept JPEGs with a hard-alpha RGB key and magenta despill.
 
 ## Relationship to existing decisions
 
@@ -75,4 +82,5 @@ This domain is accepted when:
 - **Rejected:** considered and not adopted.
 
 All records in this domain start as **Proposed**. ADR-0060–0063 were accepted
-on 29 October 2026; ADR-0064 was accepted on 31 October 2026.
+on 29 October 2026; ADR-0064 was accepted on 31 October 2026 and superseded by
+ADR-0065 on 1 November 2026.

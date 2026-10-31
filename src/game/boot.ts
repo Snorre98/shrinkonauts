@@ -2,6 +2,7 @@ import {
   createAssets,
   loadManifest,
   PlaceholderProvider,
+  PLAYER_ANIMATION_ASSET_IDS,
   PLAYER_ASSET_IDS,
   type AssetManifest,
   type AssetsModule,
@@ -707,6 +708,9 @@ export class AppController {
       ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
       ...Object.values(PLAYER_ASSET_IDS),
+      ...Object.values(PLAYER_ANIMATION_ASSET_IDS)
+        .flatMap((clips) => Object.values(clips))
+        .filter((id) => finalManifest?.assets[id] !== undefined),
     ];
     const plan = assets.preload(ids);
     warnings.push(...plan.warnings);

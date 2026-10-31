@@ -49,10 +49,9 @@ function paletteValue(cellWidth = 2): Record<string, unknown> {
     },
     variants: {
       p2: {
-        suit: "orange",
-        visor: "bone",
-        tanks: "bone",
-        accent: "muscle",
+        visor: "joint",
+        tanks: "joint",
+        accent: "nerve",
       },
     },
   };
@@ -68,7 +67,7 @@ describe("parsePaletteDocument", () => {
     expect(doc.character).toBe("player-p1");
     expect(doc.cell).toEqual({ width: 2, height: 1 });
     expect(doc.roles.suit).toBe("bone");
-    expect(doc.variants.p2?.visor).toBe("bone");
+    expect(doc.variants.p2?.visor).toBe("joint");
   });
 
   it("rejects unknown ramps and roles", () => {
@@ -99,9 +98,9 @@ describe("parsePaletteDocument", () => {
     });
     expect(buildPaletteLut(document, "p2")).toEqual(
       expect.arrayContaining([
-        { source: "#f2e8d5", target: "#e59b34", roles: ["suit"] },
-        { source: "#ffd166", target: "#f2e8d5", roles: ["tanks", "visor"] },
-        { source: "#7bdff2", target: "#ef476f", roles: ["accent"] },
+        { source: "#f2e8d5", target: "#f2e8d5", roles: ["suit"] },
+        { source: "#ffd166", target: "#7bdff2", roles: ["tanks", "visor"] },
+        { source: "#7bdff2", target: "#ffd166", roles: ["accent"] },
       ]),
     );
   });
@@ -112,9 +111,9 @@ describe("buildPaletteLut", () => {
     const lut = buildPaletteLut(palette(), "p2");
     expect(lut).toEqual(
       expect.arrayContaining([
-        { source: "#f2e8d5", target: "#e59b34", roles: ["suit"] },
-        { source: "#ffd166", target: "#f2e8d5", roles: ["tanks", "visor"] },
-        { source: "#7bdff2", target: "#ef476f", roles: ["accent"] },
+        { source: "#f2e8d5", target: "#f2e8d5", roles: ["suit"] },
+        { source: "#ffd166", target: "#7bdff2", roles: ["tanks", "visor"] },
+        { source: "#7bdff2", target: "#ffd166", roles: ["accent"] },
         { source: "#101a20", target: "#101a20", roles: ["joints"] },
       ]),
     );
@@ -137,20 +136,20 @@ describe("buildPaletteLut", () => {
 describe("applyPaletteVariant", () => {
   it("changes only the mapped roles and does not cascade", () => {
     const source = image(5, 1, [
-      [242, 232, 213, 255], // bone base -> orange base
-      [255, 209, 102, 255], // nerve base -> bone base, not orange
-      [123, 223, 242, 255], // joint base -> muscle base
+      [242, 232, 213, 255], // bone base -> bone base (suit unchanged)
+      [255, 209, 102, 255], // nerve base -> joint base (visor/tanks)
+      [123, 223, 242, 255], // joint base -> nerve base (accent)
       [16, 26, 32, 255], // teal base -> unchanged
       [0, 0, 0, 0], // transparent
     ]);
     const result = applyPaletteVariant(source, palette(5), "p2");
 
-    expect(pixel(result.image, 0, 0)).toEqual([229, 155, 52, 255]);
-    expect(pixel(result.image, 1, 0)).toEqual([242, 232, 213, 255]);
-    expect(pixel(result.image, 2, 0)).toEqual([239, 71, 111, 255]);
+    expect(pixel(result.image, 0, 0)).toEqual([242, 232, 213, 255]);
+    expect(pixel(result.image, 1, 0)).toEqual([123, 223, 242, 255]);
+    expect(pixel(result.image, 2, 0)).toEqual([255, 209, 102, 255]);
     expect(pixel(result.image, 3, 0)).toEqual([16, 26, 32, 255]);
     expect(pixel(result.image, 4, 0)).toEqual([0, 0, 0, 0]);
-    expect(result.changedPixels).toBe(3);
+    expect(result.changedPixels).toBe(2);
     expect(result.unmappedOpaquePixels).toBe(0);
     expect(result.alphaViolations).toBe(0);
   });

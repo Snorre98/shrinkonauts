@@ -75,13 +75,15 @@ Run from `shrinkonauts/`:
 ```bash
 npm install
 npm run dev             # http://127.0.0.1:5173/
-npm test                # 37 files, 362 unit/integration tests
+npm test                # 45 files, 423 unit/integration tests
 npm run smoke           # room boot + module boundary tests
 npm run build           # tsc --noEmit + Vite production build
 npm run pack:validate   # dev fixture + anatomy + catalog/hub validation
 npm run pack:map        # regenerate/check the mapping document
 npm run pack:smoke      # dev simulation + headless runtime loop
 npm run smoke:e2e       # Playwright, system Chrome, port 4173
+npm run art:key         # remove a flat magenta background from a concept plate
+npm run art:build-player # build P1/P2 POC animation sheets and previews
 npm run preview         # serve dist/
 ```
 
@@ -613,15 +615,14 @@ system Chrome.
 
 ## Verification performed
 
-On 2026-10-29, after the M1.8 material/pattern changes:
+On 2026-11-01, after the P2 re-baseline and POC player animation:
 
 ```text
-npm test             37 files, 362 tests passed
+npm test             45 files, 423 tests passed
 npm run build        tsc clean + Vite production build
 npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
-npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (45 IDs, 45 placeholders)
-npx playwright test   7/7 passed (system Chrome, port 4173)
-git diff --check      clean
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (45 IDs, 43 placeholders)
+npm run smoke:e2e     7/7 passed (system Chrome, port 4173)
 ```
 
 ### Screenshots

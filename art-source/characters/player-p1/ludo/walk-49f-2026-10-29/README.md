@@ -10,8 +10,8 @@
 - **Unique opaque colours (measured):** 46,297
 - **Prompt / model / seed:** TBD — fill in from the Ludo project before shipping
 - **Ludo plan / licence:** TBD — record the plan and terms here
-- **Decision:** preferred base for the static P1 idle and the future walk clip.
-  The sequence reads as one continuous walk cycle.
+- **Decision:** the P1 walk source and the static idle (frame 0). The sequence
+  reads as one continuous walk cycle.
 
 This is an immutable source export. Do not edit these files; make working
 copies under `../../working/`.

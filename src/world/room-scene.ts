@@ -12,8 +12,13 @@ import {
 } from "../materials";
 import type { RoomDocument, ThemeDocument } from "../pack";
 import { LayeredBackground } from "./background";
-import { PLAYER_ASSET_IDS } from "./ids";
+import { PLAYER_ANIMATION_ASSET_IDS, PLAYER_ASSET_IDS } from "./ids";
 import { KeyboardIntentSource } from "./input";
+import {
+  PlayerAnimator,
+  type PlayerAnimationAsset,
+} from "./player-animator";
+import type { PlayerClip } from "./player-animation";
 import { RoomEffectLayer } from "./effects";
 import { MaterialTextureCache } from "./material-textures";
 import { PatternLayer } from "./pattern-layer";
@@ -117,7 +122,10 @@ export class RoomScene
   private intents!: KeyboardIntentSource;
   private background: LayeredBackground | null = null;
   private readonly playerSprites: Partial<
-    Record<PlayerId, Phaser.GameObjects.Image>
+    Record<PlayerId, Phaser.GameObjects.Sprite>
+  > = {};
+  private readonly playerAnimators: Partial<
+    Record<PlayerId, PlayerAnimator>
   > = {};
   private readonly playerShadows: Partial<
     Record<PlayerId, Phaser.GameObjects.Ellipse>
@@ -290,6 +298,7 @@ export class RoomScene
     this.patternLayer = null;
     this.materialTextures = null;
     for (const id of PLAYER_IDS) {
+      delete this.playerAnimators[id];
       delete this.playerSprites[id];
       delete this.playerShadows[id];
     }
@@ -306,6 +315,7 @@ export class RoomScene
     const room = runtime.roomDocument;
 
     for (const id of PLAYER_IDS) {
+      delete this.playerAnimators[id];
       delete this.playerSprites[id];
       delete this.playerShadows[id];
     }
@@ -671,13 +681,52 @@ export class RoomScene
       .setDepth(9);
 
     const sprite = this.add
-      .image(player.x, player.y, key)
+      .sprite(player.x, player.y, key)
       .setOrigin(0.5, 1)
       .setDisplaySize(PLAYER_WIDTH, PLAYER_HEIGHT)
       .setDepth(10);
 
     this.playerShadows[id] = shadow;
     this.playerSprites[id] = sprite;
+    this.playerAnimators[id] = new PlayerAnimator({
+      scene: this,
+      playerId: id,
+      sprite,
+      idleTexture: key,
+      animations: this.playerAnimationAssets(id),
+      isReducedMotion: () => this.config.isReducedMotion?.() ?? false,
+    });
+  }
+
+  private playerAnimationAssets(
+    id: PlayerId,
+  ): Partial<Record<PlayerClip, PlayerAnimationAsset>> {
+    const animations: Partial<Record<PlayerClip, PlayerAnimationAsset>> = {};
+    for (const clip of ["walk", "jump", "fall", "land"] as const) {
+      const asset = this.config.assets.sprite(
+        PLAYER_ANIMATION_ASSET_IDS[id][clip],
+      );
+      if (
+        asset.type !== "sheet" ||
+        !asset.src ||
+        asset.source === "placeholder" ||
+        !asset.frames ||
+        !asset.fps
+      ) {
+        continue;
+      }
+      const texture = textureKey(asset.id);
+      if (!this.textures.exists(texture)) {
+        continue;
+      }
+      animations[clip] = {
+        textureKey: texture,
+        frames: asset.frames,
+        fps: asset.fps,
+        loop: asset.loop === true,
+      };
+    }
+    return animations;
   }
 
   private syncPlayers(): void {
@@ -687,6 +736,7 @@ export class RoomScene
       const shadow = this.playerShadows[id];
 
       if (sprite) {
+        this.playerAnimators[id]?.update(player);
         sprite.setPosition(player.x, player.y);
         sprite.setFlipX(player.facing === -1);
         sprite.setVisible(player.active);

@@ -9,19 +9,35 @@ data and are tracked.
 `frames/walk-49f/` and `frames/walk-36f/` contain raw Ludo slices at 264×352 and
 342×603. They are **not** cleaned 14×22 masters and must not be shipped.
 
-The pipeline has two stages:
+The POC runtime sheets are built and integrated:
 
-1. `art:remaster` — deterministic first pass from a Ludo sheet to a 14×22
+- The current `master/player-p1-idle-14x22.png` and
+  `master/player-p2-idle-14x22.png` are the POC downscale + palette-quantize
+  masters. The semantic `art:remaster` command remains available and can
+  regenerate the P1 master if you want to compare paths.
+- P1 idle, walk, jump, fall, and land are in
+  `public/packs/anatomy-reflex/shared/sprites/`.
+- `clips.json` is now schema v2 and maps the walk-49 and jump-36 sources to the
+  five clips.
+- P2 uses its own approved walk/jump sheets under
+  `art-source/characters/player-p2/`; it is not derived from P1 for the POC.
+
+The pipeline stages:
+
+1. `art:remaster` — deterministic semantic pass from a Ludo sheet to a 14×22
    palette-quantized master, with a false-colour class map and report.
-2. `art:variant` — single-pass palette LUT from the P1 master to P2.
+2. `art:variant` — single-pass palette LUT for derived colour variants.
+3. `art:build-player` — packs the clip ranges into runtime sheets and writes
+   build-time GIF/contact-strip previews.
 
-No paid editor is required for either stage. Aseprite, LibreSprite, Piskel,
-GIMP, or Krita are optional for manual touch-up only.
+No paid editor is required for any stage. Aseprite, LibreSprite, Piskel, GIMP,
+or Krita are optional for manual touch-up only.
 
-Do not regenerate P2 through Ludo. The P2 palette is a deterministic LUT of the
-cleaned P1 master (ADR-0061 and ADR-0064).
+ADR-0065 supersedes the orange P2 concept. P2 is bone suit, joint-cyan visor
+and tanks, nerve-amber accent. The palette LUT role map is kept for future
+derived variants, but the approved P2 source sheets are used directly.
 
-## Automated remaster (preferred)
+## Automated remaster (semantic path)
 
 `remaster.json` is the reusable profile. It defines the 14×22 cell, frame
 selection, HSV class ranges, hole filling, shading quantiles, boundary outline,
@@ -101,21 +117,23 @@ already palette-quantized; RGB editing with the same hex values is enough.
 
 ## P1 → P2 palette swap
 
-The approved P2 mapping is in `palette.json`:
+The P2 role map in `palette.json` is kept for future derived variants:
 
 | Role | P1 | P2 |
 |---|---|---|
-| suit | bone | orange `#813115 / #e59b34 / #ffd28a` |
-| visor | nerve | bone |
-| tanks | nerve | bone |
-| accent | joint | muscle |
+| suit | bone | bone |
+| visor | nerve | joint |
+| tanks | nerve | joint |
+| accent | joint | nerve |
 | joints | teal | teal |
 | outline | ink | ink |
 | grime | bone-shadow | bone-shadow |
 
-`art:variant` applies this as a single-pass LUT. It does not need Ludo or an
-indexed editor. `palette-p2.gpl` is only a convenience for manual comparison in
-LibreSprite/GIMP/Krita.
+The POC uses the approved P2 source sheets directly, not the LUT. `art:variant`
+still applies the role map as a single-pass LUT for other colour variants.
+`palette-p2.gpl` is a convenience for manual comparison in
+LibreSprite/GIMP/Krita; it matches the ADR-0065 role map, while the POC runtime
+uses the approved P2 source sheets directly.
 
 ## Commands
 
@@ -148,7 +166,16 @@ npm run art:normalize -- \
 The report should show `sourceOffPalettePixels: 0`, `quantizedPixels: 0`,
 `maxDistance: 0`, and `alphaViolations: 0`.
 
-Generate P2:
+Build the POC player sheets and previews:
+
+```bash
+npm run art:build-player -- --character all --sampler downscale --write-runtime
+```
+
+Use `--sampler both` without `--write-runtime` to compare the semantic remaster
+and the downscale + palette-quantize path before choosing runtime output.
+
+Generate a derived P2 variant (optional; the POC uses the approved P2 sheets):
 
 ```bash
 npm run art:variant -- \
@@ -164,23 +191,31 @@ npm run art:variant -- \
 The variant command fails if the master is not 14×22, has semi-transparent
 pixels, contains opaque pixels outside the semantic roles, or produces pixels
 outside the target ramps. The report's `changedPixels` must be limited to the
-suit, visor/tank, and accent masks.
+visor/tank and accent masks; the suit, joints, outline, and grime stay unchanged.
 
 ## Validation checklist
 
-- P1/P2 silhouettes are identical at 28×44.
-- Only suit, visor/tank, and accent pixels differ; joints, outline, and grime are
-  byte-identical.
-- Orange appears only on the P2 suit.
-- The bone visor reads as glass through the ink rim; no cyan glint.
+- P1/P2 share the 14×22 cell, 28×44 display, bottom-centre origin, and clip
+  names.
+- P1 uses bone/amber/nerve/joint; P2 uses bone/joint/joint/nerve (ADR-0065).
+- Orange appears nowhere on P2.
 - Every pixel is on an approved ramp; alpha is 0 or 255.
 - No anti-aliasing or semi-transparent edges.
-- Player PNG is ≤16 KB.
-- `clips.json` uses the same frame cell, origin, and timing for P1 and P2.
+- Static player PNG is ≤16 KB; each animation sheet is ≤64 KB.
+- `clips.json` uses the same cell, origin, and clip names for P1 and P2. P1 and
+  P2 walk sources have different frame counts (49 vs 36); cycle duration is
+  normalized by fps.
 
 ## Runtime integration
 
-Do not add final art to `public/` until the P1/P2 masters are approved. When they
-are, replace the placeholder `sprite.player.p1` and `sprite.player.p2` entries
-in `public/packs/anatomy-reflex/assets.final.json` with their `src` and licence.
-The asset IDs are stable; no gameplay or manifest ID changes.
+The POC runtime assets are already in
+`public/packs/anatomy-reflex/shared/sprites/` and declared in
+`public/packs/anatomy-reflex/assets.final.json`:
+
+- `sprite.player.p1` / `sprite.player.p2` — static idle.
+- `sprite.player.p1.walk/jump/fall/land` — `sheet` entries.
+- `sprite.player.p2.walk/jump/fall/land` — `sheet` entries.
+
+The asset IDs are stable. The full ADR-0062 descriptor and generalized animation
+system remain future work; the POC reads frame count, fps, and loop from the
+manifest sheet metadata.

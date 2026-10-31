@@ -1,10 +1,10 @@
 # M3 Asset Requirements — Shrinkonauts: The Reflex Arc
 
-**Status:** Draft v0.7 · 31 October 2026 (subject-first prompt pass + biology-to-shape lexicon)
+**Status:** Draft v0.8 · 1 November 2026 (P2 re-baseline + POC player animation)
 **Owner:** Snorre  
 **Scope:** Final 2D pixel art and audio for the M3 vertical slice  
 **Target milestone:** M3 — Art/audio pass + capture (4–5 November 2026)  
-**Governing decisions:** ADR-0029 (asset provider), ADR-0030 (sprite format), ADR-0031 (layered backgrounds), ADR-0032 (audio cues), ADR-0033 (final asset timing), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0049 (pixel UI chrome), ADR-0060–0064 (source/working/runtime art pipeline, palette variants, animation, previews, P2 palette swap)
+**Governing decisions:** ADR-0029 (asset provider), ADR-0030 (sprite format), ADR-0031 (layered backgrounds), ADR-0032 (audio cues), ADR-0033 (final asset timing), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0049 (pixel UI chrome), ADR-0060–0065 (source/working/runtime art pipeline, palette variants, animation, previews, P2 palette)
 
 **Related:** [`implementation-plan.md`](../shrinkonauts/base-game/implementation-plan.md) · [`contracts/pack-schema.md`](../shrinkonauts/base-game/contracts/pack-schema.md) · [`level-authoring.md`](../shrinkonauts/base-game/level-authoring.md) · [`DESIGN.md`](../shrinkonauts/DESIGN.md) · [`learning-design-brief.md`](../shrinkonauts/learning-design-brief.md) · [`cards/`](../shrinkonauts/base-game/cards/) · [`adr-m3/`](../adr-m3/README.md)
 
@@ -12,11 +12,12 @@
 
 > **Visual pivot (2026-10-29).** The project has moved from the hand-drawn “Dank Anatomy Cartoon” direction to **“Dank Anatomy Pixel Art”** across the world and the UI. This revision keeps the v0.3 M1.8 scope: 21 visible images, two material atlases, 04 authored, and the M1.9/M4 boundaries. §4, §6, §7, §8, §9 and ADR-0047–0049 replace the hand-drawn rendering rules; ADR-0027 remains in force for licensing and audio.
 >
-> **Pipeline note (2026-10-31).** ADR-0060–0064 define the source/working/runtime asset pipeline, palette variants, data-driven animation, build-time previews, and the P2 palette permutation. Source sheets are captured and sliced offline; M3 still ships static runtime sprites, and animation playback remains a later engine task.
+> **Pipeline note (2026-11-01).** ADR-0060–0065 define the source/working/runtime asset pipeline, palette variants, data-driven animation, build-time previews, and the P2 palette. Source sheets are captured and sliced offline. A POC player-animation path now ships P1/P2 idle, walk, jump, fall, and land sheets into `03-nerve-forest`; the full ADR-0062 descriptor and generalized animation system remain later work.
 >
-> **P2 palette note (2026-10-31).** ADR-0064 amends the P2 rule. P2 is now an
-> orange-suit, bone-visor/tank, muscle-accent palette permutation of P1. Orange
-> is an approved ramp for the P2 suit only.
+> **P2 palette note (2026-11-01).** ADR-0065 supersedes ADR-0064. P2 is now a
+> bone suit with a joint-cyan visor and backpack tank, a nerve-amber accent,
+> teal/bone-shadow joints, an ink outline, and bone-shadow grime. Orange is no
+> longer used on P2; the orange ramp remains reserved but unused.
 >
 > **Prompt-language note (2026-10-31).** The prompt pack is now subject-first and
 > uses a biology-to-shape lexicon (§4.10). Anatomical terms follow a visual noun
@@ -39,7 +40,7 @@
 | Tool | **Ludo.ai source sheets/concepts + local slice/remaster/normalize/palette-LUT pipeline + optional Aseprite/Piskel/LibreSprite cleanup; Ludo.ai Audio Generator** |
 | Ludo plan | **Indie, $20/mo** (Pro only if automation or scope grows) |
 | Free-tier use | Six-asset concept/style gate only |
-| Animation | **None at runtime** — source sheets may be captured and sliced; the M3 runtime uses one static frame; playback is deferred |
+| Animation | **POC player animation** — P1/P2 idle, walk, jump, fall, and land sheets play in `03-nerve-forest`; other sprites stay static; the full ADR-0062 descriptor is deferred |
 | UI | **8-bit pixel chrome; Silkscreen + Pixelify Sans; badge is the only rendered UI image** |
 | UI panels/portraits | **Deferred** — not rendered by the current UI |
 | Music | **Deferred** — not played by the current runtime |
@@ -80,6 +81,7 @@ This is a production document, not a GDD. The game design source remains [`DESIG
 | Category | Count | Notes |
 |---|---:|---|
 | Player sprites P1/P2 | 2 | Shared across all levels |
+| POC player animation sheets | 8 | P1/P2 walk/jump/fall/land; additional runtime assets, outside the 21-image static register |
 | Visible shared entity sprites | 12 | 11 referenced by 03/04; `sprite.scan.reflex` is a reserve |
 | `03-nerve-forest` background layers | 4 | Sky, far, mid, near |
 | Final material atlases (bone, nerve) | 2 | 47-frame `blob47` bone atlas; 16-frame `edge` nerve atlas |
@@ -87,6 +89,9 @@ This is a production document, not a GDD. The game design source remains [`DESIG
 | **Visible images subtotal** | **21** | 20 referenced + 1 reserve |
 | SFX cues | 11 | `audio.cue.wrong` is outside the M3 scope |
 | **M3 total** | **32** | 21 images + 11 audio |
+
+The eight POC animation sheets are runtime assets but are not part of the
+21-image static register or the 32-asset production total.
 
 **Pixel authoring.** Players 14×22, entities 18×18, atlas frames 32×32 at 1:1 with 2×2 clusters, sky 640×368, parallax 1024×512 with 2×2 clusters, badge 16×16. See §3 and §6.
 
@@ -100,7 +105,7 @@ This is a production document, not a GDD. The game design source remains [`DESIG
 | `sprite.checkpoint` | 1 | Declared but not referenced by the authored rooms |
 | `sprite.gate.nerve` | 1 | Referenced by 04's Ca²⁺ gate, but 04 props stay placeholder art in M3 |
 | `audio.cue.wrong` | 1 | Declared in the theme and manifest; outside the 11-cue M3 scope |
-| Runtime animation playback / GIF loops | — | Source sheets may be captured and sliced for static frames; the runtime does not create animations |
+| Generalized runtime animation / GIF loops | — | POC player animation is in scope; entity/background animation, a generalized descriptor, and GIF playback remain deferred |
 | Music loop / ambience | — | Music playback is deferred |
 | Levels `01-bone-gate`, `02-joint-chamber`, `05-reflex-core` | 3 | Design proposals exist in [`docs/m2/nervous-puzzles/`](../m2/nervous-puzzles/), but the pack content is not implemented |
 | Silicon fixture | 1 | Design proposal exists; not implemented in the pack |
@@ -113,7 +118,7 @@ The deferred UI assets remain declared as placeholders. They will not appear in 
 1. **One environment.** Final environment art is produced for `03-nerve-forest`. The shared entity sprites are final because 03/04 reference them; 04 backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder. Other levels get art only after they are authored, pass validation, and appear in the capture list.
 2. **No new asset IDs during M3.** If a level needs a new ID, that is a content/engine task with an ADR, not an art-pass improvisation.
 3. **No gameplay code changes.** ADR-0033 forbids mixing the art pass with gameplay changes. The pixel pivot needs a small, recorded render change (`pixelArt`, `antialias`, `roundPixels`, integer background scaling) under ADR-0048; nothing in `src/game`, `src/puzzle`, or the physics/runtime modules changes.
-4. **Static runtime sprites only.** The current `world` adapter uses Phaser images, not animations. Source sheets are allowed; they are sliced offline and M3 uses one frame. Animated playback is a later engine task.
+4. **POC player animation only.** Players animate in `03-nerve-forest` from generated walk/jump/fall/land sheets. Other entity sprites stay static. The full ADR-0062 descriptor and generalized animation system remain a later engine task.
 5. **Reuse the shared kit.** Players, material atlases, badge, and audio cues are shared. Do not generate per-level duplicates.
 6. **Placeholders are an acceptable fallback.** A coherent placeholder build is better than a half-finished final build. The validator already supports declared placeholders.
 7. **Three pixel anchors.** Characters and props derive from the approved P1 pixel anchor; backgrounds derive from the approved sky; atlases derive from approved material swatches. The category style blocks in §8 are the same for every asset in a category, and every source pixel is placed on the 2× grid.
@@ -185,7 +190,7 @@ These are current implementation facts plus the render changes recorded in ADR-0
 | Background far/mid/near use `fit: "tile"` | `room.json`, `src/world/background.ts` (`TileSprite`) | Author **1024×512** with a 2×2 minimum cluster grid; tile on **both axes**. |
 | The sky uses `fit: "cover"` | `src/world/background.ts` | Author **640×368**, displayed at an integer 2× cover. The current `coverScale * 1.4` path must be replaced by integer cover (ADR-0048). |
 | The renderer is currently smooth-scaled | `src/world/create-game.ts` (`pixelArt: false`, `antialias: true`) | Target config: `pixelArt: true`, `antialias: false`, `roundPixels: true`. |
-| Spritesheets are loaded but not animated | `room-scene.ts` loads `type: "sheet"` but creates `this.add.image(...)`; no `this.anims.create(...)` | Source sheets are sliced offline; M3 uses static `sprite` entries and one normalized PNG. |
+| Player sheets are animated; entity sheets are static | `room-scene.ts` creates Phaser `Sprite` players and `PlayerAnimator`; entities still use `this.add.image(...)` | Player walk/jump/fall/land sheets are runtime assets; other sheets remain static. |
 | Only the badge UI asset is rendered | `src/ui/hud.ts` (`styleBadge`, `.hud__stamp--image`) and `src/game/boot.ts` | Author **16×16**; the current HUD displays a ~45×27 CSS px pill with `cover`. The pixel UI target is a 32×32 square stamp. |
 | Entity sprites are briefly tinted on interaction | `room-scene.ts` (`applyInteractionHighlight`, `0xffe08a`) | Check every entity sprite under a warm tint; cyan/yellow details must survive. |
 | Capture mode is deferred | `IMPLEMENTATION.md` status table | Clean 16:9 capture is an M2/M3 engine task; do not assume `?capture=1` exists. |
@@ -214,7 +219,7 @@ These are current implementation facts plus the render changes recorded in ADR-0
 
 ### 4.3 Palette
 
-Nine hue families, each with a shadow/base/highlight ramp. Every pixel comes from this table.
+Nine hue families, each with a shadow/base/highlight ramp. Every pixel comes from this table. Orange is reserved and is not used on P2 (ADR-0065).
 
 | Family | Shadow | Base | Highlight | Use |
 |---|---|---|---|---|
@@ -223,15 +228,15 @@ Nine hue families, each with a shadow/base/highlight ramp. Every pixel comes fro
 | Bone shadow | `#5f736e` | `#7a8f8a` | `#9db4ad` | Secondary bone, dust |
 | Nerve | `#b8862b` | `#ffd166` | `#fff3b0` | Signals, key light, pickups |
 | Joint | `#3f9fb5` | `#7bdff2` | `#c9f7ff` | P1 accents, scan UI, cool rim |
-| Muscle | `#a82a4a` | `#ef476f` | `#ff9fb2` | P2 accents, muscle, danger |
-| Orange | `#813115` | `#e59b34` | `#ffd28a` | P2 suit only |
+| Muscle | `#a82a4a` | `#ef476f` | `#ff9fb2` | Muscle, danger |
+| Orange | `#813115` | `#e59b34` | `#ffd28a` | Reserved; not used on P2 |
 | Sage | `#6f847d` | `#9db4ad` | `#c4d4ce` | Muted tissue, secondary text |
 | Ink | `#000000` | `#05090b` | `#2a3f47` | Outlines, deepest shadow |
 
 Rules:
 
 - Use the ramp steps only. Do not introduce purple, neon green, unapproved orange, pure red, or intermediate blends.
-- Orange is reserved for the P2 suit. Do not use it on other sprites, materials, backgrounds, effects, or UI.
+- Orange is reserved and unused. Do not use it on P2, other sprites, materials, backgrounds, effects, or UI.
 - Dither with adjacent ramp steps, never with a new colour.
 - Black/white only for tiny alpha edges.
 - The UI uses the same palette through the theme tokens; no pack-specific CSS.
@@ -239,10 +244,10 @@ Rules:
 
 ### 4.4 Character rules
 
-- **Player:** bulky retro-futuristic life-support suit; P1 has a cream/bone shell, P2 has an orange shell; dark teal joints; round helmet with a visor (amber on P1, bone on P2); backpack tanks (yellow on P1, bone on P2); chest light; scanner gauntlet; short legs; big boots; scuffed and patched. No visible face. No sleek armour. No shiny plastic.
+- **Player:** bulky retro-futuristic life-support suit; P1 has a cream/bone shell with an amber visor and nerve-yellow tanks; P2 has a cream/bone shell with a joint-cyan visor and joint-cyan backpack tanks; dark teal joints; chest light; scanner gauntlet; short legs; big boots; scuffed and patched. No visible face. No sleek armour. No shiny plastic.
 - **Player pixel build:** 14×22 source grid; 1px outline; helmet 7–8 px across; visor 3–4 px; torso 8–10 px wide; boots 3 px; backpack 4×6 px; scanner gauntlet 2×2 px. The silhouette must read at 28×44.
-- **P1/P2 differentiation:** P1 uses a bone suit, amber visor, nerve-yellow tanks, and joint-cyan accents. P2 uses the approved orange suit, bone visor, bone tanks, and muscle-pink accents. Keep the silhouette, frame cell, and timing identical. P2 is a palette permutation of P1, not a new pose.
-- **P2 visor:** bone ramp with the ink rim; no cyan glint. Muscle-pink accents stay on the chest light and shoulder trim, not on the visor rim.
+- **P1/P2 differentiation:** P1 uses a bone suit, amber visor, nerve-yellow tanks, and joint-cyan accents. P2 uses a bone suit, joint-cyan visor and tanks, and a nerve-amber accent. Keep the silhouette, frame cell, origin, and clip names identical. P2 uses its own approved Ludo walk/jump sheets for the POC; the walk sources have different frame counts (49 vs 36), so runtime normalizes cycle duration.
+- **P2 visor:** joint-cyan ramp with the ink rim. The chest accent uses the nerve ramp; muscle pink is not part of P2.
 - **Held scanner (draft):** a separate held scanner and hand attachment are explored in [`player-scanner-draft-plan.md`](player-scanner-draft-plan.md). It is not part of the current 21-image scope or the scanner-gauntlet baseline.
 - **Cells:** characters first, diagrams second. Big expressive eyes built from 2×2 blocks, simple body, tiny 1–2 px limbs, one job prop, one personality prop. No human faces, no sexualised cells, no gore.
 - **Neuron visual grammar:** one round jelly-bean cell body; one dark oval nucleus inside it; a crown of 5–7 short, soft, fleshy tentacles with forked tips for dendrites; one long, thin, bare tail for the axon; a small forked twig at the tail tip for the axon terminals. Arms, foot stalk and lantern are character props, not anatomy. Do not draw dendrites as hair or fur. Do not put myelin on the Neuron Keeper character; myelin is a glial sheath shown on the scan icons.
@@ -293,8 +298,8 @@ Do not put living artists’ names or copyrighted character names into Ludo prom
 | Use 1px source outlines and hard pixel edges | Use anti-aliasing, soft vector lines, or blurry edges |
 | Use three-step ramps and 50% dither | Use smooth gradients, 3D shading, or glossy plastic |
 | Make silhouettes readable at 28–44 px | Add fine detail, fingers, lace, or tiny text |
-| Use the nine ramp families only | Introduce neon, purple, unapproved orange, pure red, or mixed pixel sizes |
-| Use the approved Orange ramp only on the P2 suit | Use orange on any other asset, material, background, effect, or UI |
+| Use the nine ramp families only | Introduce neon, purple, orange, pure red, or mixed pixel sizes |
+| Keep Orange reserved and unused | Use orange on P2, another sprite, material, background, effect, or UI |
 | Make cells look like tired workers | Make cells look like monsters or gore |
 | Use damp membrane dither and grime | Use blood, wounds, or exposed organs |
 | Keep the suit scuffed and practical | Make it sleek, shiny, or Iron Man-like |
@@ -362,7 +367,7 @@ Ludo does not reliably parse anatomical terms as visual nouns. “Soma”, “de
 | SFX cues | 11 | `audio.cue.wrong` is outside M3 |
 | **M3 production total** | **32** | 21 images + 11 audio |
 | Deferred UI images | 8 | Badge is the only rendered UI image |
-| **Current manifest entries** | **47** | Includes 12 audio; the final two-atlas layout adds one atlas entry |
+| **Current manifest entries** | **55** | Includes 12 audio and 8 POC player animation sheets; the final two-atlas layout adds one atlas entry |
 
 ### 5.2 Shared kit
 
@@ -375,6 +380,8 @@ Ludo does not reliably parse anatomical terms as visual nouns. “Soma”, “de
 | `ui.icon.badge` | image | ~45×27 CSS px HUD pill; 32×32 pixel-UI target | 16×16 PNG | `shared/ui/badge.png` | P2 |
 
 > **Pixel rule:** author at the source size shown. Players, entities, and the badge display at exactly 2×; atlas frames stay 32×32 at 1:1 with a 2×2 cluster grid. Do not export at the display size.
+>
+> **POC animation assets:** the eight `sprite.player.*.walk/jump/fall/land` sheet entries are additional runtime assets, not part of the 21-image static register. See §5.8.
 
 ### 5.3 Shared visible entity sprites
 
@@ -468,6 +475,44 @@ Use lowercase kebab-case, no spaces, no dots in filenames.
 | `ui.icon.badge` | `shared/ui/badge.png` |
 | `audio.cue.scan` | `shared/audio/scan.ogg` |
 
+Player animation sheets follow `shared/sprites/player-<p1|p2>-<walk|jump|fall|land>.png`.
+
+### 5.8 Current completion status (1 November 2026 POC)
+
+| Item | Status | Evidence |
+|---|---|---|
+| P1 idle 14×22 master | Complete | `art-source/characters/player-p1/working/master/player-p1-idle-14x22.png` |
+| P1 walk source (49f) | Complete | `art-source/characters/player-p1/ludo/walk-49f-2026-10-29/` |
+| P1 jump source (36f) | Complete | `art-source/characters/player-p1/ludo/walk-36f-2026-10-29/` |
+| P2 approved walk/jump sources (36f each) | Complete | `art-source/characters/player-p2/` |
+| P1/P2 runtime idle/walk/jump/fall/land sheets | POC complete | `public/packs/anatomy-reflex/shared/sprites/player-*.png` |
+| Player animation in `03-nerve-forest` | POC complete | `src/world/player-animator.ts`, `src/world/room-scene.ts` |
+| Background removal tool | Complete | `npm run art:key` |
+| Nanobanan keyed review copies | Complete | `art-source/previews/nanobanan/` (full keyed PNGs in ignored `keyed/`) |
+| Final art approval / prompt log / licences | Pending | — |
+| Entity, background, atlas, badge art | Not started | — |
+
+Review stills: `screenshots/m3-player-p1-p2-idle.png` and
+`screenshots/m3-player-p1-walk.png`.
+
+| Asset ID | Frames | fps | Loop | File |
+|---|---:|---:|---|---|
+| `sprite.player.p1.walk` | 49 | 38 | yes | `shared/sprites/player-p1-walk.png` |
+| `sprite.player.p1.jump` | 12 | 30 | no | `shared/sprites/player-p1-jump.png` |
+| `sprite.player.p1.fall` | 10 | 15 | yes | `shared/sprites/player-p1-fall.png` |
+| `sprite.player.p1.land` | 8 | 30 | no | `shared/sprites/player-p1-land.png` |
+| `sprite.player.p2.walk` | 36 | 28 | yes | `shared/sprites/player-p2-walk.png` |
+| `sprite.player.p2.jump` | 12 | 30 | no | `shared/sprites/player-p2-jump.png` |
+| `sprite.player.p2.fall` | 10 | 15 | yes | `shared/sprites/player-p2-fall.png` |
+| `sprite.player.p2.land` | 8 | 30 | no | `shared/sprites/player-p2-land.png` |
+
+P1 and P2 walk sources have different frame counts (49 vs 36); the runtime
+normalizes cycle duration with fps rather than requiring identical frames.
+
+The POC uses a downscale + palette-quantize path for the runtime sheets. The
+semantic remaster remains available via `npm run art:build-player -- --sampler
+remaster`; the two paths were compared at 8× before choosing the runtime output.
+
 ---
 
 ## 6. Technical specifications
@@ -491,7 +536,7 @@ Do not export upscaled 2× or 4× versions. The engine performs the 2× nearest-
 
 1. Generate the concept on flat magenta `#FF00FF`.
 2. Pixel at the source size in Aseprite, Piskel, or LibreSprite.
-3. Remove the background; inspect edges at 400% and remove magenta fringe.
+3. Remove the background with `npm run art:key` (hard-alpha RGB key + magenta despill); inspect edges at 400% and remove any remaining fringe.
 4. Trim to the alpha bounding box.
 5. Pad to the fixed source canvas:
    - Player: 14×22, feet on the bottom padding line, 0–1 px transparent margin.
@@ -537,7 +582,8 @@ These are project budgets, not engine limits. Pixel art compresses well; a large
 
 | Asset | Budget |
 |---|---|
-| Player PNG | ≤ 16 KB each |
+| Player static PNG | ≤ 16 KB each |
+| Player animation sheet | ≤ 64 KB per clip (POC; walk sheets are the largest) |
 | Entity PNG | ≤ 16 KB each |
 | Background sky | ≤ 300 KB |
 | Parallax layer | ≤ 300 KB each |
@@ -555,14 +601,15 @@ Use static types for M3:
 
 | Asset ID pattern | Manifest `type` |
 |---|---|
-| `sprite.player.*` | `sprite` |
+| `sprite.player.p1`, `sprite.player.p2` | `sprite` |
+| `sprite.player.*.walk/jump/fall/land` | `sheet` (POC animation) |
 | `sprite.agent.*`, `sprite.scan.*`, `sprite.gate.*`, `sprite.prop.*`, `sprite.pulse.*`, `sprite.receptor.*`, `sprite.exit` | `sprite` |
 | `bg.*` | `background` |
 | `tile.*.atlas` | `atlas` |
 | `tileset.*`, `ui.*` | `image` |
 | `audio.*` | `audio` |
 
-Do not use `sheet`, `gif`, or `webp` animation types for runtime assets in M3. They are valid formats but the current view layer will not animate them. Source sheets are captured in `art-source/` and normalized to static `sprite` entries; they are not manifest assets.
+Player animation uses `sheet` entries with `frameWidth`, `frameHeight`, `frames`, `fps`, `loop`, and `anchor`. `gif` and `webp` animation types remain banned; GIFs are build-time previews only. Other entity sheets stay static `sprite` entries. Source sheets are captured in `art-source/` and never referenced by a manifest.
 
 ---
 
@@ -571,7 +618,7 @@ Do not use `sheet`, `gif`, or `webp` animation types for runtime assets in M3. T
 ### 7.1 Tool, plan, and source of truth
 
 - **Ludo.ai → Image Generator** for concepts, silhouettes, palette studies, material swatches, and source sprite sheets. Ludo is not the final pixel renderer.
-- **Local art pipeline** for slicing source sheets (`npm run art:slice`), profile-driven remastering (`npm run art:remaster`), palette validation (`npm run art:normalize`), and palette-LUT variants (`npm run art:variant`) (ADR-0060–0064).
+- **Local art pipeline** for slicing source sheets (`npm run art:slice`), profile-driven remastering (`npm run art:remaster`), palette validation (`npm run art:normalize`), palette-LUT variants (`npm run art:variant`), player-sheet builds (`npm run art:build-player`), and background keying (`npm run art:key`) (ADR-0060–0065).
 - **Aseprite, Piskel, or LibreSprite** for the final pixel pass at source size, palette quantisation, and atlas assembly.
 - **Ludo.ai → Audio Generator** for the 11 SFX.
 - The source of truth is this document, the category style blocks in §8, and the prompt version. Do not improvise a new style per asset.
@@ -617,8 +664,8 @@ If Ludo’s UI labels differ, map to the closest equivalent. The prompt blocks a
 2. Pick the best; for a sheet, choose the frame that reads best as a 14×22 idle. It must match the palette.
 3. Run `npm run art:remaster` as the deterministic first pass; inspect the class map and 8× preview. If needed, touch up the 14×22 PNG in a free editor, then re-run `npm run art:normalize`. Approve the result at 28×44 on a dark teal background.
 4. Save the cleaned 14×22 master under `art-source/characters/player-p1/working/master/` and export `shared/sprites/player-p1.png`; keep `style-anchor-p1.png` as the review reference and a 4× nearest-neighbour preview.
-5. Use it as the style reference for every later character, prop, and icon. Do not use it as an image-to-image generation base for NPCs — it may copy the astronaut. For colour variants of the same character, derive from the indexed P1 master with the palette LUT (ADR-0061/0064).
-6. Derive **P2** from the indexed P1 master with the ADR-0064 palette permutation. Do not generate P2 in Ludo.
+5. Use it as the style reference for every later character, prop, and icon. Do not use it as an image-to-image generation base for NPCs — it may copy the astronaut. For colour variants of the same character, derive from the indexed P1 master with the palette LUT (ADR-0061/0065).
+6. Use the approved **P2** walk/jump sheets from `art-source/characters/player-p2/` for the POC. The ADR-0065 role map remains available for future derived variants; do not reintroduce the orange P2 concept.
 7. Generate the **sky** next; approve `style-anchor-sky.png` at 1280×720 and use it for far/mid/near.
 8. Generate the **bone and nerve swatches**; approve each at 32×32 before assembling the atlas.
 9. Approve the **badge** at its current pill crop and at the 32×32 pixel-UI target.
@@ -627,15 +674,15 @@ If Ludo’s UI labels differ, map to the closest equivalent. The prompt blocks a
 
 | Batch | Assets | Purpose |
 |---|---|---|
-| 0 | P1 idle + optional P1 walk source sheet | Pixel style anchor and animation source |
-| 1 | P2 (derived from P1), Neuron Keeper, `scan.neuron`, `sprite.exit` | Character/prop style gate |
+| 0 | P1 idle + P1 walk/jump source sheets | Pixel style anchor and animation source |
+| 1 | P2 (approved source sheets), Neuron Keeper, `scan.neuron`, `sprite.exit` | Character/prop style gate |
 | 2 | Sky, mid layer | Environment style gate |
 | 3 | Bone and nerve material swatches | Material style gate |
 | 4 | Remaining scans, tracer, pulse terminal, receptors, gate ferry | Complete visible entity set — only after the 03/04 room check |
 | 5 | Far, near, badge | Complete environment/UI kit |
 | 6 | 11 SFX and atlas assembly | Audio and atlas finish |
 
-P2 is not a Ludo generation; derive it after P1 is approved. Do not start Batch 4 until Batches 1–3 are signed off. Do not assemble the final atlases until the tint decision in §8.21.1 is made.
+P2 now uses its approved Ludo walk/jump source sheets (ADR-0065). Do not start Batch 4 until Batches 1–3 are signed off. Do not assemble the final atlases until the tint decision in §8.21.1 is made.
 
 ### 7.6 How to run a prompt
 
@@ -656,8 +703,8 @@ P2 is not a Ludo generation; derive it after P1 is approved. Do not start Batch 
 ### 7.7 Post-processing and export
 
 - **Sprites/entities:** trim to the alpha bounding box, pad to 14×22 or 18×18, feet/base on the bottom line; export PNG.
-- **Source sheets:** slice with the Ludo JSON, run the profile-driven remaster for the selected frame (or each frame for a future clip), and keep the raw sheet in `art-source/`, never in `public/`. Frame 0 is the M3 static fallback.
-- **Palette variants:** derive from the indexed master with a semantic LUT; do not re-prompt Ludo. P2 uses the ADR-0064 orange permutation.
+- **Source sheets:** slice with the Ludo JSON, then run `npm run art:build-player` to generate the POC idle/walk/jump/fall/land sheets from `working/clips.json`. Keep the raw sheet in `art-source/`, never in `public/`. Frame 0 remains the static fallback.
+- **Palette variants:** derive from the indexed master with a semantic LUT; do not re-prompt Ludo. P2 uses the approved bone/joint/nerve source sheets for the POC; the ADR-0065 role map remains available for future derived variants.
 - **Backgrounds:** sky 640×368 opaque; far/mid/near 1024×512 with alpha and 2×2 clusters; export lossless WebP or PNG.
 - **Atlases:** assemble 32×32 cells at 1:1 from the approved swatch; 8×6 bone grid (47 regions + one opaque empty cell), 4×4 nerve grid (16 regions); every cell opaque; export PNG. Do not add gutters or transparent seams.
 - **Badge:** 16×16 source, transparent or magenta-keyed; critical detail inside the middle 60% vertical band; export PNG.
@@ -671,6 +718,7 @@ P2 is not a Ludo generation; derive it after P1 is approved. Do not start Batch 
 - Material atlas: 3×3 patch of every frame; no seam, no directional top edge; each mask variant is distinct.
 - Source inspection: every asset at 400%; every pixel on the ramp palette; no anti-aliasing; no mixed pixel sizes.
 - Contact sheet at 1280×720: P1/P2 at 28×44, entities at 36×36, sky at 1280×720, mid tiled 3×, badge at 32×32 and in the pill crop.
+- Player animation previews: walk loop, jump/fall/land one-shots, P1/P2 side by side; inspect `art-source/previews/poc/downscale/`.
 - Warm interaction tint check on every entity sprite.
 - Review at 100% zoom, not on a large preview. If it does not read at actual size, it does not pass.
 
@@ -829,7 +877,7 @@ Export spec: 16×16 source, 1:1, centred emblem, transparent or flat magenta #FF
 |---|---|---|---|
 | `sprite.player.p1` | None | Creates the pixel character anchor | Do not copy a known character |
 | `sprite.player.p1.walk` (source) | `style-anchor-p1.png` | Sheet source; identical character and walk cycle | Do not change suit, gear, silhouette, or timing |
-| `sprite.player.p2` | Cleaned P1 master + `palette.json` | Palette permutation (ADR-0064); no Ludo generation | Do not prompt a new character, pose, or Ludo image |
+| `sprite.player.p2` | Approved `art-source/characters/player-p2/` walk/jump sheets | Bone suit, joint-cyan visor/tank, nerve accent (ADR-0065) | Do not reintroduce the orange P2 concept |
 | Agent, scans, gate, exit, props, receptors | `style-anchor-p1.png` | Pixel style and palette reference only | Do not use as an image-to-image generation base for new cell characters; do not let the astronaut silhouette or suit bleed into a cell. Palette LUTs are allowed for colour variants |
 | Sky | Style block; no character reference | Creates the pixel environment anchor | Do not copy the astronaut into the scene |
 | Far, mid, near | `style-anchor-sky.png` | Pixel style and palette reference | Do not introduce a new palette |
@@ -890,30 +938,43 @@ Uniform sprite sheet, one character and one action per sheet, consistent charact
 - The Ludo JSON matches the PNG; every frame slices cleanly.
 - Frame 0 reads as a neutral idle; no new equipment or pose drift.
 
-#### `sprite.player.p2` — orange suit and bone visor variant (derived)
+#### `sprite.player.p1.jump` — source sheet (not a runtime asset)
 
-**Reference:** cleaned P1 master + `palette.json`. **Source:** 14×22 PNG; 28×44 display. **File:** `shared/sprites/player-p2.png`.
+**Reference:** `art-source/characters/player-p1/ludo/walk-36f-2026-10-29/`. **Mode:** Ludo sprite-sheet source. **Output:** sheet PNG + JSON; slice with `npm run art:slice`; `npm run art:build-player` maps frames 6–17 to jump, 18–27 to fall, and 28–35 to land.
 
-**Do not generate P2 in Ludo.** Derive it from the indexed P1 master with the ADR-0064 palette LUT:
+**Acceptance**
+
+- The sheet is the 36-frame jump take, not a second walk cycle.
+- The sequence contains idle, crouch, takeoff, air, landing, and recovery phases.
+- Frames 6–35 are usable as jump/fall/land without a standing lead-in.
+- The Ludo JSON matches the PNG; every frame slices cleanly.
+- The historical folder name `walk-36f-2026-10-29` is retained because the source export is immutable.
+
+#### `sprite.player.p2` — bone suit and joint-cyan visor (approved source sheets)
+
+**Reference:** `art-source/characters/player-p2/`. **Source:** 14×22 PNG; 28×44 display. **File:** `shared/sprites/player-p2.png`.
+
+P2 now uses the approved Ludo walk and jump sheets. For the POC they are used directly, not derived from P1. ADR-0065 supersedes the orange permutation in ADR-0064.
 
 | Role | P1 | P2 |
 |---|---|---|
-| Suit | bone | orange (`#813115` / `#e59b34` / `#ffd28a`) |
-| Visor | nerve/amber | bone |
-| Tanks | nerve/yellow | bone |
-| Accent | joint/cyan | muscle/pink |
+| Suit | bone | bone (unchanged) |
+| Visor | nerve/amber | joint/cyan |
+| Tanks | nerve/yellow | joint/cyan |
+| Accent | joint/cyan | nerve/amber |
 | Joints | teal | teal (unchanged) |
 | Outline / grime | ink / bone shadow | ink / bone shadow (unchanged) |
 
 **Acceptance**
 
-- At 28×44, the silhouette is indistinguishable from P1; only the approved suit, visor/tank, and accent ramps change.
-- The suit is orange; the visor and tanks are bone; the accents are muscle pink; joints, outline, and grime are byte-identical to P1.
-- Orange appears nowhere outside the suit; no pink spill onto the suit or visor rim.
-- The bone visor reads as glass through the ink rim; no cyan glint.
+- At 28×44, the silhouette is indistinguishable from P1; only the approved visor/tank and accent ramps change.
+- The suit is bone; the visor and tanks are joint cyan; the chest accent is nerve amber; joints, outline, and grime stay on their approved ramps.
+- Orange appears nowhere on P2; no muscle-pink spill.
+- The joint-cyan visor reads as glass through the ink rim.
 - Source is 14×22; no new gear, no new pose.
+- P2 walk and jump sheets slice cleanly and use the same clip names as P1.
 - Both players read side by side on the contact sheet.
-- No text, no cast shadow, hard pixel edges, alpha clean; ≤16 KB.
+- No text, no cast shadow, hard pixel edges, alpha clean.
 
 ### 8.18 Shared entity prompts
 
@@ -1508,7 +1569,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 
 | Category | Must pass |
 |---|---|
-| Players | 14×22 source, 28×44 display; 2× grid; P1 bone suit/amber visor/yellow tanks/cyan accents; P2 orange suit/bone visor/bone tanks/muscle accents; P1/P2 differ only by the approved palette masks; helmet, backpack and boots readable; feet at baseline; no anti-aliasing; no baked shadow |
+| Players | 14×22 source, 28×44 display; 2× grid; P1 bone suit/amber visor/yellow tanks/cyan accents; P2 bone suit/cyan visor/cyan tanks/amber accent; P1/P2 share silhouette, cell, origin, and clip names; helmet, backpack and boots readable; feet at baseline; no anti-aliasing; no baked shadow; POC walk/jump/fall/land clips play |
 | Entities | 18×18 source, 36×36 display; 2× grid; silhouette distinct from every other entity; base at the bottom padding line; survives the warm interaction tint; no text; no baked shadow; the subject-first prompt and its biology check pass (Neuron Keeper: one cell body, one nucleus, 5–7 dendrite tentacles, one bare axon, forked terminals; scan targets: no face or character pose) |
 | Backgrounds | Sky 640×368 displayed at an exact integer 2×; supports HUD contrast at 1280×720; far/mid/near tile without seams at 2×2 on **both axes**; near layer leaves the centre and lower third transparent; the body reads as a landscape, not a textbook cutaway; no labels or diagram lines |
 | Material atlas | Bone has 47 `blob47` frames, nerve has 16 `edge` frames; every 32×32 frame is authored at 1:1 with a 2×2 cluster grid and tiles on all four sides; mask variants are visually distinct; no text or baked directional edge; tint path checked; the swatch reads as wet chalky bone or bundled wet cables, not a diagram |
@@ -1521,7 +1582,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - Same 2× pixel density across players, entities, sky, and badge; parallax and atlas frames use 2×2 minimum clusters.
 - Same 1 px source outline weight; no asset suddenly uses a 2 px or 0 px outline.
 - Same ramp palette; no purple/neon drift and no intermediate blends.
-- Orange appears only on the P2 suit; the P2 visor and tanks are bone.
+- Orange is reserved and unused; P2 uses bone, joint cyan, and nerve amber.
 - Same level of detail; no asset is suddenly painterly, 3D, or faux-pixel with mixed sizes.
 - Same tone: gross-cute, not edgy.
 - Same camera language: side or slight 3/4 for characters; orthographic for backgrounds.
@@ -1535,9 +1596,11 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - Correct source size: 14×22 player, 18×18 entity, 640×368 sky, 1024×512 parallax, 512×512 material swatch, 256×192 or 128×128 atlas, 16×16 badge.
 - Display lands on exact 2× for players, entities, sky, and badge; parallax tiles 1:1 with 2×2 clusters; atlas frames 1:1 with 2×2 clusters.
 - No anti-aliasing, blur, or fractional scaling.
-- Palette is quantised to the ramp table; no stray colours. Orange is only on the P2 suit.
-- The P1→P2 pixel diff touches only the suit, visor/tank, and accent masks; joints, outline, and grime are identical.
-- The P2 bone visor and bone tanks read against the orange suit at 28×44.
+- Palette is quantised to the ramp table; no stray colours. Orange is unused.
+- The P1→P2 pixel diff touches only the visor/tank and accent masks; suit, joints, outline, and grime stay on their approved ramps.
+- The P2 joint-cyan visor and tanks read against the bone suit at 28×44.
+- Player animation sheets are 14×22 frames, alpha 0/255, and within the per-clip budget.
+- The walk loop, jump one-shot, fall loop, and land one-shot use the manifest fps/loop values.
 - Alpha is clean at 400%; no magenta fringe; no semi-transparent sprite edges.
 - No JPG or lossy WebP for pixel assets.
 - File size within budget.
@@ -1584,7 +1647,10 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 
 - [ ] Six-asset pixel style gate passes.
 - [ ] Subject-first prompt gate: Neuron Keeper and `scan.neuron` each pass 4 variations at 36×36 with the §4.10 biology-to-shape grammar.
-- [ ] P1 and P2 approved at 28×44 from 14×22 sources.
+- [x] P1 idle master and P2 approved source sheets exist; POC runtime masters are 14×22 / 28×44.
+- [x] P1/P2 POC idle, walk, jump, fall, and land sheets generated and integrated in `03-nerve-forest`.
+- [x] Background keying tool (`npm run art:key`) and nanobanan review copies generated.
+- [ ] P1 walk/jump and P2 animation final art approval pending.
 - [ ] Neuron Keeper approved.
 - [ ] Four visible scan targets approved; `sprite.scan.reflex` reserve is optional.
 - [ ] Gate, exit, props, receptors approved.
@@ -1659,6 +1725,9 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 }
 ```
 
+Player animation entries use `type: "sheet"` with `frameWidth`, `frameHeight`,
+`frames`, `fps`, `loop`, and `anchor`; see `assets.final.json` for the POC set.
+
 ### 10.2 `licenses.json` example
 
 ```json
@@ -1717,7 +1786,7 @@ Keep a separate spreadsheet or Markdown table with:
 | Export frame | `FRAME_ENTITY` (Aseprite/Piskel only) |
 | Source sheet | `art-source/characters/player-p1/ludo/walk-49f.../sheet.png` |
 | Frame range | `all` / `0-11` / `frame 0` |
-| Variant of | `player-p1` for P2/civilian palette variants |
+| Variant of | `player-p2` uses its own approved source sheets (ADR-0065); other colour variants may derive from `player-p1` |
 | Palette map | `working/palette.json`; `working/variants/p2.json` |
 | Aspect and export | 1:1 / 18×18 source; 36×36 display |
 | Variations | 4 for a single image; one sheet per action |
@@ -1766,7 +1835,7 @@ Ludo Indie includes **250 credits/month** for **$20**. This is enough. Buy extra
 
 - you need API/MCP/CLI automation;
 - content expands beyond ~100 images;
-- you decide to produce many animated sheets (after animation playback is implemented).
+- you decide to produce many animated sheets beyond the POC player set.
 
 ### 11.2 Work order
 
@@ -1774,7 +1843,7 @@ Ludo Indie includes **250 credits/month** for **$20**. This is enough. Buy extra
 |---|---|
 | 1 | Six-asset pixel gate; approve P1 at 14×22 / 28×44; lock palette ramps |
 | 1b | Subject-first prompt pilot: 4 variations of Neuron Keeper and `scan.neuron`; check the §4.10 biology-to-shape grammar and negative delta at 36×36 |
-| 2 | Batch 1: P2 (derived), Neuron Keeper, `scan.neuron`, exit; pixel-clean each |
+| 2 | Batch 1: P2 (approved sheets), Neuron Keeper, `scan.neuron`, exit; pixel-clean each |
 | 3 | Batch 2: sky, mid; verify integer 2× and both-axis tiling |
 | 4 | Batch 3: bone and nerve swatches; approve 32×32 frames; assemble atlases after the tint decision |
 | 5 | Batch 4: remaining scans, gate, tracer, pulse, receptors after the 03/04 room check |
@@ -1818,7 +1887,7 @@ Never cut P1/P2, Neuron Keeper, the main interactive landmark (gate or exit), or
 | Puzzle prop art invalidated by room changes | Check gate/tracer/pulse/receptor art against the authored rooms; re-baseline §5.3 |
 | Credits exhausted | Indie 250 is enough; top up rather than upgrade |
 | Free-tier watermark | Free tier for the concept gate only; paid Indie for finals |
-| Engine can’t animate | Static runtime sprites only; source sheets are sliced offline; animation playback is a separate engine task |
+| Player animation path is too rough | The POC ships the downscale path; the semantic remaster remains available and the final art approval is still pending |
 
 ---
 
@@ -1885,15 +1954,15 @@ Do not invent new prefixes without updating the asset contract.
 - [x] Adopt pixel UI chrome and fonts (ADR-0049).
 - [x] Adopt source/working/runtime asset layers (ADR-0060).
 - [x] Adopt palette-LUT colour variants; colour-only changes are not Ludo generations (ADR-0061).
-- [x] Adopt data-driven animation and build-time previews as the target architecture; runtime playback remains out of M3 (ADR-0062–0063).
-- [x] Use three-step palette ramps; the eight general families stay, plus the P2-only Orange ramp (ADR-0064).
+- [x] Adopt data-driven animation and build-time previews as the target architecture (ADR-0062–0063); a POC player animation path is implemented.
+- [x] Use three-step palette ramps; the nine families stay, with Orange reserved and unused (ADR-0065).
 - [x] Use Silkscreen + Pixelify Sans as the bundled UI fonts.
 - [x] Adopt subject-first prompt language and the §4.10 biology-to-shape lexicon (`m3-2026-10-31.2`).
 - [x] M3 environment art target = `03-nerve-forest`; 04 environment stays placeholder. Shared entity sprites are final because both rooms reference them.
-- [x] P1 uses joint cyan; P2 uses the ADR-0064 orange-suit/bone-visor permutation with muscle-pink accents; silhouette identical.
-- [x] P2 is derived from the indexed P1 master; no Ludo regeneration.
-- [x] No runtime animation work in M3; source sheets may be captured and sliced.
-- [ ] Confirm whether the M3 capture uses frame 0 of the P1 idle or a frame selected from the P1 walk sheet. Both are valid; the runtime asset remains one static frame.
+- [x] P1 uses a bone suit, amber visor, nerve-yellow tanks, and joint-cyan accents; P2 uses a bone suit, joint-cyan visor/tanks, and nerve-amber accent (ADR-0065).
+- [x] P2 uses the approved `art-source/characters/player-p2/` walk/jump sheets for the POC; no orange regeneration.
+- [x] POC player animation is implemented; entity animation and the generalized descriptor remain future work.
+- [x] The POC uses animated P1/P2 in `03-nerve-forest`; frame 0 remains the idle fallback.
 - [x] Ludo Indie ($20/mo), not Pro.
 - [x] Skip the eight deferred UI images; badge only.
 - [x] 21 declared images = 20 referenced by authored rooms + 1 reserve (`sprite.scan.reflex`).
@@ -1919,7 +1988,8 @@ Do not invent new prefixes without updating the asset contract.
 - [`adr-art-pipeline/0061-palette-lut-sprite-variants.md`](../adr-art-pipeline/adr-0061-palette-lut-sprite-variants.md) — palette-LUT colour variants.
 - [`adr-art-pipeline/0062-data-driven-sprite-animation.md`](../adr-art-pipeline/adr-0062-data-driven-sprite-animation.md) — data-driven animation and runtime state machine.
 - [`adr-art-pipeline/0063-build-time-animation-previews.md`](../adr-art-pipeline/adr-0063-build-time-animation-previews.md) — build-time GIF/contact-sheet previews.
-- [`adr-art-pipeline/0064-orange-p2-suit-palette-swap.md`](../adr-art-pipeline/adr-0064-orange-p2-suit-palette-swap.md) — orange P2 suit and bone visor/tank permutation.
+- [`adr-art-pipeline/0064-orange-p2-suit-palette-swap.md`](../adr-art-pipeline/adr-0064-orange-p2-suit-palette-swap.md) — superseded orange P2 record.
+- [`adr-art-pipeline/0065-p2-bone-suit-joint-visor.md`](../adr-art-pipeline/adr-0065-p2-bone-suit-joint-visor.md) — P2 bone suit and joint-cyan visor.
 - [`base-game/adr/0027-art-audio-direction-and-licensing.md`](../shrinkonauts/base-game/adr/0027-art-audio-direction-and-licensing.md) — licensing and audio decisions; visual-style portion superseded by ADR-0047.
 - [`m1.8/README.md`](../m1.8/README.md) — material and pattern layer, autotiling, variants, atlas regions, UI slots.
 - [`puzzle-engine/adr/0014-material-pattern-vocabulary.md`](../puzzle-engine/adr/0014-material-pattern-vocabulary.md), [`0015-tile-material-grid-autotiling.md`](../puzzle-engine/adr/0015-tile-material-grid-autotiling.md), [`0016-pattern-projection-surfaces.md`](../puzzle-engine/adr/0016-pattern-projection-surfaces.md), [`0017-tile-variant-atlas-manifest.md`](../puzzle-engine/adr/0017-tile-variant-atlas-manifest.md) — material/pattern decisions.
@@ -1963,6 +2033,7 @@ Do not invent new prefixes without updating the asset contract.
 | 2026-10-29 | Pixel re-alignment: v0.3 M1.8 scope preserved (21 images, two atlases, 04 authored); half-res 2× rendering; 21 pixel prompts; atlas frames 32×32 at 1:1 with 2×2 clusters; pixel UI and material/pattern slots; ADR-0047–0049. |
 | 2026-10-31 | Source-sheet and palette-variant alignment: ADR-0060–0064; sheet prompts and slicing workflow; P2 orange-suit/bone-visor palette permutation; LUT diff checks; prompt-log provenance fields; prompt version `m3-2026-10-31.1`. |
 | 2026-10-31 | Subject-first prompt pass and biology-to-shape lexicon: added §4.10; rewrote all visual prompts with visual nouns before anatomical terms; added anatomy-in-plain-shapes lines, negative deltas, biology/visual checks and a visual fidelity guard; split concept and export frames; moved the palette and negatives out of the subject position; prompt/style versions bumped to `m3-2026-10-31.2` / `style-pixel-v2`. |
+| 2026-11-01 | P2 re-baseline and POC animation: ADR-0065 supersedes the orange P2 concept; P2 uses bone suit/joint-cyan visor/tank/nerve accent. Added `npm run art:build-player`, `npm run art:key`, P1/P2 walk/jump/fall/land runtime sheets, and the player animator. Added §5.8 completion status and updated the manifest, acceptance, and open-decision sections. |
 
 ---
 

@@ -36,10 +36,9 @@ function palette(cellWidth: number, cellHeight: number): PaletteDocument {
     },
     variants: {
       p2: {
-        suit: "orange",
-        visor: "bone",
-        tanks: "bone",
-        accent: "muscle",
+        visor: "joint",
+        tanks: "joint",
+        accent: "nerve",
       },
     },
   };

@@ -1,4 +1,4 @@
-# Player P1 — 36-frame take
+# Player P1 — 36-frame jump take
 
 - **Source:** Ludo.ai image generator
 - **Export date:** 2026-10-29
@@ -10,8 +10,10 @@
 - **Unique opaque colours (measured):** 66,181
 - **Prompt / model / seed:** TBD — fill in from the Ludo project before shipping
 - **Ludo plan / licence:** TBD — record the plan and terms here
-- **Decision:** alternate take; keep as a pose reference. The 49-frame take is
-  the preferred base.
+- **Decision:** this is the **jump** source, not an alternate walk take. The
+  sequence covers idle, crouch, takeoff, air, landing, and recovery. Runtime
+  clips use frames 6–17 (jump), 18–27 (fall), and 28–35 (land). The historical
+  folder name is kept because the source export is immutable.
 
 This is an immutable source export. Do not edit these files; make working
 copies under `../../working/`.

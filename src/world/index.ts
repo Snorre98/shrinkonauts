@@ -51,7 +51,19 @@ export { RoomScene } from "./room-scene";
 export type { RoomSceneConfig } from "./room-scene";
 export { HubScene } from "./hub-scene";
 export type { HubLaunchOptions, HubSceneConfig, HubSelectionView } from "./hub-scene";
-export { PLAYER_ASSET_IDS } from "./ids";
+export { PLAYER_ANIMATION_ASSET_IDS, PLAYER_ASSET_IDS } from "./ids";
+export type {
+  PlayerAnimationAssetKey,
+  PlayerAnimationClip,
+} from "./ids";
+export { PlayerAnimator } from "./player-animator";
+export type { PlayerAnimationAsset } from "./player-animator";
+export { choosePlayerClip } from "./player-animation";
+export type {
+  PlayerAnimationInput,
+  PlayerAnimationMemory,
+  PlayerClip,
+} from "./player-animation";
 export {
   cameraTarget,
   createRoomSimulation,

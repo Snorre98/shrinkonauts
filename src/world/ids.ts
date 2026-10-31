@@ -5,5 +5,9 @@
  * The constant lives in `assets` so the content validator can reuse it without
  * importing the Phaser adapter.
  */
-export { PLAYER_ASSET_IDS } from "../assets/ids";
-export type { PlayerAssetKey } from "../assets/ids";
+export { PLAYER_ANIMATION_ASSET_IDS, PLAYER_ASSET_IDS } from "../assets/ids";
+export type {
+  PlayerAnimationAssetKey,
+  PlayerAnimationClip,
+  PlayerAssetKey,
+} from "../assets/ids";

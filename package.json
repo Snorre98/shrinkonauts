@@ -19,6 +19,8 @@
     "pack:map": "tsx scripts/pack-map.ts",
     "pack:smoke": "tsx scripts/pack-smoke.ts",
     "art:slice": "tsx scripts/art-slice.ts",
+    "art:key": "tsx scripts/art-key.ts",
+    "art:build-player": "tsx scripts/art-build-player.ts",
     "smoke:e2e": "playwright test",
     "art:normalize": "tsx scripts/art-normalize.ts",
     "art:variant": "tsx scripts/art-variant.ts",

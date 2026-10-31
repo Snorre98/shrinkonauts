@@ -24,10 +24,9 @@
   },
   "variants": {
     "p2": {
-      "suit": "orange",
-      "visor": "bone",
-      "tanks": "bone",
-      "accent": "muscle"
+      "visor": "joint",
+      "tanks": "joint",
+      "accent": "nerve"
     }
   }
 }

@@ -4,7 +4,7 @@
 
 **Owner:** Snorre
 
-**Related:** [`asset-requirements-v01.md`](asset-requirements-v01.md) §4.4, §5.2, §5.6, §8.17, §8.18, §8.23 · ADR-0060–0064 · [`src/world/room-scene.ts`](../../src/world/room-scene.ts) · [`src/world/physics.ts`](../../src/world/physics.ts) · [`src/world/effects.ts`](../../src/world/effects.ts) · [`src/world/simulation.ts`](../../src/world/simulation.ts) · [`src/game/runtime.ts`](../../src/game/runtime.ts)
+**Related:** [`asset-requirements-v01.md`](asset-requirements-v01.md) §4.4, §5.2, §5.6, §8.17, §8.18, §8.23 · ADR-0060–0065 · [`src/world/room-scene.ts`](../../src/world/room-scene.ts) · [`src/world/physics.ts`](../../src/world/physics.ts) · [`src/world/effects.ts`](../../src/world/effects.ts) · [`src/world/simulation.ts`](../../src/world/simulation.ts) · [`src/game/runtime.ts`](../../src/game/runtime.ts)
 
 ## Purpose
 
@@ -57,8 +57,8 @@ a physics convenience for puzzle props, not a hand attachment.
 - Add a distinct scanner sprite that the player visibly holds.
 - Keep it independent of the player texture and the P2 palette LUT.
 - Follow the player, flip with facing, and hide when the player is inactive.
-- Work with the current static player and remain compatible with a future walk
-  sheet.
+- Work with the current POC player animation (idle/walk/jump/fall/land) and
+  remain compatible with per-frame hand sockets.
 - Avoid interfering with the puzzle carry system or the scan action.
 - Keep the first slice small enough to review and test.
 
@@ -162,9 +162,9 @@ The `scan` action is instant; do not invent a scan mode for the first slice.
 
 ### Animation
 
-For the current static sprite, one hand offset is enough.
+For the current POC sheets, one hand offset is enough for the idle pose.
 
-For a future walk sheet, the hand moves. Add per-frame hand sockets to the
+For the walk/jump sheets, the hand moves. Add per-frame hand sockets to the
 animation descriptor, for example:
 
 ```json
@@ -209,7 +209,7 @@ separate attachment at a fixed offset may visibly detach during the cycle.
 - It does not consume the carry slot or require the `carry` ability.
 - It does not change scan range, target selection, concept-log behaviour, or
   physics.
-- The scanner texture is independent of the player palette LUT; P2’s orange
+- The scanner texture is independent of the player palette LUT; P2’s bone/cyan
   suit does not recolour it.
 - The scanner reads at 28×44 without dominating the player silhouette.
 - The asset is within the pixel-art rules: 1px outline, palette-only colours,
@@ -251,8 +251,8 @@ separate attachment at a fixed offset may visibly detach during the cycle.
   — source/working/runtime layers.
 - [`docs/adr-art-pipeline/0061-palette-lut-sprite-variants.md`](../adr-art-pipeline/adr-0061-palette-lut-sprite-variants.md)
   — palette variants and P2 derivation.
-- [`docs/adr-art-pipeline/0064-orange-p2-suit-palette-swap.md`](../adr-art-pipeline/adr-0064-orange-p2-suit-palette-swap.md)
-  — P2 orange palette permutation.
+- [`docs/adr-art-pipeline/0065-p2-bone-suit-joint-visor.md`](../adr-art-pipeline/adr-0065-p2-bone-suit-joint-visor.md)
+  — P2 bone suit and joint-cyan visor.
 - [`src/world/room-scene.ts`](../../src/world/room-scene.ts) — player and entity
   rendering.
 - [`src/world/physics.ts`](../../src/world/physics.ts) — carry constraint and

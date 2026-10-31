@@ -69,6 +69,7 @@ Thumbs.db
 # --- Generated art intermediates ---
 art-source/**/working/frames/
 art-source/**/working/tmp/
+art-source/nanobanan/keyed/
 
 # --- Misc ---
 ._*

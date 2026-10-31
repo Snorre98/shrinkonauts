@@ -12,6 +12,7 @@ import {
   ASSET_TYPES,
   createAssets,
   inferCategory,
+  PLAYER_ANIMATION_ASSET_IDS,
   PLAYER_ASSET_IDS,
   supportsVisualCategory,
   type AssetId,
@@ -1764,6 +1765,9 @@ export function validatePack(
       ...collectThemeAssetIds(theme),
       ...collectMaterialAssetIds(materials),
       ...Object.values(PLAYER_ASSET_IDS),
+      ...Object.values(PLAYER_ANIMATION_ASSET_IDS)
+        .flatMap((clips) => Object.values(clips))
+        .filter((id) => finalManifest?.assets[id] !== undefined),
       ...(content
         ? Object.values(content.rooms).flatMap(collectRoomAssetIds)
         : []),
