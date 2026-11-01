@@ -1,4 +1,8 @@
 import Phaser from "phaser";
+import type {
+  HostActions,
+  PlayerFrameInput,
+} from "./intent-source";
 import type { PlayerId, PlayerIntent } from "./simulation";
 import type { PlayerUiActions, RuntimeInput } from "./runtime-port";
 
@@ -139,22 +143,35 @@ export class KeyboardIntentSource {
   }
 
   sample(): FrameInput {
-    const p1Actions = this.samplePlayerActions("p1");
-    const p2Actions = this.samplePlayerActions("p2");
+    const p1 = this.samplePlayer("p1");
+    const p2 = this.samplePlayer("p2");
     return {
       intents: {
-        p1: this.samplePlayer(this.keys.p1),
-        p2: this.samplePlayer(this.keys.p2),
+        p1: p1.intent,
+        p2: p2.intent,
       },
       actions: {
-        p1: p1Actions,
-        p2: p2Actions,
-        map: this.consume(this.mapKey),
-        log: this.consume(this.logKey),
-        pause: this.consume(this.pauseKey),
-        mute: this.consume(this.muteKey),
-        toggleP2: this.consume(this.toggleP2Key),
+        p1: p1.actions,
+        p2: p2.actions,
+        ...this.sampleHost(),
       },
+    };
+  }
+
+  samplePlayer(id: PlayerId): PlayerFrameInput {
+    return {
+      intent: this.sampleIntent(this.keys[id]),
+      actions: this.samplePlayerActions(id),
+    };
+  }
+
+  sampleHost(): HostActions {
+    return {
+      map: this.consume(this.mapKey),
+      log: this.consume(this.logKey),
+      pause: this.consume(this.pauseKey),
+      mute: this.consume(this.muteKey),
+      toggleP2: this.consume(this.toggleP2Key),
     };
   }
 
@@ -201,7 +218,7 @@ export class KeyboardIntentSource {
     };
   }
 
-  private samplePlayer(keys: PlayerKeys): PlayerIntent {
+  private sampleIntent(keys: PlayerKeys): PlayerIntent {
     return {
       moveX: axis(keys.left, keys.right),
       jump: this.consumeAny(keys.jumps),

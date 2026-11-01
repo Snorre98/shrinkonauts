@@ -13,6 +13,8 @@ import {
 import type { RoomDocument, RoomEntity, ThemeDocument } from "../pack";
 import { LayeredBackground } from "./background";
 import { PLAYER_ANIMATION_ASSET_IDS, PLAYER_ASSET_IDS } from "./ids";
+import { InputArbiter } from "./input-arbiter";
+import type { IntentSource } from "./intent-source";
 import { KeyboardIntentSource } from "./input";
 import {
   PlayerAnimator,
@@ -70,6 +72,8 @@ export interface RoomSceneConfig {
   onCue?: (cue: GameplayCue | string) => void;
   /** Lets the platform suppress gameplay keys while a form field has focus. */
   shouldIgnoreInput?: () => boolean;
+  /** Injects the player input source; defaults to a keyboard-only arbiter. */
+  input?: (scene: Phaser.Scene) => IntentSource;
   /** Narrow accessibility seam; the scene never reads save/UI state itself. */
   isReducedMotion?: () => boolean;
 }
@@ -123,7 +127,7 @@ export class RoomScene
   extends Phaser.Scene
   implements WorldEffectPort, TileVisualPort
 {
-  private intents!: KeyboardIntentSource;
+  private intents!: IntentSource;
   private background: LayeredBackground | null = null;
   private readonly playerSprites: Partial<
     Record<PlayerId, Phaser.GameObjects.Sprite>
@@ -300,6 +304,7 @@ export class RoomScene
    * scene manager on some restart timings).
    */
   shutdown(): void {
+    this.intents?.destroy?.();
     this.effectLayer = null;
     this.background = null;
     this.patternLayer?.destroy();
@@ -345,7 +350,9 @@ export class RoomScene
     this.lastReducedMotion = this.config.isReducedMotion?.() ?? false;
 
     runtime.resize(this.scale.width, this.scale.height);
-    this.intents = new KeyboardIntentSource(this);
+    this.intents =
+      this.config.input?.(this) ??
+      new InputArbiter(new KeyboardIntentSource(this));
 
     const camera = this.cameras.main;
     camera.setBackgroundColor(theme.palette.bg);
