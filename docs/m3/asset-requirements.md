@@ -141,7 +141,8 @@ authored rooms do not use.
 > with its own IDs and placeholder manifests (`public/hub/bathroom/`). Those
 > assets are **not** part of this 21-image M3 scope. Final hub art belongs to a
 > small M3.5 pass; the hub ships with coherent placeholders in the meantime. See
-> [`../m1.9/README.md`](../m1.9/README.md).
+> [`../m1.9/README.md`](../m1.9/README.md) and the
+> [M3.5 hub prompt pack](../m3.5/hub-asset-prompts-v01.md).
 
 ---
 

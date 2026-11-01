@@ -149,8 +149,11 @@ e2e/hub.spec.ts             hub browser smoke
 - **M2:** implement `silicon-reflex`; change the catalog entry to `available`.
   No hub code change is required.
 - **M3:** unchanged; keep the 20-image `03-nerve-forest` scope.
-- **M3.5:** optional hub art pass. Hub IDs exist now, so the art pass can
-  replace placeholders without changing the menu or scene structure.
+- **M3.5:** bathroom hub art pass. The prompt pack and proposed full layout
+  redesign are in
+  [`../m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md).
+  Hub IDs exist; the redesign moves the machine out from under the DOM panel and
+  adds the logo, civilian walk, poster, cartridges, and small props.
 - **M4:** replace the disabled online block with the real lobby:
   - host/join and room code;
   - host's pack read-only to the guest;

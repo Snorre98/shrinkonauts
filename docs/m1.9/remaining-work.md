@@ -83,29 +83,46 @@ This is a visual-language follow-up, not a functional M1.9 dependency.
 **When:** after M3, as a small separate art pass. Do not expand the M3
 `03-nerve-forest` 20-image scope.
 
+The full prompt pack, asset register, generation order, and acceptance criteria
+are in [`../m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md).
+The prompt pack supersedes the original four-layer suggestion with one 640×360
+scene plate because the hub camera does not scroll, and adds the logo, civilian
+walk, poster, cartridges, and small props.
+
 Suggested asset kit:
 
 ```text
-bg.bathroom.wall / far / mid / near      4 backgrounds or layers
+bg.bathroom.wall                         1 scene plate (640×360 at 2×)
 sprite.prop.washer                       1 machine body
 sprite.prop.washer.door                  1 door/porthole
 sprite.prop.washer.drum                  1 drum
 sprite.player.civilian                   1 real-world player
+sprite.player.civilian.walk              6-frame walk sheet
+ui.logo.shrinkonauts                     1 wordmark
+sprite.prop.poster                       1 poster
 sprite.prop.cartridge.anatomy            1 cycle cartridge
 sprite.prop.cartridge.silicon            1 cycle cartridge
+ui.icon.cycle.anatomy / silicon          2 card icons (derived)
+sprite.prop.toy.astronaut                1 shelf prop
+sprite.prop.plush.neuron                 1 shelf prop
+sprite.prop.detergent.bottles            1 shelf prop group
+sprite.prop.laundry.basket               1 floor prop
+sprite.prop.towel                        1 wall prop
 audio.cue.hub.click / door / spin /
   shrink / arrive / hum                  6 cues
 ```
 
 Work:
 
-- [ ] Produce the assets in the **“Dank Anatomy Pixel Art”** style (ADR-0047): 2× half-res sprites, pixel atlas frames, ramp palette, no anti-aliasing.
+- [ ] Produce the assets in the **“Dank Anatomy Pixel Art”** style (ADR-0047): 2× half-res sprites, ramp palette, no anti-aliasing.
+- [ ] Follow the prompt pack for the hub-only appliance-grey ramp; do not leak it into gameplay assets.
 - [ ] Put the real `src` paths in
   `public/hub/bathroom/assets.final.json`.
 - [ ] Add licences and update the prompt/asset log.
 - [ ] Keep the existing procedural fallback for placeholder mode.
+- [ ] Implement the small hub-scene hooks: final-art branches, logo, poster, cartridges, props, and civilian walk animation.
+- [ ] Keep the existing information architecture unless a deliberate panel redesign is approved.
 - [ ] Verify `?assets=final` on the hub and the selected pack.
-- [ ] Do not change hub logic, markup, or launch timings.
 
 ## 6. M4 — Online co-op lobby
 
