@@ -16,6 +16,11 @@ const ENTITY_IDS = [
   "sprite.scan.synapse",
   "sprite.scan.pathway",
   "sprite.scan.muscle",
+  "sprite.gate.ferry",
+  "sprite.prop.tracer",
+  "sprite.pulse.terminal",
+  "sprite.receptor.triangle",
+  "sprite.receptor.circle",
 ] as const;
 
 interface ManifestEntry {
@@ -107,6 +112,7 @@ describe("integrated entity sprites", () => {
       "sprite.scan.reflex",
       "sprite.gate.nerve",
       "sprite.checkpoint",
+      "sprite.exit",
     ]) {
       expect(manifest.assets[id]?.placeholder, id).toBe(true);
     }

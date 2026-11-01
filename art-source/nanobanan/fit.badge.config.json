@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "palette": "art-source/nanobanan/palette.badge.json",
+  "cell": { "width": 16, "height": 16 },
+  "margin": 1,
+  "alphaThreshold": 128,
+  "maxBytes": 8192,
+  "minReadablePx": 8,
+  "maxPaletteDistance": 64,
+  "preview": {
+    "scales": [2, 8],
+    "background": "#101a20"
+  },
+  "reportDir": "art-source/nanobanan/reports",
+  "previewDir": "art-source/previews/nanobanan/entities",
+  "assets": [
+    {
+      "id": "ui.icon.badge",
+      "status": "placeholder",
+      "source": "art-source/nanobanan/keyed/badge.png",
+      "output": "art-source/nanobanan/keyed/fit/badge.png",
+      "runtime": false,
+      "missingReason": "The 16x16 fit collapses the helmet dome into the ring; only an amber visor block reads in the 32x32 target and ~45x27 pill crop.",
+      "notes": "Audit evidence only. The HUD keeps the CSS ui.icon.badge placeholder.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    }
+  ]
+}

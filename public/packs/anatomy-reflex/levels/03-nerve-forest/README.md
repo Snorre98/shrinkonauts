@@ -85,7 +85,7 @@ bursts are presentation, not physical doors.
 | Property | Value |
 | --- | --- |
 | Room | `room-nerve-forest`, 40 × 23 tiles at 32 px |
-| Background | `bg.nerve_forest`, four parallax layers |
+| Background | `bg.nerve_forest`, sky plate only (POC); far/mid/near source-only/deferred |
 | Spawns | P1 `(3, 20)`, P2 `(5, 20)` |
 | Checkpoint | `checkpoint-entry` at `(4, 20)` |
 | Inputs | `input-a` at x 224–288, `input-b` at x 320–384, floor row 20 |

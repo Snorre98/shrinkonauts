@@ -1,0 +1,12 @@
+{
+  "character": "nerve-forest-sky",
+  "cell": {
+    "width": 640,
+    "height": 368
+  },
+  "sourceOffPalettePixels": 235514,
+  "quantizedPixels": 235514,
+  "maxDistance": 81.14,
+  "alphaViolations": 0,
+  "offPalettePixelsAfter": 0
+}

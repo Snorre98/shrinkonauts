@@ -137,7 +137,8 @@
     },
     "bg.nerve_forest.sky": {
       "type": "background",
-      "placeholder": true
+      "src": "shared/backgrounds/nerve-forest-sky.webp",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "bg.nerve_forest.far": {
       "type": "background",
@@ -303,23 +304,28 @@
     },
     "sprite.prop.tracer": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/prop-tracer.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.pulse.terminal": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/pulse-terminal.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.triangle": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/receptor-triangle.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.circle": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/receptor-circle.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.ferry": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/gate-ferry.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
     }
   }
 }
