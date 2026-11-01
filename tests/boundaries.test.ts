@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const SRC = fileURLToPath(new URL("../src/", import.meta.url));
+const WORKER_SRC = fileURLToPath(new URL("../worker/src/", import.meta.url));
 
 const MEDIA_PATTERN =
   /(["'])[^"'\n]+\.(?:avif|png|jpe?g|gif|webp|svg|mp3|wav|ogg|m4a|woff2?|ttf|otf)\1/i;
@@ -259,6 +260,30 @@ describe("module boundaries", () => {
           source,
           `${relativeToSrc(file)} must not reach into materials internals`,
         ).not.toMatch(/from\s+["']\.\.\/materials\/[^"']+["']/);
+      }
+    }
+  });
+
+  it("keeps the Worker relay independent of gameplay and rendering", () => {
+    for (const file of sourceFiles(WORKER_SRC)) {
+      const source = read(file);
+      expect(
+        source,
+        `${relative(file, WORKER_SRC)} must not import Phaser`,
+      ).not.toMatch(/from\s+["']phaser["']/);
+      expect(
+        source,
+        `${relative(file, WORKER_SRC)} must not import Matter`,
+      ).not.toMatch(/from\s+["']matter-js["']/);
+      for (const moduleName of ["game", "world", "puzzle"]) {
+        expect(
+          source,
+          `${relative(file, WORKER_SRC)} must not import ${moduleName}`,
+        ).not.toMatch(
+          new RegExp(
+            `from\\s+["']\\.\\./\\.\\./src/${moduleName}(?:/[^"']*)?["']`,
+          ),
+        );
       }
     }
   });

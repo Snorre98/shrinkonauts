@@ -25,6 +25,8 @@ pnpm-debug.log*
 .cache/
 .vite/
 .vitest/
+.wrangler/
+worker/.wrangler/
 .parcel-cache/
 .turbo/
 .eslintcache

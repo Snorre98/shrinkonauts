@@ -1,6 +1,9 @@
 import { err, ok, type Result } from "../core/result";
-import type { PlayerSlot } from "../world/intent-source";
-import { isPlayerSlot, type ProtocolError } from "./protocol";
+import {
+  isPlayerSlot,
+  type PlayerSlot,
+  type ProtocolError,
+} from "./protocol";
 
 export const ROOM_CODE_LENGTH = 6;
 export const ROOM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -31,7 +34,7 @@ export function normalizeRoomCode(
 
 function secureRandom(): number {
   const value = new Uint32Array(1);
-  globalThis.crypto.getRandomValues(value);
+  crypto.getRandomValues(value);
   return (value[0] ?? 0) / 2 ** 32;
 }
 

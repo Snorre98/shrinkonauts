@@ -1,6 +1,16 @@
 import { err, ok, type Result } from "../core/result";
-import type { PlayerSlot } from "../world/intent-source";
-import type { PlayerUiActions } from "../world/runtime-port";
+
+/** Wire mirror of the two player slots; the relay must not import the game. */
+export type PlayerSlot = "p1" | "p2";
+
+export interface NetUiActions {
+  confirm: boolean;
+  cancel: boolean;
+  navigateUp: boolean;
+  navigateDown: boolean;
+  /** 1-based choice position, or null. */
+  choose: number | null;
+}
 
 export const PROTOCOL_VERSION = 1;
 export const MAX_CONTROLLER_MESSAGE_BYTES = 8 * 1024;
@@ -47,7 +57,7 @@ export interface NetInputActions {
   pulse: boolean;
   carry: boolean;
   throw: boolean;
-  ui: PlayerUiActions;
+  ui: NetUiActions;
 }
 
 export interface NetInput {
@@ -717,6 +727,23 @@ export function isControllerClientMessage(
   }
 }
 
+export function isHostClientMessage(
+  message: ProtocolMessage,
+): message is HostClientMessage {
+  switch (message.t) {
+    case "host-hello":
+    case "close-slot":
+    case "pause":
+    case "resume":
+    case "session-end":
+      return true;
+    case "pong":
+      return "slot" in message;
+    default:
+      return false;
+  }
+}
+
 export function isControllerServerMessage(
   message: ProtocolMessage,
 ): message is ControllerServerMessage {
@@ -759,6 +786,16 @@ export function decodeControllerClientMessage(
   return isControllerClientMessage(decoded.value)
     ? ok(decoded.value)
     : protocolError("BAD_MESSAGE", "Expected a controller client message");
+}
+
+export function decodeHostClientMessage(
+  raw: string,
+): Result<HostClientMessage, ProtocolError> {
+  const decoded = decodeMessage(raw, MAX_CONTROLLER_MESSAGE_BYTES);
+  if (!decoded.ok) return decoded;
+  return isHostClientMessage(decoded.value)
+    ? ok(decoded.value)
+    : protocolError("BAD_MESSAGE", "Expected a host client message");
 }
 
 export function decodeControllerServerMessage(
