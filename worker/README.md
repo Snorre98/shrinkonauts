@@ -41,6 +41,10 @@ contains only local development origins. Before deploying, set the deployed
 Pages origin in the Cloudflare dashboard or via a Wrangler environment override;
 do not add a secret to `wrangler.jsonc`.
 
+The Pages build reads `VITE_NET_URL` and `VITE_BUILD_ID`. When `VITE_NET_URL` is
+unset, K/K and solo remain fully local; starting a phone plan shows a
+configuration error instead of opening a socket.
+
 `ROOMS` is the Durable Object binding. `GameRoom` uses the declarative `exports`
 field with SQLite storage, matching ADR-0057. Room membership and slot bindings
 live in WebSocket attachments, so hibernation and wake reconstruct membership

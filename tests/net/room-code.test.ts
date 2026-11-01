@@ -3,6 +3,7 @@ import {
   ROOM_CODE_ALPHABET,
   ROOM_CODE_LENGTH,
   buildControllerUrl,
+  buildRoomSocketUrl,
   generateRoomCode,
   normalizeRoomCode,
   parseControllerUrl,
@@ -64,6 +65,21 @@ describe("room codes and controller URLs", () => {
       ok: true,
       value: { room: "ABC234", slot: "p2" },
     });
+  });
+
+  it("builds a host WebSocket URL and preserves an explicit /ws path", () => {
+    expect(
+      buildRoomSocketUrl("ws://relay.example.test", "abc234", "host"),
+    ).toBe("ws://relay.example.test/ws?room=ABC234&role=host");
+    expect(
+      buildRoomSocketUrl(
+        "wss://relay.example.test/custom/ws",
+        "ABC234",
+        "controller",
+      ),
+    ).toBe(
+      "wss://relay.example.test/custom/ws?room=ABC234&role=controller",
+    );
   });
 
   it("rejects malformed controller URLs and invalid slots", () => {

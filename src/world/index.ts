@@ -4,6 +4,11 @@ export type { GameMountOptions } from "./create-game";
 export { KeyboardIntentSource } from "./input";
 export type { FrameInput } from "./input";
 export { InputArbiter } from "./input-arbiter";
+export {
+  DEFAULT_INPUT_PLAN,
+  defaultInputPlan,
+  phoneSlotsForPlan,
+} from "./intent-source";
 export type {
   HostActions,
   InputPlan,

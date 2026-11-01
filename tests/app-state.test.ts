@@ -11,6 +11,7 @@ import {
   selectMode,
   selectPack,
   selectedPack,
+  setInputPlan,
 } from "../src/game/app-state";
 import { parsePackCatalog } from "../src/pack";
 
@@ -33,8 +34,22 @@ describe("app shell state", () => {
   it("defaults to local co-op and refuses online before M4", () => {
     const state = createAppState(catalog);
     expect(state.mode).toBe("local");
+    expect(state.inputPlan).toEqual({ p1: "keyboard", p2: "keyboard" });
     expect(selectMode(state, "online", false)).toBe(state);
     expect(selectMode(state, "solo", false).mode).toBe("solo");
+  });
+
+  it("stores a per-slot input plan without changing the play default", () => {
+    let state = createAppState(catalog);
+    state = setInputPlan(state, { p1: "keyboard", p2: "controller" });
+    expect(state.inputPlan).toEqual({
+      p1: "keyboard",
+      p2: "controller",
+    });
+    state = beginStart(state);
+    expect(
+      setInputPlan(state, { p1: "controller", p2: "controller" }),
+    ).toBe(state);
   });
 
   it("builds start labels from availability and save state", () => {

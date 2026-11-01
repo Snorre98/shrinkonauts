@@ -6,6 +6,21 @@ export type PlayerSlot = PlayerId;
 export type InputSourceKind = "keyboard" | "controller";
 export type InputPlan = Record<PlayerSlot, InputSourceKind>;
 
+export const DEFAULT_INPUT_PLAN: Readonly<InputPlan> = {
+  p1: "keyboard",
+  p2: "keyboard",
+};
+
+export function defaultInputPlan(): InputPlan {
+  return { ...DEFAULT_INPUT_PLAN };
+}
+
+export function phoneSlotsForPlan(plan: InputPlan): PlayerSlot[] {
+  return (["p1", "p2"] as const).filter(
+    (slot) => plan[slot] === "controller",
+  );
+}
+
 export interface PlayerFrameInput {
   intent: PlayerIntent;
   actions: PlayerActionInput;

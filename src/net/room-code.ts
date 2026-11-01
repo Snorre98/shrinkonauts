@@ -13,6 +13,26 @@ export interface ControllerUrl {
   slot: PlayerSlot;
 }
 
+export type RoomSocketRole = "host" | "controller";
+
+export function buildRoomSocketUrl(
+  baseUrl: string,
+  room: string,
+  role: RoomSocketRole,
+): string {
+  const normalized = normalizeRoomCode(room);
+  if (!normalized.ok) throw new Error(normalized.error.message);
+  const url = new URL(baseUrl);
+  if (!url.pathname.endsWith("/ws")) {
+    url.pathname = `${url.pathname.replace(/\/$/, "")}/ws`;
+  }
+  const params = new URLSearchParams(url.search);
+  params.set("room", normalized.value);
+  params.set("role", role);
+  url.search = params.toString();
+  return url.toString();
+}
+
 function roomError(message: string): Result<never, ProtocolError> {
   return err({ code: "ROOM_INVALID", message });
 }

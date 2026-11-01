@@ -46,8 +46,13 @@ import {
 import {
   createGame,
   HubScene,
+  InputArbiter,
+  KeyboardIntentSource,
   RoomScene,
+  phoneSlotsForPlan,
   type GameplayCue,
+  type InputPlan,
+  type PlayerSlot,
 } from "../world";
 import {
   beginStart,
@@ -60,9 +65,15 @@ import {
   selectMode,
   selectPack,
   selectedPack,
+  setInputPlan,
   type AppState,
 } from "./app-state";
 import { parseAssetMode, modeLabel, type AssetMode } from "./asset-mode";
+import type {
+  HostRunFactory,
+  HostRunPort,
+  HostRunView,
+} from "./host-run-port";
 import { GameRuntime, type AudioPort } from "./runtime";
 
 export interface BootOptions {
@@ -70,6 +81,10 @@ export interface BootOptions {
   uiRoot?: HTMLElement | null;
   search?: string;
   fetchImpl?: typeof fetch;
+  inputPlan?: InputPlan;
+  roomCode?: string;
+  buildId?: string;
+  hostRunFactory?: HostRunFactory;
 }
 
 export interface PackBundle {
@@ -168,6 +183,10 @@ export class AppController {
   private readonly search: string;
   private readonly fetchImpl: typeof fetch;
   private readonly transition: HTMLElement;
+  private readonly inputPlanOption: InputPlan | null;
+  private readonly roomCodeOption: string | null;
+  private readonly buildId: string;
+  private readonly hostRunFactory?: HostRunFactory;
 
   private saveData!: SaveModule;
   private catalogData!: PackCatalog;
@@ -195,6 +214,9 @@ export class AppController {
   private packAssets: AssetsModule | null = null;
   private packPlan: PreloadPlan | null = null;
   private packAudio: AudioModule | null = null;
+  private hostRun: HostRunPort | null = null;
+  private hostRunView: HostRunView | null = null;
+  private hostRoomCode: string | null = null;
 
   constructor(options: BootOptions = {}) {
     this.parentId = options.parent ?? "game-root";
@@ -205,6 +227,10 @@ export class AppController {
     this.uiRoot = uiRoot;
     this.search = options.search ?? window.location.search;
     this.fetchImpl = options.fetchImpl ?? fetch;
+    this.inputPlanOption = options.inputPlan ?? null;
+    this.roomCodeOption = options.roomCode ?? null;
+    this.buildId = options.buildId?.trim() || "dev";
+    this.hostRunFactory = options.hostRunFactory;
 
     this.transition = document.createElement("div");
     this.transition.className = "hub-transition";
@@ -248,6 +274,36 @@ export class AppController {
     return this.packContent;
   }
 
+  get controllerSession(): HostRunPort | null {
+    return this.hostRun;
+  }
+
+  get controllerView(): HostRunView | null {
+    return this.hostRunView;
+  }
+
+  get controllerRoomCode(): string | null {
+    return this.hostRoomCode;
+  }
+
+  setInputPlan(plan: InputPlan): void {
+    if (!this.state) return;
+    this.state = setInputPlan(this.state, plan);
+    this.refreshHub();
+  }
+
+  fallbackHostSlot(slot: PlayerSlot): boolean {
+    return this.hostRun?.fallbackToKeyboard(slot) ?? false;
+  }
+
+  resumeHostRun(): boolean {
+    return this.hostRun?.resume() ?? false;
+  }
+
+  endHostRun(): void {
+    this.hostRun?.end();
+  }
+
   async boot(): Promise<void> {
     this.mode = parseAssetMode(this.search);
     this.saveData = createSave();
@@ -259,6 +315,9 @@ export class AppController {
     if (!catalog.ok) throw new Error(catalog.error);
     this.catalogData = catalog.value;
     this.state = createAppState(this.catalogData);
+    if (this.inputPlanOption) {
+      this.state = setInputPlan(this.state, this.inputPlanOption);
+    }
 
     const hubUrl = new URL("hub/bathroom/", assetBase()).toString();
     const loaded = await loadHubContent({ hubUrl, fetchImpl: this.fetchImpl });
@@ -585,6 +644,7 @@ export class AppController {
     }
 
     const skipIntro = options.skipIntro === true;
+    const inputPlan = { ...this.state.inputPlan };
     this.state = beginStart(this.state);
     this.refreshHub();
     this.hubUi?.setVisible(false);
@@ -629,8 +689,12 @@ export class AppController {
       [bundle] = await Promise.all([bundlePromise, launch]);
       this.state = markLaunching(this.state);
       this.refreshHub();
+      if (phoneSlotsForPlan(inputPlan).length > 0) {
+        await this.prepareHostRun(inputPlan);
+      }
       await this.transitionToRoom(bundle, skipIntro);
     } catch (error) {
+      this.disposeHostRun();
       bundle?.audio.dispose();
       this.hubScene?.skipLaunch();
       this.recoverToHub(toError(error));
@@ -643,6 +707,44 @@ export class AppController {
         .querySelector<HTMLCanvasElement>(`#${this.parentId} canvas[data-room-id]`)
         ?.focus({ preventScroll: true });
     }
+  }
+
+  private async prepareHostRun(plan: InputPlan): Promise<void> {
+    this.disposeHostRun();
+    if (!this.hostRunFactory) {
+      throw new Error(
+        "HOST_RUN_UNAVAILABLE: phone controllers require a host session factory",
+      );
+    }
+
+    const run = this.hostRunFactory({
+      plan: { ...plan },
+      ...(this.roomCodeOption ? { room: this.roomCodeOption } : {}),
+      buildId: this.buildId,
+      autoStart: true,
+      onStateChange: (view) => {
+        this.hostRunView = view;
+      },
+      onError: (error) => {
+        this.warn(`[host session] ${error.code}: ${error.message}`);
+      },
+    });
+    this.hostRun = run;
+    this.hostRoomCode = run.room;
+    this.hostRunView = run.view;
+    await run.connect();
+  }
+
+  private disposeHostRun(): void {
+    this.hostRun?.destroy();
+    this.hostRun = null;
+    this.hostRunView = null;
+    this.hostRoomCode = null;
+  }
+
+  private isHostRunPaused(): boolean {
+    if (!this.hostRun) return false;
+    return this.hostRunView?.state !== "active";
   }
 
   private async preparePack(
@@ -898,6 +1000,12 @@ export class AppController {
             (active instanceof HTMLElement && active.isContentEditable)
           );
         },
+        isPaused: () => this.isHostRunPaused(),
+        input: (scene) => {
+          const arbiter = new InputArbiter(new KeyboardIntentSource(scene));
+          this.hostRun?.attachInput(arbiter);
+          return arbiter;
+        },
         onCue: (cue) => {
           if (typeof cue !== "string" || !cue) return;
           const typed = cue as GameplayCue;
@@ -950,6 +1058,7 @@ export class AppController {
     this.gameInstance = null;
     this.roomScene = null;
     this.runtimeInstance = null;
+    this.disposeHostRun();
     this.packContent = null;
     this.packAssets = null;
     this.packPlan = null;

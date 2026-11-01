@@ -1,5 +1,9 @@
 import type { PackCatalog, PackCatalogEntry } from "../pack";
 import type { HubMode } from "../ui";
+import {
+  defaultInputPlan,
+  type InputPlan,
+} from "../world/intent-source";
 
 export type AppPhase =
   | "boot"
@@ -14,6 +18,7 @@ export interface AppState {
   catalog: PackCatalog;
   selectedPackId: string | null;
   mode: HubMode;
+  inputPlan: InputPlan;
   busy: boolean;
   error: string | null;
   notice: string | null;
@@ -31,6 +36,7 @@ export function createAppState(catalog: PackCatalog): AppState {
     catalog,
     selectedPackId: firstAvailable(catalog),
     mode: "local",
+    inputPlan: defaultInputPlan(),
     busy: false,
     error: null,
     notice: null,
@@ -66,6 +72,14 @@ export function selectMode(
   if (state.busy) return state;
   if (mode === "online" && !onlineAvailable) return state;
   return { ...state, mode, error: null, notice: null };
+}
+
+export function setInputPlan(
+  state: AppState,
+  plan: InputPlan,
+): AppState {
+  if (state.busy) return state;
+  return { ...state, inputPlan: { ...plan }, error: null, notice: null };
 }
 
 export function beginStart(state: AppState): AppState {

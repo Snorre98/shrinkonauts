@@ -74,6 +74,8 @@ export interface RoomSceneConfig {
   shouldIgnoreInput?: () => boolean;
   /** Injects the player input source; defaults to a keyboard-only arbiter. */
   input?: (scene: Phaser.Scene) => IntentSource;
+  /** Freezes the fixed step without changing the runtime's own pause state. */
+  isPaused?: () => boolean;
   /** Narrow accessibility seam; the scene never reads save/UI state itself. */
   isReducedMotion?: () => boolean;
 }
@@ -218,6 +220,13 @@ export class RoomScene
 
   update(_time: number, delta: number): void {
     if (!this.started) {
+      return;
+    }
+
+    if (this.config.isPaused?.() === true) {
+      this.intents.discard();
+      this.pendingInput = null;
+      this.accumulator = 0;
       return;
     }
 

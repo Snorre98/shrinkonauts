@@ -59,11 +59,20 @@ export {
   ROOM_CODE_ALPHABET,
   ROOM_CODE_LENGTH,
   buildControllerUrl,
+  buildRoomSocketUrl,
   generateRoomCode,
   normalizeRoomCode,
   parseControllerUrl,
 } from "./room-code";
-export type { ControllerUrl } from "./room-code";
+export type { ControllerUrl, RoomSocketRole } from "./room-code";
+export {
+  HostRunAdapter,
+  createHostRunFactory,
+} from "./host-run";
+export type {
+  HostRunAdapterOptions,
+  HostRunTransportConfig,
+} from "./host-run";
 export {
   MAX_QUEUED_ACTION_FRAMES,
   RemotePlayerSource,
