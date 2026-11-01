@@ -579,7 +579,10 @@ Tasks:
 1. Carry the `InputPlan` into the run start path.
 2. Create the host session and remote sources for phone slots before the scene
    starts; attach them to the arbiter.
-3. Wire slot readiness to the hub Start gate.
+3. Expose slot readiness to the hub Start gate. Phase 4 does not add the hub
+   control; Phase 6 owns the gate. Any temporary Phase 4 bridge that starts the
+   host session as soon as controllers become ready must be replaced in Phase 6
+   with an explicit host Start action.
 4. On controller disconnect:
    - pause the runtime;
    - show which slot is missing;
@@ -607,6 +610,8 @@ Exit criteria:
 - The host runs all four plans with fake controllers.
 - Keyboard-only and solo paths are unchanged.
 - Session teardown leaves no listeners or timers.
+- Slot readiness and missing-slot state are exposed for the Phase 6 hub Start
+  gate and disconnect overlay.
 
 ---
 
@@ -692,9 +697,14 @@ Tasks:
    - manual code fallback;
    - status: waiting, connected, ready, error;
    - "Use keyboard instead" per slot.
-3. Gate Start:
+3. Own the Start gate:
    - K/K starts immediately;
-   - phone slots must be ready, or explicitly downgraded before start.
+   - Start stays disabled until every phone slot is ready, or explicitly
+     downgraded to keyboard before start;
+   - while waiting, keep the run unstarted and the hub/setup panel active, or
+     hold the mounted scene paused; gameplay must not advance;
+   - readiness never auto-starts the run. Phase 6 must replace any Phase 4
+     auto-start bridge with the explicit host Start action.
 4. On start, launch locally; controllers only transition to active.
 5. Add the pause/disconnect overlay:
    - "P2 disconnected";
@@ -716,6 +726,8 @@ Tasks:
 Exit criteria:
 
 - A user can start all four plans from the hub.
+- Start is blocked or held paused until controller slots are ready; becoming
+  ready does not start the run automatically.
 - The keyboard default requires no network or QR.
 - The disabled online block remains for M4.0b.
 

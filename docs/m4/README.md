@@ -147,6 +147,8 @@ must not absorb M4.0a's controller scope.
 - [ ] Local co-op exposes `P1: Keyboard | Phone` and `P2: Keyboard | Phone`;
   keyboard/keyboard remains the default.
 - [ ] All four plans work from the hub: K/K, K/P, P/K, P/P.
+- [ ] Hub Start stays disabled or held paused until every phone slot is ready
+  or explicitly downgraded; controller readiness never auto-starts the run.
 - [ ] The host can be display-only when both slots use phones; the laptop
   keyboard still handles host-only actions.
 - [ ] Keyboard co-op remains available and is the fallback when a phone session
@@ -358,7 +360,7 @@ The detailed plan is
 | 3 | Worker, DO, room codes, slot reservation, limits | 1.5–2 d | Two controllers join; third/duplicate rejected |
 | 4 | Host session wiring, pause, keyboard fallback | 1 d | Real session drives the arbiter |
 | 5 | Controller web app, touch layout, reconnect | 1.5–2 d | Phone joins and controls one slot |
-| 6 | Hub input setup, QR pairing, start gating | 1–1.5 d | All four plans start from the hub |
+| 6 | Hub input setup, QR pairing, explicit start gating | 1–1.5 d | All four plans start from the hub only after readiness; no auto-start |
 | 7 | Latency measurement, coyote/buffer, playtest, docs | 1–1.5 d | DoD met or fallback documented |
 
 **Total:** roughly **8–11 focused days**, including the Worker/DO that M4.0b
