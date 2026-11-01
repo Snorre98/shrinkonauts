@@ -14,31 +14,9 @@
       {
         "assetId": "bg.bathroom.wall",
         "depth": -40,
-        "parallaxX": 0.05,
-        "parallaxY": 0.02,
+        "parallaxX": 0,
+        "parallaxY": 0,
         "fit": "cover"
-      },
-      {
-        "assetId": "bg.bathroom.far",
-        "depth": -30,
-        "parallaxX": 0.15,
-        "parallaxY": 0.08,
-        "fit": "tile"
-      },
-      {
-        "assetId": "bg.bathroom.mid",
-        "depth": -20,
-        "parallaxX": 0.35,
-        "parallaxY": 0.15,
-        "fit": "tile"
-      },
-      {
-        "assetId": "bg.bathroom.near",
-        "depth": -10,
-        "parallaxX": 0.7,
-        "parallaxY": 0.3,
-        "fit": "tile",
-        "opacity": 0.75
       }
     ]
   },
@@ -46,24 +24,24 @@
     "body": "sprite.prop.washer",
     "door": "sprite.prop.washer.door",
     "drum": "sprite.prop.washer.drum",
-    "x": 1000,
-    "y": 820,
-    "scale": 1.1,
+    "x": 340,
+    "y": 720,
+    "scale": 1,
     "screen": {
-      "x": 840,
-      "y": 444,
-      "width": 200,
-      "height": 56
+      "x": 230,
+      "y": 300,
+      "width": 220,
+      "height": 50
     },
-    "doorAnchor": { "x": 1000, "y": 700 },
-    "drumAnchor": { "x": 1000, "y": 700 }
+    "doorAnchor": { "x": 340, "y": 540 },
+    "drumAnchor": { "x": 340, "y": 540 }
   },
   "player": {
     "civilian": "sprite.player.civilian",
     "astronaut": "sprite.player.p1",
-    "idle": { "x": 560, "y": 650 },
-    "entry": { "x": 980, "y": 700 },
-    "exit": { "x": 870, "y": 700 },
+    "idle": { "x": 640, "y": 700 },
+    "entry": { "x": 340, "y": 700 },
+    "exit": { "x": 180, "y": 700 },
     "scale": 1,
     "tinyScale": 0.35
   },

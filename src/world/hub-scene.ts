@@ -111,6 +111,7 @@ export class HubScene extends Phaser.Scene {
         this.drawBathroomPlaceholder();
       }
 
+      this.drawTemporaryLogo();
       this.drawMachine();
       this.createPlayer();
       this.createTinyAstronaut();
@@ -340,74 +341,80 @@ export class HubScene extends Phaser.Scene {
       tiles.lineBetween(x, 520, x, hub.height);
     }
 
-    // Mirror and sink on the left.
+    // Mirror and sink hug the far-left wall, clear of the logo safe zone.
     this.add
-      .rectangle(170, 250, 230, 300, mixColor(theme.palette.bone, theme.palette.bg, 0.42))
+      .rectangle(70, 330, 120, 180, mixColor(theme.palette.bone, theme.palette.bg, 0.42))
       .setStrokeStyle(8, colorNumber(theme.palette.boneShadow))
       .setDepth(-2);
     this.add
-      .rectangle(170, 250, 190, 255, mixColor(theme.palette.joint, theme.palette.bg, 0.65))
+      .rectangle(70, 330, 100, 158, mixColor(theme.palette.joint, theme.palette.bg, 0.65))
       .setDepth(-2);
     this.add
-      .rectangle(170, 250, 190, 255, colorNumber(theme.palette.bone), 0.08)
+      .rectangle(70, 330, 100, 158, colorNumber(theme.palette.bone), 0.08)
       .setDepth(-2);
     this.add
-      .rectangle(80, 470, 260, 46, mixColor(theme.palette.bone, theme.palette.bg, 0.25))
+      .rectangle(64, 470, 160, 42, mixColor(theme.palette.bone, theme.palette.bg, 0.25))
       .setStrokeStyle(4, colorNumber(theme.palette.boneShadow))
       .setDepth(-2);
     this.add
-      .ellipse(80, 465, 260, 56, mixColor(theme.palette.bg, theme.palette.bone, 0.12))
+      .ellipse(64, 464, 160, 48, mixColor(theme.palette.bg, theme.palette.bone, 0.12))
       .setStrokeStyle(3, colorNumber(theme.palette.boneShadow))
       .setDepth(-1);
     this.add
-      .rectangle(80, 440, 18, 50, colorNumber(theme.palette.boneShadow))
+      .rectangle(64, 444, 14, 36, colorNumber(theme.palette.boneShadow))
       .setDepth(-1);
     this.add
-      .circle(80, 424, 12, colorNumber(theme.palette.boneShadow))
+      .circle(64, 434, 10, colorNumber(theme.palette.boneShadow))
       .setDepth(-1);
 
-    // Shelf and bottles.
+    // Shelf and bottles sit above the machine, leaving the top-left quiet.
     this.add
-      .rectangle(440, 170, 180, 14, colorNumber(theme.palette.boneShadow))
+      .rectangle(340, 222, 300, 14, colorNumber(theme.palette.boneShadow))
       .setDepth(-1);
     for (const [x, color, width, height] of [
-      [400, theme.palette.nerve, 22, 56],
-      [432, theme.palette.joint, 28, 74],
-      [468, theme.palette.muscle, 20, 48],
+      [280, theme.palette.nerve, 22, 50],
+      [330, theme.palette.joint, 28, 66],
+      [380, theme.palette.muscle, 20, 44],
     ] as const) {
       this.add
-        .rectangle(x, 170 - height / 2, width, height, colorNumber(color))
+        .rectangle(x, 222 - 7 - height / 2, width, height, colorNumber(color))
         .setStrokeStyle(3, ink)
         .setDepth(-1);
       this.add
-        .rectangle(x, 170 - height - 6, width * 0.45, 10, colorNumber(theme.palette.bone))
+        .rectangle(
+          x,
+          222 - 7 - height - 5,
+          width * 0.45,
+          10,
+          colorNumber(theme.palette.bone),
+        )
         .setDepth(-1);
     }
 
-    // Laundry basket and bath mat.
+    // Laundry basket and bath mat sit centre/right, clear of the machine.
     this.add
-      .rectangle(350, 635, 150, 100, mixColor(theme.palette.boneShadow, theme.palette.bg, 0.35))
+      .rectangle(560, 691, 80, 58, mixColor(theme.palette.boneShadow, theme.palette.bg, 0.35))
       .setStrokeStyle(4, ink)
       .setDepth(1);
     this.add
-      .rectangle(350, 590, 160, 16, mixColor(theme.palette.bone, theme.palette.bg, 0.4))
+      .rectangle(560, 660, 88, 14, mixColor(theme.palette.bone, theme.palette.bg, 0.4))
       .setStrokeStyle(3, ink)
       .setDepth(1);
     this.add
-      .ellipse(620, 690, 300, 42, mixColor(theme.palette.joint, theme.palette.bg, 0.58), 0.9)
+      .ellipse(660, 700, 200, 38, mixColor(theme.palette.joint, theme.palette.bg, 0.58), 0.9)
       .setDepth(0);
     this.add
-      .ellipse(620, 690, 260, 30, mixColor(theme.palette.bone, theme.palette.bg, 0.4), 0.6)
+      .ellipse(660, 700, 170, 28, mixColor(theme.palette.bone, theme.palette.bg, 0.4), 0.6)
       .setDepth(0);
 
     // A small poster nods at the body-horror cartoon tone without relying on art.
     this.add
-      .rectangle(760, 210, 120, 170, mixColor(theme.palette.nerve, theme.palette.bg, 0.72))
+      .rectangle(600, 260, 96, 128, mixColor(theme.palette.nerve, theme.palette.bg, 0.72))
       .setStrokeStyle(5, ink)
       .setDepth(-1)
       .setAngle(-3);
     this.add
-      .text(760, 210, "STAY\nSMALL", {
+      .text(600, 260, "STAY\nSMALL", {
         fontFamily: this.config.theme.fonts.display,
         fontSize: "18px",
         color: this.config.theme.palette.bg,
@@ -417,6 +424,24 @@ export class HubScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(-1)
       .setAngle(-3);
+  }
+
+  /**
+   * Phase-1 logo stand-in used to validate the top-left safe zone.
+   * TODO(m3.5): replace with ui.logo.shrinkonauts when the wordmark asset lands.
+   */
+  private drawTemporaryLogo(): void {
+    const { theme } = this.config;
+    this.add
+      .text(48, 40, "SHRINKONAUTS", {
+        fontFamily: theme.fonts.display,
+        fontSize: "32px",
+        color: theme.palette.bone,
+        fontStyle: "bold",
+        letterSpacing: 2,
+      })
+      .setOrigin(0, 0)
+      .setDepth(7);
   }
 
   private drawMachine(): void {
@@ -429,34 +454,67 @@ export class HubScene extends Phaser.Scene {
     const drumAsset = assets.sprite(hub.machine.drum);
     const ink = colorNumber(theme.palette.bg);
     const metal = mixColor(theme.palette.bone, theme.palette.bg, 0.3);
+    const hasFinalBody = isFinalAsset(bodyAsset);
 
-    if (isFinalAsset(bodyAsset)) {
+    if (hasFinalBody) {
       this.add
         .image(x, y, textureKey(bodyAsset.id))
         .setOrigin(0.5, 1)
         .setScale(scale)
         .setDepth(2);
     } else {
+      this.add
+        .ellipse(
+          x,
+          y - 6,
+          360,
+          36,
+          mixColor(theme.palette.bg, "#000000", 0.4),
+          0.45,
+        )
+        .setDepth(1);
+
       const body = this.add.graphics().setDepth(2);
       body.fillStyle(metal, 1);
       body.lineStyle(6, ink, 1);
-      body.fillRoundedRect(x - 175, y - 400, 350, 400, 30);
-      body.strokeRoundedRect(x - 175, y - 400, 350, 400, 30);
+      body.fillRoundedRect(x - 180, y - 480, 360, 480, 30);
+      body.strokeRoundedRect(x - 180, y - 480, 360, 480, 30);
+
+      // Blank nameplate across the top of the body.
       body.fillStyle(mixColor(theme.palette.bone, theme.palette.bg, 0.55), 1);
-      body.fillRoundedRect(x - 158, y - 382, 316, 90, 18);
+      body.fillRoundedRect(x - 170, y - 472, 340, 48, 14);
       body.lineStyle(4, ink, 0.7);
-      body.strokeRoundedRect(x - 158, y - 382, 316, 90, 18);
+      body.strokeRoundedRect(x - 170, y - 472, 340, 48, 14);
+
+      // Control-panel housing around the cycle display.
       body.fillStyle(mixColor(theme.palette.bg, theme.palette.bone, 0.12), 1);
-      body.fillRoundedRect(x - 158, y - 280, 316, 255, 22);
+      body.fillRoundedRect(x - 125, y - 420, 250, 64, 14);
       body.lineStyle(4, ink, 0.7);
-      body.strokeRoundedRect(x - 158, y - 280, 316, 255, 22);
-      body.fillStyle(mixColor(theme.palette.boneShadow, theme.palette.bg, 0.2), 1);
-      body.fillRoundedRect(x - 120, y - 110, 240, 45, 16);
+      body.strokeRoundedRect(x - 125, y - 420, 250, 64, 14);
+
+      // Porthole recess, sized for the 360x480 display body.
+      const portholeRadius = 112;
+      body.fillStyle(
+        mixColor(theme.palette.boneShadow, theme.palette.bg, 0.25),
+        1,
+      );
+      body.fillCircle(x, y - 180, portholeRadius);
+      body.lineStyle(5, ink, 0.7);
+      body.strokeCircle(x, y - 180, portholeRadius);
+
+      // Plinth where the machine meets the floor.
+      body.fillStyle(
+        mixColor(theme.palette.boneShadow, theme.palette.bg, 0.2),
+        1,
+      );
+      body.fillRoundedRect(x - 160, y - 52, 320, 46, 12);
       body.lineStyle(3, ink, 0.6);
-      body.strokeRoundedRect(x - 120, y - 110, 240, 45, 16);
+      body.strokeRoundedRect(x - 160, y - 52, 320, 46, 12);
     }
 
-    const doorRadius = 108 * scale;
+    // The placeholder body is drawn at display size, so the porthole radius is
+    // a fixed display value. Final-art door/drum images use machine.scale.
+    const doorRadius = 88;
     if (isFinalAsset(doorAsset)) {
       this.door = this.add
         .image(hub.machine.doorAnchor.x, hub.machine.doorAnchor.y, textureKey(doorAsset.id))
@@ -549,7 +607,7 @@ export class HubScene extends Phaser.Scene {
       .setDepth(6);
 
     this.add
-      .text(x, y - 430, "SHRINK-O-MATIC", {
+      .text(x, y - 448, "SHRINK-O-MATIC", {
         fontFamily: theme.fonts.display,
         fontSize: "22px",
         color: theme.palette.bone,
@@ -559,24 +617,30 @@ export class HubScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(6);
 
-    // Start button beside the cycle display, plus a small vent.
-    this.add
-      .circle(x + 115, y - 350, 22, colorNumber(theme.palette.muscle))
-      .setStrokeStyle(5, ink)
-      .setDepth(5);
-    this.add
-      .circle(x + 115, y - 350, 12, colorNumber(theme.palette.nerve))
-      .setDepth(5);
-    this.add
-      .rectangle(x + 85, y - 300, 60, 18, colorNumber(theme.palette.boneShadow))
-      .setStrokeStyle(3, ink)
-      .setDepth(5);
+    if (!hasFinalBody) {
+      // Start button beside the cycle display, plus a small vent.
+      this.add
+        .circle(x + 140, y - 400, 20, colorNumber(theme.palette.muscle))
+        .setStrokeStyle(5, ink)
+        .setDepth(5);
+      this.add
+        .circle(x + 140, y - 400, 11, colorNumber(theme.palette.nerve))
+        .setDepth(5);
+      this.add
+        .rectangle(x + 140, y - 340, 60, 16, colorNumber(theme.palette.boneShadow))
+        .setStrokeStyle(3, ink)
+        .setDepth(5);
 
-    // Pipework gives the machine a silhouette even when the panel covers it.
-    const pipes = this.add.graphics().setDepth(1);
-    pipes.lineStyle(12, mixColor(theme.palette.boneShadow, theme.palette.bg, 0.4), 1);
-    pipes.lineBetween(x + 175, y - 350, x + 230, y - 350);
-    pipes.lineBetween(x + 230, y - 350, x + 230, y - 70);
+      // Pipework gives the machine a silhouette against the quiet wall.
+      const pipes = this.add.graphics().setDepth(1);
+      pipes.lineStyle(
+        12,
+        mixColor(theme.palette.boneShadow, theme.palette.bg, 0.4),
+        1,
+      );
+      pipes.lineBetween(x + 180, y - 300, x + 232, y - 300);
+      pipes.lineBetween(x + 232, y - 300, x + 232, y - 80);
+    }
   }
 
   private createPlayer(): void {
@@ -706,8 +770,8 @@ export class HubScene extends Phaser.Scene {
     for (let index = 0; index < 9; index += 1) {
       const bubble = this.add
         .circle(
-          Phaser.Math.Between(760, 1180),
-          Phaser.Math.Between(500, 680),
+          Phaser.Math.Between(180, 620),
+          Phaser.Math.Between(480, 660),
           Phaser.Math.Between(3, 8),
           colorNumber(theme.palette.joint),
           0.18,
