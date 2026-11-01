@@ -142,13 +142,11 @@
     },
     "bg.nerve_forest.far": {
       "type": "background",
-      "src": "shared/backgrounds/nerve-forest-far.webp",
-      "license": "Ludo.ai source (POC; plan TBD)"
+      "placeholder": true
     },
     "bg.nerve_forest.mid": {
       "type": "background",
-      "src": "shared/backgrounds/nerve-forest-mid.webp",
-      "license": "Ludo.ai source (POC; plan TBD)"
+      "placeholder": true
     },
     "bg.nerve_forest.near": {
       "type": "background",

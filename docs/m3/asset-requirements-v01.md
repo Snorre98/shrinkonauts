@@ -1,6 +1,6 @@
 # M3 Asset Requirements — Shrinkonauts: The Reflex Arc
 
-**Status:** Draft v0.11 · 1 November 2026 (P2 re-baseline + POC player/Neuron Keeper animation + layered nerve forest background pass)
+**Status:** Draft v0.12 · 1 November 2026 (P2 re-baseline + POC player/Neuron Keeper animation + pretty nerve forest sky pass)
 **Owner:** Snorre  
 **Scope:** Final 2D pixel art and audio for the M3 vertical slice  
 **Target milestone:** M3 — Art/audio pass + capture (4–5 November 2026)  
@@ -31,22 +31,22 @@
 > **Nanobanan batch note (2026-11-01).** The new closed gate, ACh tracer, motor
 > terminal, and triangle/circle receptor plates are POC-integrated through
 > `fit.new.config.json`; final approval is pending. `03-nerve-forest` now wires
-> the updated sky plus the far and mid parallax layers as lossless WebP plates.
-> The updated far/mid/near plates are flat `#FF00FF` cut-outs, keyed at full
-> resolution, cropped to an exact 2:1 window, nearest-downscaled to 1024×512,
-> palette-quantised and edge-welded. Near is processed and previewed but stays
-> deferred: its 1024×512 tile repeats vertically at screen y≈512 and the hanging
-> canopy lands across the play band. The badge and reflex plate remain
-> placeholders after their 16×16/36×36 reviews. The bone and nerve JPEGs are
-> material swatches, not frame atlases; `tile.anatomy.atlas` stays placeholder.
+> only the pretty sky: the tracked 2752×1536 plate cropped to 2672×1536,
+> Lanczos-downscaled to 1280×736 and exported as lossless WebP at 1× cover. It
+> is not palette-quantised and retains its muscle-pink drapes as a recorded
+> exception. The far/mid/near plates are future layered work; their sources, key
+> reports and previews remain in `art-source/`, but their runtime WebPs are not
+> shipped. Near is still deferred because its vertical repeat lands across the
+> play band. The badge and reflex plate remain placeholders after their
+> 16×16/36×36 reviews. The bone and nerve JPEGs are material swatches, not frame
+> atlases; `tile.anatomy.atlas` stays placeholder.
 >
 > **Background regeneration spec (2026-11-01).** The corrected chroma-key
 > prompts and key workflow live in
 > [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md)
-> (prompt version `m3-2026-11-01.1`). This document remains the source of truth
-> for current M3 scope: the updated sky, far and mid are wired; near stays
-> source-only/deferred pending a play-band-safe regeneration or a manual tile
-> repair.
+> (prompt version `m3-2026-11-01.1`; doc v0.3). This document remains the source
+> of truth for current M3 scope: only the pretty sky is wired; far/mid/near are
+> placeholders/future work.
 >
 > **P2 palette note (2026-11-01).** ADR-0065 supersedes ADR-0064. P2 is now a
 > bone suit with a joint-cyan visor and backpack tank, a nerve-amber accent,
@@ -66,13 +66,13 @@
 | Decision | Value |
 |---|---|
 | Art scope | `03-nerve-forest` environments + shared entity sprites (POC integrated; final approval pending) |
-| Visible images | **21 declared** — 20 active (19 referenced by the authored 03/04 rooms + 1 reserve `sprite.scan.reflex`), plus 1 source-only/deferred 03 background (`bg.nerve_forest.near`) |
-| 03 background | **Three-layer POC** — updated `bg.nerve_forest.sky` plus `bg.nerve_forest.far` and `bg.nerve_forest.mid` are wired; `bg.nerve_forest.near` is processed but source-only/deferred because its vertical repeat lands across the play band. Spec: [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) |
+| Visible images | **21 declared** — 18 active (17 referenced by the authored 03/04 rooms + 1 reserve `sprite.scan.reflex`), plus 3 placeholder/future 03 backgrounds (`bg.nerve_forest.far`, `.mid`, `.near`) |
+| 03 background | **Pretty sky only** — the tracked 2752×1536 source cropped to 2672×1536, Lanczos-downscaled to 1280×736 and exported as lossless WebP at 1× cover. No palette quantisation; muscle pink retained as a recorded exception. Far/mid/near are placeholders/future work. Spec: [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) |
 | POC animation sheets | **9** — 8 player clips + 1 Neuron Keeper idle; additional runtime assets outside the 21-image register |
 | Audio cues | **11** — M3 scope; the pack also declares `audio.cue.wrong`, which stays placeholder |
-| Total M3 assets | **32 declared** — 31 active (20 images + 11 audio), with 1 background layer deferred |
+| Total M3 assets | **32 declared** — 29 active (18 images + 11 audio), with 3 background layers placeholder/future |
 | Style | **Dank Anatomy Pixel Art** |
-| Rendering | **Half-res source, 2× nearest-neighbour display** |
+| Rendering | **Half-res source, 2× nearest-neighbour display**; the 03 pretty sky is a recorded 1280×736/1× exception |
 | Tool | **Ludo.ai source sheets/concepts + local slice/remaster/normalize/palette-LUT pipeline + optional Aseprite/Piskel/LibreSprite cleanup; Ludo.ai Audio Generator** |
 | Ludo plan | **Indie, $20/mo** (Pro only if automation or scope grows) |
 | Free-tier use | Six-asset concept/style gate only |
@@ -119,19 +119,19 @@ This is a production document, not a GDD. The game design source remains [`DESIG
 | Player sprites P1/P2 | 2 | Shared across all levels |
 | POC animation sheets | 9 | P1/P2 walk/jump/fall/land plus the Neuron Keeper idle; additional runtime assets, outside the 21-image static register |
 | Visible shared entity sprites | 12 | 11 referenced by 03/04; `sprite.scan.reflex` is a reserve |
-| `03-nerve-forest` background layers | 3 visible | Sky + far + mid wired; near processed but source-only/deferred |
+| `03-nerve-forest` background layers | 1 visible | Pretty sky only; far/mid/near are placeholders/future work |
 | Final material atlases (bone, nerve) | 2 | 47-frame `blob47` bone atlas; 16-frame `edge` nerve atlas; both still placeholders |
 | Badge | 1 | The only UI asset currently rendered; stays placeholder after the 16×16 audit |
-| **Visible images subtotal** | **21 declared** | 19 referenced + 1 reserve active; 1 source-only/deferred background |
+| **Visible images subtotal** | **21 declared** | 17 referenced + 1 reserve active; 3 placeholder/future backgrounds |
 | SFX cues | 11 | `audio.cue.wrong` is outside the M3 scope |
-| **M3 total** | **32 declared** | 31 active images/audio (20 images + 11 audio); 1 background layer deferred |
+| **M3 total** | **32 declared** | 29 active images/audio (18 images + 11 audio); 3 background layers placeholder/future |
 
 The nine POC animation sheets are runtime assets but are not part of the
 21-image static register or the 32-asset production total. The Neuron Keeper
 idle sheet is a POC entity animation; the generalized entity animation system
 remains deferred.
 
-**Pixel authoring.** Players 14×22, entities 18×18, atlas frames 32×32 at 1:1 with 2×2 clusters, sky 640×368, parallax 1024×512 with 2×2 clusters, badge 16×16. See §3 and §6.
+**Pixel authoring.** Players 14×22, entities 18×18, atlas frames 32×32 at 1:1 with 2×2 clusters, pretty sky 1280×736 at 1× (recorded exception), future parallax 1024×512 with 2×2 clusters, badge 16×16. See §3 and §6.
 
 ### 2.2 Deliberately out of scope or deferred
 
@@ -142,7 +142,7 @@ remains deferred.
 | `ui.panel.dialogue`, `panel.gate`, `panel.debrief`, `panel.map` | 4 | Not rendered |
 | `sprite.checkpoint` | 1 | Declared but not referenced by the authored rooms |
 | `sprite.gate.nerve` | 1 | Referenced by 04's Ca²⁺ gate, but 04 props stay placeholder art in M3 |
-| `bg.nerve_forest.near` | 1 | Processed and previewed, but the 1024×512 tile repeats vertically at screen y≈512 and the hanging canopy lands across the play band; source-only/deferred |
+| `bg.nerve_forest.far`, `.mid`, `.near` | 3 | Processed sources/reports/previews are retained, but the layered stack is future work and is not wired; near's 1024×512 tile repeats vertically at screen y≈512 and the hanging canopy lands across the play band |
 | `audio.cue.wrong` | 1 | Declared in the theme and manifest; outside the 11-cue M3 scope |
 | Generalized runtime animation / GIF loops | — | POC player and Neuron Keeper idle animation is in scope; other entity/background animation, a generalized descriptor, and GIF playback remain deferred |
 | Music loop / ambience | — | Music playback is deferred |
@@ -150,11 +150,11 @@ remains deferred.
 | Silicon fixture | 1 | Design proposal exists; not implemented in the pack |
 | Full key rebinding, capture-mode UI, new UI layout | — | Engine/UI tasks, not art-pass tasks |
 
-The deferred UI assets remain declared as placeholders. They will not appear in the build and do not block M3 capture. `sprite.scan.reflex` is a reserve in the 21-image list: it is not referenced by 03/04 and does not block capture. The 03 room wires the sky, far and mid plates; near remains declared and source-only until its play-band repeat is resolved. `ui.icon.badge` remains a CSS placeholder: the new 16×16 fit loses the helmet dome and does not read in the pill/32×32 target.
+The deferred UI assets remain declared as placeholders. They will not appear in the build and do not block M3 capture. `sprite.scan.reflex` is a reserve in the 21-image list: it is not referenced by 03/04 and does not block capture. The 03 room wires only the pretty sky; far/mid/near are declared placeholders/future work. `ui.icon.badge` remains a CSS placeholder: the new 16×16 fit loses the helmet dome and does not read in the pill/32×32 target.
 
 ### 2.3 Scope rules
 
-1. **One environment.** Final environment art is produced for `03-nerve-forest`. The shared entity sprites are POC-integrated because 03/04 reference them; final approval is pending, and unreadable plates stay placeholders. The 03 POC uses the updated sky, far and mid plates; near is processed but source-only/deferred because its vertical repeat obscures the play band. 04 backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder. Other levels get art only after they are authored, pass validation, and appear in the capture list.
+1. **One environment.** Final environment art is produced for `03-nerve-forest`. The shared entity sprites are POC-integrated because 03/04 reference them; final approval is pending, and unreadable plates stay placeholders. The 03 POC uses only the pretty sky plate; far/mid/near are placeholders/future work. 04 backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder. Other levels get art only after they are authored, pass validation, and appear in the capture list.
 2. **No new static asset IDs during M3.** If a level needs a new static ID, that is a content/engine task with an ADR, not an art-pass improvisation. POC animation sheets are the recorded exception: the player sheets and `sprite.agent.neuron.idle` are additional runtime animation assets outside the 21-image static register.
 3. **No gameplay code changes.** ADR-0033 forbids mixing the art pass with gameplay changes. The pixel pivot needs a small, recorded render change (`pixelArt`, `antialias`, `roundPixels`, integer background scaling) under ADR-0048; nothing in `src/game`, `src/puzzle`, or the physics/runtime modules changes.
 4. **POC player and Neuron Keeper animation only.** Players animate in `03-nerve-forest` from generated walk/jump/fall/land sheets. The Neuron Keeper idle sheet plays in 03 and 04; other entity sprites stay static. The full ADR-0062 descriptor and generalized animation system remain a later engine task.
@@ -173,8 +173,8 @@ generating puzzle-specific props.
 |---|---|---|
 | Players, sky | **POC integrated; final approval pending** | Shared by 03/04; unchanged by puzzle content |
 | Badge | **Placeholder after audit** | The 16×16 fit loses the helmet dome; keep the CSS placeholder |
-| far/mid | **POC integrated; seam review pending** | Exact 2× crops, flat `#FF00FF` keying, palette quantisation and 2 px edge weld; the composition repeat remains a visual-review note |
-| near | **Processed, deferred** | The 1024×512 tile repeats vertically and the hanging canopy lands across the play band; preview retained for review |
+| far/mid | **Placeholder/future; not wired** | Exact 2× crops, flat `#FF00FF` keying, palette quantisation and 2 px edge weld; sources, reports and previews retained; composition repeat remains a visual-review note |
+| near | **Placeholder/future; not wired** | The 1024×512 tile repeats vertically and the hanging canopy lands across the play band; preview retained for review |
 | Material atlases | **Swatches only; wire after the tint decision** | The new bone/nerve JPEGs are material swatches, not frame atlases; the pack still uses one placeholder atlas |
 | Neuron Keeper, scan targets | **POC integrated; final approval pending** | Neuron Keeper static + idle are runtime art; `scan.synapse` and `scan.muscle` are POC-integrated; `scan.neuron` and `scan.pathway` remain placeholders after the 36×36 readability check |
 | `sprite.gate.ferry`, `sprite.prop.tracer`, `sprite.pulse.terminal`, `sprite.receptor.triangle`, `sprite.receptor.circle` | **POC integrated; final approval pending** | The new batch is wired to the existing IDs in 03/04; the gate mapping is `sprite.gate.ferry` |
@@ -230,9 +230,9 @@ These are current implementation facts plus the render changes recorded in ADR-0
 | Atlas frames are **32×32** and the frame grid is fixed | `materials.json`, `room-scene.ts` | Keep **32×32 frames at 1:1**, authored with a 2×2 minimum cluster grid. Do not change the frame size to 16×16. |
 | The current pack has **one placeholder atlas** | `assets.final.json` (`tile.anatomy.atlas`), `materials.json` (`nerve-edge`) | Final art targets two atlases; the pack mapping is a separate content task. |
 | Final atlas frames are **tinted by the material** | `room-scene.ts` (`materialTint`) | Either author neutral atlases and keep `tint`, or remove the bone/nerve `tint` when final coloured atlases land. Do not double-tint. |
-| Background far/mid/near use `fit: "tile"` | `src/world/background.ts` (`TileSprite`), `room.json` | 03 wires far and mid; near is deferred. Author **1024×512** with a 2×2 minimum cluster grid; tile on **both axes**. |
-| The sky uses `fit: "cover"` | `src/world/background.ts`, `room.json` | 03 wires the updated sky. Author **640×368**, displayed at an integer 2× cover; the runtime snaps cover to an integer scale (ADR-0048). |
-| The renderer is currently smooth-scaled | `src/world/create-game.ts` (`pixelArt: false`, `antialias: true`) | Target config: `pixelArt: true`, `antialias: false`, `roundPixels: true`. |
+| Background far/mid/near use `fit: "tile"` | `src/world/background.ts` (`TileSprite`) | Future target only; 03 does not wire them. Author **1024×512** with a 2×2 minimum cluster grid; tile on **both axes**. |
+| The sky uses `fit: "cover"` | `src/world/background.ts`, `room.json` | 03 wires the pretty sky at **1280×736, 1×**. The runtime snaps cover to an integer scale (ADR-0048); the future quiet sky uses **640×368, 2×**. |
+| The renderer is pixel-locked | `src/world/create-game.ts` (`pixelArt: true`, `antialias: false`, `roundPixels: true`) | The pretty sky is displayed 1:1; pixel assets keep their 2× grid. |
 | Player sheets and the Neuron Keeper idle are animated; other entity sprites are static | `room-scene.ts` creates Phaser `Sprite` players and `PlayerAnimator`; entities with `idleAnimation` use `EntityIdleAnimator`, others stay static | Player walk/jump/fall/land and the Neuron Keeper idle sheet are runtime assets; other entity sheets remain static. |
 | Only the badge UI asset is rendered | `src/ui/hud.ts` (`styleBadge`, `.hud__stamp--image`) and `src/game/boot.ts` | Author **16×16**; the current HUD displays a ~45×27 CSS px pill with `cover`. The pixel UI target is a 32×32 square stamp. The badge remains a CSS placeholder after the 16×16 audit. |
 | Entity sprites are briefly tinted on interaction | `room-scene.ts` (`applyInteractionHighlight`, `0xffe08a`) | Check every entity sprite under a warm tint; cyan/yellow details must survive. |
@@ -303,13 +303,13 @@ Rules:
 
 - The body is a **landscape**, not a cutaway textbook diagram. Anatomy is architecture: nerve bundles as thick cable-like trees, myelin as pale segmented sheath plates, synapses as lanterns, bone as cliffs, cartilage as glass, membranes as wet fabric.
 - **Damp, humid, breathing.** Build condensation, sheen, dust, and membrane folds from dither patterns; no smooth gradients.
-- **Dark enough for HUD.** Keep the centre and lower third of the sky relatively dark so the yellow/cyan HUD and player silhouettes read.
+- **Dark enough for HUD.** Keep the centre and lower third of a quiet sky relatively dark so the yellow/cyan HUD and player silhouettes read. The current pretty plate is the recorded exception; validate readability at 1280×720 and 1280×736, and stop if it fails.
 - **No labels, arrows, or diagram lines.** The scan system supplies meaning.
-- **Layered depth:** far = large slow shapes; mid = branching structures; near = dark framing silhouettes with large transparent gaps.
-- **Tileable layers:** far/mid/near must repeat without a visible seam or obvious focal object. Author at 1024×512 with 2×2 minimum clusters; the runtime tiles them 1:1.
-- **Integer sky:** author at 640×368; the runtime displays it at an exact 2× cover. No fractional scaling.
+- **Layered depth (future):** far = large slow shapes; mid = branching structures; near = dark framing silhouettes with large transparent gaps. The current runtime is the single pretty sky.
+- **Tileable layers (future):** far/mid/near must repeat without a visible seam or obvious focal object. Author at 1024×512 with 2×2 minimum clusters; the runtime tiles them 1:1. They are not wired.
+- **Sky exception:** the current pretty sky is 1280×736 at 1× cover; the future quiet-sky target is 640×368 at an exact 2× cover. No fractional scaling.
 - **Material atlases:** keep 32×32 frames at 1:1; author each frame with a 2×2 minimum cluster grid. Bone is hard mineral; nerve is soft fibrous. Do not bake a directional edge; the autotile mask selects the edge. Assemble the 47 bone and 16 nerve frames in Aseprite.
-- **Patterns:** world, object, background, and UI patterns use the same ramps and dither. The 03 sky keeps the screen-space nerve-fiber overlay; the deferred mid layer must not bake a competing bone texture if it is later wired.
+- **Patterns:** world, object, background, and UI patterns use the same ramps and dither. The current 03 sky has **no** pattern overlay; a future mid layer must not bake a competing bone texture if it is later wired.
 
 ### 4.6 Tone guard
 
@@ -406,9 +406,9 @@ Ludo does not reliably parse anatomical terms as visual nouns. “Soma”, “de
 
 | Bucket | Count | Note |
 |---|---:|---|
-| Visible M3 images | 21 declared | 20 active (19 referenced by authored rooms + 1 reserve `sprite.scan.reflex`); 1 source-only/deferred background (`bg.nerve_forest.near`) |
+| Visible M3 images | 21 declared | 18 active (17 referenced by authored rooms + 1 reserve `sprite.scan.reflex`); 3 placeholder/future backgrounds (`bg.nerve_forest.far`, `.mid`, `.near`) |
 | SFX cues | 11 | `audio.cue.wrong` is outside M3 |
-| **M3 production total** | **32 declared** | 31 active (20 images + 11 audio); 1 background layer deferred |
+| **M3 production total** | **32 declared** | 29 active (18 images + 11 audio); 3 background layers placeholder/future |
 | Deferred UI images | 8 | Badge is the only rendered UI image, and stays a CSS placeholder |
 | **Current manifest entries** | **56** | Includes 12 audio and 9 POC animation sheets; the final two-atlas layout adds one atlas entry |
 
@@ -478,19 +478,19 @@ plate. The Neuron Keeper build report is in
 
 | Asset ID | Ludo type | Source size | File path | Status |
 |---|---|---|---|---|
-| `bg.nerve_forest.sky` | Background | 640×368 lossless WebP, integer 2× cover | `shared/backgrounds/nerve-forest-sky.webp` | Updated POC integrated; final approval pending |
-| `bg.nerve_forest.far` | Parallax layer | 1024×512 lossless WebP, hard alpha, 2×2 clusters | `shared/backgrounds/nerve-forest-far.webp` | POC integrated; seam review pending |
-| `bg.nerve_forest.mid` | Parallax layer | 1024×512 lossless WebP, hard alpha, 2×2 clusters | `shared/backgrounds/nerve-forest-mid.webp` | POC integrated; seam review pending |
-| `bg.nerve_forest.near` | Parallax layer | 1024×512 PNG/WebP, transparent, 2×2 clusters | `shared/backgrounds/nerve-forest-near.webp` | Processed; source-only/deferred |
+| `bg.nerve_forest.sky` | Background | 1280×736 lossless WebP, opaque, 1× cover; pretty plate; no palette quantisation | `shared/backgrounds/nerve-forest-sky.webp` | Pretty POC integrated; final approval pending |
+| `bg.nerve_forest.far` | Parallax layer (future) | 1024×512 target, hard alpha, 2×2 clusters | — (placeholder/future; no runtime file) | Processed; not wired |
+| `bg.nerve_forest.mid` | Parallax layer (future) | 1024×512 target, hard alpha, 2×2 clusters | — (placeholder/future; no runtime file) | Processed; not wired |
+| `bg.nerve_forest.near` | Parallax layer (future) | 1024×512 target, transparent, 2×2 clusters | — (placeholder/future; no runtime file) | Processed; deferred (play-band repeat) |
 
 The `bg.muscle_endplate.*` layers used by 04 are **not** in this M3 pass; they
-stay placeholder. The 03 room wires the sky, far and mid; its screen-space
-nerve-fiber overlay remains. The updated far/mid/near plates are flat `#FF00FF`
-cut-outs keyed at full resolution, cropped to an exact 2:1 window, nearest-
-downscaled to 1024×512, palette-quantised and edge-welded. Near is processed and
-previewed but not wired: the 1024×512 tile repeats vertically at screen y≈512
-and the hanging canopy lands across the play band. The corrected prompts and
-`#FF00FF` key workflow are in
+stay placeholder. The 03 room wires only the pretty sky; the screen-space
+nerve-fiber overlay has been removed. The far/mid/near sources are flat
+`#FF00FF` cut-outs keyed at full resolution, cropped to an exact 2:1 window,
+nearest-downscaled to 1024×512, palette-quantised and edge-welded; they are
+retained for a future layered pass, not shipped. Near's 1024×512 tile repeats
+vertically at screen y≈512 and the hanging canopy lands across the play band.
+The corrected prompts and `#FF00FF` key workflow are in
 [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md).
 
 ### 5.5 Audio cues
@@ -534,7 +534,7 @@ Other placeholders outside or deferred from the current M3 pass:
 - `sprite.scan.reflex` — reserve; the 36×36 loop does not preserve the roots/spindle.
 - `ui.icon.badge` — the 16×16 fit does not preserve the helmet; keep the CSS placeholder.
 - `audio.cue.wrong` — declared, outside the 11-cue M3 scope.
-- `bg.nerve_forest.near` — processed and previewed but source-only/deferred; its 1024×512 tile repeats vertically at screen y≈512 and the hanging canopy lands across the play band. Far and mid are wired.
+- `bg.nerve_forest.far`, `.mid`, `.near` — processed sources/reports/previews are retained, but the layered stack is placeholder/future work and is not wired. Near's 1024×512 tile repeats vertically at screen y≈512 and the hanging canopy lands across the play band.
 - `tile.anatomy.atlas` — current single placeholder atlas; keep it until the two final atlases are wired.
 - `bg.muscle_endplate.*` — 04 background placeholders.
 - `tile.bone.atlas` / `tile.nerve.atlas` — not added; the new source JPEGs are material swatches, not frame atlases.
@@ -550,9 +550,9 @@ Use lowercase kebab-case, no spaces, no dots in filenames.
 | `sprite.scan.neuron` | `shared/sprites/scan-neuron.png` |
 | `sprite.gate.ferry` | `shared/sprites/gate-ferry.png` |
 | `bg.nerve_forest.sky` | `shared/backgrounds/nerve-forest-sky.webp` |
-| `bg.nerve_forest.far` | `shared/backgrounds/nerve-forest-far.webp` |
-| `bg.nerve_forest.mid` | `shared/backgrounds/nerve-forest-mid.webp` |
-| `bg.nerve_forest.near` | `shared/backgrounds/nerve-forest-near.webp` (reserved; deferred) |
+| `bg.nerve_forest.far` | — (placeholder/future; no runtime file) |
+| `bg.nerve_forest.mid` | — (placeholder/future; no runtime file) |
+| `bg.nerve_forest.near` | — (placeholder/future; no runtime file) |
 | `tile.bone.atlas` | `shared/tiles/bone-atlas.png` |
 | `tile.nerve.atlas` | `shared/tiles/nerve-atlas.png` |
 | `ui.icon.badge` | `shared/ui/badge.png` |
@@ -579,12 +579,12 @@ the Neuron Keeper idle sheet is `shared/sprites/agent-neuron-idle.png`.
 | Entity fit tool | Complete | `npm run art:fit` |
 | Nanobanan keyed review copies | Complete | `art-source/previews/nanobanan/` (full keyed PNGs in ignored `keyed/`) |
 | Nanobanan entity sprites | POC integrated / final art approval pending | `scan.synapse.png`, `scan.muscle.png`, `gate-ferry.png`, `prop-tracer.png`, `pulse-terminal.png`, `receptor-triangle.png`, `receptor-circle.png` wired; `scan.neuron`, `scan.pathway`, `scan.reflex`, and `exit` retained as placeholders |
-| Nanobanan background | POC integrated / final art approval pending | Updated `shared/backgrounds/nerve-forest-sky.webp`, `nerve-forest-far.webp`, `nerve-forest-mid.webp`; 03 wires the three-layer stack. Near is processed and previewed but deferred (play-band repeat) |
+| Nanobanan background | POC integrated / final art approval pending | `shared/backgrounds/nerve-forest-sky.webp` is the pretty 1280×736/1× plate; 03 wires only the sky. Far/mid/near are placeholders/future work (processed sources and previews retained; near's play-band repeat unresolved) |
 | Nanobanan badge | Placeholder after audit | 16×16 fit in `art-source/previews/nanobanan/entities/badge-*`; HUD keeps CSS placeholder |
 | Nanobanan material swatches | Source-only/deferred | `tile-bone-atlas.jpeg`, `tile-nerve-atlas.jpeg`; not frame atlases |
 | Final art approval / prompt log / licences | Pending | POC licence label recorded; final plan TBD |
 | Entity sprite art | POC integrated for the readable IDs; placeholders retained for the wide plates | `art-source/nanobanan/reports/` |
-| Background, atlas, badge art | Sky/far/mid POC integrated; near, atlas and badge deferred | `art-source/nanobanan/reports/`, `art-source/previews/nanobanan/backgrounds/` |
+| Background, atlas, badge art | Pretty sky POC integrated; far/mid/near, atlas and badge deferred | `art-source/nanobanan/reports/`, `art-source/previews/nanobanan/backgrounds/` |
 
 Review stills: `screenshots/m3-nerve-forest-backgrounds.png`,
 `screenshots/m3-player-p1-p2-idle.png` and
@@ -623,16 +623,17 @@ remaster`; the two paths were compared at 8× before choosing the runtime output
 |---|---|---|---|---|
 | Player | 14×22 | 28×44 | 2× | PNG with alpha |
 | Entity | 18×18 | 36×36 | 2× | PNG with alpha |
-| Background sky | 640×368 | 1280×736 cover | 2× | lossless WebP or PNG, opaque |
-| Parallax layer | 1024×512, 2×2 clusters | tile on both axes | 1:1 | lossless WebP or PNG with alpha |
+| Background sky — current pretty plate | 1280×736 | 1280×736 cover | 1× | lossless WebP, opaque; no palette quantisation |
+| Background sky — future quiet target | 640×368 | 1280×736 cover | 2× | lossless WebP or PNG, opaque |
+| Parallax layer — future target | 1024×512, 2×2 clusters | tile on both axes | 1:1 | lossless WebP or PNG with alpha |
 | Material atlas — bone | 256×192 PNG, 8×6 grid of **32×32 frames**, 2×2 clusters | 32×32 frames | 1:1 | PNG, opaque cells; 47 `mask-*` regions + 1 empty cell |
 | Material atlas — nerve | 128×128 PNG, 4×4 grid of **32×32 frames**, 2×2 clusters | 32×32 frames | 1:1 | PNG, opaque cells; 16 `mask-*` regions |
 | Badge | 16×16 | 32×32 pixel-UI target; current ~45×27 CSS pill | 2× | PNG with alpha |
 | Audio | 48 kHz | — | — | OGG or MP3 |
 
-Do not export upscaled 2× or 4× versions. The engine performs the 2× nearest-neighbour display for players, entities, and the badge. Do not use JPG or lossy WebP for pixel art; lossy compression creates colour noise that breaks the palette.
+Do not export upscaled 2× or 4× versions. The engine performs the 2× nearest-neighbour display for players, entities, the badge, and a future quiet sky. The current pretty sky is the recorded 1280×736/1× exception. Do not use JPG or lossy WebP for pixel art; lossy compression creates colour noise that breaks the palette.
 
-The current 03 room wires the updated sky, far and mid. Near is processed as a 1024×512 hard-alpha tile but remains deferred because its vertical repeat lands across the play band. The badge remains a placeholder, so the 16×16 row documents the target, not a shipped file.
+The current 03 room wires only the pretty sky. Far/mid/near are future layered work and are not shipped. The badge remains a placeholder, so the 16×16 row documents the target, not a shipped file.
 
 ### 6.2 Alpha and trimming
 
@@ -653,7 +654,7 @@ The current 03 room wires the updated sky, far and mid. Near is processed as a 1
 
 ### 6.3 Tileability and pixel grid
 
-- One source pixel becomes a **2×2 display block** for players, entities, the sky, and the badge.
+- One source pixel becomes a **2×2 display block** for players, entities, the badge, and a future quiet sky. The current pretty sky is displayed **1:1** at 1280×736.
 - Parallax layers are authored 1:1, so every colour block must be at least **2×2 pixels** to match the effective density.
 - Atlas frames are authored 1:1 at 32×32, so every colour block must also be at least **2×2 pixels**. Keep the 32×32 frame size; do not switch to 16×16 frames.
 - A 1 px source outline becomes a 2 px outline on screen for 2× sprites; atlas frames use 1 px source outlines at 1:1.
@@ -664,13 +665,13 @@ The current 03 room wires the updated sky, far and mid. Near is processed as a 1
 
 ### 6.4 Background and atlas tiling
 
-- Far/mid/near must tile **horizontally and vertically** in Phaser’s `TileSprite`. Far and mid are wired; near is deferred until its play-band repeat is resolved.
+- Far/mid/near must tile **horizontally and vertically** in Phaser’s `TileSprite`. They are future work and are not wired; near remains deferred until its play-band repeat is resolved.
 - Verify with a 2×2 repeat at 2048×1024 (native) and at 1280×720 (runtime), not by looking at one image. The 2 px edge weld makes edges pixel-identical; composition continuity still needs a visual check.
 - Avoid a single strong landmark that repeats obviously.
 - Keep large transparent gaps in the near layer so the room remains playable; no opaque band across the centre or lower third.
 - The material atlas frames must tile on all four sides at 32×32. Autotile edges are drawn by the frame selected from the material mask; do not bake a single directional top edge into every frame.
 - Ludo does not output a named atlas. Generate one seamless 1024×1024 material swatch concept, pixel-clean it to a 512×512 working swatch with 2×2 clusters, then assemble the 47 bone frames or 16 nerve frames in Aseprite. Apply edge occlusion only on the sides where the mask bit is absent.
-- The sky is 640×368 and displayed at an exact 2× cover. The 16:9 capture crops the extra 16 px of height. The current 03 room wires the sky, far and mid; near stays deferred until it can pass the play-band check.
+- The current pretty sky is 1280×736 and displayed at 1× cover. The 16:9 capture crops 8 px top/bottom. A future quiet sky is 640×368 at an exact 2× cover. The current 03 room wires only the pretty sky; far/mid/near remain future work.
 
 ### 6.5 Anchors and padding
 
@@ -689,8 +690,8 @@ These are project budgets, not engine limits. Pixel art compresses well; a large
 | Player static PNG | ≤ 16 KB each |
 | Animation sheet (player or entity) | ≤ 64 KB per clip (POC; walk sheets are the largest) |
 | Entity PNG | ≤ 16 KB each |
-| Background sky | ≤ 300 KB |
-| Parallax layer | ≤ 300 KB each |
+| Background sky | ≤ 300 KB for a future quiet sky; the current pretty 1280×736 plate is a recorded exception at 978,732 bytes (~956 KiB) |
+| Parallax layer | ≤ 300 KB each (future target) |
 | Bone atlas PNG | ≤ 80 KB |
 | Nerve atlas PNG | ≤ 80 KB |
 | Badge | ≤ 8 KB |
@@ -770,7 +771,7 @@ If Ludo’s UI labels differ, map to the closest equivalent. The prompt blocks a
 4. Save the cleaned 14×22 master under `art-source/characters/player-p1/working/master/` and export `shared/sprites/player-p1.png`; keep `style-anchor-p1.png` as the review reference and a 4× nearest-neighbour preview.
 5. Use it as the style reference for every later character, prop, and icon. Do not use it as an image-to-image generation base for NPCs — it may copy the astronaut. For colour variants of the same character, derive from the indexed P1 master with the palette LUT (ADR-0061/0065).
 6. Use the approved **P2** walk/jump sheets from `art-source/characters/player-p2/` for the POC. The ADR-0065 role map remains available for future derived variants; do not reintroduce the orange P2 concept.
-7. Generate the **sky** next; approve `style-anchor-sky.png` at 1280×720 and use it for far/mid/near.
+7. The current 03 runtime uses the **pretty sky**. For a future quiet-sky/layered pass, approve `style-anchor-sky.png` at 1280×720 and use it for far/mid/near.
 8. Generate the **bone and nerve swatches**; approve each at 32×32 before assembling the atlas.
 9. Approve the **badge** at its current pill crop and at the 32×32 pixel-UI target.
 
@@ -780,10 +781,10 @@ If Ludo’s UI labels differ, map to the closest equivalent. The prompt blocks a
 |---|---|---|
 | 0 | P1 idle + P1 walk/jump source sheets | Pixel style anchor and animation source |
 | 1 | P2 (approved source sheets), Neuron Keeper, `scan.neuron`, `sprite.exit` | Character/prop style gate |
-| 2 | Sky (POC wired); mid layer deferred | Environment style gate |
+| 2 | Pretty sky (POC wired); far/mid/near future | Environment style gate |
 | 3 | Bone and nerve material swatches (source-only) | Material style gate |
 | 4 | Remaining scans, tracer, pulse terminal, receptors, gate ferry (POC wired) | Complete visible entity set — only after the 03/04 room check |
-| 5 | Far, near, badge (deferred/placeholder) | Complete environment/UI kit |
+| 5 | Far/mid/near, badge (placeholder/future) | Complete environment/UI kit |
 | 6 | 11 SFX and atlas assembly | Audio and atlas finish |
 
 P2 now uses its approved Ludo walk/jump source sheets (ADR-0065). Do not start Batch 4 until Batches 1–3 are signed off. Do not assemble the final atlases until the tint decision in §8.21.1 is made.
@@ -796,7 +797,7 @@ P2 now uses its approved Ludo walk/jump source sheets (ADR-0065). Do not start B
 2. Add the matching `NEGATIVE_<CATEGORY>` to Ludo’s negative field, or append it when no field exists. Add the asset’s `NEGATIVE DELTA`; sheet prompts use `NEGATIVE_SPRITE`.
 3. Generate four concepts for a single image, or one source sheet per action. Keep the Ludo PNG and JSON together.
 4. Pick the best; download the full-resolution concept or sheet.
-5. Single image: pixel the asset at source size: 14×22 player, 18×18 entity, 640×368 sky, 1024×512 parallax, 512×512 material swatch, 16×16 badge. The export frames in §8.10a, §8.11a and §8.15a are for this step, not for the Ludo concept prompt.
+5. Single image: pixel the asset at source size: 14×22 player, 18×18 entity, 1280×736 pretty sky (current) or 640×368 quiet sky (future), 1024×512 parallax, 512×512 material swatch, 16×16 badge. The export frames in §8.10a, §8.11a and §8.15a are for this step, not for the Ludo concept prompt.
 6. Source sheet: keep the Ludo PNG+JSON, slice with `npm run art:slice`, review the GIF, then run `npm run art:remaster` to normalize the chosen frame to the fixed cell and baseline. Use the class-map preview and report before accepting the master. Do not ship the raw sheet.
 7. Quantise to the ramp palette; remove anti-aliasing; enforce the 2×2 cluster rule on 1:1 layers and atlas frames.
 8. Export at source size; inspect at 400%; check at display size on a dark teal contact sheet.
@@ -809,19 +810,19 @@ P2 now uses its approved Ludo walk/jump source sheets (ADR-0065). Do not start B
 - **Sprites/entities:** key the concept plate, trim to the alpha bounding box, then run `npm run art:fit` to crop, fit the 18×18 cell with a 1 px transparent margin, hard-threshold alpha, and quantise the approved ramps. Export PNG. The original batch uses `fit.config.json`; the 2026-11-01 batch uses `fit.new.config.json`. The fit report records the source bbox, fitted size, margins, palette validation and alpha violations. The badge audit uses a 16×16 cell in `fit.badge.config.json` and does not write runtime art.
 - **Source sheets:** slice with the Ludo JSON, then run `npm run art:build-player` to generate the POC idle/walk/jump/fall/land sheets from `working/clips.json`. For the Neuron Keeper, use `--character neuron-agent --sampler downscale --write-runtime`; the same command writes the static frame 0 and the 36-frame idle sheet. Keep the raw sheet in `art-source/`, never in `public/`. Frame 0 remains the static fallback.
 - **Palette variants:** derive from the indexed master with a semantic LUT; do not re-prompt Ludo. P2 uses the approved bone/joint/nerve source sheets for the POC; the ADR-0065 role map remains available for future derived variants.
-- **Backgrounds:** the updated sky is cropped to 2720×1564, area-resized to 640×368, quantised with `palette.nerve-forest-sky.json` (no muscle role), and encoded as lossless WebP. Far and mid are exact 2× crops (2048×1024), keyed at full resolution, nearest-downscaled to 1024×512, quantised with `palette.nerve-forest-layer.json`, 2×2-snapped and edge-welded. Near is processed the same way but deferred. Use the corrected prompts and `#FF00FF` key workflow in [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md).
+- **Backgrounds:** the current pretty sky is the tracked 2752×1536 source cropped to 2672×1536 at x=40, Lanczos-downscaled to 1280×736, and encoded as lossless WebP. It is **not** palette-quantised and retains muscle pink as the recorded exception. Far/mid/near are future layers: exact 2× crops (2048×1024), keyed at full resolution, nearest-downscaled to 1024×512, quantised with `palette.nerve-forest-layer.json`, 2×2-snapped and edge-welded; they are not shipped. Use the corrected prompts and `#FF00FF` key workflow in [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md).
 - **Atlases:** assemble 32×32 cells at 1:1 from the approved swatch; 8×6 bone grid (47 regions + one opaque empty cell), 4×4 nerve grid (16 regions); every cell opaque; export PNG. Do not add gutters or transparent seams. The new bone/nerve JPEGs are swatches only; atlas wiring stays deferred.
 - **Badge:** 16×16 source, transparent or magenta-keyed; critical detail inside the middle 60% vertical band; export PNG. The current source fails the 16×16 read and stays placeholder.
-- **Palette:** quantise every asset to the §4.3 ramps. No intermediate blends, no stray colours.
+- **Palette:** quantise every pixel asset to the §4.3 ramps. No intermediate blends, no stray colours. The current pretty sky is the recorded unquantised exception.
 - **No anti-aliasing:** no soft edges, no semi-transparent sprite fringe. Alpha is 0 or 255 except for intentional UI/engine effects.
 - **No lossy compression:** do not use JPG or lossy WebP for pixel art.
 
 ### 7.8 Seam, atlas, and contact-sheet checks
 
-- Parallax: far and mid use a 2×2 repeat at 2048×1024 and at 1280×720; the 2 px edge weld makes opposite edges pixel-identical, but the composition repeat remains a visual-review note. Near is deferred because its vertical repeat covers the play band; do not wire it until that read is resolved.
+- Parallax (future): far/mid/near use a 2×2 repeat at 2048×1024 and at 1280×720; the 2 px edge weld makes opposite edges pixel-identical, but the composition repeat remains a visual-review note. Near is deferred because its vertical repeat covers the play band; do not wire it until that read is resolved.
 - Material atlas: if wired later, 3×3 patch of every frame; no seam, no directional top edge; each mask variant is distinct.
 - Source inspection: every asset at 400%; every pixel on the ramp palette; no anti-aliasing; no mixed pixel sizes.
-- Contact sheet at 1280×720: P1/P2 at 28×44, entities at 36×36, and the three-layer sky/far/mid background stack. Near and the badge are not in the current POC stack.
+- Contact sheet at 1280×720: P1/P2 at 28×44, entities at 36×36, and the single pretty sky plate. Far/mid/near and the badge are not in the current POC stack.
 - Player animation previews: walk loop, jump/fall/land one-shots, P1/P2 side by side; inspect `art-source/previews/poc/downscale/`.
 - Neuron Keeper idle preview: `art-source/previews/poc/downscale/agent-neuron-idle.gif` plus the 8× static preview.
 - Entity fit previews: `<stem>-2x.png`, `<stem>-8x.png` and `<stem>-tint-2x.png` under `art-source/previews/nanobanan/entities/`.
@@ -1390,13 +1391,13 @@ Full object, centred, with a clear empty margin on all sides, isolated on a flat
 
 ### 8.20 Background prompts
 
-> **Background prompts superseded (2026-11-01).** The corrected sky/far/mid/near prompts and the `#FF00FF` cut-out workflow are in [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md). The prompts below are retained for history; do not generate any background plate from them.
+> **Background prompts superseded (2026-11-01).** The corrected sky/far/mid/near prompts and the `#FF00FF` cut-out workflow are in [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md). The prompts below are retained as **future targets**; do not use them to regenerate the current pretty plate.
 
-**POC status:** the updated `bg.nerve_forest.sky`, `bg.nerve_forest.far` and `bg.nerve_forest.mid` are wired. The updated sky is cropped to 2720×1564, area-resized to 640×368 and palette-quantised; its dark framing trunks remain a visual-review note. Far and mid are exact 2× crops of the flat-magenta updated plates, keyed, palette-quantised and edge-welded; final seam approval is pending. Near is processed but source-only/deferred because its vertical repeat lands across the play band.
+**POC status:** the 03 room wires only the pretty `bg.nerve_forest.sky` plate: 2752×1536 source → 2672×1536 crop at x=40 → Lanczos 1280×736 → lossless WebP at 1× cover. It is not palette-quantised and retains muscle pink as the recorded exception. Far/mid/near are future work and are not wired; their sources, key reports and previews remain in `art-source/`.
 
-#### `bg.nerve_forest.sky` — sky plate
+#### `bg.nerve_forest.sky` — future quiet-sky prompt (current runtime uses the pretty plate)
 
-**Reference:** none; creates `style-anchor-sky.png`. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_SKY`. **Source:** 640×368 WebP/PNG, integer 2× cover. **File:** `shared/backgrounds/nerve-forest-sky.webp`.
+**Reference:** none; creates `style-anchor-sky.png`. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_SKY`. **Source:** 640×368 WebP/PNG, integer 2× cover (future quiet sky; the current pretty plate is 1280×736/1×). **File:** future only (no runtime file for the quiet sky; the current runtime file is the pretty plate).
 
 ```text
 SUBJECT: A wide background plate: the interior of a living body as a damp nerve forest at night. Deep teal darkness; distant thick cable-like nerve trunks, like giant roots; pale segmented sheath plates, like stacked bone tiles, receding in dither haze; a faint nerve-yellow glow low in the distance; floating dust and condensation. No characters, no creatures, no labels, no arrows. Orthographic side view, soft atmospheric depth from layered values and dither, no single directional light, no hard horizon line at player height. Keep the upper corners and lower third dark and low-contrast for HUD and player silhouettes; keep important detail inside the central 70% for the 2× cover crop.
@@ -1410,15 +1411,15 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 **Negative:** NEGATIVE_BACKGROUND + textbook cutaway, anatomical labels, diagram lines.
 
-**Acceptance:** At 1280×720 cover crop, the HUD text and player silhouettes read; no hard horizon at player height; no characters or text; no obvious focal landmark; ≤300 KB.
+**Acceptance:** At 1280×720 cover crop, the HUD text and player silhouettes read; no hard horizon at player height; no characters or text; no obvious focal landmark; ≤300 KB for the future quiet sky. The current pretty plate is the recorded exception at 978,732 bytes (~956 KiB).
 
 **Biology check:** the body reads as a damp nerve landscape, not a textbook cutaway; no bone-innervation claim.
 
 **Visual check:** cable-like trunks and segmented sheath plates read as landscape; no labels or diagram lines.
 
-#### `bg.nerve_forest.far` — far parallax layer
+#### `bg.nerve_forest.far` — far parallax layer (future target; not wired)
 
-**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** `shared/backgrounds/nerve-forest-far.webp`.
+**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** future only (no runtime file).
 
 ```text
 SUBJECT: A seamless 2:1 far parallax layer: distant giant cable-like nerve trunks and pale segmented sheath plates, like stacked bone roof tiles, in very low contrast cool teal and sage, with soft dither haze and large slow shapes. No ground line, no characters, no labels, no arrows, no unique focal object. Orthographic side view; tile seamlessly on all four edges; no single directional light, no hard cast shadows.
@@ -1438,9 +1439,9 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 **Visual check:** no hard horizon; no unique focal object; no labels.
 
-#### `bg.nerve_forest.mid` — mid parallax layer
+#### `bg.nerve_forest.mid` — mid parallax layer (future target; not wired)
 
-**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** `shared/backgrounds/nerve-forest-mid.webp`.
+**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** future only (no runtime file).
 
 ```text
 SUBJECT: A seamless 2:1 mid parallax layer: branching, tentacle-like nerve twigs; round nerve bulbs hanging like lanterns; wet membrane folds like draped fabric. Medium-contrast deep teal and sage, with a few nerve-yellow glow accents. No characters, no faces, no labels, no arrows, no unique focal object, no bone-cortex texture. Orthographic side view; tile on all four edges; soft ambient depth, no single directional light.
@@ -1460,9 +1461,9 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 **Visual check:** the layer reads as a damp nerve forest; no faces; no focal landmark.
 
-#### `bg.nerve_forest.near` — near parallax layer
+#### `bg.nerve_forest.near` — near parallax layer (future target; not wired)
 
-**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** `shared/backgrounds/nerve-forest-near.webp`.
+**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512 WebP/PNG, transparent, 2×2 clusters. **File:** future only (no runtime file).
 
 ```text
 SUBJECT: A seamless 2:1 near foreground parallax layer: dark fibrous cable-like roots, wet membrane sacs like balloons, and membrane folds like draped fabric framing the left and right edges and the top; very high contrast deep teal silhouettes, with large fully transparent gaps across the centre and lower third. Occasional nerve-yellow glow. No characters, no faces, no labels, no arrows, no unique focal object, no opaque band across the play area. Orthographic side view; tile on all four edges.
@@ -1695,7 +1696,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 |---|---|
 | Players | 14×22 source, 28×44 display; 2× grid; P1 bone suit/amber visor/yellow tanks/cyan accents; P2 bone suit/cyan visor/cyan tanks/amber accent; P1/P2 share silhouette, cell, origin, and clip names; helmet, backpack and boots readable; feet at baseline; no anti-aliasing; no baked shadow; POC walk/jump/fall/land clips play |
 | Entities | 18×18 source, 36×36 display; 2× grid; silhouette distinct from every other entity; base at the bottom padding line; survives the warm interaction tint; no text; no baked shadow; the subject-first prompt and its biology check pass (Neuron Keeper: one cell body, one nucleus, 5–7 dendrite tentacles, one bare axon, forked terminals; scan targets: no face or character pose); the Neuron Keeper idle sheet reads at 36×36 and its static frame 0 remains the reduced-motion fallback |
-| Backgrounds | Current POC: sky + far + mid; the sky is 640×368 displayed at an exact integer 2×, far/mid are 1024×512 hard-alpha tiles with 2×2 clusters and pixel-identical 2 px-welded edges. HUD/player contrast at 1280×720, no checkerboard or magenta fringe. The composition repeat is a visual-review note. Near is processed but deferred because its vertical repeat lands across the play band. The body reads as a landscape, not a textbook cutaway; no labels or diagram lines |
+| Backgrounds | Current POC: the pretty sky only, 1280×736 at 1× cover, lossless WebP, no palette quantisation, muscle pink retained as the recorded exception, no pattern overlay. HUD/player contrast at 1280×720 and 1280×736; no checkerboard or magenta fringe. Far/mid/near are future work and are not wired; near's vertical repeat still lands across the play band. The body reads as a landscape, not a textbook cutaway; no labels or diagram lines |
 | Material atlas | When wired: bone has 47 `blob47` frames, nerve has 16 `edge` frames; every 32×32 frame is authored at 1:1 with a 2×2 cluster grid and tiles on all four sides; mask variants are visually distinct; no text or baked directional edge; tint path checked; the swatch reads as wet chalky bone or bundled wet cables, not a diagram. The current pack keeps the placeholder atlas |
 | Badge | Target: 16×16 source reads in the ~45×27 HUD pill and at the 32×32 pixel-UI target; no text; central composition; works on dark teal. The current source remains placeholder after the audit |
 | UI | Pixel font at integer sizes (12 px labels minimum, 15–16 px body); square chrome; no radius, blur, or soft shadow; material/pattern slots use the same ramps; focus visible; text scale works |
@@ -1703,7 +1704,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 
 ### 9.2 Style consistency
 
-- Same 2× pixel density across players, entities, sky, and badge; parallax and atlas frames use 2×2 minimum clusters.
+- Same 2× pixel density across players, entities, badge, and a future quiet sky; the current pretty sky is the recorded 1:1 exception. Parallax and atlas frames use 2×2 minimum clusters.
 - Same 1 px source outline weight; no asset suddenly uses a 2 px or 0 px outline.
 - Same ramp palette; no purple/neon drift and no intermediate blends.
 - Orange is reserved and unused; P2 uses bone, joint cyan, and nerve amber.
@@ -1717,10 +1718,10 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 
 ### 9.3 Technical QA
 
-- Correct source size: 14×22 player, 18×18 entity, 640×368 sky, 1024×512 parallax, 512×512 material swatch, 256×192 or 128×128 atlas, 16×16 badge.
-- Display lands on exact 2× for players, entities, sky, and badge; parallax tiles 1:1 with 2×2 clusters; atlas frames 1:1 with 2×2 clusters.
+- Correct source size: 14×22 player, 18×18 entity, 1280×736 pretty sky (current) or 640×368 quiet sky (future), 1024×512 parallax, 512×512 material swatch, 256×192 or 128×128 atlas, 16×16 badge.
+- Display lands on exact 2× for players, entities, badge, and a future quiet sky; the current pretty sky displays 1:1. Parallax tiles 1:1 with 2×2 clusters; atlas frames 1:1 with 2×2 clusters.
 - No anti-aliasing, blur, or fractional scaling.
-- Palette is quantised to the ramp table; no stray colours. Orange is unused.
+- Palette is quantised to the ramp table; no stray colours. Orange is unused. The current pretty sky is the recorded unquantised palette exception.
 - The P1→P2 pixel diff touches only the visor/tank and accent masks; suit, joints, outline, and grime stay on their approved ramps.
 - The P2 joint-cyan visor and tanks read against the bone suit at 28×44.
 - Player animation sheets are 14×22 frames, alpha 0/255, and within the per-clip budget.
@@ -1729,7 +1730,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - The walk loop, jump one-shot, fall loop, and land one-shot use the manifest fps/loop values.
 - Alpha is clean at 400%; no magenta fringe; no semi-transparent sprite edges.
 - No JPG or lossy WebP for pixel assets.
-- File size within budget.
+- File size within budget, except the recorded pretty-sky exception at 1280×736 (978,732 bytes / ~956 KiB).
 - File names match the asset register.
 - No raw Ludo sheet is referenced by a manifest or served from `public/`.
 - No text, logo, watermark, border, or checkerboard.
@@ -1738,7 +1739,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - The Ludo concept prompt does not contain the 14×22/18×18 export grid; the export frame is recorded separately.
 - Each cell, scan, prop and background asset has a `NEGATIVE DELTA` that covers its likely failure mode (humanoid, fur, extra tail, face on a scan, textbook diagram, and so on).
 - Player/entity origins and paddings are consistent.
-- The updated 03 sky displays at exact 2× cover with no checkerboard; far and mid are 1024×512, 2×2 clusters, alpha 0/255, with pixel-identical welded edges. The 2×2 composition repeat is recorded for visual review; near is deferred.
+- The current 03 pretty sky displays at 1× cover with no checkerboard, key field or alpha; it is lossless WebP and not palette-quantised. Far/mid/near are future layers; when revisited, they must be 1024×512, 2×2 clusters, alpha 0/255, with pixel-identical welded edges. The 2×2 composition repeat is recorded for visual review; near is deferred.
 - If the atlas task is taken, region names and coordinates match §8.21 and every frame passes the 3×3 edge check.
 - If the atlas task is taken, the tint path is recorded and matches the rendered result.
 - The badge remains the CSS placeholder until a dedicated 16×16 pass reads in the ~45×27 pill and 32×32 target.
@@ -1757,7 +1758,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 
 ### 9.5 Manifest and validator
 
-- `assets.final.json` has real `src` paths for all integrated runtime images: players, POC sheets, Neuron Keeper, the readable scan/entity sprites, the updated sky, and the 03 far/mid layers. `sprite.scan.reflex` remains a declared reserve; `sprite.exit`, `ui.icon.badge`, `tile.anatomy.atlas`, and `bg.nerve_forest.near` remain declared placeholders/source-only.
+- `assets.final.json` has real `src` paths for all integrated runtime images: players, POC sheets, Neuron Keeper, the readable scan/entity sprites, and the pretty sky. `sprite.scan.reflex` remains a declared reserve; `sprite.exit`, `ui.icon.badge`, `tile.anatomy.atlas`, `bg.nerve_forest.far`, `.mid` and `.near` remain declared placeholders/future work.
 - The current placeholder atlas entry declares `type: "atlas"`, intrinsic `width`/`height`, named `regions`, and every current variant-set frame/fallback resolves.
 - When the two final atlases are wired, they must use the region maps in §8.21; the bone `blob47` variant set and the nerve `edge` repoint remain future work.
 - `materials.json` parses, every palette token exists in `theme.json`, and tile/background/UI/entity references resolve.
@@ -1769,7 +1770,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - `npm run pack:validate` passes.
 - `npm run pack:smoke` still passes.
 - `?assets=final` loads the final manifest.
-- No unresolved asset remains in the current POC: 03 wires the sky, far and mid, declared reserves (`sprite.scan.reflex`, `sprite.exit`) and the CSS badge placeholder are intentional, 04 environment placeholders remain out of scope, and the deferred near layer is not referenced by the room.
+- No unresolved asset remains in the current POC: 03 wires only the pretty sky; declared reserves (`sprite.scan.reflex`, `sprite.exit`) and the CSS badge placeholder are intentional; 04 environment placeholders remain out of scope; far/mid/near are not referenced by the room.
 
 ### 9.6 Sign-off checklist
 
@@ -1780,13 +1781,13 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - [x] Background keying tool (`npm run art:key`) and nanobanan review copies generated.
 - [x] Entity fit tool (`npm run art:fit`) and POC entity fit reports generated.
 - [x] Neuron Keeper static + 36-frame idle sheet generated and integrated in 03/04.
-- [x] 2026-11-01 nanobanan batch keyed, fitted, and wired for the readable entity IDs; updated 03 sky, far and mid background integrated. Final art approval remains pending; near is processed but deferred.
+- [x] 2026-11-01 nanobanan batch keyed, fitted, and wired for the readable entity IDs; the pretty 03 sky is integrated. Final art approval remains pending; far/mid/near are placeholders/future work.
 - [ ] P1 walk/jump and P2 animation final art approval pending.
 - [ ] Neuron Keeper approved (POC static + idle integrated; final art approval pending).
 - [ ] Four visible scan targets approved; `sprite.scan.reflex` reserve is optional. (POC integrated: `scan.synapse`, `scan.muscle`; placeholders: `scan.neuron`, `scan.pathway`; final approval pending.)
 - [ ] Gate, props and receptors approved. (POC integrated: `gate.ferry`, `prop.tracer`, `pulse.terminal`, both receptors; `sprite.exit` remains placeholder; final approval pending.)
-- [ ] Sky approved. (Updated sky POC integrated in 03; framing-trunk review pending.)
-- [ ] Far/mid parallax layers approved. (POC integrated; coverage, 2×2 clusters and pixel-identical welded edges pass; composition-repeat review pending. Near is processed but deferred.)
+- [ ] Sky approved. (Pretty sky POC integrated in 03; final approval pending.)
+- [ ] Far/mid/near parallax layers approved. (Placeholder/future; not wired. Processed sources pass coverage, 2×2 cluster and welded-edge checks; composition-repeat review pending. Near's play-band repeat is unresolved.)
 - [ ] Bone and nerve atlases approved; region maps, 2×2 clusters and tint path checked. (Swatches only; atlas deferred.)
 - [ ] Badge approved at the pill crop and the 32×32 pixel-UI target. (16×16 audit rejected; CSS placeholder retained.)
 - [ ] UI pixel chrome, fonts, material/pattern slots approved.
@@ -1803,6 +1804,8 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 ## 10. Manifest and licensing
 
 ### 10.1 Example manifest entries
+
+> **Current POC:** only `bg.nerve_forest.sky` is active. `bg.nerve_forest.far`, `.mid` and `.near` are `{ "type": "background", "placeholder": true }` until the layered pass returns. The snippet below is the future final-manifest shape.
 
 ```json
 {
@@ -1986,10 +1989,10 @@ Ludo Indie includes **250 credits/month** for **$20**. This is enough. Buy extra
 | 1 | Six-asset pixel gate; approve P1 at 14×22 / 28×44; lock palette ramps |
 | 1b | Subject-first prompt pilot: 4 variations of Neuron Keeper and `scan.neuron`; check the §4.10 biology-to-shape grammar and negative delta at 36×36 |
 | 2 | Batch 1: P2 (approved sheets), Neuron Keeper, `scan.neuron`, exit; pixel-clean each |
-| 3 | Batch 2: sky, mid; verify integer 2× and both-axis tiling |
+| 3 | Batch 2: pretty sky (POC wired); far/mid/near future |
 | 4 | Batch 3: bone and nerve swatches; approve 32×32 frames; assemble atlases after the tint decision |
 | 5 | Batch 4: remaining scans, gate, tracer, pulse, receptors after the 03/04 room check |
-| 6 | Batch 5: far, near, badge |
+| 6 | Batch 5: far/mid/near, badge (future/placeholder) |
 | 7 | Integrate, manifest, materials, licences, fonts, prompt log, contact sheet, capture stills |
 
 ### 11.3 Cut lines
@@ -2016,7 +2019,7 @@ Never cut P1/P2, Neuron Keeper, the main interactive landmark (gate or exit), or
 | Palette variant drifts from the base | LUT diff test; only the mapped suit/visor/tank/accent masks may change; joints, outline, and grime stay byte-identical |
 | Pixel-grid drift across 21 assets | P1 anchor + fixed source sizes + 400% check + contact sheet |
 | Palette drift | Quantise to the ramp table; reject intermediate blends |
-| Non-integer sky or background scaling | Integer 2× cover (ADR-0048); test at 1280×720 |
+| Non-integer sky or background scaling | Current pretty sky is 1280×736/1×; a future quiet sky uses integer 2× cover (ADR-0048); test at 1280×720 and 1280×736 |
 | Parallax seams | 1024×512 with 2×2 clusters; both-axis 2×2 check |
 | Player reads poorly at 28×44 | 14×22 source; silhouette test; simplify the design |
 | Atlas cannot be authored by Ludo | Generate a seamless swatch; assemble 47/16 frames in Aseprite; validate region maps |
@@ -2042,7 +2045,7 @@ Never cut P1/P2, Neuron Keeper, the main interactive landmark (gate or exit), or
 
 When a level is authored, validated, and in the capture list, instantiate:
 
-- 4 background layers: 640×368 sky, 1024×512 far/mid/near with 2×2 clusters
+- Current 03: 1 pretty sky at 1280×736/1×. Future layered target: 640×368 quiet sky plus 1024×512 far/mid/near with 2×2 clusters
 - 1 material atlas per authored material (32×32 frames at 1:1 with 2×2 clusters, or a shared atlas with named regions)
 - 1 agent character: 18×18 source, 36×36 display; use the §4.10 biology-to-shape grammar
 - 3–5 scan targets: 18×18 source; flat icons, no faces or character pose
@@ -2110,9 +2113,9 @@ Do not invent new prefixes without updating the asset contract.
 - [x] The POC uses animated P1/P2 in `03-nerve-forest`; frame 0 remains the idle fallback.
 - [x] Ludo Indie ($20/mo), not Pro.
 - [x] Skip the eight deferred UI images; badge only.
-- [x] 21 declared images = 20 active (19 referenced by authored rooms + 1 reserve `sprite.scan.reflex`) + 1 source-only/deferred 03 background (`bg.nerve_forest.near`).
+- [x] 21 declared images = 18 active (17 referenced by authored rooms + 1 reserve `sprite.scan.reflex`) + 3 placeholder/future 03 backgrounds (`bg.nerve_forest.far`, `.mid`, `.near`).
 - [x] 11 M3 audio cues; `audio.cue.wrong` stays placeholder.
-- [x] 03 uses the updated sky, far and mid plates; near is processed but remains source-only/deferred because its vertical repeat lands across the play band.
+- [x] 03 uses only the pretty sky plate; far/mid/near are placeholders/future work.
 - [x] POC-integrate the nanobanan gate, tracer, pulse terminal, and triangle/circle receptors through the existing IDs; final approval pending.
 - [x] Keep `sprite.scan.reflex` as a reserve placeholder; the roots/spindle do not read at 36×36.
 - [x] Keep `ui.icon.badge` as a CSS placeholder after the 16×16 audit.
@@ -2131,7 +2134,7 @@ Do not invent new prefixes without updating the asset contract.
 
 ## 14. References
 
-- [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) — dedicated sky/far/mid/near prompts, `#FF00FF` key workflow and background acceptance.
+- [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) — pretty sky-only runtime status, future sky/far/mid/near prompts, `#FF00FF` key workflow and background acceptance.
 - [`adr-m3/0047-pixel-art-visual-direction.md`](../adr-m3/0047-pixel-art-visual-direction.md) — whole-game pixel-art direction.
 - [`adr-m3/0048-half-resolution-pixel-rendering.md`](../adr-m3/0048-half-resolution-pixel-rendering.md) — half-res authoring and 2× display.
 - [`adr-m3/0049-pixel-ui-chrome-and-typography.md`](../adr-m3/0049-pixel-ui-chrome-and-typography.md) — pixel UI and fonts.
@@ -2187,8 +2190,9 @@ Do not invent new prefixes without updating the asset contract.
 | 2026-11-01 | P2 re-baseline and POC animation: ADR-0065 supersedes the orange P2 concept; P2 uses bone suit/joint-cyan visor/tank/nerve accent. Added `npm run art:build-player`, `npm run art:key`, P1/P2 walk/jump/fall/land runtime sheets, and the player animator. Added §5.8 completion status and updated the manifest, acceptance, and open-decision sections. |
 | 2026-11-01 | Entity POC: added `npm run art:fit` with configurable 18×18 fit, 1 px margin, hard alpha, non-orange palette quantisation, preview/report output, and tests. Fitted the nanobanan scan plates: `scan.synapse` and `scan.muscle` are POC-integrated; `scan.neuron` and `scan.pathway` remain placeholders because the wide plates lose their reading at 36×36. Added the 36-frame Neuron Keeper idle source and `sprite.agent.neuron.idle`, regenerated the static from frame 0, and wired a data-driven entity idle in 03/04. The nanobanan agent plate is an alternate review asset. Status is POC integrated / final art approval pending. |
 | 2026-11-01 | Nanobanan batch: POC-integrated `sprite.gate.ferry`, `sprite.prop.tracer`, `sprite.pulse.terminal`, `sprite.receptor.triangle`, and `sprite.receptor.circle` through the existing IDs. Added the sky-only 03 background (`shared/backgrounds/nerve-forest-sky.webp`) and removed far/mid/near from the room; those layers remain source-only/deferred. The badge and reflex plate stay placeholders after review; the bone/nerve swatches are source-only and the atlas task remains deferred. Final approval and the prompt log remain pending. |
-| 2026-11-01 | Background regeneration spec: added [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) with the corrected sky/far/mid/near prompts, flat `#FF00FF` cut-out contract, no-trim key workflow, coverage/value budgets and background acceptance. Current scope unchanged: sky wired; far/mid/near source-only/deferred. Prompt version `m3-2026-11-01.1`. |
+| 2026-11-01 | Background regeneration spec: added [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) with the corrected sky/far/mid/near prompts, flat `#FF00FF` cut-out contract, no-trim key workflow, coverage/value budgets and background acceptance. Current scope at that time: sky wired; far/mid/near source-only/deferred. Prompt version `m3-2026-11-01.1`. |
 | 2026-11-01 | Layered nerve forest backgrounds: replaced the POC sky with the updated 2720×1568 plate (640×368, no-muscle palette) and wired exact-2× far/mid cut-outs as 1024×512 lossless WebP tiles. Far/mid are keyed at full resolution, palette-quantised, 2×2-snapped and 2 px edge-welded; the composition repeat remains a visual-review note. Near is processed and previewed but deferred because its vertical repeat lands across the play band. Updated counts: 21 declared images, 20 active (19 referenced + 1 reserve), 32 declared M3 assets, 31 active (20 images + 11 audio), 1 background deferred. |
+| 2026-11-01 | Pretty sky-only background: replaced the 640×368 quantised sky with the tracked 2752×1536 pretty source → 2672×1536 crop at x=40 → Lanczos 1280×736 → lossless WebP at 978,732 bytes (~956 KiB), 1× cover. Removed palette quantisation and the `nerve-fibers` overlay. Reverted far/mid/near to placeholders, removed them from the room, and deleted their runtime WebPs and far/mid licence entries; sources/reports/previews retained. Updated counts: 21 declared images, 18 active (17 referenced + 1 reserve), 32 declared M3 assets, 29 active (18 images + 11 audio), 3 background layers placeholder/future. |
 
 ---
 

@@ -164,26 +164,10 @@
     {
       "file": "shared/backgrounds/nerve-forest-sky.webp",
       "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local crop + area downscale + palette quantization",
+      "source": "Ludo.ai / Nanobanan concept plate; local crop + high-quality downscale; lossless WebP",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; 2720x1564 crop at y=2 from 2720x1568; 640x368 area downscale; no-muscle palette quantized; lossless WebP; replaces the earlier POC sky"
-    },
-    {
-      "file": "shared/backgrounds/nerve-forest-far.webp",
-      "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + crop + nearest downscale + palette quantization",
-      "author": "AI-generated in Ludo.ai; art direction by Snorre",
-      "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; 2048x1024 crop at (432,416) from 2912x1440; magenta keyed at full resolution; 2x nearest downscale to 1024x512; palette quantized; 2x2 clusters; 2px tile edge weld; lossless WebP"
-    },
-    {
-      "file": "shared/backgrounds/nerve-forest-mid.webp",
-      "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + crop + nearest downscale + palette quantization",
-      "author": "AI-generated in Ludo.ai; art direction by Snorre",
-      "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; 2048x1024 crop at (432,208) from 2912x1440; magenta keyed at full resolution; 2x nearest downscale to 1024x512; palette quantized; 2x2 clusters; 2px tile edge weld; lossless WebP"
+      "modified": "2026-11-01; 2752x1536 source sha256 29103f0b12b59f497fabe3702fd4cc39a11244fe8588dda4681448391df3e5ca; 2672x1536 crop at x=40 (40 px each side); Lanczos downscale to 1280x736; no palette quantization; lossless WebP; muscle-pink drapes retained"
     }
   ]
 }

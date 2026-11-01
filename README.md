@@ -183,15 +183,15 @@ room/boot tests, but the app does not boot it.
 | `/?skipMenu=1&pack=anatomy-reflex` | Direct boot into the selected pack |
 | `/?pack=silicon-reflex` | Preselects the gated Silicon cycle in the hub; Start is disabled |
 | `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
-| `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, and the 03 sky/far/mid background stack are final, while deferred entries remain placeholders |
+| `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, and the 03 pretty sky are final, while deferred entries remain placeholders |
 
-The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 31/53
+The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 31/51
 placeholders; the POC player sheets, Neuron Keeper static/idle, readable
-scan/entity sprites, and the updated 03 sky/far/mid background stack are final.
-`bg.nerve_forest.near` is processed but deferred because its vertical repeat
-lands across the play band. The dev fixture still resolves 10/10 placeholders,
-or 7/10 with its fixture manifest selected by the scripts. Unknown `?assets=`
-values fall back to placeholder mode.
+scan/entity sprites, and the pretty 03 sky are final. `bg.nerve_forest.far`,
+`.mid` and `.near` are declared placeholders/future layered work; the room
+wires only the sky. The dev fixture still resolves 10/10 placeholders, or 7/10
+with its fixture manifest selected by the scripts. Unknown `?assets=` values
+fall back to placeholder mode.
 
 ## Project layout
 

@@ -1,10 +1,10 @@
 # Nanobanan concept plates
 
-Source concepts generated on a flat magenta `#ff00ff` field. These are **not**
-runtime assets and must never be referenced by a manifest. Raw source JPEGs and
-lightweight review previews/reports are tracked; full keyed PNGs live in
-`art-source/nanobanan/keyed/` (ignored). Only the runtime PNG/WebP exports are
-referenced by the pack.
+Most source concepts are generated on a flat magenta `#ff00ff` field; the sky
+is opaque. These are **not** runtime assets and must never be referenced by a
+manifest. Raw source JPEGs and lightweight review previews/reports are tracked;
+full keyed PNGs live in `art-source/nanobanan/keyed/` (ignored). Only the
+runtime PNG/WebP exports are referenced by the pack.
 
 ## Batch status
 
@@ -22,20 +22,21 @@ referenced by the pack.
 | `new/sprite-receptor-circle.jpeg` | `sprite.receptor.circle` | **POC integrated / final approval pending.** Circular socket reads; distinct from the triangle. |
 | `new/sprite-scan-reflex.jpeg` | `sprite.scan.reflex` | **Placeholder.** The loop reads, but the dorsal/ventral roots and spindle do not at 36×36. Not referenced by 03/04. |
 | `new/ui-icon-badge.jpeg` | `ui.icon.badge` | **Placeholder.** The 16×16 fit collapses the helmet dome into the ring; the CSS HUD placeholder stays. |
-| `new/bg-nerve_forest-sky-updated.jpeg` | `bg.nerve_forest.sky` | **Updated POC integrated / final approval pending.** 2720×1568 → 2720×1564 crop → 640×368 lossless WebP with the no-muscle sky palette. |
-| `new/bg-nerve_forest-far-updated.jpeg` | `bg.nerve_forest.far` | **POC integrated / seam review pending.** 2048×1024 exact-2× crop, keyed, 1024×512, 46.0% coverage. |
-| `new/bg-nerve_forest-mid-updated.jpeg` | `bg.nerve_forest.mid` | **POC integrated / seam review pending.** 2048×1024 exact-2× crop, keyed, 1024×512, 50.7% coverage. |
-| `new/bg-nerve_forest-near-updated.jpeg` | `bg.nerve_forest.near` | **Processed / deferred.** 1024×512, 23.9% coverage, but the vertical repeat lands across the play band. |
-| `new/bg-nerve_forest-far.jpeg`, `-mid.jpeg`, `-near.jpeg`, `bg.nerve_forest.sky.jpeg` | — | **Failed references; do not use.** The older non-updated JPEGs are opaque scenes or contain a baked checkerboard. |
+| `new/bg.nerve_forest.sky.jpeg` | `bg.nerve_forest.sky` | **POC integrated / final approval pending.** Pretty 2752×1536 source; 2672×1536 crop at x=40; Lanczos downscale to 1280×736; lossless WebP; no palette quantisation; muscle-pink drapes retained. |
+| `new/bg-nerve_forest-sky-updated.jpeg` | — | **Previous sky source; superseded.** 2720×1568 → 2720×1564 crop → 640×368 lossless WebP with the no-muscle sky palette. Retained for comparison. |
+| `new/bg-nerve_forest-far-updated.jpeg` | `bg.nerve_forest.far` | **Placeholder/future.** 2048×1024 exact-2× crop, keyed, 1024×512, 46.0% coverage; not wired. |
+| `new/bg-nerve_forest-mid-updated.jpeg` | `bg.nerve_forest.mid` | **Placeholder/future.** 2048×1024 exact-2× crop, keyed, 1024×512, 50.7% coverage; not wired. |
+| `new/bg-nerve_forest-near-updated.jpeg` | `bg.nerve_forest.near` | **Placeholder/future.** 1024×512, 23.9% coverage; the vertical repeat lands across the play band; not wired. |
+| `new/bg-nerve_forest-far.jpeg`, `-mid.jpeg`, `-near.jpeg` | — | **Failed references; do not use.** The older non-updated parallax JPEGs are opaque scenes or contain a baked checkerboard. |
 | `new/tile-bone-atlas.jpeg` | `tile.bone.atlas` source | **Source-only/deferred.** Material swatch, not a 256×192 47-frame atlas. |
 | `new/tile-nerve-atlas.jpeg` | `tile.nerve.atlas` source | **Source-only/deferred.** Material swatch, not a 128×128 16-frame atlas. |
 
-The 03 room wires `bg.nerve_forest.sky`, `bg.nerve_forest.far` and
-`bg.nerve_forest.mid`. `bg.nerve_forest.near` is processed and previewed but
-deferred because its 1024×512 tile repeats vertically at screen y≈512 and the
-hanging canopy lands across the play band. Do not wire the material swatches.
-`sprite.exit`, `sprite.gate.nerve`, and `sprite.checkpoint` also remain
-placeholders.
+The 03 room wires only `bg.nerve_forest.sky` (the pretty 1280×736 plate).
+`bg.nerve_forest.far`, `.mid` and `.near` are declared placeholders: their
+sources, key reports and previews are retained for a later layered pass, but
+the runtime WebPs are not shipped and the layers are not wired. Do not wire the
+material swatches. `sprite.exit`, `sprite.gate.nerve`, and `sprite.checkpoint`
+also remain placeholders.
 
 ## Background removal
 
@@ -110,44 +111,43 @@ quantiser reports max-distance warnings above 64; this matches the existing
 
 ## Sky
 
-The updated sky source is 2720×1568. The runtime plate is generated with a
-2720×1564 crop (2 px top/bottom, no stretching), an area resize to 640×368, the
-no-muscle sky palette, and lossless WebP encoding:
+The current sky is the pretty 2752×1536 source. It is the only wired 03
+background and the recorded exception to the pixel-art palette/quantisation
+rules: it keeps the muscle-pink drapes and is not palette-quantised. The
+runtime plate is a 2672×1536 side crop (40 px each side) that matches the
+1280:736 room aspect, Lanczos-downscaled to 1280×736 and exported as lossless
+WebP:
 
 ```bash
 mkdir -p art-source/nanobanan/working/tmp
 ffmpeg -y -v error \
-  -i art-source/nanobanan/new/bg-nerve_forest-sky-updated.jpeg \
-  -vf "crop=2720:1564:0:2,scale=640:368:flags=area" \
-  art-source/nanobanan/working/tmp/nerve-forest-sky-640x368.png
-
-npm run art:normalize -- \
-  --in art-source/nanobanan/working/tmp/nerve-forest-sky-640x368.png \
-  --palette art-source/nanobanan/palette.nerve-forest-sky.json \
-  --out art-source/nanobanan/working/tmp/nerve-forest-sky-updated-quantized.png \
-  --preview art-source/previews/nanobanan/backgrounds/nerve-forest-sky-updated-2x.png \
-  --scale 2 --background "#101a20" \
-  --report art-source/nanobanan/reports/nerve-forest-sky-updated.normalize.json
+  -i art-source/nanobanan/new/bg.nerve_forest.sky.jpeg \
+  -vf "crop=2672:1536:40:0,scale=1280:736:flags=lanczos" \
+  -pix_fmt rgb24 \
+  art-source/nanobanan/working/tmp/nerve-forest-sky-pretty-1280x736.png
 
 cwebp -quiet -lossless -q 100 -m 6 \
-  art-source/nanobanan/working/tmp/nerve-forest-sky-updated-quantized.png \
+  art-source/nanobanan/working/tmp/nerve-forest-sky-pretty-1280x736.png \
   -o public/packs/anatomy-reflex/shared/backgrounds/nerve-forest-sky.webp
 ```
 
-The result is a 640×368 VP8L WebP under 300 KB. Inspect
-`art-source/previews/nanobanan/backgrounds/nerve-forest-sky-updated-2x.png` at
-1280×736 and in the game at 1280×720. The updated plate removes the previous
-sky's pink drapes and is calmer; its dark framing trunks remain a visual-review
-note. The old `nerve-forest-sky-2x.png` preview is retained for comparison.
+The result is a 1280×736 VP8L WebP of 978,732 bytes (~956 KiB). No `art:normalize` pass and
+no `palette.nerve-forest-sky.json` are used. The previews are
+`previews/nanobanan/backgrounds/nerve-forest-sky-pretty-1280x736.png` and
+`-1280x720.png`; the 1280×720 preview drops the 8 px top/bottom that the
+720-high viewport crops. The earlier 640×368 quantised sky and its
+`nerve-forest-sky-updated-2x.png` preview are retained for comparison only.
 
 ## Parallax layers
 
-The updated far/mid/near plates are flat `#FF00FF` cut-outs. Each is cropped to
-an exact 2048×1024 window (far: `x=432,y=416`; mid/near: `x=432,y=208`), keyed
-at full resolution, nearest-downscaled to 1024×512, quantised with
+The far/mid/near plates are flat `#FF00FF` cut-outs retained for a future
+layered pass. Each is cropped to an exact 2048×1024 window (far:
+`x=432,y=416`; mid/near: `x=432,y=208`), keyed at full resolution,
+nearest-downscaled to 1024×512, quantised with
 `palette.nerve-forest-layer.json` (no `tissue` role), 2×2-snapped and 2 px
 edge-welded. The weld makes opposite edges pixel-identical; it does not hand-
-repaint the composition across the seam.
+repaint the composition across the seam. These layers are **not wired** in the
+current 03 runtime.
 
 ```bash
 # Far; use x=432,y=208 for mid/near
@@ -189,19 +189,21 @@ cwebp -quiet -lossless -q 100 -m 6 \
   -o public/packs/anatomy-reflex/shared/backgrounds/nerve-forest-far.webp
 ```
 
-Measured coverage: far 46.0%, mid 50.7%, near 23.9%. Far and mid are wired.
-Near is processed and previewed but deferred: the 1024×512 tile repeats
-vertically at screen y≈512 and the hanging canopy lands across the play band
-(`background-near-over-sky-1280x736.png`). The process report is
+Measured coverage: far 46.0%, mid 50.7%, near 23.9%. All three are
+placeholders/future work; the current room wires only the pretty sky. Near's
+1024×512 tile repeats vertically at screen y≈512 and the hanging canopy lands
+across the play band (`background-near-over-sky-1280x736.png`), so it is not
+ready to wire as-is. The process report is
 `reports/background-layers.process.json`; previews are in
 `previews/nanobanan/backgrounds/`.
 
-## Deferred near layer and atlas plates
+## Deferred layered plates and atlas plates
 
-The updated near plate is a usable 1024×512 cut-out, but its vertical repeat
-lands across the play band; it stays deferred until that read is resolved. The
-older non-updated far/mid/near JPEGs are failed references and must not be
-wired.
+Far, mid and near are placeholders/future work. The updated plates remain
+usable sources for a later layered pass, but the current 03 room wires only the
+pretty sky. Near's vertical repeat still lands across the play band, so it is
+not ready to wire as-is. The older non-updated far/mid/near JPEGs are failed
+references and must not be wired.
 
 The bone/nerve JPEGs are material swatches, not frame atlases. The runtime needs
 32×32 frames, named region maps, a `bone-blob47` variant set, and the nerve-edge
@@ -221,7 +223,7 @@ The nanobanan agent plate remains an alternate review asset only.
   seed before shipping).
 - **Prompt / plan / licence:** TBD. The POC runtime manifests use the shared
   `Ludo.ai source (POC; plan TBD)` label.
-- **Status:** final art approval is pending for the integrated sky, far, mid,
-  gate, tracer, pulse terminal, and receptors. Near is processed but deferred
-  (play-band repeat). Badge, reflex, and the atlases remain
+- **Status:** final art approval is pending for the integrated pretty sky,
+  gate, tracer, pulse terminal, and receptors. Far/mid/near are
+  placeholders/future work. Badge, reflex, and the atlases remain
   placeholders/source-only.

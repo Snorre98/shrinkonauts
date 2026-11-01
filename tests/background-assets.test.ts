@@ -1,9 +1,13 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const PACK_DIR = "public/packs/anatomy-reflex";
-const DEFERRED_LAYERS = ["bg.nerve_forest.near"] as const;
+const PLACEHOLDER_LAYERS = [
+  "bg.nerve_forest.far",
+  "bg.nerve_forest.mid",
+  "bg.nerve_forest.near",
+] as const;
 
 interface ManifestEntry {
   type: string;
@@ -73,30 +77,21 @@ function webpInfo(buffer: Buffer): {
   throw new Error(`Unsupported WebP chunk ${chunk}`);
 }
 
-describe("03 layered background", () => {
-  it("wires the sky, far and mid layers and keeps near deferred", () => {
+describe("03 background", () => {
+  it("wires only the pretty sky and keeps the layered plates as placeholders", () => {
     expect(room.background.layers.map((layer) => layer.assetId)).toEqual([
       "bg.nerve_forest.sky",
-      "bg.nerve_forest.far",
-      "bg.nerve_forest.mid",
     ]);
 
-    const [sky, far, mid] = room.background.layers;
+    const [sky] = room.background.layers;
     expect(sky?.fit).toBe("cover");
     expect(sky?.depth).toBe(-40);
-    expect(far?.fit).toBe("tile");
-    expect(far?.depth).toBe(-30);
-    expect(far?.parallaxX).toBe(0.2);
-    expect(far?.parallaxY).toBe(0.1);
-    expect(mid?.fit).toBe("tile");
-    expect(mid?.depth).toBe(-20);
-    expect(mid?.parallaxX).toBe(0.45);
-    expect(mid?.parallaxY).toBe(0.2);
-    expect(mid?.materialId).toBe("bone");
-    expect(mid?.pattern?.patternId).toBe("bone-cortex");
-    expect(mid?.pattern?.opacity).toBe(0.12);
+    expect(sky?.parallaxX).toBe(0.05);
+    expect(sky?.parallaxY).toBe(0.02);
+    expect(sky?.materialId).toBeUndefined();
+    expect(sky?.pattern).toBeUndefined();
 
-    for (const id of DEFERRED_LAYERS) {
+    for (const id of PLACEHOLDER_LAYERS) {
       const entry = manifest.assets[id];
       expect(entry?.type).toBe("background");
       expect(entry?.placeholder).toBe(true);
@@ -107,54 +102,33 @@ describe("03 layered background", () => {
     }
   });
 
-  it("ships the sky, far and mid as lossless WebPs with matching licences", () => {
-    const expected = [
-      {
-        id: "bg.nerve_forest.sky",
-        src: "shared/backgrounds/nerve-forest-sky.webp",
-        width: 640,
-        height: 368,
-      },
-      {
-        id: "bg.nerve_forest.far",
-        src: "shared/backgrounds/nerve-forest-far.webp",
-        width: 1024,
-        height: 512,
-      },
-      {
-        id: "bg.nerve_forest.mid",
-        src: "shared/backgrounds/nerve-forest-mid.webp",
-        width: 1024,
-        height: 512,
-      },
-    ] as const;
+  it("ships the pretty sky as a 1280x736 lossless WebP with a matching licence", () => {
+    const entry = manifest.assets["bg.nerve_forest.sky"];
+    expect(entry).toBeDefined();
+    if (!entry) return;
+    expect(entry.type).toBe("background");
+    expect(entry.src).toBe("shared/backgrounds/nerve-forest-sky.webp");
+    expect(entry.license).toBe("Ludo.ai source (POC; plan TBD)");
+    expect(entry.placeholder).toBeUndefined();
 
-    for (const { id, src, width, height } of expected) {
-      const entry = manifest.assets[id];
-      expect(entry).toBeDefined();
-      if (!entry) continue;
-      expect(entry.type).toBe("background");
-      expect(entry.src).toBe(src);
-      expect(entry.license).toBe("Ludo.ai source (POC; plan TBD)");
-      expect(entry.placeholder).toBeUndefined();
+    const path = join(PACK_DIR, entry.src as string);
+    expect(existsSync(path)).toBe(true);
 
-      const path = join(PACK_DIR, entry.src as string);
-      expect(existsSync(path)).toBe(true);
-      expect(statSync(path).size).toBeLessThanOrEqual(300 * 1024);
-      const info = webpInfo(readFileSync(path));
-      expect(info.chunk).toBe("VP8L");
-      expect({ width: info.width, height: info.height }).toEqual({
-        width,
-        height,
-      });
+    // The pretty sky is a recorded exception to the 300 KB pixel-asset
+    // budget; its actual size is reported in the background requirements doc.
+    const info = webpInfo(readFileSync(path));
+    expect(info.chunk).toBe("VP8L");
+    expect({ width: info.width, height: info.height }).toEqual({
+      width: 1280,
+      height: 736,
+    });
 
-      expect(
-        licences.assets.some(
-          (licence) =>
-            licence.file === entry.src && licence.license === entry.license,
-        ),
-      ).toBe(true);
-    }
+    expect(
+      licences.assets.some(
+        (licence) =>
+          licence.file === entry.src && licence.license === entry.license,
+      ),
+    ).toBe(true);
   });
 
   it("does not reference raw source JPEGs", () => {
