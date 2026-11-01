@@ -21,8 +21,17 @@ npm run worker:dev
 ```
 
 The Worker listens on `127.0.0.1:8787` and accepts local Vite origins by
-default. The game still connects only when its host/controller wiring is
-enabled in a later phase.
+default. Start Vite with the relay URL:
+
+```sh
+VITE_NET_URL=ws://127.0.0.1:8787 npm run dev
+```
+
+The controller page is served at
+`/controller.html#room=<code>&slot=<p1|p2>`. Start a phone plan on the host
+page, then open that URL on a phone. The hub QR/setup panel arrives in Phase 6;
+until then the room code is exposed as `window.__shrinkonauts.controllerRoomCode`
+and in the host console in development.
 
 ## Verification
 
@@ -30,6 +39,8 @@ enabled in a later phase.
 npm run worker:typecheck
 npm run worker:dry-run
 npm test
+npm run test:controller
+npm run smoke:controller
 ```
 
 `worker:dry-run` bundles and validates the configuration without deploying.

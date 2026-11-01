@@ -55,6 +55,7 @@ describe("module boundaries", () => {
       fileURLToPath(new URL("../src/audio/", import.meta.url)),
       fileURLToPath(new URL("../src/game/", import.meta.url)),
       fileURLToPath(new URL("../src/platform/", import.meta.url)),
+      fileURLToPath(new URL("../src/controller/", import.meta.url)),
     ];
 
     for (const directory of guarded) {
@@ -325,6 +326,7 @@ describe("module boundaries", () => {
       audio: ["assets", "core"],
       ui: ["assets", "core", "curriculum", "feedback", "materials", "pack"],
       world: ["assets", "core", "hub", "materials", "pack", "puzzle"],
+      controller: ["core", "net"],
       net: ["core", "game", "save", "ui", "world"],
       game: [
         "assets",

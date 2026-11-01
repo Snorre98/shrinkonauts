@@ -262,10 +262,13 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (45 files / 423 tests), pack validation/smoke pass, and the browser
-smoke passes 7/7. The hub starts Anatomy in Solo or Local co-op, returns to the
-bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
-M2 and M4.0b. Phone-controller same-screen co-op is planned as M4.0a; see
+suite passes (60 files / 568 tests), pack validation/smoke pass, the browser
+smoke passes 7/7, and the controller browser smoke passes 1/1. The hub starts
+Anatomy in Solo or Local co-op, returns to the bathroom, and preserves per-pack
+saves. Silicon and online co-op remain gated by M2 and M4.0b. Phone-controller
+same-screen co-op has its M4.0a host session, room relay, and standalone
+controller page working with touch input; hub pairing and the explicit Start
+gate remain Phase 6. See
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
 
 M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, and land

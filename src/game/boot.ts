@@ -732,6 +732,13 @@ export class AppController {
     this.hostRun = run;
     this.hostRoomCode = run.room;
     this.hostRunView = run.view;
+    if (import.meta.env.DEV) {
+      for (const slot of phoneSlotsForPlan(plan)) {
+        consoleLogger.debug(
+          `[controller] ${slot}: /controller.html#room=${run.room}&slot=${slot}`,
+        );
+      }
+    }
     await run.connect();
   }
 

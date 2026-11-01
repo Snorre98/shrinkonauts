@@ -7,7 +7,9 @@ machine menu, plays a launch transition, and enters the selected pack. Anatomy
 starts at **03 — Nerve Forest**, plays Node Run, transitions to **04 — Endplate
 Ferry**, and finishes with teach-back evidence export. Silicon is visible but
 gated until M2; online co-op is a disabled M4.0b placeholder. Phone-controller
-same-screen co-op is planned as M4.0a but is not implemented on this branch.
+same-screen co-op is in progress as M4.0a: the standalone controller page, touch
+input, host session, and room relay are implemented; hub pairing and the explicit
+Start gate remain Phase 6.
 
 M1.8 adds `materials.json`, material grids and autotiling, deterministic tile
 variants, atlas regions, world/object/background pattern projection, and UI
@@ -34,7 +36,7 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Anatomy cycle start, launch, and return | Working |
 | Silicon cycle | Visible; gated until M2 |
 | Online co-op lobby | Visible placeholder; M4.0b |
-| Phone controller co-op | Planned; ADR-0066–0069 and M4.0a plan drafted |
+| Phone controller co-op | Controller page + host session working; hub pairing/start gate pending (M4.0a Phase 6) |
 | Direct boot into `03-nerve-forest` | Working via `?skipMenu=1` |
 | 03 → 04 transition through debrief | Working |
 | Pack + syllabus loading from `public/` | Working |
@@ -653,8 +655,9 @@ procedural placeholder:
   effects only.
 - Final bathroom hub art (M3.5); procedural hub placeholders ship now.
 - Real online host/join/ready (M4.0b); the hub shows a disabled placeholder.
-- Phone-controller co-op (M4.0a); ADRs and plan exist, no transport or touch UI
-  is implemented on this branch.
+- Phone-controller co-op (M4.0a); the controller page and host session are wired,
+  but hub pairing/start gating and the latency/game-feel close-out remain
+  (Phases 6–7).
 - Physical puzzle-gate bodies (ADR-0002 target).
 - `locked`/`unlock`/`propReleased` (ADR-0004 target).
 - `requires`/`message`/`linkBlocked` (ADR-0005 target).
@@ -678,9 +681,10 @@ procedural placeholder:
   and manifests; it is not a playable pack.
 - **One Phaser game at a time.** The hub game is destroyed before the room game
   is created, avoiding texture-key collisions between packs.
-- **Online is a placeholder.** The hub exposes the M4.0b section but no
-  transport, room code, or session state until M4.0b. M4.0a phone-controller
-  co-op is planned separately and is not wired into the hub yet.
+- **Online is a placeholder.** The hub exposes the M4.0b section but no guest
+  transport or room state until M4.0b. M4.0a phone-controller co-op uses its own
+  standalone controller page and the shared room relay; hub pairing and the
+  explicit Start gate are Phase 6.
 - **Two-level slice.** `03-nerve-forest` starts and transitions through debrief
   to `04-muscle-effector`, which ends the pack. `05-reflex-core` is a forward
   reference only.
