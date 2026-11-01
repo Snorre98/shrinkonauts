@@ -1,6 +1,6 @@
 # ADR-0067: Per-player input slots and device arbitration
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-01
 - **Deciders:** Snorre
 - **Related:** ADR-0010, ADR-0037, ADR-0043, ADR-0047, ADR-0050, ADR-0053,

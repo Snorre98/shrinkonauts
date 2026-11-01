@@ -1,6 +1,6 @@
 # ADR-0066: Phone controller as the first multiplayer phase
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-01
 - **Deciders:** Snorre
 - **Related:** ADR-0047, ADR-0048, ADR-0049, ADR-0050, ADR-0051, ADR-0052,

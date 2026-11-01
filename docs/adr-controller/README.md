@@ -1,6 +1,6 @@
 # Phone Controller Co-op — ADR domain
 
-**Status:** Proposed, 2026-11-01
+**Status:** Accepted, 2026-11-01
 **Owner:** Snorre
 **Scope:** phone-as-controller for same-screen co-op (M4.0a), per-player
 input slots, pairing and trust, and controller latency policy
@@ -40,10 +40,10 @@ renumber these records before acceptance; accepted records are immutable.
 
 | # | Decision | Status |
 |---|---|---|
-| [0066](0066-phone-controller-first-multiplayer-phase.md) | Phone controller as the first multiplayer phase | Proposed |
-| [0067](0067-per-player-input-slots-and-device-arbitration.md) | Per-player input slots and device arbitration | Proposed |
-| [0068](0068-controller-session-pairing-and-trust.md) | Controller session, pairing, and trust boundary | Proposed |
-| [0069](0069-controller-latency-and-input-feel.md) | Controller latency budget and input-feel policy | Proposed |
+| [0066](0066-phone-controller-first-multiplayer-phase.md) | Phone controller as the first multiplayer phase | Accepted |
+| [0067](0067-per-player-input-slots-and-device-arbitration.md) | Per-player input slots and device arbitration | Accepted |
+| [0068](0068-controller-session-pairing-and-trust.md) | Controller session, pairing, and trust boundary | Accepted |
+| [0069](0069-controller-latency-and-input-feel.md) | Controller latency budget and input-feel policy | Accepted |
 
 ## Relationship to other decisions
 

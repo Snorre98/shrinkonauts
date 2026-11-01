@@ -1,6 +1,6 @@
 # ADR-0068: Controller session, pairing, and trust boundary
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-01
 - **Deciders:** Snorre
 - **Related:** ADR-0048, ADR-0049, ADR-0050, ADR-0053, ADR-0054, ADR-0055,

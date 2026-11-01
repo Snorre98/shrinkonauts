@@ -1,6 +1,6 @@
 # ADR-0069: Controller latency budget and input-feel policy
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-01
 - **Deciders:** Snorre
 - **Related:** ADR-0049, ADR-0053, ADR-0056, ADR-0066, ADR-0067, ADR-0068
