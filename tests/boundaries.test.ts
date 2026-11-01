@@ -263,6 +263,23 @@ describe("module boundaries", () => {
     }
   });
 
+  it("keeps the net seam free of renderer and physics engines", () => {
+    const netFiles = sourceFiles(
+      fileURLToPath(new URL("../src/net/", import.meta.url)),
+    );
+    for (const file of netFiles) {
+      const source = read(file);
+      expect(
+        source,
+        `${relativeToSrc(file)} must not import Phaser`,
+      ).not.toMatch(/from\s+["']phaser["']/);
+      expect(
+        source,
+        `${relativeToSrc(file)} must not import Matter`,
+      ).not.toMatch(/from\s+["']matter-js["']/);
+    }
+  });
+
   it("keeps module dependencies acyclic and directionally ordered", () => {
     // ADR-0002: domain modules never depend on adapters, and adapters only
     // depend downwards. A module may always import from itself.
@@ -283,6 +300,7 @@ describe("module boundaries", () => {
       audio: ["assets", "core"],
       ui: ["assets", "core", "curriculum", "feedback", "materials", "pack"],
       world: ["assets", "core", "hub", "materials", "pack", "puzzle"],
+      net: ["core", "game", "save", "ui", "world"],
       game: [
         "assets",
         "audio",
@@ -300,7 +318,7 @@ describe("module boundaries", () => {
         "ui",
         "world",
       ],
-      platform: ["core", "game", "ui"],
+      platform: ["core", "game", "ui", "net"],
     };
 
     const violations: string[] = [];
