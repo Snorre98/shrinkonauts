@@ -1,0 +1,12 @@
+{
+  "character": "nerve-forest-layer",
+  "cell": {
+    "width": 1024,
+    "height": 512
+  },
+  "sourceOffPalettePixels": 265642,
+  "quantizedPixels": 265642,
+  "maxDistance": 82.38,
+  "alphaViolations": 0,
+  "offPalettePixelsAfter": 0
+}

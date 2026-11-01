@@ -24,6 +24,7 @@
     "art:build-player": "tsx scripts/art-build-player.ts",
     "smoke:e2e": "playwright test",
     "art:normalize": "tsx scripts/art-normalize.ts",
+    "art:tile-clean": "node scripts/art-tile-clean.mjs",
     "art:variant": "tsx scripts/art-variant.ts",
     "art:remaster": "tsx scripts/art-remaster.ts"
   },

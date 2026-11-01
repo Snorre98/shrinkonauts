@@ -1,15 +1,15 @@
 # M3 Background Asset Requirements — Shrinkonauts: The Reflex Arc
 
-**Status:** Draft v0.1 · 1 November 2026 (background chroma-key layering; sky POC wired, far/mid/near regeneration spec)
+**Status:** Draft v0.2 · 1 November 2026 (updated plates; sky + far + mid POC wired, near processed and deferred)
 **Owner:** Snorre  
 **Scope:** The four `03-nerve-forest` background plates: sky, far, mid and near  
-**Supersedes:** The background prompts and background pipeline notes in [`asset-requirements-v01.md`](asset-requirements-v01.md): §5.4 background status note, §6.2/§6.4 background notes, §7.3 background setting, §7.7–§7.8 background checks, §8.7/§8.13/§8.20 and the background rows in §9. It does **not** re-baseline the current M3 scope: the build still wires only the sky, and far/mid/near remain source-only/deferred until regenerated and accepted.  
+**Supersedes:** The background prompts and background pipeline notes in [`asset-requirements-v01.md`](asset-requirements-v01.md): §5.4 background status note, §6.2/§6.4 background notes, §7.3 background setting, §7.7–§7.8 background checks, §8.7/§8.13/§8.20 and the background rows in §9. The current M3 build wires the updated sky plus far and mid; near remains source-only/deferred because its vertical repeat lands across the play band.<br>
 **Governing decisions:** ADR-0031 (layered backgrounds), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0060–0065 (source/working/runtime pipeline, palette variants, previews)  
 **Related:** [`asset-requirements-v01.md`](asset-requirements-v01.md) · [`room.json`](../../public/packs/anatomy-reflex/levels/03-nerve-forest/room.json) · [`background.ts`](../../src/world/background.ts) · [`art-key.ts`](../../scripts/art-key.ts) · [`art-source/nanobanan/README.md`](../../art-source/nanobanan/README.md)
 
 > **The rule for backgrounds:** the generator cannot paint alpha. The sky is generated **opaque**. Far, mid and near are generated as **cut-out plates on a flat `#FF00FF` chroma-key field**, then keyed with `npm run art:key`. Never write “transparent” in a background prompt; the generator will paint a checkerboard or an opaque scene.
 
-> **Current M3 status (2026-11-01).** `bg.nerve_forest.sky` is POC-integrated and is the only 03 background wired by `room.json`. The supplied far/mid/near JPEGs are **source-only/deferred** because they are opaque 16:9 scenes and the near plate has a baked checkerboard. This document defines the corrected prompts and key workflow for those three layers; bringing them into the runtime requires a scope re-baseline in the main asset document (§0, §2.2 and §5.4).
+> **Current M3 status (2026-11-01).** The updated `bg.nerve_forest.sky`, `bg.nerve_forest.far` and `bg.nerve_forest.mid` are POC-integrated and wired by `room.json`. The updated far/mid/near plates are flat `#FF00FF` cut-outs, not checkerboards; they were cropped to an exact 2:1 window, keyed at full resolution, nearest-downscaled to 1024×512, palette-quantised, 2×2-snapped and edge-welded. `bg.nerve_forest.near` is processed and previewed but **deferred**: the 1024×512 tile repeats vertically at screen y≈512 and the hanging canopy lands across the play band. Final seam/palette approval remains pending.
 
 ---
 
@@ -17,20 +17,20 @@
 
 | Decision | Value |
 |---|---|
-| Background assets | **4 defined** — sky wired; far/mid/near source-only/deferred |
-| Sky | **640×368**, opaque, integer 2× cover; POC integrated |
-| Parallax layers | **1024×512**, hard alpha, 2×2 clusters, tile on both axes; deferred until regenerated |
+| Background assets | **4 defined** — updated sky + far + mid wired; near processed and deferred |
+| Sky | **640×368**, opaque, integer 2× cover; updated plate POC integrated |
+| Parallax layers | **1024×512**, hard alpha, 2×2 clusters, tile on both axes; far/mid wired, near deferred |
 | Key colour | **`#FF00FF`** — pure magenta, not generic “bright pink” |
 | Key tool | **`npm run art:key`**, full frame, **no `--trim`** |
-| Near layer | **Sparse overhead clumps**; lower half clear; no continuous frame |
+| Near layer | **Sparse overhead clumps**; lower half clear; no continuous frame; deferred after the play-band repeat failed |
 | 03 palette | Deep teal, sage, bone-shadow, nerve yellow, joint cyan; **no muscle pink or crimson** |
 | Prompt version | **`m3-2026-11-01.1`** |
 | Style version | **`style-pixel-v2`** |
-| Doc version | **v0.1** |
+| Doc version | **v0.2** |
 
-> **Why the previous plates failed.** `art-source/nanobanan/new/bg-nerve_forest-far.jpeg` and `bg-nerve_forest-mid.jpeg` are fully opaque scenes. `bg-nerve_forest-near.jpeg` contains a literal grey/white checkerboard. `bg.nerve_forest.sky.jpeg` is a complete scene with foreground trunks and pink drapes. They are failed references, not salvageable layers.
+> **Why the previous plates failed.** The older `art-source/nanobanan/new/bg-nerve_forest-far.jpeg` and `bg-nerve_forest-mid.jpeg` are fully opaque scenes. The older `bg-nerve_forest-near.jpeg` contains a literal grey/white checkerboard. The older `bg.nerve_forest.sky.jpeg` is a complete scene with foreground trunks and pink drapes. They are failed references, not salvageable layers.
 >
-> **What changed.** The prompts now describe **one cut-out layer per image**, with a flat chroma-key field, explicit layer separation, coverage and value budgets, and a deterministic keying step. The sky remains the only opaque plate.
+> **What changed.** The prompts now describe **one cut-out layer per image**, with a flat chroma-key field, explicit layer separation, coverage and value budgets, and a deterministic keying step. The updated `-updated.jpeg` plates are flat-magenta cut-outs. The sky remains the only opaque plate.
 
 ---
 
@@ -40,12 +40,12 @@
 
 | Asset ID | Type | Source size | Fit | Status | File |
 |---|---|---|---|---|---|
-| `bg.nerve_forest.sky` | Background | 640×368, opaque | cover, integer 2× | **POC integrated**; final approval pending | `shared/backgrounds/nerve-forest-sky.webp` |
-| `bg.nerve_forest.far` | Parallax layer | 1024×512, hard alpha | tile both axes | **Source-only/deferred**; regenerate with this spec | `shared/backgrounds/nerve-forest-far.webp` |
-| `bg.nerve_forest.mid` | Parallax layer | 1024×512, hard alpha | tile both axes | **Source-only/deferred**; regenerate with this spec | `shared/backgrounds/nerve-forest-mid.webp` |
-| `bg.nerve_forest.near` | Parallax layer | 1024×512, hard alpha | tile both axes | **Source-only/deferred**; regenerate with this spec | `shared/backgrounds/nerve-forest-near.webp` |
+| `bg.nerve_forest.sky` | Background | 640×368, opaque | cover, integer 2× | **Updated POC integrated**; final approval pending | `shared/backgrounds/nerve-forest-sky.webp` |
+| `bg.nerve_forest.far` | Parallax layer | 1024×512, hard alpha | tile both axes | **POC integrated**; seam review pending | `shared/backgrounds/nerve-forest-far.webp` |
+| `bg.nerve_forest.mid` | Parallax layer | 1024×512, hard alpha | tile both axes | **POC integrated**; seam review pending | `shared/backgrounds/nerve-forest-mid.webp` |
+| `bg.nerve_forest.near` | Parallax layer | 1024×512, hard alpha | tile both axes | **Processed; deferred** (play-band repeat) | `shared/backgrounds/nerve-forest-near.webp` (not wired) |
 
-Runtime files live under `public/packs/anatomy-reflex/shared/backgrounds/`. The current `room.json` wires only the sky.
+Runtime files live under `public/packs/anatomy-reflex/shared/backgrounds/`. The current `room.json` wires the sky, far and mid.
 
 ### 1.2 Out of scope
 
@@ -59,7 +59,7 @@ Runtime files live under `public/packs/anatomy-reflex/shared/backgrounds/`. The 
 
 This document is the **source of truth for the background prompts and key workflow**. The shared sprite, atlas, badge and audio requirements remain in [`asset-requirements-v01.md`](asset-requirements-v01.md). Where the two documents disagree about how a background plate is generated, this document wins.
 
-The main document remains the source of truth for **current M3 scope and status**: the sky is wired, and far/mid/near are source-only/deferred. If the three parallax layers are regenerated and accepted, update the main document's summary, §2.2 and §5.4 in the same change. Do not silently expand the M3 capture scope from this document alone.
+The main document remains the source of truth for **current M3 scope and status**: the updated sky, far and mid are wired, and near is processed but source-only/deferred. If near is made play-band-safe and accepted, update the main document's summary, §2.2 and §5.4 in the same change. Do not silently expand the M3 capture scope from this document alone.
 
 ---
 
@@ -91,7 +91,7 @@ These facts come from the current pack and renderer. Do not “fix” them in ex
 
 ### 3.1 The four layers
 
-This is the **target contract** for the full 03 background stack. The current M3 build wires only the sky; the far/mid/near rows describe the deferred layers when they are regenerated.
+This is the **target contract** for the full 03 background stack. The current M3 build wires the sky, far and mid; the near row remains the target for a play-band-safe regeneration or a manual tile repair.
 
 | Layer | Fit / parallax | Key field | Painted coverage | Value | Role |
 |---|---|---|---:|---|---|
@@ -140,6 +140,8 @@ coverage = keptPixels / (keyedPixels + keptPixels)
 
 A plate with a flat field and a full-frame scene will report 80–100% coverage. That is the main failure this document exists to prevent.
 
+**Measured 2026-11-01 (exact 2× crops):** far 46.0%, mid 50.7%, near 23.9%. All three pass the numeric coverage budget. Near still fails the play-band read because the 1024×512 tile repeats vertically at screen y≈512.
+
 ### 3.5 Tiling rules
 
 - Far/mid/near tile **horizontally and vertically** in Phaser's `TileSprite`.
@@ -147,6 +149,7 @@ A plate with a flat field and a full-frame scene will report 80–100% coverage.
 - Avoid a single strong landmark that repeats obviously.
 - A clean magenta margin at the canvas edge becomes a transparent gutter at the tile seam. Reject it.
 - Do not trim a parallax plate. Keep the 1024×512 canvas so layer registration and tile phase stay fixed.
+- The 2026-11-01 pass uses a deterministic **2 px edge weld**: opposite edges receive the same RGBA values (alpha union + palette colour from the denser side), and the whole plate is snapped to a 2×2 cluster grid. This makes the edges pixel-identical, but it does not hand-repaint the composition across the seam. The 2×2 composition repeat remains a visual-review note.
 - The sky is not tiled; it uses integer 2× cover.
 
 ### 3.6 03 palette guard
@@ -159,7 +162,7 @@ The 03 colour script is **deep teal, nerve yellow and electric cyan**, supported
 - Joint ramp for cool edge light.
 - Ink for the darkest near silhouettes.
 
-**Not allowed in the 03 background stack:** muscle pink, crimson, purple, neon green, unapproved orange, pure red. The generated sky and near plates used pink drapes; those are out of script and must not be reproduced in a regenerated plate.
+**Not allowed in the 03 background stack:** muscle pink, crimson, purple, neon green, unapproved orange, pure red. The older sky and near plates used pink drapes; those are out of script and were removed from the updated runtime stack. The layer palette has no `tissue` role, and the updated sky palette has no `tissue` role, so muscle pink/crimson cannot enter the 03 background stack.
 
 ---
 
@@ -248,7 +251,7 @@ checkerboard, transparency grid, grey and white check pattern, alpha checker, wh
 
 ### 6.1 `bg.nerve_forest.sky` — opaque sky plate
 
-**Current status:** POC integrated; final approval pending. The current plate is the only 03 background wired by `room.json`, but it is busier than the target (foreground drapes/trunk). Regenerate with this prompt for final approval, or record a formal exception if the POC plate is kept.
+**Current status:** updated POC integrated; final approval pending. The runtime plate is the 2720×1568 updated source cropped to 2720×1564, area-resized to 640×368 and palette-quantised with the no-muscle sky palette. It removes the previous sky's pink drapes and is calmer, but the dark framing trunks remain a visual-review note. The old `bg.nerve_forest-sky-2x.png` preview is retained for comparison; the current preview is `nerve-forest-sky-updated-2x.png`.
 
 **Reference:** none; this creates `style-anchor-sky.png`. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_SKY`. **Source:** 640×368, opaque, integer 2× cover. **File:** `shared/backgrounds/nerve-forest-sky.webp`.
 
@@ -279,7 +282,7 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 ### 6.2 `bg.nerve_forest.far` — far parallax cut-out
 
-**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512, hard alpha, 2×2 clusters, generated on flat `#FF00FF` and keyed with `npm run art:key` (no trim). **File:** `shared/backgrounds/nerve-forest-far.webp`.
+**Current status:** POC integrated; seam review pending. The updated plate was cropped to 2048×1024 at (432,416), keyed at full resolution, nearest-downscaled to 1024×512, quantised and 2 px edge-welded. Coverage 46.0% keyed / 46.5% final; alpha 0/255; 12 colours. **Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512, hard alpha, 2×2 clusters, generated on flat `#FF00FF` and keyed with `npm run art:key` (no trim). **File:** `shared/backgrounds/nerve-forest-far.webp`.
 
 ```text
 SUBJECT: A seamless 2:1 far parallax cut-out layer: distant giant cable-like nerve trunks and segmented sheath plates, like stacked roof tiles, seen far away in cool teal and sage haze. Large, slow, simple shapes; two or three flat value steps; low contrast; no bone cream or white. The layer is sparse and airy: less than half the canvas is painted, the rest is flat magenta #FF00FF empty space. The painted clusters are separate, irregular masses that may meet any canvas edge; they do not form a continuous wall, a frame, a ring, a horizon or a ground line. No hanging bulbs, no canopy, no foreground roots, no characters, no labels, no arrows, no unique focal object, no bright highlights. Orthographic side view; the painted shapes and the magenta gaps must both tile seamlessly on all four edges; no single directional light, no hard cast shadows. Use only deep teal, sage, bone-shadow, nerve yellow and joint cyan; no muscle pink, crimson, purple or magenta inside the shapes.
@@ -308,7 +311,7 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 ### 6.3 `bg.nerve_forest.mid` — mid parallax cut-out
 
-**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512, hard alpha, 2×2 clusters, generated on flat `#FF00FF` and keyed with `npm run art:key` (no trim). **File:** `shared/backgrounds/nerve-forest-mid.webp`.
+**Current status:** POC integrated; seam review pending. The updated plate was cropped to 2048×1024 at (432,208), keyed at full resolution, nearest-downscaled to 1024×512, quantised and 2 px edge-welded. Coverage 50.7% keyed / 51.7% final; alpha 0/255; 16 colours. The runtime bone-cortex overlay is wired on this layer. **Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512, hard alpha, 2×2 clusters, generated on flat `#FF00FF` and keyed with `npm run art:key` (no trim). **File:** `shared/backgrounds/nerve-forest-mid.webp`.
 
 ```text
 SUBJECT: A seamless 2:1 mid parallax cut-out layer: branching, tentacle-like nerve twigs; round nerve bulbs hanging like lanterns; wet membrane folds like draped fabric. Medium-contrast deep teal and sage, with a few small nerve-yellow glow accents. The layer is airy: about half the canvas is painted, the rest is flat magenta #FF00FF empty space. The painted clusters are separate, irregular masses that may meet any canvas edge; they do not form a continuous wall, a frame, a ring, a horizon or a ground line. Every glow is a hard-edged dithered halo fully inside a painted shape; no soft bloom into the magenta. No dark near-canopy silhouettes, no foreground roots, no characters, no faces, no labels, no arrows, no unique focal object, no bone-cortex texture. Orthographic side view; the painted shapes and the magenta gaps must both tile on all four edges; soft ambient depth, no single directional light. Use only deep teal, sage, bone-shadow, nerve yellow and joint cyan; no muscle pink, crimson, purple or magenta inside the shapes.
@@ -337,7 +340,7 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 ### 6.4 `bg.nerve_forest.near` — near parallax cut-out
 
-**Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512, hard alpha, 2×2 clusters, generated on flat `#FF00FF` and keyed with `npm run art:key` (no trim). **File:** `shared/backgrounds/nerve-forest-near.webp`.
+**Current status:** processed; **deferred**. The updated plate was cropped to 2048×1024 at (432,208), keyed, nearest-downscaled to 1024×512, quantised and 2 px edge-welded. Coverage 23.9%; alpha 0/255; 9 colours; the lower half is clear. It still fails the play-band read: the 1024×512 tile repeats vertically at screen y≈512, so the hanging canopy lands across the player/platform band. Preview: `background-near-over-sky-1280x736.png`. **Reference:** `style-anchor-sky.png` for style/palette only. **Style:** `STYLE_BACKGROUND`. **Frame:** `FRAME_PARALLAX`. **Source:** 1024×512, hard alpha, 2×2 clusters, generated on flat `#FF00FF` and keyed with `npm run art:key` (no trim). **File:** `shared/backgrounds/nerve-forest-near.webp` (reserved, not wired).
 
 ```text
 SUBJECT: A seamless 2:1 near parallax cut-out layer: a sparse overhead canopy of dark fibrous cable-like roots, wet membrane sacs like balloons, and membrane folds like draped fabric. The clusters hang from the top edge and upper corners, with a few disconnected clumps at the left and right edges and short hanging tendrils. Deep teal and ink silhouettes only; two value steps; high contrast; occasional small nerve-yellow glow fully inside a shape. Keep at least two-thirds of the canvas flat magenta #FF00FF empty space, with the lower half almost entirely empty, so the player and platforms stay visible. The painted clusters are disconnected; do not connect them into a continuous frame, ring, window or border around the empty centre. No distant haze, no mid-layer bulbs, no characters, no faces, no labels, no arrows, no unique focal object, no opaque band across the play area. Orthographic side view; the painted shapes and the magenta gaps must both tile on all four edges. Use only deep teal, sage, bone-shadow, nerve yellow and ink; no muscle pink, crimson, purple or magenta inside the shapes.
@@ -369,22 +372,32 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 1. Generate the plate at the requested aspect (2:1 for parallax; wide for sky).
 2. Keep the full-resolution JPEG/PNG in `art-source/nanobanan/new/`.
-3. Confirm the parallax plate is 2:1. If the generator returns 16:9 or square, crop to 2:1 before keying or regenerate; do not squash it to 1024×512.
+3. Confirm the parallax plate is 2:1. If the generator returns 16:9 or square, crop to 2:1 before keying or regenerate; do not squash it to 1024×512. The 2026-11-01 pass uses a **2048×1024 exact-2× window** (centred or phase-adjusted per layer), then nearest-downscales to 1024×512. This keeps the 2×2 cluster grid native and avoids a 2.8125× resample.
 4. Do not manually paint a checkerboard or an alpha grid. If the plate has one, reject it.
 5. Do not generate a composite of all four layers.
 
 ### 7.2 Key the parallax plate
 
-Key at full resolution, before pixel cleanup and quantisation. Keep the full 1024×512 canvas; **do not pass `--trim`**. The example path below assumes a generated 2:1 plate.
+Key at full resolution, before pixel cleanup and quantisation. Keep the full 1024×512 canvas; **do not pass `--trim`**. The example below crops a 2048×1024 exact-2× window first, then keys it at full resolution.
 
 ```bash
+ffmpeg -y -v error \
+  -i art-source/nanobanan/new/bg-nerve_forest-far-updated.jpeg \
+  -vf "crop=2048:1024:432:416" \
+  art-source/nanobanan/working/tmp/background-far-2048x1024.png
+
 npm run art:key -- \
-  --in art-source/nanobanan/new/bg-nerve_forest-far-2x1.jpeg \
-  --out art-source/nanobanan/keyed/bg-nerve_forest-far.png \
+  --in art-source/nanobanan/working/tmp/background-far-2048x1024.png \
+  --out art-source/nanobanan/keyed/background-far-keyed.png \
   --key "#ff00ff" --tolerance 0.18 --softness 0.08 \
-  --preview art-source/previews/nanobanan/backgrounds/bg-nerve_forest-far-keyed.png \
+  --preview art-source/previews/nanobanan/backgrounds/background-far-keyed.png \
   --preview-width 1024 --background "#101a20" \
-  --report art-source/nanobanan/reports/bg-nerve_forest-far.key.json
+  --report art-source/nanobanan/reports/background-far.key.json
+
+ffmpeg -y -v error \
+  -i art-source/nanobanan/keyed/background-far-keyed.png \
+  -vf "scale=1024:512:flags=neighbor" -pix_fmt rgba \
+  art-source/nanobanan/working/tmp/background-far-1024x512.png
 ```
 
 The defaults are tuned for the generated JPEGs: tolerance 0.18, softness 0.08, alpha threshold 0.5, despill on. If the plate has a soft or noisy edge, raise `--tolerance` before lowering `--alpha-threshold`; the latter trades fringe for holes in the painted shapes.
@@ -400,17 +413,19 @@ The defaults are tuned for the generated JPEGs: tolerance 0.18, softness 0.08, a
 
 ### 7.4 Pixel cleanup and export
 
-1. Quantise the keyed plate to the §4.2 ramps.
-2. Enforce the 2×2 minimum cluster grid.
-3. Remove 1 px alpha islands and stray specks.
-4. Export at 1024×512 with hard alpha as lossless WebP or PNG. If the source is larger, downscale with nearest-neighbour first, then enforce the 2×2 clusters.
-5. Do not trim, crop, rotate or resample the **keyed** plate with bilinear filtering. Aspect cropping happens before keying, in §7.1.
-6. Do not ship the raw Ludo JPEG or the keyed review PNG.
-7. Keep the key report with the asset.
+1. Quantise the keyed plate to the §4.2 ramps with `palette.nerve-forest-layer.json` (no `tissue` role, so no muscle pink/crimson).
+2. Enforce the 2×2 minimum cluster grid. The 2026-11-01 pass uses an aligned 2×2 snap; every 2×2 cell becomes one RGBA value.
+3. Remove alpha islands smaller than 4 px and stray specks.
+4. Weld the four tile edges with a 2 px band: opposite edges receive the same RGBA values (alpha union + palette colour from the denser side). Then re-check the 2×2 grid. The 2026-11-01 pass uses `npm run art:tile-clean` for the 2×2 snap, island removal, edge weld and QA report.
+5. Export at 1024×512 with hard alpha as lossless WebP or PNG. If the source is larger, downscale with nearest-neighbour first, then enforce the 2×2 clusters.
+6. Do not trim, crop, rotate or resample the **keyed** plate with bilinear filtering. Aspect cropping happens before keying, in §7.1.
+7. Build both previews: 2×2 at 2048×1024 and the runtime 1280×720 crop. Inspect the seams at 400%; a pixel-identical weld is necessary but not sufficient if the composition repeat is obvious.
+8. Do not ship the raw Ludo JPEG or the keyed review PNG.
+9. Keep the key, normalize and clean reports with the asset.
 
 ### 7.5 Sky export
 
-The sky is not keyed. The generator may return 16:9; crop to the 640×368 aspect (about 1.74:1), then resize to 640×368 rather than stretching. Export opaque, lossless WebP or PNG, then verify the integer 2× cover at 1280×736 and the 16:9 crop at 1280×720. It must contain no magenta and no checkerboard.
+The sky is not keyed. The updated 2720×1568 source is cropped to 2720×1564 (2 px top/bottom) for the 640×368 aspect, then area-resized to 640×368 rather than stretched. Quantise with `palette.nerve-forest-sky.json` (no `tissue` role), export opaque lossless WebP, then verify the integer 2× cover at 1280×736 and the 16:9 crop at 1280×720. It must contain no magenta, no muscle pink/crimson and no checkerboard.
 
 ---
 
@@ -420,16 +435,16 @@ The sky is not keyed. The generator may return 16:9; crop to the 640×368 aspect
 
 | Asset | Must pass |
 |---|---|
-| Sky | 640×368 opaque; quiet distant haze; no foreground trunk, canopy, drape, edge silhouette or frame; HUD and player silhouettes read at 1280×720; no hard horizon at player height; no magenta/checkerboard; 03 palette only; ≤300 KB |
+| Sky | 640×368 opaque; quiet distant haze; no foreground trunk, canopy, drape, edge silhouette or frame; HUD and player silhouettes read at 1280×720; no hard horizon at player height; no magenta/checkerboard; 03 palette only; ≤300 KB. **2026-11-01: the updated plate is calmer and palette-compliant but retains dark framing trunks; accepted as POC, final approval pending.** |
 | Far | Keyed cut-out; coverage <50%; low contrast, 2–3 value steps; no bone cream/white; distant trunks and sheath plates only; no full-frame wall, bulbs, canopy, ground or horizon; both-axis seam; no magenta fringe; 2×2 clusters; 1024×512; ≤300 KB |
 | Mid | Keyed cut-out; coverage 35–55%; medium contrast; branching twigs, bulbs and folds; no bone-cortex texture; no dark near-canopy silhouettes or full-frame wall; contained glows; both-axis seam; no magenta fringe; 2×2 clusters; 1024×512; ≤300 KB |
-| Near | Keyed cut-out; coverage ≤33%; lower half almost entirely empty; dark teal/ink, two value steps; overhead clumps and edge tendrils; no continuous frame, ring, window or border; no opaque band; both-axis seam; no magenta fringe; 2×2 clusters; 1024×512; ≤300 KB |
+| Near | Keyed cut-out; coverage ≤33%; lower half almost entirely empty; dark teal/ink, two value steps; overhead clumps and edge tendrils; no continuous frame, ring, window or border; no opaque band; both-axis seam; no magenta fringe; 2×2 clusters; 1024×512; ≤300 KB. **2026-11-01: coverage 23.9% and technical checks pass, but the vertical repeat puts the canopy across the play band; deferred.** |
 
 ### 8.2 Stack acceptance
 
-- Composite sky + far + mid + near at 1280×720 and at the 1280×736 room size.
-- The stack reads as four depths: distant haze, far trunks, mid branches/bulbs, near overhead clumps.
-- The near layer does not obscure the play band or the player silhouettes.
+- Composite the current stack (sky + far + mid) at 1280×720 and at the 1280×736 room size. The four-layer stack remains the target once near is play-band-safe.
+- The current stack reads as three depths: distant haze, far trunks/plates, mid branches/bulbs. Near is not wired.
+- When near is wired, it must not obscure the play band or the player silhouettes. The 2026-11-01 updated near plate fails this check; see `background-near-over-sky-1280x736.png`.
 - No layer's signature content appears in another layer (no foreground trunk in the sky, no bulbs in the far, no near canopy in the mid).
 - No transparent gutters or visible seams at tile boundaries.
 - The HUD and player remain readable.
@@ -443,10 +458,10 @@ The sky is not keyed. The generator may return 16:9; crop to the 640×368 aspect
 - Every colour block is at least 2×2 pixels.
 - Lossless WebP or PNG; no JPG or lossy WebP.
 - No raw Ludo JPEG is referenced by a manifest or served from `public/`.
-- Key reports exist for far/mid/near and record source size, key, tolerance and edge/despill counts; coverage is derived from the keyed/kept counts.
-- Two-axis 2×2 repeat passes at 2048×1024 and 1280×720.
+- Key reports exist for far/mid/near and record source size, key, tolerance and edge/despill counts; coverage is derived from the keyed/kept counts. Clean reports record the 2×2 snap, island removal and edge-weld result.
+- The welded edges are pixel-identical; the 2×2 composition repeat is visually inspected at 2048×1024 and 1280×720.
 - The sky is opaque and contains no key colour.
-- The 03 palette guard is respected: no muscle pink, crimson, purple or unapproved orange.
+- The 03 palette guard is respected: no muscle pink, crimson, purple or unapproved orange. The layer and updated-sky palettes have no `tissue` role.
 
 ### 8.4 Content QA
 
@@ -459,18 +474,18 @@ The sky is not keyed. The generator may return 16:9; crop to the 640×368 aspect
 
 ### 8.5 Sign-off checklist
 
-**Current M3 sign-off:** only the sky line is a current capture blocker. The far/mid/near lines apply when the deferred layers are regenerated and brought into scope.
+**Current M3 sign-off:** the updated sky, far and mid are wired and checked for the current capture. The far/mid lines are POC-integrated with composition-repeat review pending; near remains deferred until its play-band repeat is resolved.
 
-- [ ] Sky approved at 1280×720 and 1280×736 cover. *(current)*
-- [ ] Far keyed, coverage checked, both-axis seam checked. *(deferred)*
-- [ ] Mid keyed, coverage checked, both-axis seam checked; runtime bone-cortex overlay checked. *(deferred)*
-- [ ] Near keyed, coverage checked, lower half clear, no continuous frame. *(deferred)*
+- [x] Updated sky processed and wired at 1280×720 and 1280×736 cover; final approval pending.
+- [x] Far keyed, coverage checked (46.0% keyed / 46.5% final), 2×2 clusters and pixel-identical welded edges. *(POC integrated; composition repeat review pending)*
+- [x] Mid keyed, coverage checked (50.7% keyed / 51.7% final), 2×2 clusters and pixel-identical welded edges; runtime bone-cortex overlay wired. *(POC integrated; composition repeat review pending)*
+- [ ] Near keyed, coverage checked, lower half clear, no continuous frame. *(processed; deferred: play-band repeat)*
 - [ ] Four-layer stack approved at 1280×720. *(future)*
-- [ ] No checkerboard or magenta fringe in any plate; no semi-transparent alpha in the parallax layers.
-- [ ] Key reports and prompt log complete.
-- [ ] Licences recorded.
-- [ ] Files exported to `public/packs/anatomy-reflex/shared/backgrounds/`.
-- [ ] Raw sources remain in `art-source/` and are not referenced by the manifest.
+- [x] No checkerboard or magenta fringe in any plate; alpha is 0/255 and the palette has no muscle pink/crimson.
+- [ ] Key reports and prompt log complete. *(key/normalize/clean reports complete; model/seed provenance still pending)*
+- [x] Licences recorded for the wired sky/far/mid runtime plates.
+- [x] Files exported to `public/packs/anatomy-reflex/shared/backgrounds/`; near is exported but not wired.
+- [x] Raw sources remain in `art-source/` and are not referenced by the manifest.
 
 ---
 
@@ -514,6 +529,17 @@ Copy-paste row template:
 | m3-2026-11-01.1 | style-pixel-v2 | asset.id | layer-role | subject-block | #FF00FF | key-report | subject→style→palette→frame | Ludo/Indie | model/seed | reference | negative-block | negative-delta | prompt | frame-block | aspect/source | variations | chosen-file | runtime-export | date | keying | pixel-cleanup | grid-check | stack-check | verdict | licence | notes |
 ```
 
+### 9.1 Recorded 2026-11-01 updated-plate pass
+
+| Asset | Source | Crop | Key report | Coverage | Cleanup | Verdict |
+|---|---|---|---|---:|---|---|
+| `bg.nerve_forest.sky` | `new/bg-nerve_forest-sky-updated.jpeg` 2720×1568 | 2720×1564 at y=2, area 640×368 | none (opaque) | — | no-muscle palette | Wired; framing-trunk review pending |
+| `bg.nerve_forest.far` | `new/bg-nerve_forest-far-updated.jpeg` 2912×1440 | 2048×1024 at (432,416), exact 2× | `reports/background-far.key.json` | 46.0% | 2×2 snap, 2 px weld | Wired; composition repeat review pending |
+| `bg.nerve_forest.mid` | `new/bg-nerve_forest-mid-updated.jpeg` 2912×1440 | 2048×1024 at (432,208), exact 2× | `reports/background-mid.key.json` | 50.7% | 2×2 snap, 2 px weld | Wired; composition repeat review pending |
+| `bg.nerve_forest.near` | `new/bg-nerve_forest-near-updated.jpeg` 2912×1440 | 2048×1024 at (432,208), exact 2× | `reports/background-near.key.json` | 23.9% | 2×2 snap, 2 px weld | Deferred; vertical repeat covers play band |
+
+All four use `#FF00FF`, tolerance 0.18, softness 0.08, no trim, and the shared `palette.nerve-forest-layer.json` (far/mid/near) or `palette.nerve-forest-sky.json` (sky). The process report is `reports/background-layers.process.json`; previews are in `previews/nanobanan/backgrounds/`; the in-game review still is `screenshots/m3-nerve-forest-backgrounds.png`.
+
 ---
 
 ## 10. Risks and stop rules
@@ -544,6 +570,7 @@ Copy-paste row template:
 - If the sky stays busy after two attempts, simplify it; the layers cannot fix a foreground-heavy sky.
 - If the style gate fails, ship the placeholder layers. A coherent placeholder stack is better than a broken final stack.
 - If a background needs new renderer behaviour, stop; it is an engine task, not an art task.
+- **Applied 2026-11-01:** the updated near plate passed the numeric coverage and technical checks but failed the play-band read after vertical tiling. It remains deferred rather than being wired as a broken foreground layer.
 
 ---
 
@@ -552,6 +579,7 @@ Copy-paste row template:
 | Date | Change |
 |---|---|
 | 2026-11-01 | Initial dedicated background requirements. Supersedes the background prompts in `asset-requirements-v01.md`. Sky is opaque; far/mid/near are `#FF00FF` cut-outs keyed with `art:key`; adds the layer contract, coverage/value budgets, `NEGATIVE_PARALLAX`, key workflow, acceptance checks and prompt log. Prompt version `m3-2026-11-01.1`; style version `style-pixel-v2`; doc v0.1. Does **not** re-baseline the current M3 scope: the sky remains the only wired 03 background, and far/mid/near remain source-only/deferred until regenerated and accepted. |
+| 2026-11-01 | Updated cut-out pass and wiring. Updated sky replaced the POC plate (2720×1568 → 2720×1564 crop → 640×368, no-muscle palette). Far (46.0%) and mid (50.7%) were exact-2× cropped, keyed, palette-quantised, 2×2-snapped and 2 px edge-welded, then wired with the specified parallax/depth/material setup. Near (23.9%) passes the technical checks but is deferred because its 1024×512 vertical repeat puts the hanging canopy across the play band. Doc v0.2. |
 
 ---
 
@@ -561,9 +589,10 @@ Copy-paste row template:
 - [`room.json`](../../public/packs/anatomy-reflex/levels/03-nerve-forest/room.json) — background layer order, fit, parallax, depth and overlays.
 - [`background.ts`](../../src/world/background.ts) — `cover` and `TileSprite` behaviour, integer sky scale, tile position rounding.
 - [`art-key.ts`](../../scripts/art-key.ts) — chroma-key CLI, tolerance, softness, despill, report.
+- [`art-tile-clean.mjs`](../../scripts/art-tile-clean.mjs) — 2×2 snap, alpha-island removal, 2 px tile edge weld and QA report.
 - [`key.ts`](../../scripts/art/key.ts) — RGB-distance key, hard alpha, despill, alpha bounds.
 - [`art-source/nanobanan/README.md`](../../art-source/nanobanan/README.md) — concept plates, key/fit workflow and POC status.
-- [`art-source/nanobanan/new/`](../../art-source/nanobanan/new/) — the failed background plates; reference only, never ship.
+- [`art-source/nanobanan/new/`](../../art-source/nanobanan/new/) — the updated `*-updated.jpeg` cut-out plates plus the older failed `bg-nerve_forest-*.jpeg` references. Only the updated plates are processed; nothing here is a runtime asset.
 - [`art-source/nanobanan/reports/`](../../art-source/nanobanan/reports/) — key and fit reports.
 - [`adr-m3/0047-pixel-art-visual-direction.md`](../adr-m3/0047-pixel-art-visual-direction.md) — pixel-art direction.
 - [`adr-m3/0048-half-resolution-pixel-rendering.md`](../adr-m3/0048-half-resolution-pixel-rendering.md) — half-res authoring and 2× display.

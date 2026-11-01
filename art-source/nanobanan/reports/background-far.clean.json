@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "input": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/art-source/nanobanan/working/tmp/background-far-quantized.png",
+  "output": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/art-source/nanobanan/working/tmp/background-far-clean.png",
+  "cell": {
+    "width": 1024,
+    "height": 512
+  },
+  "band": 2,
+  "minComponent": 4,
+  "weldX": "union",
+  "weldY": "union",
+  "snap2x2": true,
+  "before": {
+    "opaquePixels": 240903,
+    "coverage": 0.4595,
+    "alphaViolations": 0,
+    "uniqueColours": 12,
+    "non2x2Pixels": 17856,
+    "edgeMismatch": {
+      "leftRight": 417,
+      "topBottom": 652
+    }
+  },
+  "removal": {
+    "removedComponents": 0,
+    "removedPixels": 0
+  },
+  "after": {
+    "opaquePixels": 243844,
+    "coverage": 0.4651,
+    "alphaViolations": 0,
+    "uniqueColours": 12,
+    "non2x2Pixels": 0,
+    "edgeMismatch": {
+      "leftRight": 0,
+      "topBottom": 0
+    }
+  }
+}

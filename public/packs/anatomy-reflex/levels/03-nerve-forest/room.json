@@ -81,6 +81,28 @@
           "opacity": 0.14,
           "blend": "overlay"
         }
+      },
+      {
+        "assetId": "bg.nerve_forest.far",
+        "depth": -30,
+        "parallaxX": 0.2,
+        "parallaxY": 0.1,
+        "fit": "tile"
+      },
+      {
+        "assetId": "bg.nerve_forest.mid",
+        "depth": -20,
+        "parallaxX": 0.45,
+        "parallaxY": 0.2,
+        "fit": "tile",
+        "materialId": "bone",
+        "pattern": {
+          "patternId": "bone-cortex",
+          "space": "world",
+          "scale": 0.75,
+          "opacity": 0.12,
+          "blend": "overlay"
+        }
       }
     ]
   },
