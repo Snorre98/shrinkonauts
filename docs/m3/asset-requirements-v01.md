@@ -38,6 +38,13 @@
 > 16×16/36×36 reviews. The bone and nerve JPEGs are material swatches, not
 > frame atlases; `tile.anatomy.atlas` stays placeholder.
 >
+> **Background regeneration spec (2026-11-01).** The corrected chroma-key
+> prompts and key workflow for the deferred far/mid/near layers live in
+> [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md)
+> (prompt version `m3-2026-11-01.1`). This document remains the source of truth
+> for current M3 scope: the sky is wired, and far/mid/near stay
+> source-only/deferred until regenerated and accepted.
+>
 > **P2 palette note (2026-11-01).** ADR-0065 supersedes ADR-0064. P2 is now a
 > bone suit with a joint-cyan visor and backpack tank, a nerve-amber accent,
 > teal/bone-shadow joints, an ink outline, and bone-shadow grime. Orange is no
@@ -57,7 +64,7 @@
 |---|---|
 | Art scope | `03-nerve-forest` environments + shared entity sprites (POC integrated; final approval pending) |
 | Visible images | **21 declared** — 18 active (17 referenced by the authored 03/04 rooms + 1 reserve `sprite.scan.reflex`), plus 3 source-only/deferred 03 backgrounds |
-| 03 background | **Sky-only POC** — `bg.nerve_forest.sky` is wired; `bg.nerve_forest.far/mid/near` are source-only/deferred |
+| 03 background | **Sky-only POC** — `bg.nerve_forest.sky` is wired; `bg.nerve_forest.far/mid/near` are source-only/deferred. Corrected regeneration prompts: [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) |
 | POC animation sheets | **9** — 8 player clips + 1 Neuron Keeper idle; additional runtime assets outside the 21-image register |
 | Audio cues | **11** — M3 scope; the pack also declares `audio.cue.wrong`, which stays placeholder |
 | Total M3 assets | **32 declared** — 29 active (18 images + 11 audio), with 3 background layers deferred |
@@ -73,7 +80,7 @@
 | Levels 01, 02, 05, Silicon | **Deferred** — design proposals exist, but the pack content is not implemented |
 | Level 04 | **Authored**; shares the POC entity sprites and Neuron Keeper idle, but its backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder art |
 | Material atlases | **2 final atlases**: bone (`blob47`, 47 regions) and nerve (`edge`, 16 regions), authored as 32×32 frames at 1:1 with 2×2 clusters. The current pack still has one `tile.anatomy.atlas` placeholder; the new bone/nerve JPEGs are source swatches only, not frame atlases |
-| Prompt version | **`m3-2026-10-31.2`** (subject-first prompts + biology-to-shape lexicon) |
+| Prompt version | **`m3-2026-10-31.2`** for sprites/entities/UI; **`m3-2026-11-01.1`** for backgrounds (see the dedicated background doc) |
 | Content dependency | **Puzzle-specific props are checked against the authored 03/04 rooms**; do not generate props the rooms do not reference |
 
 > **Content dependency.** The pack implements Node Run in `03-nerve-forest` and
@@ -475,7 +482,9 @@ The `bg.muscle_endplate.*` layers used by 04 are **not** in this M3 pass; they
 stay placeholder. The 03 room wires only the sky; its screen-space nerve-fiber
 overlay remains. The supplied far/mid/near plates are 16:9 opaque scenes, not
 transparent 2:1 tile sets, and the near plate has a baked checkerboard, so they
-must not be wired into the current `fit: "tile"` layers.
+must not be wired into the current `fit: "tile"` layers. The corrected
+regeneration prompts and `#FF00FF` key workflow are in
+[`background-asset-requirements-v01.md`](background-asset-requirements-v01.md).
 
 ### 5.5 Audio cues
 
@@ -788,7 +797,7 @@ P2 now uses its approved Ludo walk/jump source sheets (ADR-0065). Do not start B
 - **Sprites/entities:** key the concept plate, trim to the alpha bounding box, then run `npm run art:fit` to crop, fit the 18×18 cell with a 1 px transparent margin, hard-threshold alpha, and quantise the approved ramps. Export PNG. The original batch uses `fit.config.json`; the 2026-11-01 batch uses `fit.new.config.json`. The fit report records the source bbox, fitted size, margins, palette validation and alpha violations. The badge audit uses a 16×16 cell in `fit.badge.config.json` and does not write runtime art.
 - **Source sheets:** slice with the Ludo JSON, then run `npm run art:build-player` to generate the POC idle/walk/jump/fall/land sheets from `working/clips.json`. For the Neuron Keeper, use `--character neuron-agent --sampler downscale --write-runtime`; the same command writes the static frame 0 and the 36-frame idle sheet. Keep the raw sheet in `art-source/`, never in `public/`. Frame 0 remains the static fallback.
 - **Palette variants:** derive from the indexed master with a semantic LUT; do not re-prompt Ludo. P2 uses the approved bone/joint/nerve source sheets for the POC; the ADR-0065 role map remains available for future derived variants.
-- **Backgrounds:** the POC sky is cropped to 2672×1536 from the 16:9 source, area-resized to 640×368, quantised with `palette.sky.json`, and encoded as lossless WebP. Far/mid/near remain future 1024×512 opaque/transparent tile assets; do not wire the supplied 16:9 scenes.
+- **Backgrounds:** the POC sky is cropped to 2672×1536 from the 16:9 source, area-resized to 640×368, quantised with `palette.sky.json`, and encoded as lossless WebP. Far/mid/near remain future 1024×512 hard-alpha tile assets; do not wire the supplied 16:9 scenes. Use the corrected prompts and `#FF00FF` key workflow in [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md).
 - **Atlases:** assemble 32×32 cells at 1:1 from the approved swatch; 8×6 bone grid (47 regions + one opaque empty cell), 4×4 nerve grid (16 regions); every cell opaque; export PNG. Do not add gutters or transparent seams. The new bone/nerve JPEGs are swatches only; atlas wiring stays deferred.
 - **Badge:** 16×16 source, transparent or magenta-keyed; critical detail inside the middle 60% vertical band; export PNG. The current source fails the 16×16 read and stays placeholder.
 - **Palette:** quantise every asset to the §4.3 ramps. No intermediate blends, no stray colours.
@@ -880,6 +889,8 @@ text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lin
 
 ### 8.7 NEGATIVE_BACKGROUND
 
+> **Superseded for backgrounds (2026-11-01):** use the updated `NEGATIVE_BACKGROUND` and the new `NEGATIVE_PARALLAX` block in [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md). This block is retained for history.
+
 ```text
 text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram, diagram lines, textbook anatomy diagram, cutaway, cross-section, characters, creatures, astronaut, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, viscera, exposed organs, hard horizon line, single focal landmark, high-contrast centre, opaque near-layer centre, obvious repeating object, frame
 ```
@@ -928,11 +939,15 @@ Export spec: 18×18 source, base of the lowest visible element on the bottom pad
 
 ### 8.12 FRAME_SKY
 
+> **Superseded for backgrounds (2026-11-01):** use [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) for the sky prompt and base-layer contract. This block is retained for history.
+
 ```text
 640×368, wide, opaque, edge-to-edge background plate, no frame. Keep the upper corners and lower third dark and low-contrast; keep important detail inside the central 70% for the 2× cover crop. Hard pixel edges; no anti-aliasing.
 ```
 
 ### 8.13 FRAME_PARALLAX
+
+> **Superseded for backgrounds (2026-11-01):** use [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) for the `FRAME_PARALLAX` key-field contract. This block is retained for history; its “transparent background” wording is what produced the baked checkerboard.
 
 ```text
 1024×512, 2:1, transparent background, isolated layer, no frame. Tile seamlessly on all four edges; every colour block at least 2×2 pixels; verify as a 2×2 repeat at native size and at 1280×720. Hard pixel edges; no anti-aliasing.
@@ -1363,6 +1378,8 @@ Full object, centred, with a clear empty margin on all sides, isolated on a flat
 
 ### 8.20 Background prompts
 
+> **Background prompts superseded (2026-11-01).** The corrected sky/far/mid/near prompts and the `#FF00FF` cut-out workflow are in [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md). The prompts below are retained for history; do not generate any background plate from them.
+
 **POC status:** only `bg.nerve_forest.sky` is wired. The supplied sky is a 16:9 scene cropped to 2672×1536, area-resized to 640×368, and palette-quantised; it is busier than the ideal prompt plate and remains POC/final-approval-pending. The supplied far/mid/near plates are source-only and must not be wired into the current tile layers.
 
 #### `bg.nerve_forest.sky` — sky plate
@@ -1756,7 +1773,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - [ ] Neuron Keeper approved (POC static + idle integrated; final art approval pending).
 - [ ] Four visible scan targets approved; `sprite.scan.reflex` reserve is optional. (POC integrated: `scan.synapse`, `scan.muscle`; placeholders: `scan.neuron`, `scan.pathway`; final approval pending.)
 - [ ] Gate, props and receptors approved. (POC integrated: `gate.ferry`, `prop.tracer`, `pulse.terminal`, both receptors; `sprite.exit` remains placeholder; final approval pending.)
-- [ ] Sky approved; far/mid/near approved. (Sky POC integrated in 03; far/mid/near source-only/deferred.)
+- [ ] Sky approved. (Sky POC integrated in 03; far/mid/near source-only/deferred and not part of the current capture.)
 - [ ] Bone and nerve atlases approved; region maps, 2×2 clusters and tint path checked. (Swatches only; atlas deferred.)
 - [ ] Badge approved at the pill crop and the 32×32 pixel-UI target. (16×16 audit rejected; CSS placeholder retained.)
 - [ ] UI pixel chrome, fonts, material/pattern slots approved.
@@ -2091,6 +2108,7 @@ Do not invent new prefixes without updating the asset contract.
 
 ## 14. References
 
+- [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) — dedicated sky/far/mid/near prompts, `#FF00FF` key workflow and background acceptance.
 - [`adr-m3/0047-pixel-art-visual-direction.md`](../adr-m3/0047-pixel-art-visual-direction.md) — whole-game pixel-art direction.
 - [`adr-m3/0048-half-resolution-pixel-rendering.md`](../adr-m3/0048-half-resolution-pixel-rendering.md) — half-res authoring and 2× display.
 - [`adr-m3/0049-pixel-ui-chrome-and-typography.md`](../adr-m3/0049-pixel-ui-chrome-and-typography.md) — pixel UI and fonts.
@@ -2146,6 +2164,7 @@ Do not invent new prefixes without updating the asset contract.
 | 2026-11-01 | P2 re-baseline and POC animation: ADR-0065 supersedes the orange P2 concept; P2 uses bone suit/joint-cyan visor/tank/nerve accent. Added `npm run art:build-player`, `npm run art:key`, P1/P2 walk/jump/fall/land runtime sheets, and the player animator. Added §5.8 completion status and updated the manifest, acceptance, and open-decision sections. |
 | 2026-11-01 | Entity POC: added `npm run art:fit` with configurable 18×18 fit, 1 px margin, hard alpha, non-orange palette quantisation, preview/report output, and tests. Fitted the nanobanan scan plates: `scan.synapse` and `scan.muscle` are POC-integrated; `scan.neuron` and `scan.pathway` remain placeholders because the wide plates lose their reading at 36×36. Added the 36-frame Neuron Keeper idle source and `sprite.agent.neuron.idle`, regenerated the static from frame 0, and wired a data-driven entity idle in 03/04. The nanobanan agent plate is an alternate review asset. Status is POC integrated / final art approval pending. |
 | 2026-11-01 | Nanobanan batch: POC-integrated `sprite.gate.ferry`, `sprite.prop.tracer`, `sprite.pulse.terminal`, `sprite.receptor.triangle`, and `sprite.receptor.circle` through the existing IDs. Added the sky-only 03 background (`shared/backgrounds/nerve-forest-sky.webp`) and removed far/mid/near from the room; those layers remain source-only/deferred. The badge and reflex plate stay placeholders after review; the bone/nerve swatches are source-only and the atlas task remains deferred. Final approval and the prompt log remain pending. |
+| 2026-11-01 | Background regeneration spec: added [`background-asset-requirements-v01.md`](background-asset-requirements-v01.md) with the corrected sky/far/mid/near prompts, flat `#FF00FF` cut-out contract, no-trim key workflow, coverage/value budgets and background acceptance. Current scope unchanged: sky wired; far/mid/near source-only/deferred. Prompt version `m3-2026-11-01.1`. |
 
 ---
 
