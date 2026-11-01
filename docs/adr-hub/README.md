@@ -24,6 +24,9 @@ does not rewrite accepted records.
   authority. `start({ resume, activeP2 })` is the only runtime change.
 - ADR-0047–0056: M4 online co-op adds the lobby implementation behind the hub's
   disabled multiplayer section. The hub placeholder is deliberately stateless.
+- ADR-0066–0069 (controller domain): M4.0a adds a local-co-op input setup panel
+  with keyboard/phone per player slot. The disabled online block remains for
+  M4.0b.
 - ADR-0051: host-owned save/evidence; the hub shows Continue only for local
   play; M4 makes the guest save a no-op.
 

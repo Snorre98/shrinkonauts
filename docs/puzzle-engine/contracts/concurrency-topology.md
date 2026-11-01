@@ -48,6 +48,26 @@ single-player and local co-op remain single-browser, single-writer systems. See
 [`ADR-0048`](../../adr-online/0048-session-topology-room-lifecycle.md), and
 [`ADR-0053`](../../adr-online/0053-failure-reconnect-host-lifecycle.md).
 
+### 1.2 Optional controller input amendment
+
+M4.0a adds a phone as an input device for same-screen co-op without changing the
+single-writer rule:
+
+- the host browser still runs the fixed-step simulation and remains the single
+  writer of puzzle, physics, save, and evidence state;
+- a controller sends `NetInput` for exactly one player slot and receives no
+  world, UI, puzzle, dialogue, or save state;
+- a Cloudflare Worker and Durable Object relay controller messages and store
+  membership/slot reservations only; they are not a game loop or state store;
+- keyboard co-op remains the default; a controller disconnect pauses the host
+  session and may fall back to the keyboard for that slot.
+
+This exception applies only to the optional controller session. Local
+single-player and keyboard co-op remain single-browser, single-writer systems.
+See [`ADR-0067`](../../adr-controller/0067-per-player-input-slots-and-device-arbitration.md),
+[`ADR-0068`](../../adr-controller/0068-controller-session-pairing-and-trust.md),
+and [`ADR-0069`](../../adr-controller/0069-controller-latency-and-input-feel.md).
+
 ## 2. Queues and capacities
 
 | Queue | Feeds | Capacity |

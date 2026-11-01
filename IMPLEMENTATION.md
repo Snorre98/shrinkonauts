@@ -6,7 +6,8 @@ The app boots into a bathroom, selects a cycle and player mode in the washing
 machine menu, plays a launch transition, and enters the selected pack. Anatomy
 starts at **03 — Nerve Forest**, plays Node Run, transitions to **04 — Endplate
 Ferry**, and finishes with teach-back evidence export. Silicon is visible but
-gated until M2; online co-op is a disabled M4 placeholder.
+gated until M2; online co-op is a disabled M4.0b placeholder. Phone-controller
+same-screen co-op is planned as M4.0a but is not implemented on this branch.
 
 M1.8 adds `materials.json`, material grids and autotiling, deterministic tile
 variants, atlas regions, world/object/background pattern projection, and UI
@@ -32,7 +33,8 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Per-pack saves (`shrinkonauts.run.<packId>`) | Working |
 | Anatomy cycle start, launch, and return | Working |
 | Silicon cycle | Visible; gated until M2 |
-| Online co-op lobby | Visible placeholder; M4 |
+| Online co-op lobby | Visible placeholder; M4.0b |
+| Phone controller co-op | Planned; ADR-0066–0069 and M4.0a plan drafted |
 | Direct boot into `03-nerve-forest` | Working via `?skipMenu=1` |
 | 03 → 04 transition through debrief | Working |
 | Pack + syllabus loading from `public/` | Working |
@@ -650,7 +652,9 @@ procedural placeholder:
 - Conditional dialogue-node skipping; M1 supports linear nodes, choices, and
   effects only.
 - Final bathroom hub art (M3.5); procedural hub placeholders ship now.
-- Real online host/join/ready (M4); the hub shows a disabled placeholder.
+- Real online host/join/ready (M4.0b); the hub shows a disabled placeholder.
+- Phone-controller co-op (M4.0a); ADRs and plan exist, no transport or touch UI
+  is implemented on this branch.
 - Physical puzzle-gate bodies (ADR-0002 target).
 - `locked`/`unlock`/`propReleased` (ADR-0004 target).
 - `requires`/`message`/`linkBlocked` (ADR-0005 target).
@@ -674,8 +678,9 @@ procedural placeholder:
   and manifests; it is not a playable pack.
 - **One Phaser game at a time.** The hub game is destroyed before the room game
   is created, avoiding texture-key collisions between packs.
-- **Online is a placeholder.** The hub exposes the M4 section but no transport,
-  room code, or session state until M4.
+- **Online is a placeholder.** The hub exposes the M4.0b section but no
+  transport, room code, or session state until M4.0b. M4.0a phone-controller
+  co-op is planned separately and is not wired into the hub yet.
 - **Two-level slice.** `03-nerve-forest` starts and transitions through debrief
   to `04-muscle-effector`, which ends the pack. `05-reflex-core` is a forward
   reference only.

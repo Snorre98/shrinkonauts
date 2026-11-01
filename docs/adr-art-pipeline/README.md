@@ -16,10 +16,11 @@ accepted history.
 ## Numbering note
 
 The repository currently has domain-local numbering collisions: M3 uses
-ADR-0047–0049, the online domain uses ADR-0047–0057, and the hub domain uses
-ADR-0058–0059. This domain starts at **ADR-0060** to avoid adding another
-collision. If the project later reconciles a single global sequence, renumber
-these records before acceptance; accepted records are immutable.
+ADR-0047–0049, the online domain uses ADR-0047–0057, the hub domain uses
+ADR-0058–0059, and the controller domain uses ADR-0066–0069. This domain starts
+at **ADR-0060** to avoid adding another collision. If the project later
+reconciles a single global sequence, renumber these records before acceptance;
+accepted records are immutable.
 
 ## Index
 

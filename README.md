@@ -250,6 +250,8 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
   deliberately missing and which milestone owns it.
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
   pre-game shell and save/catalog model.
+- [`docs/adr-controller/README.md`](docs/adr-controller/README.md) — ADR-0066–0069
+  for phone-controller same-screen co-op (M4.0a).
 
 `docs/puzzle-engine/` and `docs/adr-m1.5/` are maintained in this repository.
 `docs/shrinkonauts` is a symlink into the read-only Obsidian vault and is not
@@ -263,7 +265,8 @@ with placeholder proof content; human visual review is pending. The automated
 suite passes (45 files / 423 tests), pack validation/smoke pass, and the browser
 smoke passes 7/7. The hub starts Anatomy in Solo or Local co-op, returns to the
 bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
-M2 and M4.
+M2 and M4.0b. Phone-controller same-screen co-op is planned as M4.0a; see
+[`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
 
 M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, and land
 sheets play in `03-nerve-forest`, P2 uses the approved bone-suit/joint-cyan

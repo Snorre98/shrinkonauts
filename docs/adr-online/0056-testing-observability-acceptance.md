@@ -132,7 +132,8 @@ M4 closes with:
 
 - Full anti-cheat or adversarial guests.
 - Cross-browser determinism (not applicable to thin client).
-- Mobile/touch.
+- Mobile game rendering; M4.0a controller touch input is covered by
+  ADR-0068/0069 and the controller implementation plan.
 - Host migration.
 - Full M2 pack online (M4.1).
 - Network conditions beyond a simulated delay/loss profile.
@@ -157,7 +158,7 @@ M4 closes with:
 
 - No load/performance testing beyond two players.
 - No adversarial security testing.
-- No full-pack online coverage in M4.0.
+- No full-pack online coverage in M4.0b.
 
 ## Alternatives considered
 

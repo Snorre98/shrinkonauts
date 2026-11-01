@@ -43,6 +43,9 @@ anti-cheat.
 - Role is assigned by the URL/hello and validated by the DO; a guest cannot
   claim host.
 - The host is the only authority for game state and save.
+- **Controller phase (M4.0a):** a controller room accepts one host and up to two
+  controllers instead of a guest; see ADR-0068. Slot reservations replace the
+  single guest slot.
 
 ### 4. Message validation
 
@@ -71,7 +74,7 @@ Recommended M4 limits:
 | Guest action rate | 8/s |
 | Host world snapshots | 30/s |
 | Host UI snapshots | 15/s |
-| Room sockets | 2 |
+| Room sockets | 2 for a guest room; 3 for a controller room (host + up to two controllers) |
 | Room code attempts per IP | modest, DO/Worker-level |
 | Heartbeat | 20–30 s |
 
