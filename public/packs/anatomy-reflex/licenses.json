@@ -88,6 +88,38 @@
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
       "modified": "2026-10-31; land frames 28-35 of the 36-frame source"
+    },
+    {
+      "file": "shared/sprites/agent-neuron.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-01; frame 0 of the 36-frame Neuron Keeper idle sheet; 18x18 fit; palette quantized"
+    },
+    {
+      "file": "shared/sprites/agent-neuron-idle.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-01; 36-frame Neuron Keeper idle sheet; 18x18 frames; palette quantized"
+    },
+    {
+      "file": "shared/sprites/scan-synapse.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + 18x18 fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-01; magenta keyed; trimmed; fitted to 18x18; palette quantized"
+    },
+    {
+      "file": "shared/sprites/scan-muscle.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + 18x18 fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-01; magenta keyed; trimmed; fitted to 18x18; palette quantized"
     }
   ]
 }

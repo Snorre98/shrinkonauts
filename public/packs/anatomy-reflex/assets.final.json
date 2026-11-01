@@ -169,7 +169,19 @@
     },
     "sprite.agent.neuron": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/agent-neuron.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.agent.neuron.idle": {
+      "type": "sheet",
+      "src": "shared/sprites/agent-neuron-idle.png",
+      "frameWidth": 18,
+      "frameHeight": 18,
+      "frames": 36,
+      "fps": 12.5,
+      "loop": true,
+      "anchor": [0.5, 1],
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.nerve": {
       "type": "sprite",
@@ -181,7 +193,8 @@
     },
     "sprite.scan.synapse": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/scan-synapse.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.pathway": {
       "type": "sprite",
@@ -189,7 +202,8 @@
     },
     "sprite.scan.muscle": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/scan-muscle.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.reflex": {
       "type": "sprite",

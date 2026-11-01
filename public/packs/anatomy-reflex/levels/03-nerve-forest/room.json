@@ -138,6 +138,7 @@
       "x": 6,
       "y": 20,
       "sprite": "sprite.agent.neuron",
+      "idleAnimation": "sprite.agent.neuron.idle",
       "dialogueId": "dlg-neuron-01",
       "label": "Neuron Keeper"
     },

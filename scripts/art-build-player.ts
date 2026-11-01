@@ -31,10 +31,6 @@ import {
   type RgbaImage,
 } from "./art/ludo-sheet";
 import {
-  alphaBounds,
-  cropAlpha,
-} from "./art/key";
-import {
   parsePaletteDocument,
   quantizeImage,
   validatePaletteImage,
@@ -44,13 +40,14 @@ import {
   parseRemasterProfile,
   remasterImage,
 } from "./art/remaster";
-import { resizeBox } from "./art/resample";
+import { fitImageToCell } from "./art/entity-fit";
 import {
   parsePlayerClips,
   type PlayerClipDefinition,
+  type PlayerClipsDocument,
 } from "./art/player-clips";
 
-type CharacterId = "p1" | "p2";
+type CharacterId = "p1" | "p2" | "neuron-agent";
 type Sampler = "remaster" | "downscale";
 
 interface CharacterConfig {
@@ -59,7 +56,8 @@ interface CharacterConfig {
   root: string;
   clips: string;
   palette: string;
-  profile: string;
+  /** Optional: required only for the semantic remaster sampler. */
+  profile?: string;
 }
 
 interface BuildOptions {
@@ -96,6 +94,10 @@ interface BuildReport {
   sampler: Sampler;
   cell: { width: number; height: number };
   origin: [number, number];
+  margin: number;
+  alphaThreshold: number;
+  ramps?: string[];
+  previewScale: number;
   runtime: boolean;
   clips: ClipOutput[];
   warnings: string[];
@@ -118,6 +120,13 @@ const CHARACTERS: Record<CharacterId, CharacterConfig> = {
     palette: "art-source/characters/player-p2/working/palette.json",
     profile: "art-source/characters/player-p2/working/remaster.json",
   },
+  "neuron-agent": {
+    id: "neuron-agent",
+    character: "neuron-agent",
+    root: "art-source/characters/neuron-agent",
+    clips: "art-source/characters/neuron-agent/working/clips.json",
+    palette: "art-source/nanobanan/palette.json",
+  },
 };
 
 const DEFAULT_OUT_DIR = "public/packs/anatomy-reflex/shared/sprites";
@@ -129,8 +138,8 @@ function usage(): string {
     "Usage: npm run art:build-player -- [options]",
     "",
     "Options:",
-    "  --character <p1|p2|all>             default all",
-    "  --sampler <remaster|downscale|both> default both",
+    "  --character <p1|p2|neuron-agent|all> default all (players)",
+    "  --sampler <remaster|downscale|both>  default both",
     "  --write-runtime                     write runtime PNGs to --out-dir",
     "  --out-dir <dir>                     runtime output directory",
     "  --preview-dir <dir>                 preview output directory",
@@ -149,8 +158,8 @@ function readOption(args: string[], name: string): string | undefined {
 
 function parseArgs(args: string[]): BuildOptions {
   const characterValue = readOption(args, "--character") ?? "all";
-  if (!["p1", "p2", "all"].includes(characterValue)) {
-    throw new Error("--character must be p1, p2, or all");
+  if (!["p1", "p2", "neuron-agent", "all"].includes(characterValue)) {
+    throw new Error("--character must be p1, p2, neuron-agent, or all");
   }
   const samplerValue = readOption(args, "--sampler") ?? "both";
   if (!["remaster", "downscale", "both"].includes(samplerValue)) {
@@ -190,55 +199,22 @@ function encodePng(path: string, image: RgbaImage): void {
   writeFileSync(path, PNG.sync.write(png));
 }
 
-function thresholdAlpha(image: RgbaImage, threshold = 128): RgbaImage {
-  const data = Buffer.from(image.data);
-  for (let index = 0; index < data.length; index += 4) {
-    data[index + 3] = (data[index + 3] ?? 0) >= threshold ? 255 : 0;
-  }
-  return { width: image.width, height: image.height, data };
-}
-
-function fitIntoCell(
-  image: RgbaImage,
-  cell: { width: number; height: number },
-): RgbaImage {
-  const scale = Math.min(
-    cell.width / image.width,
-    cell.height / image.height,
-  );
-  const targetWidth = Math.max(1, Math.round(image.width * scale));
-  const targetHeight = Math.max(1, Math.round(image.height * scale));
-  const resized = resizeBox(image, targetWidth, targetHeight);
-  const data = Buffer.alloc(cell.width * cell.height * 4);
-  const offsetX = Math.floor((cell.width - targetWidth) / 2);
-  const offsetY = cell.height - targetHeight;
-
-  for (let y = 0; y < targetHeight; y += 1) {
-    for (let x = 0; x < targetWidth; x += 1) {
-      const source = (y * targetWidth + x) * 4;
-      const target = ((offsetY + y) * cell.width + offsetX + x) * 4;
-      resized.data.copy(data, target, source, source + 4);
-    }
-  }
-
-  return { width: cell.width, height: cell.height, data };
-}
-
 function downscaleFrame(
   frame: RgbaImage,
   palette: PaletteDocument,
   cell: { width: number; height: number },
+  margin: number,
+  alphaThreshold: number,
+  ramps: readonly string[] | undefined,
 ): { image: RgbaImage; paletteValidation: ReturnType<typeof validatePaletteImage> } {
-  const bounds = alphaBounds(frame);
-  if (!bounds) {
-    throw new Error("Frame has no opaque pixels");
-  }
-  const cropped = cropAlpha(frame, bounds);
-  const fitted = fitIntoCell(cropped, cell);
-  const thresholded = thresholdAlpha(fitted);
-  const ramps = [...new Set(Object.values(palette.roles))];
-  const quantized = quantizeImage(thresholded, palette, ramps);
-  const validation = validatePaletteImage(quantized.image, palette, ramps);
+  const approvedRamps = ramps ?? [...new Set(Object.values(palette.roles))];
+  const placed = fitImageToCell(frame, { cell, margin, alphaThreshold });
+  const quantized = quantizeImage(placed.image, palette, approvedRamps);
+  const validation = validatePaletteImage(
+    quantized.image,
+    palette,
+    approvedRamps,
+  );
   return { image: quantized.image, paletteValidation: validation };
 }
 
@@ -320,12 +296,13 @@ function buildClip(
   clip: PlayerClipDefinition,
   sourceFrames: RgbaImage[],
   palette: PaletteDocument,
-  profile: ReturnType<typeof parseRemasterProfile>,
+  profile: ReturnType<typeof parseRemasterProfile> | null,
   sampler: Sampler,
-  cell: { width: number; height: number },
+  clips: PlayerClipsDocument,
   outputDir: string,
   previewDir: string,
 ): ClipOutput {
+  const cell = clips.cell;
   const [start, end] = clip.frames;
   if (start < 0 || end >= sourceFrames.length) {
     throw new Error(
@@ -344,13 +321,23 @@ function buildClip(
       throw new Error(`Missing source frame ${index}`);
     }
     if (sampler === "remaster") {
+      if (!profile) {
+        throw new Error(`${clip.output} has no remaster profile`);
+      }
       const result = remasterImage(source, palette, profile);
       frames.push(result.image);
       offPalettePixels += result.paletteValidation.offPalettePixels;
       alphaViolations += result.paletteValidation.alphaViolations;
       opaquePixels += result.paletteValidation.opaquePixels;
     } else {
-      const result = downscaleFrame(source, palette, cell);
+      const result = downscaleFrame(
+        source,
+        palette,
+        cell,
+        clips.margin,
+        clips.alphaThreshold,
+        clips.ramps,
+      );
       frames.push(result.image);
       offPalettePixels += result.paletteValidation.offPalettePixels;
       alphaViolations += result.paletteValidation.alphaViolations;
@@ -367,17 +354,18 @@ function buildClip(
   encodePng(file, packed);
 
   const previewStem = join(previewDir, sampler, clip.output);
+  const previewScale = clips.previewScale;
   if (clip.static) {
     encodePng(
-      `${previewStem}-8x.png`,
-      scaleNearest(flattenRgba(packed, PREVIEW_BACKGROUND), 8),
+      `${previewStem}-${previewScale}x.png`,
+      scaleNearest(flattenRgba(packed, PREVIEW_BACKGROUND), previewScale),
     );
   } else {
     encodePng(
-      `${previewStem}-8x.png`,
-      scaleNearest(flattenRgba(packed, PREVIEW_BACKGROUND), 8),
+      `${previewStem}-${previewScale}x.png`,
+      scaleNearest(flattenRgba(packed, PREVIEW_BACKGROUND), previewScale),
     );
-    writeGif(frames, clip.fps, `${previewStem}.gif`, 8);
+    writeGif(frames, clip.fps, `${previewStem}.gif`, previewScale);
   }
 
   return {
@@ -412,9 +400,12 @@ function buildCharacter(
   const palette = parsePaletteDocument(
     JSON.parse(readFileSync(resolve(config.palette), "utf8")),
   );
-  const profile = parseRemasterProfile(
-    JSON.parse(readFileSync(resolve(config.profile), "utf8")),
-  );
+  const profile =
+    config.profile && samplers.includes("remaster")
+      ? parseRemasterProfile(
+          JSON.parse(readFileSync(resolve(config.profile), "utf8")),
+        )
+      : null;
   if (
     clips.cell.width !== palette.cell.width ||
     clips.cell.height !== palette.cell.height
@@ -425,8 +416,18 @@ function buildCharacter(
     );
   }
 
+  const activeSamplers = samplers.filter(
+    (sampler) => sampler !== "remaster" || profile !== null,
+  );
+  if (activeSamplers.length === 0) {
+    throw new Error(
+      `${config.character} has no remaster profile; use --sampler downscale`,
+    );
+  }
+  const skippedRemaster = samplers.includes("remaster") && profile === null;
+
   const reports: BuildReport[] = [];
-  for (const sampler of samplers) {
+  for (const sampler of activeSamplers) {
     const sourceCache = new Map<string, RgbaImage[]>();
     const runtimeDir = options.writeRuntime
       ? options.outDir
@@ -461,7 +462,7 @@ function buildCharacter(
           palette,
           profile,
           sampler,
-          clips.cell,
+          clips,
           runtimeDir,
           previewDir,
         ),
@@ -474,6 +475,10 @@ function buildCharacter(
       sampler,
       cell: clips.cell,
       origin: clips.origin,
+      margin: clips.margin,
+      alphaThreshold: clips.alphaThreshold,
+      ...(clips.ramps ? { ramps: clips.ramps } : {}),
+      previewScale: clips.previewScale,
       runtime: options.writeRuntime,
       clips: clipOutputs,
       warnings: [],
@@ -481,6 +486,11 @@ function buildCharacter(
     if (!options.writeRuntime) {
       report.warnings.push(
         "Preview-only run; runtime assets were not written to public/.",
+      );
+    }
+    if (skippedRemaster) {
+      report.warnings.push(
+        "No remaster profile; skipped the remaster sampler.",
       );
     }
     const reportPath = resolve(

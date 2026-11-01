@@ -172,6 +172,45 @@ type AddIssue = (
 ) => void;
 type AddWarning = (message: string) => void;
 
+function checkEntityAnimations(
+  rooms: readonly RoomDocument[],
+  assets: ReturnType<typeof createAssets>,
+  addIssue: AddIssue,
+  addWarning: AddWarning,
+): void {
+  for (const room of rooms) {
+    for (const entity of room.entities ?? []) {
+      if (!entity.idleAnimation) continue;
+      const asset = assets.resolveById(entity.idleAnimation);
+      if (!asset) {
+        addIssue(
+          "ASSET_ID_MISSING",
+          `entity "${entity.id}" references missing idle animation "${entity.idleAnimation}"`,
+          entity.idleAnimation,
+        );
+        continue;
+      }
+      if (asset.placeholder === true) {
+        addWarning(
+          `entity "${entity.id}" idle animation "${entity.idleAnimation}" is a placeholder; the runtime stays static`,
+        );
+        continue;
+      }
+      if (
+        asset.type !== "sheet" ||
+        asset.frames === undefined ||
+        asset.fps === undefined
+      ) {
+        addIssue(
+          "ASSET_MANIFEST_INVALID",
+          `entity "${entity.id}" idle animation "${entity.idleAnimation}" must be a sheet with frames and fps`,
+          entity.idleAnimation,
+        );
+      }
+    }
+  }
+}
+
 function checkManifest(
   manifest: AssetManifest | null | undefined,
   label: string,
@@ -1799,6 +1838,7 @@ export function validatePack(
 
   checkManifest(finalManifest, "final", true, fileExists, addIssue);
   checkManifest(packManifest, "pack", false, fileExists, addIssue);
+  checkEntityAnimations(materialRooms, assets, addIssue, addWarning);
   checkBackground(room, assets, addIssue);
   checkUiAssets(theme, assets, addIssue);
   checkAudioAssets(room, theme, assets, addIssue);

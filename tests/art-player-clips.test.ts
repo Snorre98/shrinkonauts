@@ -37,6 +37,41 @@ describe("parsePlayerClips", () => {
     );
     expect(document.animations.walk?.frames).toEqual([0, 48]);
     expect(document.sources.walk?.sourceFps).toBe(23.26);
+    expect(document.requiredClips).toEqual([...REQUIRED_PLAYER_CLIPS]);
+    expect(document.margin).toBe(0);
+    expect(document.alphaThreshold).toBe(128);
+    expect(document.previewScale).toBe(8);
+    expect(document.ramps).toBeUndefined();
+  });
+
+  it("parses an entity clip set with explicit fit settings", () => {
+    const raw = value();
+    raw.requiredClips = ["idle", "walk"];
+    raw.margin = 1;
+    raw.alphaThreshold = 100;
+    raw.ramps = ["bone", "ink"];
+    raw.previewScale = 4;
+
+    const document = parsePlayerClips(raw);
+    expect(document.requiredClips).toEqual(["idle", "walk"]);
+    expect(document.margin).toBe(1);
+    expect(document.alphaThreshold).toBe(100);
+    expect(document.ramps).toEqual(["bone", "ink"]);
+    expect(document.previewScale).toBe(4);
+  });
+
+  it("rejects an invalid margin, alpha threshold, or ramp list", () => {
+    const margin = value();
+    margin.margin = 8;
+    expect(() => parsePlayerClips(margin)).toThrow(/no room/);
+
+    const threshold = value();
+    threshold.alphaThreshold = 256;
+    expect(() => parsePlayerClips(threshold)).toThrow(/0\.\.255/);
+
+    const ramps = value();
+    ramps.ramps = ["bone", "bone"];
+    expect(() => parsePlayerClips(ramps)).toThrow(/duplicates/);
   });
 
   it("rejects a missing required clip", () => {

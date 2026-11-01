@@ -26,6 +26,16 @@ export interface PlayerClipsDocument {
   character: string;
   cell: { width: number; height: number };
   origin: [number, number];
+  /** Clip names this character must define. Defaults to the player clip set. */
+  requiredClips: string[];
+  /** Transparent border used when fitting each frame into the cell. */
+  margin: number;
+  /** Alpha values below this become transparent. */
+  alphaThreshold: number;
+  /** Optional ramp allowlist; defaults to the palette's role ramps. */
+  ramps?: string[];
+  /** Scale used for review previews and GIFs. */
+  previewScale: number;
   sources: Record<string, PlayerClipSource>;
   animations: Record<string, PlayerClipDefinition>;
 }
@@ -80,6 +90,35 @@ function finiteNumber(value: unknown, label: string): number {
     throw new Error(`${label} must be a finite number`);
   }
   return value;
+}
+
+function boundedInteger(
+  value: unknown,
+  label: string,
+  minimum: number,
+  maximum: number,
+): number {
+  const parsed = finiteNumber(value, label);
+  if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) {
+    throw new Error(`${label} must be an integer within ${minimum}..${maximum}`);
+  }
+  return parsed;
+}
+
+function stringArray(value: unknown, label: string): string[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`${label} must be a non-empty array`);
+  }
+  const result = value.map((entry, index) => {
+    if (typeof entry !== "string" || entry.trim() === "") {
+      throw new Error(`${label}[${index}] must be a non-empty string`);
+    }
+    return entry;
+  });
+  if (new Set(result).size !== result.length) {
+    throw new Error(`${label} must not contain duplicates`);
+  }
+  return result;
 }
 
 function boolean(value: unknown, label: string): boolean {
@@ -170,6 +209,29 @@ export function parsePlayerClips(value: unknown): PlayerClipsDocument {
     finiteNumber(value.origin[0], "origin[0]"),
     finiteNumber(value.origin[1], "origin[1]"),
   ];
+  const requiredClips =
+    value.requiredClips === undefined
+      ? [...REQUIRED_PLAYER_CLIPS]
+      : stringArray(value.requiredClips, "requiredClips");
+  const margin =
+    value.margin === undefined
+      ? 0
+      : nonNegativeInteger(value.margin, "margin");
+  if (margin * 2 >= cell.width || margin * 2 >= cell.height) {
+    throw new Error("margin leaves no room inside the cell");
+  }
+  const alphaThreshold =
+    value.alphaThreshold === undefined
+      ? 128
+      : boundedInteger(value.alphaThreshold, "alphaThreshold", 0, 255);
+  const previewScale =
+    value.previewScale === undefined
+      ? 8
+      : positiveInteger(value.previewScale, "previewScale");
+  const ramps =
+    value.ramps === undefined
+      ? undefined
+      : stringArray(value.ramps, "ramps");
   if (!isRecord(value.sources) || Object.keys(value.sources).length === 0) {
     throw new Error("sources must contain at least one source");
   }
@@ -184,7 +246,7 @@ export function parsePlayerClips(value: unknown): PlayerClipsDocument {
   for (const [name, raw] of Object.entries(value.animations)) {
     animations[name] = parseAnimation(raw, `animations.${name}`, sources);
   }
-  for (const name of REQUIRED_PLAYER_CLIPS) {
+  for (const name of requiredClips) {
     if (!animations[name]) {
       throw new Error(`animations.${name} is required`);
     }
@@ -203,6 +265,11 @@ export function parsePlayerClips(value: unknown): PlayerClipsDocument {
     character,
     cell,
     origin,
+    requiredClips,
+    margin,
+    alphaThreshold,
+    ...(ramps ? { ramps } : {}),
+    previewScale,
     sources,
     animations,
   };

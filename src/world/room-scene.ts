@@ -10,7 +10,7 @@ import {
   type MaterialCatalog,
   type PatternProvider,
 } from "../materials";
-import type { RoomDocument, ThemeDocument } from "../pack";
+import type { RoomDocument, RoomEntity, ThemeDocument } from "../pack";
 import { LayeredBackground } from "./background";
 import { PLAYER_ANIMATION_ASSET_IDS, PLAYER_ASSET_IDS } from "./ids";
 import { KeyboardIntentSource } from "./input";
@@ -19,6 +19,11 @@ import {
   type PlayerAnimationAsset,
 } from "./player-animator";
 import type { PlayerClip } from "./player-animation";
+import { EntityIdleAnimator } from "./entity-idle-animator";
+import {
+  ENTITY_DISPLAY_SIZE,
+  ENTITY_INTERACTION_TINT,
+} from "./entity-style";
 import { RoomEffectLayer } from "./effects";
 import { MaterialTextureCache } from "./material-textures";
 import { PatternLayer } from "./pattern-layer";
@@ -72,7 +77,6 @@ export interface RoomSceneConfig {
 const FIXED_STEP = 1 / 60;
 const MAX_FRAME_DELTA = 0.25;
 const PLAYER_IDS: readonly PlayerId[] = ["p1", "p2"];
-const ENTITY_SIZE = 36;
 
 function isSvgSource(src: string): boolean {
   return src.split("?")[0]?.toLowerCase().endsWith(".svg") ?? false;
@@ -132,6 +136,7 @@ export class RoomScene
   > = {};
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly entityGlows = new Map<string, Phaser.GameObjects.Ellipse>();
+  private readonly entityIdleAnimators = new Map<string, EntityIdleAnimator>();
   private readonly propSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly tileImages = new Map<string, Phaser.GameObjects.Image>();
   private readonly tileBase = new Map<string, TileBaseVisual>();
@@ -253,6 +258,9 @@ export class RoomScene
       this.lastReducedMotion = reduced;
       this.effectLayer?.clear();
     }
+    for (const animator of this.entityIdleAnimators.values()) {
+      animator.update();
+    }
     this.patternLayer?.update(delta, camera, reduced);
     this.syncEffects();
   }
@@ -304,6 +312,7 @@ export class RoomScene
     }
     this.entitySprites.clear();
     this.entityGlows.clear();
+    this.entityIdleAnimators.clear();
     this.propSprites.clear();
     this.tileImages.clear();
     this.tileBase.clear();
@@ -326,6 +335,7 @@ export class RoomScene
     this.materialTextures = null;
     this.entitySprites.clear();
     this.entityGlows.clear();
+    this.entityIdleAnimators.clear();
     this.propSprites.clear();
     this.tileImages.clear();
     this.tileBase.clear();
@@ -609,12 +619,12 @@ export class RoomScene
       const depth = 4 + entity.y / 100;
 
       const glow = this.add
-        .ellipse(x, y - 4, ENTITY_SIZE * 1.25, 10, 0xffd166, 0)
+        .ellipse(x, y - 4, ENTITY_DISPLAY_SIZE * 1.25, 10, 0xffd166, 0)
         .setDepth(depth - 0.5);
       const sprite = this.add
-        .image(x, y, key)
+        .sprite(x, y, key)
         .setOrigin(0.5, 1)
-        .setDisplaySize(ENTITY_SIZE, ENTITY_SIZE)
+        .setDisplaySize(ENTITY_DISPLAY_SIZE, ENTITY_DISPLAY_SIZE)
         .setDepth(depth);
 
       this.entityGlows.set(entity.id, glow);
@@ -622,6 +632,7 @@ export class RoomScene
       if (entity.type === "prop") {
         this.propSprites.set(entity.id, sprite);
       }
+      this.createEntityIdleAnimator(entity, sprite, key);
 
       const materialBinding = entity.components?.material;
       if (materialBinding && this.config.materials) {
@@ -643,13 +654,66 @@ export class RoomScene
     }
   }
 
+  private createEntityIdleAnimator(
+    entity: RoomEntity,
+    sprite: Phaser.GameObjects.Sprite,
+    staticTexture: string,
+  ): void {
+    if (!entity.idleAnimation) return;
+
+    const asset = this.config.assets.resolveById(entity.idleAnimation);
+    if (!asset || asset.type !== "sheet") {
+      this.config.onWarning?.(
+        `ENTITY_IDLE_ANIMATION_UNRESOLVED: ${entity.id} (${entity.idleAnimation})`,
+      );
+      return;
+    }
+    if (!asset.frames || !asset.fps) {
+      this.config.onWarning?.(
+        `ENTITY_IDLE_ANIMATION_INVALID: ${entity.id} (${entity.idleAnimation})`,
+      );
+      return;
+    }
+
+    const texture = resolveTexture(this, asset, this.config.theme.fonts.ui);
+    if (!texture) {
+      this.config.onWarning?.(
+        `ENTITY_IDLE_TEXTURE_UNRESOLVED: ${entity.id} (${entity.idleAnimation})`,
+      );
+      return;
+    }
+
+    try {
+      const animator = new EntityIdleAnimator({
+        scene: this,
+        entityId: entity.id,
+        sprite,
+        staticTexture,
+        asset: {
+          textureKey: texture,
+          frames: asset.frames,
+          fps: asset.fps,
+          loop: asset.loop === true,
+        },
+        isReducedMotion: () => this.config.isReducedMotion?.() ?? false,
+      });
+      this.entityIdleAnimators.set(entity.id, animator);
+    } catch (error) {
+      this.config.onWarning?.(
+        `ENTITY_IDLE_ANIMATION_FAILED: ${entity.id} (${
+          error instanceof Error ? error.message : String(error)
+        })`,
+      );
+    }
+  }
+
   private applyInteractionHighlight(entityId: string | null): void {
     for (const [id, glow] of this.entityGlows) {
       glow.setFillStyle(0xffd166, id === entityId ? 0.45 : 0);
     }
     for (const [id, sprite] of this.entitySprites) {
       if (id === entityId) {
-        sprite.setTint(0xffe08a);
+        sprite.setTint(ENTITY_INTERACTION_TINT);
       } else {
         sprite.clearTint();
       }

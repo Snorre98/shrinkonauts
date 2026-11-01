@@ -1,6 +1,6 @@
 # M3 Asset Requirements — Shrinkonauts: The Reflex Arc
 
-**Status:** Draft v0.8 · 1 November 2026 (P2 re-baseline + POC player animation)
+**Status:** Draft v0.9 · 1 November 2026 (P2 re-baseline + POC player and Neuron Keeper animation + POC entity sprites)
 **Owner:** Snorre  
 **Scope:** Final 2D pixel art and audio for the M3 vertical slice  
 **Target milestone:** M3 — Art/audio pass + capture (4–5 November 2026)  
@@ -13,6 +13,20 @@
 > **Visual pivot (2026-10-29).** The project has moved from the hand-drawn “Dank Anatomy Cartoon” direction to **“Dank Anatomy Pixel Art”** across the world and the UI. This revision keeps the v0.3 M1.8 scope: 21 visible images, two material atlases, 04 authored, and the M1.9/M4 boundaries. §4, §6, §7, §8, §9 and ADR-0047–0049 replace the hand-drawn rendering rules; ADR-0027 remains in force for licensing and audio.
 >
 > **Pipeline note (2026-11-01).** ADR-0060–0065 define the source/working/runtime asset pipeline, palette variants, data-driven animation, build-time previews, and the P2 palette. Source sheets are captured and sliced offline. A POC player-animation path now ships P1/P2 idle, walk, jump, fall, and land sheets into `03-nerve-forest`; the full ADR-0062 descriptor and generalized animation system remain later work.
+>
+> **Entity POC note (2026-11-01).** `sprite.agent.neuron` now comes from the
+> 36-frame Neuron Keeper idle sheet in
+> `art-source/characters/neuron-agent/`; frame 0 is the static fallback and the
+> new `sprite.agent.neuron.idle` sheet plays in 03/04. The nanobanan agent plate
+> is retained as an alternate review asset, not the runtime static. The four
+> scan plates were magenta-keyed and fitted with `npm run art:fit`:
+> `sprite.scan.synapse` and `sprite.scan.muscle` are POC-integrated;
+> `sprite.scan.neuron` and `sprite.scan.pathway` remain placeholders because
+> their 1886×1004 and 1864×740 plates collapse to 16×9 and 16×6 and lose the
+> myelin sleeves, terminals and one-way reading at 36×36. The synapse rim is
+> partial and the muscle rim is missing. All new art is **POC integrated /
+> final art approval pending**; the generalized entity animation system remains
+> deferred.
 >
 > **P2 palette note (2026-11-01).** ADR-0065 supersedes ADR-0064. P2 is now a
 > bone suit with a joint-cyan visor and backpack tank, a nerve-amber accent,
@@ -31,8 +45,9 @@
 
 | Decision | Value |
 |---|---|
-| Art scope | `03-nerve-forest` environments + shared final entity sprites |
+| Art scope | `03-nerve-forest` environments + shared entity sprites (POC integrated; final approval pending) |
 | Visible images | **21** — 20 referenced by the authored 03/04 rooms, plus 1 reserve (`sprite.scan.reflex`) |
+| POC animation sheets | **9** — 8 player clips + 1 Neuron Keeper idle; additional runtime assets outside the 21-image register |
 | Audio cues | **11** — M3 scope; the pack also declares `audio.cue.wrong`, which stays placeholder |
 | Total M3 assets | **32** |
 | Style | **Dank Anatomy Pixel Art** |
@@ -40,12 +55,12 @@
 | Tool | **Ludo.ai source sheets/concepts + local slice/remaster/normalize/palette-LUT pipeline + optional Aseprite/Piskel/LibreSprite cleanup; Ludo.ai Audio Generator** |
 | Ludo plan | **Indie, $20/mo** (Pro only if automation or scope grows) |
 | Free-tier use | Six-asset concept/style gate only |
-| Animation | **POC player animation** — P1/P2 idle, walk, jump, fall, and land sheets play in `03-nerve-forest`; other sprites stay static; the full ADR-0062 descriptor is deferred |
+| Animation | **POC player + Neuron Keeper animation** — P1/P2 idle, walk, jump, fall, and land sheets play in `03-nerve-forest`; the Neuron Keeper idle sheet plays in 03/04; other sprites stay static; the full ADR-0062 descriptor is deferred |
 | UI | **8-bit pixel chrome; Silkscreen + Pixelify Sans; badge is the only rendered UI image** |
 | UI panels/portraits | **Deferred** — not rendered by the current UI |
 | Music | **Deferred** — not played by the current runtime |
 | Levels 01, 02, 05, Silicon | **Deferred** — design proposals exist, but the pack content is not implemented |
-| Level 04 | **Authored**; shares the final entity sprites, but its backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder art |
+| Level 04 | **Authored**; shares the POC entity sprites and Neuron Keeper idle, but its backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder art |
 | Material atlases | **2 final atlases**: bone (`blob47`, 47 regions) and nerve (`edge`, 16 regions), authored as 32×32 frames at 1:1 with 2×2 clusters. The current pack still has one `tile.anatomy.atlas` placeholder |
 | Prompt version | **`m3-2026-10-31.2`** (subject-first prompts + biology-to-shape lexicon) |
 | Content dependency | **Puzzle-specific props are checked against the authored 03/04 rooms**; do not generate props the rooms do not reference |
@@ -81,7 +96,7 @@ This is a production document, not a GDD. The game design source remains [`DESIG
 | Category | Count | Notes |
 |---|---:|---|
 | Player sprites P1/P2 | 2 | Shared across all levels |
-| POC player animation sheets | 8 | P1/P2 walk/jump/fall/land; additional runtime assets, outside the 21-image static register |
+| POC animation sheets | 9 | P1/P2 walk/jump/fall/land plus the Neuron Keeper idle; additional runtime assets, outside the 21-image static register |
 | Visible shared entity sprites | 12 | 11 referenced by 03/04; `sprite.scan.reflex` is a reserve |
 | `03-nerve-forest` background layers | 4 | Sky, far, mid, near |
 | Final material atlases (bone, nerve) | 2 | 47-frame `blob47` bone atlas; 16-frame `edge` nerve atlas |
@@ -90,8 +105,10 @@ This is a production document, not a GDD. The game design source remains [`DESIG
 | SFX cues | 11 | `audio.cue.wrong` is outside the M3 scope |
 | **M3 total** | **32** | 21 images + 11 audio |
 
-The eight POC animation sheets are runtime assets but are not part of the
-21-image static register or the 32-asset production total.
+The nine POC animation sheets are runtime assets but are not part of the
+21-image static register or the 32-asset production total. The Neuron Keeper
+idle sheet is a POC entity animation; the generalized entity animation system
+remains deferred.
 
 **Pixel authoring.** Players 14×22, entities 18×18, atlas frames 32×32 at 1:1 with 2×2 clusters, sky 640×368, parallax 1024×512 with 2×2 clusters, badge 16×16. See §3 and §6.
 
@@ -105,7 +122,7 @@ The eight POC animation sheets are runtime assets but are not part of the
 | `sprite.checkpoint` | 1 | Declared but not referenced by the authored rooms |
 | `sprite.gate.nerve` | 1 | Referenced by 04's Ca²⁺ gate, but 04 props stay placeholder art in M3 |
 | `audio.cue.wrong` | 1 | Declared in the theme and manifest; outside the 11-cue M3 scope |
-| Generalized runtime animation / GIF loops | — | POC player animation is in scope; entity/background animation, a generalized descriptor, and GIF playback remain deferred |
+| Generalized runtime animation / GIF loops | — | POC player and Neuron Keeper idle animation is in scope; other entity/background animation, a generalized descriptor, and GIF playback remain deferred |
 | Music loop / ambience | — | Music playback is deferred |
 | Levels `01-bone-gate`, `02-joint-chamber`, `05-reflex-core` | 3 | Design proposals exist in [`docs/m2/nervous-puzzles/`](../m2/nervous-puzzles/), but the pack content is not implemented |
 | Silicon fixture | 1 | Design proposal exists; not implemented in the pack |
@@ -115,10 +132,10 @@ The deferred UI assets remain declared as placeholders. They will not appear in 
 
 ### 2.3 Scope rules
 
-1. **One environment.** Final environment art is produced for `03-nerve-forest`. The shared entity sprites are final because 03/04 reference them; 04 backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder. Other levels get art only after they are authored, pass validation, and appear in the capture list.
-2. **No new asset IDs during M3.** If a level needs a new ID, that is a content/engine task with an ADR, not an art-pass improvisation.
+1. **One environment.** Final environment art is produced for `03-nerve-forest`. The shared entity sprites are POC-integrated because 03/04 reference them; final approval is pending, and unreadable plates stay placeholders. 04 backgrounds, muscle/membrane tiles and `sprite.gate.nerve` stay placeholder. Other levels get art only after they are authored, pass validation, and appear in the capture list.
+2. **No new static asset IDs during M3.** If a level needs a new static ID, that is a content/engine task with an ADR, not an art-pass improvisation. POC animation sheets are the recorded exception: the player sheets and `sprite.agent.neuron.idle` are additional runtime animation assets outside the 21-image static register.
 3. **No gameplay code changes.** ADR-0033 forbids mixing the art pass with gameplay changes. The pixel pivot needs a small, recorded render change (`pixelArt`, `antialias`, `roundPixels`, integer background scaling) under ADR-0048; nothing in `src/game`, `src/puzzle`, or the physics/runtime modules changes.
-4. **POC player animation only.** Players animate in `03-nerve-forest` from generated walk/jump/fall/land sheets. Other entity sprites stay static. The full ADR-0062 descriptor and generalized animation system remain a later engine task.
+4. **POC player and Neuron Keeper animation only.** Players animate in `03-nerve-forest` from generated walk/jump/fall/land sheets. The Neuron Keeper idle sheet plays in 03 and 04; other entity sprites stay static. The full ADR-0062 descriptor and generalized animation system remain a later engine task.
 5. **Reuse the shared kit.** Players, material atlases, badge, and audio cues are shared. Do not generate per-level duplicates.
 6. **Placeholders are an acceptable fallback.** A coherent placeholder build is better than a half-finished final build. The validator already supports declared placeholders.
 7. **Three pixel anchors.** Characters and props derive from the approved P1 pixel anchor; backgrounds derive from the approved sky; atlases derive from approved material swatches. The category style blocks in §8 are the same for every asset in a category, and every source pixel is placed on the 2× grid.
@@ -134,7 +151,7 @@ generating puzzle-specific props.
 |---|---|---|
 | Players, badge, sky, far/mid/near | **Safe to generate** | Shared or environment-level; unaffected by puzzle changes |
 | Material atlases | **Generate the swatches now; wire after the tint decision** | The region maps are fixed in §8.21; the pack still uses one placeholder atlas |
-| Neuron Keeper, scan targets | **Generate after the scan list is checked** | `scan.neuron` and `scan.pathway` are used in 03; `scan.synapse` and `scan.muscle` are used in 04 |
+| Neuron Keeper, scan targets | **POC integrated; final approval pending** | Neuron Keeper static + idle are runtime art; `scan.synapse` and `scan.muscle` are POC-integrated; `scan.neuron` and `scan.pathway` remain placeholders after the 36×36 readability check |
 | `sprite.gate.ferry`, `sprite.prop.tracer`, `sprite.pulse.terminal`, `sprite.receptor.triangle`, `sprite.receptor.circle` | **Check the authored 03/04 rooms** | These props are referenced by the current Node Run/Endplate Ferry content |
 | `sprite.exit` | **Safe** | The exit remains even if the gate changes |
 | `sprite.scan.reflex` | **Reserve only** | Not referenced by 03/04; generate only if 05 is authored or the capture needs it |
@@ -190,7 +207,7 @@ These are current implementation facts plus the render changes recorded in ADR-0
 | Background far/mid/near use `fit: "tile"` | `room.json`, `src/world/background.ts` (`TileSprite`) | Author **1024×512** with a 2×2 minimum cluster grid; tile on **both axes**. |
 | The sky uses `fit: "cover"` | `src/world/background.ts` | Author **640×368**, displayed at an integer 2× cover. The current `coverScale * 1.4` path must be replaced by integer cover (ADR-0048). |
 | The renderer is currently smooth-scaled | `src/world/create-game.ts` (`pixelArt: false`, `antialias: true`) | Target config: `pixelArt: true`, `antialias: false`, `roundPixels: true`. |
-| Player sheets are animated; entity sheets are static | `room-scene.ts` creates Phaser `Sprite` players and `PlayerAnimator`; entities still use `this.add.image(...)` | Player walk/jump/fall/land sheets are runtime assets; other sheets remain static. |
+| Player sheets and the Neuron Keeper idle are animated; other entity sprites are static | `room-scene.ts` creates Phaser `Sprite` players and `PlayerAnimator`; entities with `idleAnimation` use `EntityIdleAnimator`, others stay static | Player walk/jump/fall/land and the Neuron Keeper idle sheet are runtime assets; other entity sheets remain static. |
 | Only the badge UI asset is rendered | `src/ui/hud.ts` (`styleBadge`, `.hud__stamp--image`) and `src/game/boot.ts` | Author **16×16**; the current HUD displays a ~45×27 CSS px pill with `cover`. The pixel UI target is a 32×32 square stamp. |
 | Entity sprites are briefly tinted on interaction | `room-scene.ts` (`applyInteractionHighlight`, `0xffe08a`) | Check every entity sprite under a warm tint; cyan/yellow details must survive. |
 | Capture mode is deferred | `IMPLEMENTATION.md` status table | Clean 16:9 capture is an M2/M3 engine task; do not assume `?capture=1` exists. |
@@ -367,7 +384,7 @@ Ludo does not reliably parse anatomical terms as visual nouns. “Soma”, “de
 | SFX cues | 11 | `audio.cue.wrong` is outside M3 |
 | **M3 production total** | **32** | 21 images + 11 audio |
 | Deferred UI images | 8 | Badge is the only rendered UI image |
-| **Current manifest entries** | **55** | Includes 12 audio and 8 POC player animation sheets; the final two-atlas layout adds one atlas entry |
+| **Current manifest entries** | **56** | Includes 12 audio and 9 POC animation sheets; the final two-atlas layout adds one atlas entry |
 
 ### 5.2 Shared kit
 
@@ -381,13 +398,14 @@ Ludo does not reliably parse anatomical terms as visual nouns. “Soma”, “de
 
 > **Pixel rule:** author at the source size shown. Players, entities, and the badge display at exactly 2×; atlas frames stay 32×32 at 1:1 with a 2×2 cluster grid. Do not export at the display size.
 >
-> **POC animation assets:** the eight `sprite.player.*.walk/jump/fall/land` sheet entries are additional runtime assets, not part of the 21-image static register. See §5.8.
+> **POC animation assets:** the eight `sprite.player.*.walk/jump/fall/land` sheet entries and `sprite.agent.neuron.idle` are additional runtime assets, not part of the 21-image static register. See §5.8.
 
 ### 5.3 Shared visible entity sprites
 
-> **Rendered-in column:** this is the actual authored usage. The M3 final-art
-> scope covers the 11 referenced sprites and keeps `sprite.scan.reflex` as a
-> reserve. 04 shares these sprites even though its environment remains
+> **Rendered-in column:** this is the actual authored usage. The M3 art scope
+> covers the referenced sprites, but only the readable POC sprites are wired;
+> `sprite.scan.neuron`, `sprite.scan.pathway`, and `sprite.scan.reflex` remain
+> placeholders. 04 shares these sprites even though its environment remains
 > placeholder art.
 
 | Asset ID | Entity role | Rendered in | Display / source | File path | Priority |
@@ -404,6 +422,30 @@ Ludo does not reliably parse anatomical terms as visual nouns. “Soma”, “de
 | `sprite.pulse.terminal` | Motor terminal | 04 | 36×36 / 18×18 PNG | `shared/sprites/pulse-terminal.png` | P1 |
 | `sprite.receptor.triangle` | Nicotinic receptor | 04 | 36×36 / 18×18 PNG | `shared/sprites/receptor-triangle.png` | P1 |
 | `sprite.receptor.circle` | Wrong receptor | 04 | 36×36 / 18×18 PNG | `shared/sprites/receptor-circle.png` | P1 |
+
+**POC entity status (2026-11-01).** The manifest is authoritative: an entry
+without `src` is a placeholder. This table records why.
+
+| Asset ID | Status | Notes |
+|---|---|---|
+| `sprite.agent.neuron` | POC integrated / final approval pending | Static frame 0 from the 36-frame Neuron Keeper sheet; shared by 03 and 04; nanobanan agent plate is an alternate review asset |
+| `sprite.agent.neuron.idle` | POC integrated / final approval pending | 36-frame 18×18 idle sheet; 12.5 fps, looping; static fallback when reduced motion is on |
+| `sprite.scan.neuron` | **Placeholder — unreadable at 36×36** | 1886×1004 plate fits to 16×9; myelin sleeves, nodes and forked terminals are lost; cyan rim largely lost |
+| `sprite.scan.synapse` | POC integrated / final approval pending | Two cells and cleft read; cyan rim is partial because the source plate clips the postsynaptic wall |
+| `sprite.scan.pathway` | **Placeholder — unreadable at 36×36** | 1864×740 plate fits to 16×6; the one-way reading and myelin gaps are lost |
+| `sprite.scan.muscle` | POC integrated / final approval pending | Muscle bundle and nerve contact read; **no cyan scan rim survived** the fit |
+| `sprite.scan.reflex` | **Reserve / placeholder** | Not referenced by 03/04 |
+| `sprite.gate.ferry` | **Placeholder** | Not part of this pass |
+| `sprite.exit` | **Placeholder** | Not part of this pass |
+| `sprite.prop.tracer` | **Placeholder** | Not part of this pass |
+| `sprite.pulse.terminal` | **Placeholder** | Not part of this pass |
+| `sprite.receptor.triangle` | **Placeholder** | Not part of this pass |
+| `sprite.receptor.circle` | **Placeholder** | Not part of this pass |
+
+The nanobanan fit reports are in `art-source/nanobanan/reports/` and record the
+source trim, fitted size, margins, palette validation and warnings for each
+plate. The Neuron Keeper build report is in
+`art-source/characters/neuron-agent/working/tmp/`.
 
 ### 5.4 Backgrounds
 
@@ -475,7 +517,8 @@ Use lowercase kebab-case, no spaces, no dots in filenames.
 | `ui.icon.badge` | `shared/ui/badge.png` |
 | `audio.cue.scan` | `shared/audio/scan.ogg` |
 
-Player animation sheets follow `shared/sprites/player-<p1|p2>-<walk|jump|fall|land>.png`.
+Player animation sheets follow `shared/sprites/player-<p1|p2>-<walk|jump|fall|land>.png`;
+the Neuron Keeper idle sheet is `shared/sprites/agent-neuron-idle.png`.
 
 ### 5.8 Current completion status (1 November 2026 POC)
 
@@ -487,13 +530,21 @@ Player animation sheets follow `shared/sprites/player-<p1|p2>-<walk|jump|fall|la
 | P2 approved walk/jump sources (36f each) | Complete | `art-source/characters/player-p2/` |
 | P1/P2 runtime idle/walk/jump/fall/land sheets | POC complete | `public/packs/anatomy-reflex/shared/sprites/player-*.png` |
 | Player animation in `03-nerve-forest` | POC complete | `src/world/player-animator.ts`, `src/world/room-scene.ts` |
+| Neuron Keeper idle source (36f) | Complete | `art-source/characters/neuron-agent/sprite-max-px-frames-36-rows-6-cols-6/` |
+| Neuron Keeper static + idle sheet | POC complete | `public/packs/anatomy-reflex/shared/sprites/agent-neuron.png`, `agent-neuron-idle.png` |
+| Neuron Keeper animation in 03/04 | POC complete | `src/world/room-scene.ts`, `src/world/entity-idle-animator.ts` |
 | Background removal tool | Complete | `npm run art:key` |
+| Entity fit tool | Complete | `npm run art:fit` |
 | Nanobanan keyed review copies | Complete | `art-source/previews/nanobanan/` (full keyed PNGs in ignored `keyed/`) |
-| Final art approval / prompt log / licences | Pending | — |
-| Entity, background, atlas, badge art | Not started | — |
+| Nanobanan entity sprites | POC integrated / final art approval pending | `scan.synapse.png`, `scan.muscle.png` wired; `scan.neuron` and `scan.pathway` retained as placeholders |
+| Final art approval / prompt log / licences | Pending | POC licence label recorded; final plan TBD |
+| Entity sprite art | POC integrated for the readable IDs; placeholders retained for the wide plates | `art-source/nanobanan/reports/` |
+| Background, atlas, badge art | Not started | — |
 
 Review stills: `screenshots/m3-player-p1-p2-idle.png` and
-`screenshots/m3-player-p1-walk.png`.
+`screenshots/m3-player-p1-walk.png`. Entity fit previews are in
+`art-source/previews/nanobanan/entities/`; the Neuron Keeper idle GIF is
+`art-source/previews/poc/downscale/agent-neuron-idle.gif`.
 
 | Asset ID | Frames | fps | Loop | File |
 |---|---:|---:|---|---|
@@ -505,9 +556,12 @@ Review stills: `screenshots/m3-player-p1-p2-idle.png` and
 | `sprite.player.p2.jump` | 12 | 30 | no | `shared/sprites/player-p2-jump.png` |
 | `sprite.player.p2.fall` | 10 | 15 | yes | `shared/sprites/player-p2-fall.png` |
 | `sprite.player.p2.land` | 8 | 30 | no | `shared/sprites/player-p2-land.png` |
+| `sprite.agent.neuron.idle` | 36 | 12.5 | yes | `shared/sprites/agent-neuron-idle.png` |
 
 P1 and P2 walk sources have different frame counts (49 vs 36); the runtime
-normalizes cycle duration with fps rather than requiring identical frames.
+normalizes cycle duration with fps rather than requiring identical frames. The
+Neuron Keeper idle is the only animated entity sheet in this POC; its static
+fallback is frame 0.
 
 The POC uses a downscale + palette-quantize path for the runtime sheets. The
 semantic remaster remains available via `npm run art:build-player -- --sampler
@@ -546,6 +600,8 @@ Do not export upscaled 2× or 4× versions. The engine performs the 2× nearest-
 6. Do not bake drop shadows, ground shadows, pedestals or glow into any sprite. The engine adds its own shadow, glow and interaction tint.
 
 > **Critical:** author the player at **14×22**, not 28×44, and the entity at **18×18**, not 36×36. The engine sets the texture to 28×44 / 36×36, so the half-res source displays at exactly 2× and matches the atlas and parallax cluster density.
+>
+> **POC entity path:** for concept plates, `npm run art:fit` performs the trim, aspect-preserving fit, hard alpha threshold, palette quantisation and baseline snap from a keyed PNG. The fit is configurable (`art-source/nanobanan/fit.config.json`); it is not a substitute for a final 18×18 Aseprite pass.
 
 ### 6.3 Tileability and pixel grid
 
@@ -583,7 +639,7 @@ These are project budgets, not engine limits. Pixel art compresses well; a large
 | Asset | Budget |
 |---|---|
 | Player static PNG | ≤ 16 KB each |
-| Player animation sheet | ≤ 64 KB per clip (POC; walk sheets are the largest) |
+| Animation sheet (player or entity) | ≤ 64 KB per clip (POC; walk sheets are the largest) |
 | Entity PNG | ≤ 16 KB each |
 | Background sky | ≤ 300 KB |
 | Parallax layer | ≤ 300 KB each |
@@ -602,14 +658,14 @@ Use static types for M3:
 | Asset ID pattern | Manifest `type` |
 |---|---|
 | `sprite.player.p1`, `sprite.player.p2` | `sprite` |
-| `sprite.player.*.walk/jump/fall/land` | `sheet` (POC animation) |
-| `sprite.agent.*`, `sprite.scan.*`, `sprite.gate.*`, `sprite.prop.*`, `sprite.pulse.*`, `sprite.receptor.*`, `sprite.exit` | `sprite` |
+| `sprite.player.*.walk/jump/fall/land`, `sprite.agent.neuron.idle` | `sheet` (POC animation) |
+| `sprite.agent.neuron`, `sprite.scan.*`, `sprite.gate.*`, `sprite.prop.*`, `sprite.pulse.*`, `sprite.receptor.*`, `sprite.exit` | `sprite` |
 | `bg.*` | `background` |
 | `tile.*.atlas` | `atlas` |
 | `tileset.*`, `ui.*` | `image` |
 | `audio.*` | `audio` |
 
-Player animation uses `sheet` entries with `frameWidth`, `frameHeight`, `frames`, `fps`, `loop`, and `anchor`. `gif` and `webp` animation types remain banned; GIFs are build-time previews only. Other entity sheets stay static `sprite` entries. Source sheets are captured in `art-source/` and never referenced by a manifest.
+Player animation and the Neuron Keeper idle use `sheet` entries with `frameWidth`, `frameHeight`, `frames`, `fps`, `loop`, and `anchor`. `gif` and `webp` animation types remain banned; GIFs are build-time previews only. The Neuron Keeper idle is the only animated entity sheet; other entity entries stay static `sprite` images. Source sheets are captured in `art-source/` and never referenced by a manifest.
 
 ---
 
@@ -618,7 +674,7 @@ Player animation uses `sheet` entries with `frameWidth`, `frameHeight`, `frames`
 ### 7.1 Tool, plan, and source of truth
 
 - **Ludo.ai → Image Generator** for concepts, silhouettes, palette studies, material swatches, and source sprite sheets. Ludo is not the final pixel renderer.
-- **Local art pipeline** for slicing source sheets (`npm run art:slice`), profile-driven remastering (`npm run art:remaster`), palette validation (`npm run art:normalize`), palette-LUT variants (`npm run art:variant`), player-sheet builds (`npm run art:build-player`), and background keying (`npm run art:key`) (ADR-0060–0065).
+- **Local art pipeline** for slicing source sheets (`npm run art:slice`), profile-driven remastering (`npm run art:remaster`), palette validation (`npm run art:normalize`), palette-LUT variants (`npm run art:variant`), character-sheet builds (`npm run art:build-player`, including `--character neuron-agent`), entity fitting (`npm run art:fit`), and background keying (`npm run art:key`) (ADR-0060–0065).
 - **Aseprite, Piskel, or LibreSprite** for the final pixel pass at source size, palette quantisation, and atlas assembly.
 - **Ludo.ai → Audio Generator** for the 11 SFX.
 - The source of truth is this document, the category style blocks in §8, and the prompt version. Do not improvise a new style per asset.
@@ -702,8 +758,8 @@ P2 now uses its approved Ludo walk/jump source sheets (ADR-0065). Do not start B
 
 ### 7.7 Post-processing and export
 
-- **Sprites/entities:** trim to the alpha bounding box, pad to 14×22 or 18×18, feet/base on the bottom line; export PNG.
-- **Source sheets:** slice with the Ludo JSON, then run `npm run art:build-player` to generate the POC idle/walk/jump/fall/land sheets from `working/clips.json`. Keep the raw sheet in `art-source/`, never in `public/`. Frame 0 remains the static fallback.
+- **Sprites/entities:** key the concept plate, trim to the alpha bounding box, then run `npm run art:fit` to crop, fit the 18×18 cell with a 1 px transparent margin, hard-threshold alpha, and quantise the approved ramps. Export PNG. The fit report records the source bbox, fitted size, margins, palette validation and alpha violations.
+- **Source sheets:** slice with the Ludo JSON, then run `npm run art:build-player` to generate the POC idle/walk/jump/fall/land sheets from `working/clips.json`. For the Neuron Keeper, use `--character neuron-agent --sampler downscale --write-runtime`; the same command writes the static frame 0 and the 36-frame idle sheet. Keep the raw sheet in `art-source/`, never in `public/`. Frame 0 remains the static fallback.
 - **Palette variants:** derive from the indexed master with a semantic LUT; do not re-prompt Ludo. P2 uses the approved bone/joint/nerve source sheets for the POC; the ADR-0065 role map remains available for future derived variants.
 - **Backgrounds:** sky 640×368 opaque; far/mid/near 1024×512 with alpha and 2×2 clusters; export lossless WebP or PNG.
 - **Atlases:** assemble 32×32 cells at 1:1 from the approved swatch; 8×6 bone grid (47 regions + one opaque empty cell), 4×4 nerve grid (16 regions); every cell opaque; export PNG. Do not add gutters or transparent seams.
@@ -719,6 +775,8 @@ P2 now uses its approved Ludo walk/jump source sheets (ADR-0065). Do not start B
 - Source inspection: every asset at 400%; every pixel on the ramp palette; no anti-aliasing; no mixed pixel sizes.
 - Contact sheet at 1280×720: P1/P2 at 28×44, entities at 36×36, sky at 1280×720, mid tiled 3×, badge at 32×32 and in the pill crop.
 - Player animation previews: walk loop, jump/fall/land one-shots, P1/P2 side by side; inspect `art-source/previews/poc/downscale/`.
+- Neuron Keeper idle preview: `art-source/previews/poc/downscale/agent-neuron-idle.gif` plus the 8× static preview.
+- Entity fit previews: `<stem>-2x.png`, `<stem>-8x.png` and `<stem>-tint-2x.png` under `art-source/previews/nanobanan/entities/`.
 - Warm interaction tint check on every entity sprite.
 - Review at 100% zoom, not on a large preview. If it does not read at actual size, it does not pass.
 
@@ -981,6 +1039,8 @@ P2 now uses the approved Ludo walk and jump sheets. For the POC they are used di
 **Common settings:** `SUBJECT` + `STYLE_SPRITE` + `PALETTE` + `FRAME_ENTITY_CONCEPT`; source **18×18 PNG**, display **36×36**; design for 36×36 readability with no fine detail. The export spec in `FRAME_ENTITY` is for Aseprite/Piskel, not Ludo. Filenames are in §5.3.
 
 **Common acceptance:** reads at 36×36 on `#101a20`; silhouette distinct from every other entity; survives the warm interaction tint; hard pixel edges; palette-only colours; no text; alpha clean; ≤16 KB; the `SUBJECT` block is the first text in the prompt and the anatomy in plain shapes is accurate.
+
+**POC note:** the statics from the nanobanan plates are generated with `npm run art:fit`. The Neuron Keeper static is frame 0 of the 36-frame animated source sheet and is built with `npm run art:build-player -- --character neuron-agent --sampler downscale`; the idle sheet is not a single-image Ludo prompt. The plates that lost their reading at 36×36 stay placeholders (see §5.3).
 
 | Asset ID | Style / negative | Frame | Source | File |
 |---|---|---|---|---|
@@ -1570,7 +1630,7 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 | Category | Must pass |
 |---|---|
 | Players | 14×22 source, 28×44 display; 2× grid; P1 bone suit/amber visor/yellow tanks/cyan accents; P2 bone suit/cyan visor/cyan tanks/amber accent; P1/P2 share silhouette, cell, origin, and clip names; helmet, backpack and boots readable; feet at baseline; no anti-aliasing; no baked shadow; POC walk/jump/fall/land clips play |
-| Entities | 18×18 source, 36×36 display; 2× grid; silhouette distinct from every other entity; base at the bottom padding line; survives the warm interaction tint; no text; no baked shadow; the subject-first prompt and its biology check pass (Neuron Keeper: one cell body, one nucleus, 5–7 dendrite tentacles, one bare axon, forked terminals; scan targets: no face or character pose) |
+| Entities | 18×18 source, 36×36 display; 2× grid; silhouette distinct from every other entity; base at the bottom padding line; survives the warm interaction tint; no text; no baked shadow; the subject-first prompt and its biology check pass (Neuron Keeper: one cell body, one nucleus, 5–7 dendrite tentacles, one bare axon, forked terminals; scan targets: no face or character pose); the Neuron Keeper idle sheet reads at 36×36 and its static frame 0 remains the reduced-motion fallback |
 | Backgrounds | Sky 640×368 displayed at an exact integer 2×; supports HUD contrast at 1280×720; far/mid/near tile without seams at 2×2 on **both axes**; near layer leaves the centre and lower third transparent; the body reads as a landscape, not a textbook cutaway; no labels or diagram lines |
 | Material atlas | Bone has 47 `blob47` frames, nerve has 16 `edge` frames; every 32×32 frame is authored at 1:1 with a 2×2 cluster grid and tiles on all four sides; mask variants are visually distinct; no text or baked directional edge; tint path checked; the swatch reads as wet chalky bone or bundled wet cables, not a diagram |
 | Badge | 16×16 source reads in the ~45×27 HUD pill and at the 32×32 pixel-UI target; no text; central composition; works on dark teal |
@@ -1600,6 +1660,8 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - The P1→P2 pixel diff touches only the visor/tank and accent masks; suit, joints, outline, and grime stay on their approved ramps.
 - The P2 joint-cyan visor and tanks read against the bone suit at 28×44.
 - Player animation sheets are 14×22 frames, alpha 0/255, and within the per-clip budget.
+- The Neuron Keeper idle sheet is 36 frames of 18×18, alpha 0/255, within the per-clip budget, and its manifest frame count/fps/loop match the image.
+- The Neuron Keeper static frame 0 is the fallback; reduced motion keeps the static frame and does not start the sheet.
 - The walk loop, jump one-shot, fall loop, and land one-shot use the manifest fps/loop values.
 - Alpha is clean at 400%; no magenta fringe; no semi-transparent sprite edges.
 - No JPG or lossy WebP for pixel assets.
@@ -1637,6 +1699,8 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - `materials.json` parses, every palette token exists in `theme.json`, and tile/background/UI/entity references resolve.
 - The atlas tint decision in §8.21.1 is applied consistently; final atlases are not double-tinted.
 - Each entry has a matching licence label in `licenses.json`.
+- Each entity `idleAnimation` resolves to a `sheet` entry with `frames` and `fps`; a placeholder animation produces a validator warning and the runtime stays static.
+- `sprite.agent.neuron.idle` has a matching licence entry and is preloaded by `pack:smoke`.
 - Silkscreen and Pixelify Sans are bundled locally (no CDN) and recorded in the licence log.
 - `npm run pack:validate` passes.
 - `npm run pack:smoke` still passes.
@@ -1650,9 +1714,11 @@ The art can be weird and fleshy, but it must stay inside the fidelity ledger and
 - [x] P1 idle master and P2 approved source sheets exist; POC runtime masters are 14×22 / 28×44.
 - [x] P1/P2 POC idle, walk, jump, fall, and land sheets generated and integrated in `03-nerve-forest`.
 - [x] Background keying tool (`npm run art:key`) and nanobanan review copies generated.
+- [x] Entity fit tool (`npm run art:fit`) and POC entity fit reports generated.
+- [x] Neuron Keeper static + 36-frame idle sheet generated and integrated in 03/04.
 - [ ] P1 walk/jump and P2 animation final art approval pending.
-- [ ] Neuron Keeper approved.
-- [ ] Four visible scan targets approved; `sprite.scan.reflex` reserve is optional.
+- [ ] Neuron Keeper approved (POC static + idle integrated; final art approval pending).
+- [ ] Four visible scan targets approved; `sprite.scan.reflex` reserve is optional. (POC integrated: `scan.synapse`, `scan.muscle`; placeholders: `scan.neuron`, `scan.pathway`; final approval pending.)
 - [ ] Gate, exit, props, receptors approved.
 - [ ] Sky and mid layer approved; far/near approved.
 - [ ] Bone and nerve atlases approved; region maps, 2×2 clusters and tint path checked.
@@ -1883,11 +1949,14 @@ Never cut P1/P2, Neuron Keeper, the main interactive landmark (gate or exit), or
 | Badge cropped badly in the HUD pill | Keep the helmet and visor in the middle 60% vertical band; check at ~45×27 and 32×32 |
 | UI font readability | Minimum 12/15 px; integer text scales; mixed case for dialogue |
 | Alpha halos on dark background | Magenta background + 400% edge check + manual cleanup |
-| 04 shows a neuron as the Muscle Effector agent | Accept as an M3 placeholder mismatch or add a 04 agent ID later; do not change the 03 art to compensate |
+| 04 shows a neuron as the Muscle Effector agent | Accept as an M3 placeholder mismatch or add a 04 agent ID later; do not change the 03 art to compensate. The shared keeper now animates in both rooms. |
 | Puzzle prop art invalidated by room changes | Check gate/tracer/pulse/receptor art against the authored rooms; re-baseline §5.3 |
 | Credits exhausted | Indie 250 is enough; top up rather than upgrade |
 | Free-tier watermark | Free tier for the concept gate only; paid Indie for finals |
 | Player animation path is too rough | The POC ships the downscale path; the semantic remaster remains available and the final art approval is still pending |
+| Neuron Keeper idle sheet jitters or loses the lantern at 18×18 | Use the same player downscale path; inspect the 8× GIF at 36×36 and keep the static fallback |
+| Wide scan plates lose the silhouette or scan rim | Keep the placeholder; the fit report records the fitted size, palette and missing joint-ramp pixels. Do not stretch |
+| Entity idle animation grows into a generalized system | The POC is one data-driven idle sheet (`idleAnimation`); ADR-0062 remains deferred |
 
 ---
 
@@ -1954,14 +2023,14 @@ Do not invent new prefixes without updating the asset contract.
 - [x] Adopt pixel UI chrome and fonts (ADR-0049).
 - [x] Adopt source/working/runtime asset layers (ADR-0060).
 - [x] Adopt palette-LUT colour variants; colour-only changes are not Ludo generations (ADR-0061).
-- [x] Adopt data-driven animation and build-time previews as the target architecture (ADR-0062–0063); a POC player animation path is implemented.
+- [x] Adopt data-driven animation and build-time previews as the target architecture (ADR-0062–0063); a POC player and Neuron Keeper idle path is implemented.
 - [x] Use three-step palette ramps; the nine families stay, with Orange reserved and unused (ADR-0065).
 - [x] Use Silkscreen + Pixelify Sans as the bundled UI fonts.
 - [x] Adopt subject-first prompt language and the §4.10 biology-to-shape lexicon (`m3-2026-10-31.2`).
-- [x] M3 environment art target = `03-nerve-forest`; 04 environment stays placeholder. Shared entity sprites are final because both rooms reference them.
+- [x] M3 environment art target = `03-nerve-forest`; 04 environment stays placeholder. Shared entity sprites are POC-integrated because both rooms reference them; final art approval is pending.
 - [x] P1 uses a bone suit, amber visor, nerve-yellow tanks, and joint-cyan accents; P2 uses a bone suit, joint-cyan visor/tanks, and nerve-amber accent (ADR-0065).
 - [x] P2 uses the approved `art-source/characters/player-p2/` walk/jump sheets for the POC; no orange regeneration.
-- [x] POC player animation is implemented; entity animation and the generalized descriptor remain future work.
+- [x] POC player animation and the Neuron Keeper idle are implemented; generalized entity animation and the ADR-0062 descriptor remain future work.
 - [x] The POC uses animated P1/P2 in `03-nerve-forest`; frame 0 remains the idle fallback.
 - [x] Ludo Indie ($20/mo), not Pro.
 - [x] Skip the eight deferred UI images; badge only.
@@ -1970,7 +2039,9 @@ Do not invent new prefixes without updating the asset contract.
 - [ ] Approve the two final atlas IDs (`tile.bone.atlas`, `tile.nerve.atlas`), the region maps in §8.21, the `bone-blob47` variant set, and the `nerve-edge` repoint.
 - [ ] Choose the atlas tint path: remove the bone/nerve `tint` and author final colours, or keep the tint and author neutral-light atlases.
 - [ ] Keep `sprite.scan.reflex` as a reserve or drop it from the 21-image list (which would make 20 images / 31 total).
-- [ ] Accept 04's Muscle Effector agent reusing `sprite.agent.neuron`, or add a 04-specific agent ID in a later content task.
+- [ ] Accept 04's Muscle Effector agent reusing `sprite.agent.neuron`, or add a 04-specific agent ID in a later content task. The M3 POC uses the shared static + idle sheet; no 04-specific ID was added.
+- [ ] Approve the Neuron Keeper idle sheet and frame 0 as the final static; the nanobanan agent plate is an alternate review asset.
+- [ ] Decide whether to redraw `sprite.scan.neuron` and `sprite.scan.pathway` at 18×18 or keep their placeholders.
 - [ ] Add `audio.cue.wrong` as a 12th cue (33 total) or keep it placeholder.
 - [ ] Confirm the badge is a 16×16 source shown in the ~45×27 pill and/or the 32×32 pixel-UI target, rather than a 2:1 export.
 - [ ] Confirm whether `far`/`near` appear in the capture shot; if not, cut them first.
@@ -2034,6 +2105,7 @@ Do not invent new prefixes without updating the asset contract.
 | 2026-10-31 | Source-sheet and palette-variant alignment: ADR-0060–0064; sheet prompts and slicing workflow; P2 orange-suit/bone-visor palette permutation; LUT diff checks; prompt-log provenance fields; prompt version `m3-2026-10-31.1`. |
 | 2026-10-31 | Subject-first prompt pass and biology-to-shape lexicon: added §4.10; rewrote all visual prompts with visual nouns before anatomical terms; added anatomy-in-plain-shapes lines, negative deltas, biology/visual checks and a visual fidelity guard; split concept and export frames; moved the palette and negatives out of the subject position; prompt/style versions bumped to `m3-2026-10-31.2` / `style-pixel-v2`. |
 | 2026-11-01 | P2 re-baseline and POC animation: ADR-0065 supersedes the orange P2 concept; P2 uses bone suit/joint-cyan visor/tank/nerve accent. Added `npm run art:build-player`, `npm run art:key`, P1/P2 walk/jump/fall/land runtime sheets, and the player animator. Added §5.8 completion status and updated the manifest, acceptance, and open-decision sections. |
+| 2026-11-01 | Entity POC: added `npm run art:fit` with configurable 18×18 fit, 1 px margin, hard alpha, non-orange palette quantisation, preview/report output, and tests. Fitted the nanobanan scan plates: `scan.synapse` and `scan.muscle` are POC-integrated; `scan.neuron` and `scan.pathway` remain placeholders because the wide plates lose their reading at 36×36. Added the 36-frame Neuron Keeper idle source and `sprite.agent.neuron.idle`, regenerated the static from frame 0, and wired a data-driven entity idle in 03/04. The nanobanan agent plate is an alternate review asset. Status is POC integrated / final art approval pending. |
 
 ---
 

@@ -108,6 +108,8 @@ export interface RoomEntity {
   x: number;
   y: number;
   sprite?: AssetId;
+  /** Optional POC idle sheet played in addition to the static sprite. */
+  idleAnimation?: AssetId;
   dialogueId?: string;
   gateId?: string;
   conceptId?: string;

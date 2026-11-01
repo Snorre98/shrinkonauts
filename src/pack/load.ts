@@ -659,6 +659,15 @@ function parseEntity(
   if (!sprite.ok) return err(sprite.error);
   if (sprite.value) entity.sprite = sprite.value;
 
+  const idleAnimation = readOptionalAssetId(
+    value,
+    "idleAnimation",
+    code,
+    `entities[${index}].idleAnimation`,
+  );
+  if (!idleAnimation.ok) return err(idleAnimation.error);
+  if (idleAnimation.value) entity.idleAnimation = idleAnimation.value;
+
   for (const key of ["dialogueId", "gateId", "conceptId", "label"] as const) {
     if (value[key] === undefined) continue;
     const field = readNonEmptyString(
@@ -1168,6 +1177,9 @@ export function collectRoomAssetIds(room: RoomDocument): AssetId[] {
   for (const entity of room.entities ?? []) {
     if (entity.sprite) {
       ids.add(entity.sprite);
+    }
+    if (entity.idleAnimation) {
+      ids.add(entity.idleAnimation);
     }
   }
   if (room.music) {
