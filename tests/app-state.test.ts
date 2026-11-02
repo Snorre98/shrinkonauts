@@ -22,11 +22,16 @@ if (!parsed.ok) throw new Error(parsed.error);
 const catalog = parsed.value;
 
 describe("app shell state", () => {
-  it("starts on the first available cycle and ignores gated cycles", () => {
+  it("starts on the first available cycle and selects Silicon once available", () => {
     const state = createAppState(catalog);
     expect(state.selectedPackId).toBe("anatomy-reflex");
     expect(selectedPack(state)?.status).toBe("available");
-    expect(selectPack(state, "silicon-reflex")).toBe(state);
+
+    const silicon = selectPack(state, "silicon-reflex");
+    expect(silicon).not.toBe(state);
+    expect(silicon.selectedPackId).toBe("silicon-reflex");
+    expect(selectedPack(silicon)?.status).toBe("available");
+
     expect(selectPack(state, "missing")).toBe(state);
   });
 

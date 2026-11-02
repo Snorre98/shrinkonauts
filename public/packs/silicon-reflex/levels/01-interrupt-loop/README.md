@@ -1,6 +1,6 @@
 # Level 01 — Interrupt Loop (Silicon fixture)
 
-**Status:** `validated` in `level.json`; human playtest pending
+**Status:** `validated` in `level.json`; automated smoke green; human playtest pending
 **Pack:** `silicon-reflex`
 **Objective:** OBJ-5 — transfer the reflex loop to a new system
 **Concepts:** CON-7 reflex arc, CON-8 sensor–controller–actuator loop
@@ -10,10 +10,11 @@
 **Design source:** [`docs/m2/nervous-puzzles/silicon-fixture.md`](../../../../../docs/m2/nervous-puzzles/silicon-fixture.md)
 **Theme:** [`docs/prompts/silicon-theme.md`](../../../../../docs/prompts/silicon-theme.md)
 
-> The pack is authored and validated. The 2026-11-02 Silicon asset pass
-> integrated the sky and 12 entity sprites; far/mid/near, the exit, portrait,
-> tileset, atlas PNG, scan-interrupt icon, and audio remain placeholders. The
-> catalog entry stays `coming-soon` in Phase 1.
+> The pack is authored, validated, and `available` in the catalog. The
+> 2026-11-02 Silicon asset pass integrated the sky and 12 entity sprites;
+> far/mid/near, the exit, portrait, tileset, atlas PNG, scan-interrupt icon,
+> and audio remain placeholders. The catalog entry is `available` with
+> `online: false`; the hub/e2e, app-state, and pack-smoke paths are in place.
 
 ## Player-facing goal
 
@@ -225,25 +226,37 @@ resolve another pack's files.
 Run:
 
 ```text
-npm run pack:map -- --pack silicon-reflex
 npm test
 npm run pack:validate
-npm run pack:map -- --pack silicon-reflex
+npm run pack:smoke
+npm run smoke:e2e
 npm run build
 git diff --check
 ```
 
-Results in this pass:
+Automated results (asset pass and catalog phase):
 
 - `npm test`: **49 files, 469 tests passed**.
 - `npm run pack:validate`: **PASS** for dev, anatomy, Silicon, catalog, and hub.
-- `npm run pack:smoke`: existing dev, fixture, and anatomy paths **PASS**; no Silicon
-  path was added.
-- Silicon: **51 IDs, 28 placeholders**, coverage **1/5 objectives · 2/8 concepts**.
+  The catalog now reports `silicon-reflex: available`; the previous
+  “visible but not installed yet” warning is gone.
+- `npm run pack:smoke`: dev placeholder/fixture, anatomy runtime, and Silicon
+  runtime **PASS**. The Silicon path boots `01-interrupt-loop` /
+  `room-interrupt-loop`, checks spawn/ground/camera/movement/jump/land cues,
+  runs the CPU Core conversation and sensor scan, activates the puzzle at the
+  sensor console, presses the sensor pad, carries the route plug to the
+  controller socket, waits for the 60-tick timer, asserts
+  `gateOpen gate-actuator`, exits to the debrief, and restores the save. The
+  anatomy path is unchanged.
+- `npm run smoke:e2e`: **8 tests passed**, including the Silicon deep-link start
+  and HUD title **Interrupt Loop**.
+- Silicon: **51 IDs, 28 placeholders**, coverage **1/5 objectives · 2/8 concepts**
+  from `pack:validate`; the runtime preload resolves **43 IDs** referenced by
+  the room, theme, and players.
 - Silicon asset pass: **13 new runtime files** (sky + 12 sprites);
   `sprite.scan.interrupt` and the atlas PNG remain placeholders.
-- `npm run pack:map -- --pack silicon-reflex`: writes 5 objectives and 8
-  concepts; a second run produces the same SHA-256, so there is no drift.
+- `npm run pack:map -- --pack silicon-reflex` (asset pass): writes 5 objectives
+  and 8 concepts; a second run produces the same SHA-256, so there is no drift.
 - `npm run build`: TypeScript and Vite production build pass; the existing
   chunk-size warning remains.
 - `git diff --check`: clean.
@@ -253,11 +266,7 @@ Expected warnings, recorded rather than suppressed:
 
 - `COVERAGE_OBJECTIVE_UNMAPPED` for OBJ-1, OBJ-2, OBJ-3, OBJ-4.
 - `COVERAGE_CONCEPT_UNMAPPED` for CON-1, CON-2, CON-3, CON-4, CON-5, CON-6.
-- `silicon-reflex is visible but not installed yet` — the catalog status remains
-  `coming-soon`.
-
-No Silicon path was added to `scripts/pack-smoke.ts`; `npm run smoke:e2e` was not
-run because the catalog and hub are unchanged.
+- Anatomy forward-reference warnings are unrelated and remain.
 
 ## Deviations and known gaps
 
@@ -275,7 +284,9 @@ run because the catalog and hub are unchanged.
   opens because puzzle gates have no collision. The intended order is authored
   in the dialogue and layout.
 - **Debrief prompt id:** runtime uses `prompt-obj-5`; the syllabus EV-5 filter
-  says `prompt-transfer`. Recorded, not edited.
+  says `prompt-transfer`. The pack-smoke asserts the runtime
+  `debrief_answered` event for `prompt-obj-5`, not the syllabus `requiredMet`
+  flag; the curriculum mismatch is recorded, not edited.
 - **Sky export:** the 2026-11-02 pass uses the supplied 2720×1568 plate,
   cropped to 2720×1564 at y=2 and Lanczos-downscaled to **1280×736 at 1×**.
   It is palette-quantised to the six Silicon ramps with a 2×2 Bayer dither and
@@ -301,94 +312,55 @@ run because the catalog and hub are unchanged.
 - **Final art/audio:** far/mid/near, exit, portrait, atlas PNG,
   scan-interrupt icon, and audio remain deferred.
 - **Human playtesting:** `playtestedSolo: false`, `playtestedCoop: false`.
-- **Catalog/hub/e2e:** the Silicon entry remains `coming-soon`; no hub, e2e,
-  app-state, or pack-smoke Silicon path changes were made in this phase.
+- **Catalog/hub/e2e:** the Silicon entry was flipped to `available` with
+  `online: false`; the hub/e2e, app-state, and pack-smoke Silicon paths were
+  added in the follow-up catalog phase. No engine or runtime modules changed.
 
-## Next steps — catalog flip, hub/e2e, pack:smoke
+## Catalog, hub, and smoke phase — completed 2026-11-02
 
-Do this as a separate change **after** the asset-pass commit. The 2026-11-02
-asset pass deliberately leaves the catalog `coming-soon` and adds no Silicon
-pack-smoke or e2e path.
+The follow-up phase is complete. The 2026-11-02 asset pass remains the source
+of the art log; this phase changed catalog, tests, and documentation only.
 
-### 1. Flip the catalog
+### 1. Catalog — done
 
-- File: `public/packs/index.json`.
-- Change `silicon-reflex.status` from `coming-soon` to `available`.
-- Keep `online: false`; the pack is local co-op only.
-- Replace the future-tense description (“Arrives with the M2 content pass.”)
-  with a current description of the one-room sensor → controller → CPU →
-  actuator fixture.
-- Do not change `anatomy-reflex`.
-- Do not flip until the asset pass is committed and `npm run pack:validate`
-  is clean.
+- `public/packs/index.json` now marks `silicon-reflex` as `available` with
+  `online: false`.
+- The description is present tense and describes the one-room sensor →
+  interrupt controller → CPU → actuator fixture.
+- `anatomy-reflex` is unchanged.
 
-### 2. Hub and app-state expectations
+### 2. Hub and app-state — done
 
-- `e2e/hub.spec.ts`:
-  - `bootHub()` currently expects the Silicon card to have
-    `data-status="coming-soon"`; expect `available` instead.
-  - The deep-link test currently expects Start to be disabled and the hub status
-    to contain “M2 content pass”; rewrite it to select Silicon from
-    `/?pack=silicon-reflex` and assert the cycle can start.
-  - Remove/update the “Silicon cartridge is visible but not selectable before
-    M2” assertion and the disabled input check.
-  - Keep the bathroom-hub final-art expectations from `0b1144c` intact.
-- `tests/app-state.test.ts`:
-  - The “starts on the first available cycle and ignores gated cycles” test
-    currently asserts `selectPack(state, "silicon-reflex")` returns the same
-    state. After the flip, assert that it selects Silicon and that
-    `selectedPack(state)?.status` is `available`.
-  - Keep the default selection as `anatomy-reflex` because it is order 10 and
-    available.
-- `tests/catalog.test.ts` uses a synthetic `VALID` catalog and does not read
-  `public/packs/index.json`; leave it unless adding an explicit
-  available-Silicon parser case.
+- `e2e/hub.spec.ts` expects the Silicon card to be `available`, selects it from
+  `/?pack=silicon-reflex`, asserts the input and Start are enabled, starts the
+  cycle, and checks the HUD title **Interrupt Loop**.
+- `tests/app-state.test.ts` keeps `anatomy-reflex` as the order-10 default and
+  asserts `silicon-reflex` is selectable with status `available`.
+- The bathroom-hub final-art, online-placeholder, anatomy start, and
+  return-to-hub tests remain intact.
 
-### 3. Silicon pack smoke
+### 3. Silicon pack smoke — done
 
-- `scripts/pack-smoke.ts`: add a Silicon runtime path after the anatomy path.
-  Mirror the anatomy harness:
-  - load `silicon-reflex`, boot level `01-interrupt-loop` and room
-    `room-interrupt-loop`;
-  - assert spawn, ground, camera, movement, and cues;
-  - interact with `sensor-console`, press `sensor-pad`, carry `route-plug` to
-    `controller-socket`, wait for the 60-tick timer, and assert
-    `gateOpen gate-actuator`;
-  - assert the exit/debrief and save/restore;
-  - keep the anatomy path unchanged;
-  - make no engine/runtime changes.
-- This is the only place a Silicon smoke path is added.
+- `scripts/pack-smoke.ts` adds a Silicon runtime path. It resolves the pack
+  assets, boots `01-interrupt-loop` / `room-interrupt-loop`, checks
+  spawn/ground/camera/movement/jump/land cues, runs the CPU Core conversation
+  and sensor scan, activates the puzzle, presses the sensor pad, carries the
+  route plug to the controller socket, waits for the 60-tick timer, asserts
+  `gateOpen gate-actuator`, exits to the debrief, and restores the save.
+- The anatomy path and output are unchanged.
 
-### 4. Validation gate
+### 4. Validation gate — done
 
-Run, in order:
+All six commands pass; see “Validation” above.
 
-```bash
-npm test
-npm run pack:validate
-npm run pack:smoke
-npm run smoke:e2e
-npm run build
-git diff --check
-```
+### 5. Status and captures — done
 
-All must pass. The expected Silicon warnings remain
-`COVERAGE_OBJECTIVE_UNMAPPED` OBJ-1..OBJ-4 and
-`COVERAGE_CONCEPT_UNMAPPED` CON-1..CON-6. Anatomy forward-reference warnings
-are unrelated. The catalog warning
-`silicon-reflex is visible but not installed yet` should disappear after the
-flip.
+- This README and prompt-log §19 record the catalog-phase results.
+- No capture-list artifact in the repository required a new still. The Silicon
+  start path asserts the HUD title **Interrupt Loop**; if a still is needed for
+  the video/GDD, capture `screenshots/m3.5-interrupt-loop.png` from that path.
 
-### 5. Status and captures
-
-- Update this README’s validation section with the catalog flip and
-  pack-smoke/e2e results.
-- Update the prompt-log status in
-  `docs/prompts/levels/01-interrupt-loop-assets.md` §19.
-- Capture the hub/Silicon screenshot(s) required by the capture list; the
-  expected HUD title is **Interrupt Loop**.
-
-### 6. Still deferred after the catalog flip
+### Still deferred after the catalog flip
 
 - Remaining art: far/mid/near backgrounds, exit, portrait, atlas PNG,
   scan-interrupt icon, and audio.

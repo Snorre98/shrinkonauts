@@ -754,13 +754,11 @@ final asset.
 
 **Status:** 13 files integrated (sky + 12 entity sprites). `sprite.scan.interrupt`
 and `tile.circuit.atlas` remain placeholders. `sprite.prop.work_token` was
-processed for review only and is not in the manifest.
+processed for review only and is not in the manifest. The 2026-11-02 catalog
+phase then flipped the pack to `available` and added the hub/e2e and pack-smoke
+paths; no art files changed after the asset pass.
 
-**Next phase:** the exact catalog-flip, hub/e2e, pack-smoke, validation, and
-capture steps are documented in
-`public/packs/silicon-reflex/levels/01-interrupt-loop/README.md` under
-“Next steps — catalog flip, hub/e2e, pack:smoke”. Do not perform them in the
-asset pass.
+**Next phase:** completed in the 2026-11-02 catalog/hub phase; see §19.2.
 
 **Source folder:** `art-source/nanobanan/new-silicon/`.
 
@@ -814,3 +812,35 @@ Report paths are relative to `art-source/nanobanan/`. Runtime previews are in
 `contact-2x.png` and `contact-8x.png`. The atlas attempts are
 `circuit-atlas-128-direct-4x.png`, `circuit-atlas-16crop-4x.png`,
 `circuit-atlas-mask-edge-4x.png`, and `circuit-atlas-room-sim.png`.
+
+### 19.2 Catalog, hub, e2e, and pack-smoke — 2026-11-02
+
+This phase did not change art, manifests, licences, reports, or previews.
+
+- **Catalog:** `public/packs/index.json` marks `silicon-reflex` as `available`
+  with `online: false`. The description is present tense. `anatomy-reflex` is
+  unchanged. `pack:validate` now reports `silicon-reflex: available`; the
+  “visible but not installed yet” warning is gone.
+- **Hub and app-state:** `e2e/hub.spec.ts` expects an available, selectable
+  Silicon card, selects it from `/?pack=silicon-reflex`, starts it, and checks
+  the HUD title **Interrupt Loop**. `tests/app-state.test.ts` keeps
+  `anatomy-reflex` as the default and asserts Silicon is selectable with status
+  `available`. The bathroom-hub final-art and anatomy return tests are intact.
+- **Pack smoke:** `scripts/pack-smoke.ts` adds a Silicon runtime path. It
+  resolves the pack assets, boots `01-interrupt-loop` / `room-interrupt-loop`,
+  checks spawn/ground/camera/movement/jump/land cues, runs the CPU Core
+  conversation and sensor scan, activates the puzzle at the sensor console,
+  presses the sensor pad, carries the route plug to the controller socket,
+  waits for the 60-tick timer, asserts `gateOpen gate-actuator`, exits to the
+  debrief, and restores the save. The anatomy path is unchanged.
+- **Validation:** `npm test` passed **49 files / 469 tests**;
+  `npm run pack:validate`, `npm run pack:smoke`, `npm run smoke:e2e`
+  (**8 passed**), `npm run build`, and `git diff --check` passed. The build
+  keeps the existing chunk-size warning.
+- **Warnings:** Silicon keeps `COVERAGE_OBJECTIVE_UNMAPPED` OBJ-1..OBJ-4 and
+  `COVERAGE_CONCEPT_UNMAPPED` CON-1..CON-6. Anatomy forward-reference warnings
+  are unrelated. The catalog warning is gone.
+- **Captures:** no capture-list artifact in the repository required a new
+  still. The Silicon start path asserts the HUD title **Interrupt Loop**.
+- **Still deferred:** far/mid/near backgrounds, exit, portrait, atlas PNG,
+  scan-interrupt icon, audio, human solo/co-op playtests, and 05 Reflex Core.
