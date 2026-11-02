@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.1",
+  "id": "silicon-reflex",
+  "title": "Silicon: Interrupt Loop",
+  "domain": "computer-science",
+  "version": "0.1.0",
+  "syllabusId": "anatomy-reflex",
+  "startLevelId": "01-interrupt-loop",
+  "endLevelId": "01-interrupt-loop",
+  "levels": [
+    "01-interrupt-loop"
+  ],
+  "theme": "theme.json",
+  "mapping": "mapping.json",
+  "licenses": "licenses.json",
+  "materials": "materials.json",
+  "assetManifests": {
+    "placeholder": "assets.placeholder.json",
+    "final": "assets.final.json"
+  },
+  "assets": {
+    "tilesets": [
+      "tileset.silicon"
+    ],
+    "sprites": [
+      "sprite.player.p1",
+      "sprite.player.p2",
+      "sprite.agent.cpu",
+      "sprite.prop.route_plug",
+      "sprite.socket.controller",
+      "sprite.socket.cpu",
+      "sprite.gate.actuator",
+      "sprite.exit.silicon",
+      "sprite.scan.sensor",
+      "sprite.scan.interrupt",
+      "sprite.scan.controller",
+      "sprite.scan.cpu",
+      "sprite.scan.actuator",
+      "sprite.pad.sensor",
+      "sprite.console.sensor",
+      "sprite.console.transfer"
+    ],
+    "audio": [
+      "audio.cue.boot",
+      "audio.cue.dialogue",
+      "audio.cue.scan",
+      "audio.cue.dash",
+      "audio.cue.gate",
+      "audio.cue.map",
+      "audio.cue.debrief",
+      "audio.cue.checkpoint",
+      "audio.cue.unlock",
+      "audio.cue.wrong",
+      "audio.cue.jump",
+      "audio.cue.land"
+    ]
+  },
+  "ageRating": "12+",
+  "description": "A one-room transfer fixture: sensor, interrupt line, interrupt controller, CPU, actuator.",
+  "metadata": {
+    "author": "Snorre",
+    "created": "2026-11-01",
+    "updated": "2026-11-02",
+    "stage": "M2 Silicon fixture"
+  }
+}

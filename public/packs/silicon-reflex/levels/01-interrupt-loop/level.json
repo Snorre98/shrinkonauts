@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "1.1",
+  "id": "01-interrupt-loop",
+  "title": "Interrupt Loop",
+  "order": 1,
+  "status": "validated",
+  "syllabusObjectiveIds": ["OBJ-5"],
+  "conceptIds": ["CON-7", "CON-8"],
+  "roomId": "room-interrupt-loop",
+  "backgroundId": "bg.silicon_board",
+  "dialogueIds": ["dlg-cpu-01"],
+  "gateIds": ["gate-transfer"],
+  "puzzleIds": ["puzzle-interrupt-loop"],
+  "feedback": {
+    "puzzles": {
+      "puzzle-interrupt-loop": {
+        "beats": [
+          {
+            "id": "detect",
+            "label": "Detect the change",
+            "nodes": ["sensor-pad", "sensor-trigger"]
+          },
+          {
+            "id": "route",
+            "label": "Route the interrupt line",
+            "nodes": ["route-plug", "controller-socket", "cpu-socket"]
+          },
+          {
+            "id": "integrate",
+            "label": "Integrate at the controller",
+            "nodes": ["controller-relay"]
+          },
+          {
+            "id": "wake",
+            "label": "Wake the CPU",
+            "nodes": ["cpu-timer"]
+          },
+          {
+            "id": "actuate",
+            "label": "Actuate the response",
+            "nodes": ["gate-actuator"]
+          }
+        ],
+        "nodes": {
+          "sensor-pad": {
+            "label": "Sensor pad",
+            "text": "Sensor triggered — route the interrupt line."
+          },
+          "sensor-trigger": {
+            "label": "Sensor trigger",
+            "text": "Sensor latched."
+          },
+          "route-plug": {
+            "label": "Route plug"
+          },
+          "controller-socket": {
+            "label": "Controller socket",
+            "text": "Controller active — CPU wake signal sent."
+          },
+          "cpu-socket": {
+            "label": "CPU socket (decoy)",
+            "text": "No controller signal — the CPU never woke."
+          },
+          "controller-relay": {
+            "label": "Interrupt controller"
+          },
+          "cpu-timer": {
+            "label": "CPU wake timer",
+            "text": "Actuator responds."
+          },
+          "gate-actuator": {
+            "label": "Actuator gate"
+          }
+        }
+      }
+    }
+  },
+  "map": {
+    "nodeId": "map-interrupt-loop",
+    "label": "Interrupt Loop",
+    "x": 0,
+    "y": 0,
+    "edges": []
+  },
+  "evidence": [
+    {
+      "objectiveId": "OBJ-5",
+      "event": "puzzle_solved",
+      "filter": { "puzzleId": "puzzle-interrupt-loop" },
+      "required": true
+    },
+    {
+      "objectiveId": "OBJ-5",
+      "event": "debrief_answered",
+      "filter": { "promptId": "prompt-obj-5" },
+      "required": true
+    },
+    {
+      "objectiveId": "OBJ-5",
+      "event": "gate_solved",
+      "filter": { "gateId": "gate-transfer" },
+      "required": false
+    }
+  ],
+  "unlocks": [],
+  "nextLevelIds": [],
+  "coop": {
+    "supported": true,
+    "notes": "P1 can solo the whole loop; P2 can carry the route plug and either player can scan. The sensor trigger latches so no second body is required."
+  },
+  "authoring": {
+    "levelSpec": "README.md",
+    "playtestedSolo": false,
+    "playtestedCoop": false,
+    "notes": "M2 Silicon fixture: sensor pad latches the trigger, the route plug feeds the integration relay, the relay starts the CPU timer (ADR-0047), and the elapsed timer opens the latched actuator gate. The transfer gate is optional evidence. Automated unit, pack validation, and solution replay passed; human solo/co-op playtesting is pending. Uses prompt-obj-5 because per-level debrief prompts are not authored."
+  }
+}

@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "1.1",
+  "id": "room-interrupt-loop",
+  "title": "Interrupt Loop",
+  "width": 40,
+  "height": 23,
+  "tileSize": 32,
+  "tileset": "tileset.silicon",
+  "layers": {
+    "tiles": [
+      "########################################",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "########################################",
+      "########################################",
+      "########################################"
+    ]
+  },
+  "tileMaterials": [
+    "ssssssssssssssssssssssssssssssssssssssss",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "s                                      s",
+    "cccccccccccccccccccccccccccccccccccccccc",
+    "cccccccccccccccccccccccccccccccccccccccc",
+    "cccccccccccccccccccccccccccccccccccccccc"
+  ],
+  "tileMaterialLegend": {
+    "c": { "materialId": "circuit", "autotile": "edge" },
+    "s": { "materialId": "substrate", "autotile": "edge" }
+  },
+  "defaultMaterialId": "substrate",
+  "materialSeed": 3,
+  "background": {
+    "id": "bg.silicon_board",
+    "layers": [
+      {
+        "assetId": "bg.silicon_board.sky",
+        "depth": -40,
+        "parallaxX": 0.05,
+        "parallaxY": 0.02,
+        "fit": "cover"
+      },
+      {
+        "assetId": "bg.silicon_board.far",
+        "depth": -30,
+        "parallaxX": 0.2,
+        "parallaxY": 0.1,
+        "fit": "tile"
+      },
+      {
+        "assetId": "bg.silicon_board.mid",
+        "depth": -20,
+        "parallaxX": 0.45,
+        "parallaxY": 0.2,
+        "fit": "tile"
+      },
+      {
+        "assetId": "bg.silicon_board.near",
+        "depth": -10,
+        "parallaxX": 0.75,
+        "parallaxY": 0.35,
+        "fit": "tile",
+        "opacity": 0.9
+      }
+    ]
+  },
+  "spawns": {
+    "player1": {
+      "x": 3,
+      "y": 20
+    },
+    "player2": {
+      "x": 5,
+      "y": 20
+    }
+  },
+  "checkpoints": [
+    {
+      "id": "checkpoint-entry",
+      "x": 4,
+      "y": 20
+    }
+  ],
+  "entities": [
+    {
+      "id": "agent-cpu",
+      "type": "agent",
+      "x": 6,
+      "y": 20,
+      "sprite": "sprite.agent.cpu",
+      "dialogueId": "dlg-cpu-01",
+      "label": "CPU Core"
+    },
+    {
+      "id": "sensor-console",
+      "type": "decor",
+      "x": 11,
+      "y": 20,
+      "sprite": "sprite.console.sensor",
+      "label": "Sensor console"
+    },
+    {
+      "id": "pad-sensor",
+      "type": "decor",
+      "x": 14,
+      "y": 20,
+      "sprite": "sprite.pad.sensor",
+      "label": "Sensor pad"
+    },
+    {
+      "id": "body-route-plug",
+      "type": "body",
+      "x": 16,
+      "y": 20,
+      "components": {
+        "body": {
+          "width": 20,
+          "height": 20,
+          "dynamic": true,
+          "mass": 0.2,
+          "fixedRotation": true,
+          "friction": 0.4
+        }
+      }
+    },
+    {
+      "id": "route-plug",
+      "type": "prop",
+      "x": 16,
+      "y": 20,
+      "sprite": "sprite.prop.route_plug",
+      "label": "Route plug",
+      "components": {
+        "prop": {
+          "bodyId": "body-route-plug",
+          "tags": ["route"],
+          "shape": "plug",
+          "carryable": true,
+          "placeable": true,
+          "pushable": true,
+          "throwable": true
+        }
+      }
+    },
+    {
+      "id": "controller-socket",
+      "type": "decor",
+      "x": 22,
+      "y": 20,
+      "sprite": "sprite.socket.controller",
+      "label": "Controller socket"
+    },
+    {
+      "id": "scan-controller",
+      "type": "scanTarget",
+      "x": 22,
+      "y": 17,
+      "sprite": "sprite.scan.controller",
+      "conceptId": "CON-8",
+      "label": "Interrupt controller"
+    },
+    {
+      "id": "scan-interrupt",
+      "type": "scanTarget",
+      "x": 18,
+      "y": 18,
+      "sprite": "sprite.scan.interrupt",
+      "conceptId": "CON-8",
+      "label": "Interrupt line"
+    },
+    {
+      "id": "cpu-socket",
+      "type": "decor",
+      "x": 27,
+      "y": 20,
+      "sprite": "sprite.socket.cpu",
+      "label": "CPU socket (decoy)"
+    },
+    {
+      "id": "scan-cpu",
+      "type": "scanTarget",
+      "x": 30,
+      "y": 18,
+      "sprite": "sprite.scan.cpu",
+      "conceptId": "CON-8",
+      "label": "CPU"
+    },
+    {
+      "id": "scan-sensor",
+      "type": "scanTarget",
+      "x": 12,
+      "y": 18,
+      "sprite": "sprite.scan.sensor",
+      "conceptId": "CON-8",
+      "label": "Sensor"
+    },
+    {
+      "id": "scan-actuator",
+      "type": "scanTarget",
+      "x": 35,
+      "y": 18,
+      "sprite": "sprite.scan.actuator",
+      "conceptId": "CON-8",
+      "label": "Actuator"
+    },
+    {
+      "id": "gate-actuator",
+      "type": "puzzleGate",
+      "x": 35,
+      "y": 20,
+      "sprite": "sprite.gate.actuator",
+      "label": "Actuator gate",
+      "components": {
+        "gate": {
+          "gateId": "gate-actuator"
+        },
+        "anchors": {
+          "center": { "x": 18, "y": 18 }
+        }
+      }
+    },
+    {
+      "id": "exit-silicon",
+      "type": "decor",
+      "x": 37,
+      "y": 19,
+      "sprite": "sprite.exit.silicon",
+      "label": "Actuator exit"
+    },
+    {
+      "id": "transfer-console",
+      "type": "gate",
+      "x": 38,
+      "y": 19,
+      "gateId": "gate-transfer",
+      "sprite": "sprite.console.transfer",
+      "label": "Transfer console"
+    }
+  ],
+  "exits": [
+    {
+      "id": "exit-to-actuator",
+      "x": 37,
+      "y": 19,
+      "width": 1,
+      "height": 1,
+      "toLevelId": "01-interrupt-loop",
+      "puzzleId": "puzzle-interrupt-loop"
+    }
+  ],
+  "triggers": []
+}

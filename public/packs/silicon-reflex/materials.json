@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "1.0",
+  "id": "silicon-reflex.materials",
+  "materials": {
+    "circuit": {
+      "family": "synthetic",
+      "palette": ["joint", "tealLight"],
+      "edge": "hard",
+      "patternId": "circuit-traces",
+      "autotile": "edge",
+      "variantSet": "circuit-edge",
+      "tint": "joint"
+    },
+    "substrate": {
+      "family": "synthetic",
+      "palette": ["boneShadow", "tealLight"],
+      "edge": "hard",
+      "patternId": "solder-mask",
+      "autotile": "edge",
+      "variantSet": "substrate-edge",
+      "tint": "boneShadow"
+    }
+  },
+  "patterns": {
+    "circuit-traces": {
+      "family": "synthetic",
+      "source": {
+        "kind": "procedural",
+        "generator": "fibers",
+        "seed": 3
+      },
+      "space": "world",
+      "scale": 0.5,
+      "direction": 0,
+      "contrast": 0.35
+    },
+    "solder-mask": {
+      "family": "synthetic",
+      "source": {
+        "kind": "procedural",
+        "generator": "cellular",
+        "seed": 11
+      },
+      "space": "world",
+      "scale": 0.6,
+      "contrast": 0.25
+    }
+  },
+  "variantSets": {
+    "circuit-edge": {
+      "id": "circuit-edge",
+      "materialId": "circuit",
+      "rule": "edge",
+      "atlas": "tile.circuit.atlas",
+      "frames": {
+        "0": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-0" },
+        "1": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-1" },
+        "2": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-2" },
+        "3": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-3" },
+        "4": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-4" },
+        "5": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-5" },
+        "6": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-6" },
+        "7": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-7" },
+        "8": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-8" },
+        "9": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-9" },
+        "10": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-10" },
+        "11": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-11" },
+        "12": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-12" },
+        "13": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-13" },
+        "14": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-14" },
+        "15": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-15" }
+      },
+      "fallback": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-0" }
+    },
+    "substrate-edge": {
+      "id": "substrate-edge",
+      "materialId": "substrate",
+      "rule": "edge",
+      "atlas": "tile.circuit.atlas",
+      "frames": {
+        "0": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-0" },
+        "1": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-1" },
+        "2": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-2" },
+        "3": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-3" },
+        "4": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-4" },
+        "5": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-5" },
+        "6": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-6" },
+        "7": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-7" },
+        "8": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-8" },
+        "9": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-9" },
+        "10": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-10" },
+        "11": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-11" },
+        "12": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-12" },
+        "13": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-13" },
+        "14": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-14" },
+        "15": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-15" }
+      },
+      "fallback": { "kind": "atlas", "assetId": "tile.circuit.atlas", "frame": "mask-0" }
+    }
+  }
+}

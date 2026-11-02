@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "1.1",
+  "id": "puzzle-interrupt-loop",
+  "title": "Interrupt Loop",
+  "objectiveIds": ["OBJ-5"],
+  "conceptIds": ["CON-7", "CON-8"],
+  "activation": { "mode": "interact", "entityId": "sensor-console" },
+  "tether": "off",
+  "nodes": [
+    {
+      "id": "sensor-pad",
+      "type": "plate",
+      "rect": { "x": 448, "y": 600, "width": 64, "height": 48 },
+      "detects": ["player"],
+      "minimum": 1,
+      "countCarried": false
+    },
+    {
+      "id": "sensor-trigger",
+      "type": "trigger",
+      "once": true
+    },
+    {
+      "id": "route-plug",
+      "type": "prop",
+      "entityId": "route-plug",
+      "tags": ["route"],
+      "shape": "plug",
+      "spawn": { "x": 512, "y": 620 }
+    },
+    {
+      "id": "controller-socket",
+      "type": "plate",
+      "rect": { "x": 704, "y": 600, "width": 64, "height": 48 },
+      "detects": ["prop"],
+      "minimum": 1,
+      "countCarried": false
+    },
+    {
+      "id": "cpu-socket",
+      "type": "plate",
+      "rect": { "x": 864, "y": 600, "width": 64, "height": 48 },
+      "detects": ["prop"],
+      "minimum": 1,
+      "countCarried": false
+    },
+    {
+      "id": "controller-relay",
+      "type": "relay",
+      "mode": "allOf"
+    },
+    {
+      "id": "cpu-timer",
+      "type": "timer",
+      "durationTicks": 60,
+      "repeat": false
+    },
+    {
+      "id": "gate-actuator",
+      "type": "gate",
+      "entityId": "gate-actuator",
+      "initial": "closed",
+      "latched": true
+    }
+  ],
+  "links": [
+    { "from": "sensor-pad", "to": "sensor-trigger", "type": "press" },
+    { "from": "sensor-trigger", "to": "controller-relay", "type": "activate" },
+    { "from": "controller-socket", "to": "controller-relay", "type": "activate" },
+    { "from": "controller-relay", "to": "cpu-timer", "type": "start" },
+    { "from": "cpu-timer", "to": "gate-actuator", "type": "elapsed" }
+  ],
+  "win": { "type": "gateOpen", "gateId": "gate-actuator" },
+  "reset": {
+    "props": ["route-plug"],
+    "nodes": [
+      "sensor-pad",
+      "sensor-trigger",
+      "route-plug",
+      "controller-socket",
+      "cpu-socket",
+      "controller-relay",
+      "cpu-timer",
+      "gate-actuator"
+    ]
+  },
+  "evidence": {
+    "onSolve": ["puzzle_solved"],
+    "counters": ["pickups", "drops", "resets"]
+  },
+  "rewards": {
+    "abilities": [],
+    "flags": [],
+    "mapNodes": []
+  },
+  "solution": [
+    { "action": "move", "actor": "p1", "x": 480, "y": 620 },
+    { "action": "wait", "ticks": 2 },
+    { "action": "move", "actor": "p1", "x": 512, "y": 620 },
+    { "action": "pickup", "actor": "p1", "target": "route-plug" },
+    { "action": "move", "actor": "p1", "x": 720, "y": 620 },
+    { "action": "drop", "actor": "p1", "target": "route-plug" },
+    { "action": "wait", "ticks": 80 }
+  ],
+  "hints": [
+    "The sensor does not shout directly at the CPU. Route the interrupt line to the controller.",
+    "The controller socket is the integration point. The CPU socket is the decoy.",
+    "The CPU is the output side. The controller wakes it, then the actuator responds."
+  ]
+}

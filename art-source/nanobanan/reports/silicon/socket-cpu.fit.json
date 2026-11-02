@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.socket.cpu",
+  "status": "poc-integrated",
+  "notes": "Closed, blank decoy socket; dark by design and distinct from the cyan-lit controller socket. No joint-ramp pixels expected.",
+  "config": "fit.silicon.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/silicon/socket-cpu.png",
+    "width": 2048,
+    "height": 2048,
+    "edgeContact": {
+      "top": 0,
+      "bottom": 0,
+      "left": 0,
+      "right": 0
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/sprites/socket-cpu.png",
+    "runtime": true,
+    "written": true,
+    "width": 18,
+    "height": 18,
+    "bytes": 230
+  },
+  "cell": {
+    "width": 18,
+    "height": 18
+  },
+  "margin": 1,
+  "alphaThreshold": 128,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 184,
+    "y": 184,
+    "width": 1680,
+    "height": 1680
+  },
+  "fit": {
+    "width": 16,
+    "height": 16,
+    "offsetX": 1,
+    "offsetY": 1,
+    "scale": 0.009524,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 1,
+    "y": 1,
+    "width": 16,
+    "height": 16
+  },
+  "margins": {
+    "top": 1,
+    "right": 1,
+    "bottom": 1,
+    "left": 1
+  },
+  "quantization": {
+    "changedPixels": 255,
+    "maxDistance": 38.328,
+    "offPalettePixels": 255,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 255
+  },
+  "rampHistogram": {
+    "teal": 155,
+    "ink": 81,
+    "boneShadow": 19
+  },
+  "warnings": [
+    "no joint-ramp pixels survived; the cyan scan rim may be missing"
+  ],
+  "previews": {
+    "scale2x": "art-source/previews/nanobanan/silicon/socket-cpu-2x.png",
+    "scale8x": "art-source/previews/nanobanan/silicon/socket-cpu-8x.png",
+    "tint2x": "art-source/previews/nanobanan/silicon/socket-cpu-tint-2x.png"
+  }
+}
