@@ -46,7 +46,7 @@ export const EVENT_LINKS = {
   counterReached: ["reached"],
   gateOpen: [],
   gateClose: [],
-  relayActive: [],
+  relayActive: ["start"],
   relayInactive: [],
   propCleared: [],
   solved: [],

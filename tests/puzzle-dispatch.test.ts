@@ -28,7 +28,7 @@ const EXPECTED: Record<PuzzleEventType, readonly PuzzleLinkType[]> = {
   counterReached: ["reached"],
   gateOpen: [],
   gateClose: [],
-  relayActive: [],
+  relayActive: ["start"],
   relayInactive: [],
   propCleared: [],
   solved: [],
@@ -113,6 +113,64 @@ describe("puzzle event dispatch", () => {
 
     runtime.tickResult(away());
     expect(runtime.nodeState("timer")?.state).toBe("stopped");
+  });
+
+  it("starts a timer when a relay activates", () => {
+    const document: PuzzleDocument = {
+      schemaVersion: "1.1",
+      id: "fixture-relay-start",
+      title: "Relay Start Fixture",
+      objectiveIds: [],
+      conceptIds: [],
+      activation: { mode: "roomStart" },
+      tether: "off",
+      nodes: [
+        {
+          id: "plate",
+          type: "plate",
+          rect: { x: 0, y: 0, width: 32, height: 32 },
+          detects: ["player"],
+          minimum: 1,
+          countCarried: false,
+        },
+        { id: "relay", type: "relay", mode: "allOf" },
+        { id: "timer", type: "timer", durationTicks: 10, repeat: false },
+      ],
+      links: [
+        { from: "plate", to: "relay", type: "activate" },
+        { from: "relay", to: "timer", type: "start" },
+      ],
+      win: { type: "timerElapsed", timerId: "timer" },
+      reset: { props: [], nodes: ["plate", "relay", "timer"] },
+      evidence: { onSolve: [], counters: [] },
+      rewards: {},
+      solution: [],
+      hints: [],
+    };
+    const runtime = new PuzzleRuntime(document);
+
+    const onPlate = (): PuzzleWorldSnapshot => ({
+      tick: 1,
+      players: [
+        { id: "p1", x: 16, y: 16, width: 28, height: 44, active: true },
+      ],
+      props: [],
+    });
+    const away = (): PuzzleWorldSnapshot => ({
+      tick: 1,
+      players: [],
+      props: [],
+    });
+
+    runtime.tickResult(onPlate());
+    expect(runtime.nodeState("relay")?.active).toBe(true);
+    expect(runtime.nodeState("timer")?.state).toBe("running");
+
+    let solvedNow = false;
+    for (let index = 0; index < 12; index += 1) {
+      solvedNow = runtime.tickResult(away()).solvedNow || solvedNow;
+    }
+    expect(solvedNow).toBe(true);
   });
 
   it("attributes sensor transitions only when one player causes them", () => {
