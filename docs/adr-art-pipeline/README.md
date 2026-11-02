@@ -18,9 +18,10 @@ accepted history.
 The repository currently has domain-local numbering collisions: M3 uses
 ADR-0047–0049, the online domain uses ADR-0047–0057, the hub domain uses
 ADR-0058–0059, and the controller domain uses ADR-0066–0069. This domain starts
-at **ADR-0060** to avoid adding another collision. If the project later
-reconciles a single global sequence, renumber these records before acceptance;
-accepted records are immutable.
+at **ADR-0060** to avoid adding another collision. The presentation domain
+starts at **ADR-0070** for the same reason. If the project later reconciles a
+single global sequence, renumber these records before acceptance; accepted
+records are immutable.
 
 ## Index
 
@@ -61,6 +62,11 @@ accepted records are immutable.
 - ADR-0047: pixel-art visual direction.
 - ADR-0048: half-resolution authoring with 2× nearest-neighbour display.
 - ADR-0049: pixel UI chrome and typography.
+- ADR-0071: background space, sampling, and composition (proposed). Adds
+  screen/world space and per-layer composition to the background pipeline.
+- ADR-0072: asset fidelity tiers, display sizes, and lossless encoding
+  (proposed). Adds readability gates, per-asset display sizes, and the
+  `fit-preview` / `hand-cleaned` status split.
 - `docs/m3/asset-requirements-v01.md`: asset register, palette, source sizes,
   and acceptance criteria.
 

@@ -4,12 +4,20 @@
 **Owner:** Snorre  
 **Scope:** The `03-nerve-forest` background: the pretty sky plate in the current runtime, plus the future sky/far/mid/near layered target<br>
 **Supersedes:** The background prompts and background pipeline notes in [`asset-requirements-v01.md`](asset-requirements-v01.md): §5.4 background status note, §6.2/§6.4 background notes, §7.3 background setting, §7.7–§7.8 background checks, §8.7/§8.13/§8.20 and the background rows in §9. The current M3 build wires only the pretty sky; far/mid/near remain the future layered target and are not shipped as runtime layers.<br>
-**Governing decisions:** ADR-0031 (layered backgrounds), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0060–0065 (source/working/runtime pipeline, palette variants, previews)  
+**Governing decisions:** ADR-0031 (layered backgrounds), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0060–0065 (source/working/runtime pipeline, palette variants, previews), ADR-0070–0073 (proposed: stage/camera framing, background space/composition, asset fidelity/encoding, HUD density)<br>
 **Related:** [`asset-requirements-v01.md`](asset-requirements-v01.md) · [`room.json`](../../public/packs/anatomy-reflex/levels/03-nerve-forest/room.json) · [`background.ts`](../../src/world/background.ts) · [`art-key.ts`](../../scripts/art-key.ts) · [`art-source/nanobanan/README.md`](../../art-source/nanobanan/README.md)
 
 > **The rule for backgrounds:** the generator cannot paint alpha. The sky is generated **opaque**. Far, mid and near are generated as **cut-out plates on a flat `#FF00FF` chroma-key field**, then keyed with `npm run art:key`. Never write “transparent” in a background prompt; the generator will paint a checkerboard or an opaque scene.
 
 > **Current M3 status (2026-11-01).** The 03 room wires **only** the pretty `bg.nerve_forest.sky` plate: the tracked 2752×1536 source cropped to 2672×1536, Lanczos-downscaled to **1280×736** and displayed at **1×** cover. The plate is exported as lossless WebP at 978,732 bytes (~956 KiB), is **not palette-quantised**, and intentionally keeps the muscle-pink drapes and bone highlights. It is a recorded exception to the pixel-art palette guard, the half-res 2× sky rule and the ≤300 KB pixel-asset budget. The room has no `nerve-fibers` overlay. `bg.nerve_forest.far`, `.mid` and `.near` are declared placeholders/future work; their runtime WebPs are not shipped. Near's play-band repeat remains unresolved.
+
+> **Presentation follow-up (2026-11-02).** Proposed ADR-0070–0073 add stage
+> bands and a play-band camera, a `screen`/`world` background space with
+> focus/scale/anchor/sampling, asset fidelity tiers, and HUD density presets.
+> They are proposals. The current pretty-sky-only runtime, the 1× cover display,
+> and the placeholder status of far/mid/near remain in force until those records
+> are accepted and implemented. See
+> [`../adr-presentation/`](../adr-presentation/README.md).
 
 ---
 

@@ -4,7 +4,7 @@
 **Owner:** Snorre  
 **Scope:** Final 2D pixel art and audio for the M3 vertical slice  
 **Target milestone:** M3 — Art/audio pass + capture (4–5 November 2026)  
-**Governing decisions:** ADR-0029 (asset provider), ADR-0030 (sprite format), ADR-0031 (layered backgrounds), ADR-0032 (audio cues), ADR-0033 (final asset timing), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0049 (pixel UI chrome), ADR-0060–0065 (source/working/runtime art pipeline, palette variants, animation, previews, P2 palette)
+**Governing decisions:** ADR-0029 (asset provider), ADR-0030 (sprite format), ADR-0031 (layered backgrounds), ADR-0032 (audio cues), ADR-0033 (final asset timing), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0049 (pixel UI chrome), ADR-0060–0065 (source/working/runtime art pipeline, palette variants, animation, previews, P2 palette), ADR-0070–0073 (proposed: stage/camera framing, background composition, asset fidelity/encoding, HUD density)
 
 **Related:** [`implementation-plan.md`](../shrinkonauts/base-game/implementation-plan.md) · [`contracts/pack-schema.md`](../shrinkonauts/base-game/contracts/pack-schema.md) · [`level-authoring.md`](../shrinkonauts/base-game/level-authoring.md) · [`DESIGN.md`](../shrinkonauts/DESIGN.md) · [`learning-design-brief.md`](../shrinkonauts/learning-design-brief.md) · [`cards/`](../shrinkonauts/base-game/cards/) · [`adr-m3/`](../adr-m3/README.md)
 
@@ -58,6 +58,13 @@
 > (“fleshy tentacles (dendrites)”), and the export grid is kept out of the Ludo
 > concept prompt. This is a wording and ordering change only; the asset scope,
 > anatomy facts and runtime constraints are unchanged.
+>
+> **Presentation follow-up (2026-11-02).** Proposed ADR-0070–0073 define
+> stage/play-band camera framing, background space and composition, asset
+> fidelity and encoding tiers, and HUD density. They are proposals. The current
+> scope, the fixed runtime sizes in §3, the pretty-sky-only runtime, and the
+> existing fit statuses in this document remain in force until those records
+> are accepted and implemented. See [`../adr-presentation/`](../adr-presentation/README.md).
 
 ---
 
