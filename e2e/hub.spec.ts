@@ -1,48 +1,9 @@
-import { expect, test, type Page } from "@playwright/test";
-
-interface AppBridge {
-  readonly phase: string;
-  readonly runtime: {
-    snapshot(): { activeP2: boolean; level: { id: string } };
-  } | null;
-  readonly game: {
-    scene: { isActive(key: string): boolean };
-  } | null;
-}
-
-type ShrinkonautsWindow = Window & {
-  __shrinkonauts?: AppBridge;
-};
-
-function collectConsoleErrors(page: Page): string[] {
-  const consoleErrors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
-  });
-  page.on("pageerror", (error) => consoleErrors.push(error.message));
-  return consoleErrors;
-}
-
-async function bootHub(page: Page): Promise<string[]> {
-  const consoleErrors = collectConsoleErrors(page);
-
-  await page.goto("/");
-  await page.waitForFunction(() => {
-    const app = (window as ShrinkonautsWindow).__shrinkonauts;
-    return Boolean(app) && app?.phase === "hub";
-  });
-  await expect(page.locator(".hub__title")).toHaveText("The bathroom");
-  await expect(page.locator(".hub-card")).toHaveCount(2);
-  await expect(page.locator(".hub-card", { hasText: "Anatomy" })).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
-  const silicon = page.locator(".hub-card", { hasText: "Silicon" });
-  await expect(silicon).toHaveAttribute("data-status", "available");
-  await expect(silicon.locator("input")).toBeEnabled();
-  await expect(page.locator(".hub__online-copy")).toContainText("M4");
-  return consoleErrors;
-}
+import { expect, test } from "@playwright/test";
+import {
+  bootHub,
+  collectConsoleErrors,
+  type ShrinkonautsWindow,
+} from "./support";
 
 test("selects and starts the Silicon cycle from a deep link", async ({ page }) => {
   const consoleErrors = collectConsoleErrors(page);

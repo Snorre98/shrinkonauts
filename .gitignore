@@ -76,6 +76,8 @@ art-source/nanobanan/keyed/
 /gdd-assets/
 # Generated GH Pages gallery; built from tracked sources by `npm run gdd:site`.
 /public/gdd/
+# Generated Playwright action shots and their sidecar, merged into the gallery.
+/gdd-captures/
 
 # --- Misc ---
 ._*

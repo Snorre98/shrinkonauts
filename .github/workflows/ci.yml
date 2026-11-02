@@ -33,8 +33,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Capture gameplay stills
+        run: npm run gdd:capture
+
       - name: Build GDD asset gallery
         run: npm run gdd:site
+
+      - name: Smoke generated gallery
+        run: npm run gdd:smoke
 
       - name: Type check and production build
         run: npm run build
@@ -49,6 +55,18 @@ jobs:
         run: |
           npm run pack:map
           git diff --exit-code -- public
+
+      - name: Upload capture failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gdd-capture-failure
+          path: |
+            gdd-captures
+            test-results
+            playwright-report
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Upload production build
         uses: actions/upload-artifact@v4

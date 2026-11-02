@@ -1,5 +1,8 @@
 # Art pipeline — how the assets were created and processed
 
+> **Paths:** links beginning `source/notes/` refer to the local `gdd-assets/`
+> pack. The public gallery copies the same notes into its Docs section.
+
 This is the short, asset-pack-facing version of the pipeline. The authoritative
 records are in `source/notes/`:
 
@@ -307,11 +310,24 @@ across the play band, so it is not ready to wire.
 
 ---
 
-## 6. Screenshots and contact sheets
+## 6. Screenshots, action shots and contact sheets
 
 - `screenshots/` copies the 17 committed PNGs, split into `current/`,
-  `placeholder-era/` and `historical/`. No new game captures were made for this
-  pack.
+  `placeholder-era/` and `historical/`. These are the historical record; no new
+  binaries are committed for the public gallery.
+- **Action shots** are generated from the live app by Playwright:
+
+  ```bash
+  npm run gdd:capture   # writes ignored gdd-captures/
+  npm run gdd:site      # copies into public/gdd/captures/ and merges the manifest
+  npm run gdd:smoke     # checks the gallery and walkthrough URLs
+  ```
+
+  The capture uses system Chrome at 1280×720, freezes the Phaser step for each
+  frame, and writes a `captures.json` sidecar with level, room, beat, mode,
+  objective/concept IDs, related runtime assets and captions. The canonical
+  state list is `e2e/capture/states.ts`; the published page is
+  `gdd/walkthrough.html`. See [`CAPTURES.md`](CAPTURES.md).
 - `contact-sheets/` is generated with ImageMagick:
   - `players-lineup.png`, `animation-strips.png` — player/NPC review.
   - `anatomy-entities.png`, `silicon-entities.png`, `hub-props.png` — asset line-ups.

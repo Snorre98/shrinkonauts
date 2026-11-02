@@ -1,98 +1,11 @@
-import { expect, test, type Page } from "@playwright/test";
-
-interface RuntimeBridge {
-  entityPixel(id: string): { x: number; y: number } | null;
-  placePlayer(id: "p1" | "p2", x: number, y: number): void;
-  exportEvidence(): {
-    sessionId: string;
-    objectives: Array<{ id: string; requiredMet: boolean }>;
-    events: Array<{ type: string; gateId?: string; puzzleId?: string }>;
-  };
-  snapshot(): { state: string; abilities: string[]; mode: string };
-  simulation: {
-    players: Record<"p1" | "p2", { x: number; y: number }>;
-  };
-}
-
-type ShrinkonautsWindow = Window & {
-  __shrinkonauts?: {
-    runtime: RuntimeBridge;
-    game: { scene: { isActive(key: string): boolean } };
-  };
-};
-
-async function boot(page: Page): Promise<string[]> {
-  const consoleErrors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
-  });
-  page.on("pageerror", (error) => consoleErrors.push(error.message));
-
-  await page.goto("/?skipMenu=1&pack=anatomy-reflex");
-  // Wait for the Phaser scene, not only the boot bridge: key presses sent
-  // before `create()` are consumed by no one and would be lost.
-  await page.waitForFunction(() => {
-    const app = (window as ShrinkonautsWindow).__shrinkonauts;
-    return Boolean(app?.runtime) && app?.game.scene.isActive("room") === true;
-  });
-  await expect(page.locator(".hud__title")).toHaveText("Nerve Forest");
-  const materialPanel = await page.evaluate(() => {
-    const root = getComputedStyle(document.documentElement);
-    const panel = document.querySelector<HTMLElement>(".hud__panel");
-    return {
-      pattern: root.getPropertyValue("--material-panel-pattern").trim(),
-      background: panel ? getComputedStyle(panel).backgroundImage : "",
-    };
-  });
-  expect(materialPanel.pattern).toContain("data:image/svg+xml");
-  expect(materialPanel.background).not.toBe("none");
-  await waitForRoom(page, "room-nerve-forest");
-  await expect(page.locator(".overlay--error")).toHaveCount(0);
-  return consoleErrors;
-}
-
-async function waitForRoom(page: Page, roomId: string): Promise<void> {
-  await page.waitForFunction(
-    (id) =>
-      document
-        .querySelector<HTMLCanvasElement>("#game-root canvas")
-        ?.getAttribute("data-room-id") === id,
-    roomId,
-  );
-}
-
-async function teleport(
-  page: Page,
-  p1: { x: number; y: number } | string,
-  p2?: { x: number; y: number } | string,
-): Promise<void> {
-  await page.evaluate(
-    ({ first, second }) => {
-      const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
-      if (!runtime) throw new Error("runtime bridge is missing");
-
-      const resolve = (point: { x: number; y: number } | string) => {
-        if (typeof point !== "string") return point;
-        const resolved = runtime.entityPixel(point);
-        if (!resolved) throw new Error(`missing entity ${point}`);
-        return resolved;
-      };
-
-      const p1Point = resolve(first);
-      runtime.placePlayer("p1", p1Point.x, p1Point.y);
-      const p2Point = second ? resolve(second) : { x: p1Point.x + 36, y: p1Point.y };
-      runtime.placePlayer("p2", p2Point.x, p2Point.y);
-    },
-    { first: p1, second: p2 ?? null },
-  );
-  // Let the fixed-step scene publish the new interaction target.
-  await page.waitForTimeout(120);
-}
-
-async function closeOverlay(page: Page, overlay: string): Promise<void> {
-  await page.keyboard.press("Escape");
-  await expect(page.locator(`.${overlay}`)).toHaveCount(0);
-}
+import { expect, test } from "@playwright/test";
+import {
+  boot,
+  closeOverlay,
+  teleport,
+  waitForRoom,
+  type ShrinkonautsWindow,
+} from "./support";
 
 test("boots into the vertical slice and finishes conversation, scans, Node Run, Endplate Ferry, debrief", async ({
   page,
@@ -168,7 +81,7 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await expect
     .poll(() =>
       page.evaluate(
-        () => (window as ShrinkonautsWindow).__shrinkonauts?.runtime.snapshot().abilities ?? [],
+        () => (window as ShrinkonautsWindow).__shrinkonauts?.runtime?.snapshot().abilities ?? [],
       ),
     )
     .toContain("signal-dash");
@@ -248,7 +161,7 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await expect(page.locator(".overlay__title")).toHaveText("Signal restored");
 
   const evidence = await page.evaluate(
-    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime.exportEvidence(),
+    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime!.exportEvidence(),
   );
   expect(evidence.objectives.find((item) => item.id === "OBJ-2")?.requiredMet).toBe(
     true,
@@ -285,13 +198,13 @@ test("two players can hold conversations while the other keeps moving", async ({
   await expect(page.locator('.feedback-surface--speechBubble[data-owner="p1"]')).toBeVisible();
 
   const before = await page.evaluate(
-    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime.simulation.players.p2.x,
+    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime!.simulation.players.p2.x,
   );
   await page.keyboard.down("ArrowRight");
   await page.waitForTimeout(250);
   await page.keyboard.up("ArrowRight");
   const after = await page.evaluate(
-    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime.simulation.players.p2.x,
+    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime!.simulation.players.p2.x,
   );
   expect(after).toBeGreaterThan(before);
   await expect(page.locator(".feedback-surface--speechBubble")).toHaveCount(1);

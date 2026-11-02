@@ -5,14 +5,42 @@ course template: **Learning, Gameplay, UI/Controls and Monetization are
 mandatory**; Story, Characters, Level/Environment, Art, Sound & Music and
 Accessibility are optional.
 
-> **Read this first:** the gameplay screenshots in this pack are
-> **placeholder-era**. The hub shot and the art contact sheets are current. Do
-> not caption a placeholder screenshot as final art.
+> **Read this first:** the committed gameplay screenshots in this pack are
+> **placeholder-era**. Use the **gameplay walkthrough** for current captures:
+> [`walkthrough.html`](walkthrough.html). It covers hub, launch, 03, 04,
+> Silicon, solo/co-op, text scale, reduced motion and key art, with captions
+> and metadata. The old screenshots remain the development record.
 >
-> **Online:** use the gallery filters at
-> <https://snorre98.github.io/shrinkonauts/gdd/>. Paths beginning
-> `contact-sheets/` or `gdd-picks/` refer to the local pack; the web gallery
-> replaces those with searchable groups.
+> **Online:** the gallery is at
+> <https://snorre98.github.io/shrinkonauts/gdd/>; the walkthrough is at
+> `/gdd/walkthrough.html`. Paths beginning `contact-sheets/` or `gdd-picks/`
+> refer to the local pack; the web gallery replaces those with searchable
+> groups.
+
+---
+
+## 0. Action-shot index
+
+These links resolve in the published gallery (`/gdd/walkthrough.html`); the
+local Markdown copy does not contain the generated `walkthrough.html`. The full
+catalogue is in [`CAPTURES.md`](CAPTURES.md).
+
+| Need | Action shot |
+|---|---|
+| Hub / cover | [`hub-default`](walkthrough.html#hub-default) |
+| Silicon selection | [`hub-silicon-selected`](walkthrough.html#hub-silicon-selected) |
+| Settings / accessibility | [`hub-settings`](walkthrough.html#hub-settings), [`text-scale-125`](walkthrough.html#text-scale-125), [`reduced-motion`](walkthrough.html#reduced-motion) |
+| Launch cinematic | [`launch-spin`](walkthrough.html#launch-spin), [`launch-shrink`](walkthrough.html#launch-shrink) |
+| 03 core loop | [`03-coop-wide`](walkthrough.html#03-coop-wide) |
+| Dialogue | [`03-dialogue-neuron`](walkthrough.html#03-dialogue-neuron) |
+| Scan / concept log | [`03-scan-feedback`](walkthrough.html#03-scan-feedback), [`03-concept-log`](walkthrough.html#03-concept-log) |
+| Map / debrief | [`03-map`](walkthrough.html#03-map), [`03-debrief-prompt`](walkthrough.html#03-debrief-prompt), [`03-debrief-filled`](walkthrough.html#03-debrief-filled) |
+| Node Run | [`03-node-run-input`](walkthrough.html#03-node-run-input), [`03-node-run-threshold`](walkthrough.html#03-node-run-threshold), [`03-node-run-exit-open`](walkthrough.html#03-node-run-exit-open) |
+| Gate overlay | [`silicon-concept-gate`](walkthrough.html#silicon-concept-gate) |
+| 04 Endplate Ferry | [`04-wide`](walkthrough.html#04-wide), [`04-ferry-active`](walkthrough.html#04-ferry-active), [`04-ach-carry`](walkthrough.html#04-ach-carry), [`04-nicotinic-receptor`](walkthrough.html#04-nicotinic-receptor), [`04-pulse-muscle-wave`](walkthrough.html#04-pulse-muscle-wave) |
+| Silicon | [`silicon-wide`](walkthrough.html#silicon-wide), [`silicon-cpu-dialogue`](walkthrough.html#silicon-cpu-dialogue), [`silicon-interrupt-puzzle`](walkthrough.html#silicon-interrupt-puzzle) |
+| Solo vs co-op | [`03-solo`](walkthrough.html#03-solo), [`03-coop-wide`](walkthrough.html#03-coop-wide) |
+| Final vs placeholder | [`hub-default`](walkthrough.html#hub-default), [`hub-placeholder`](walkthrough.html#hub-placeholder) |
 
 ---
 
@@ -25,16 +53,16 @@ Accessibility are optional.
 | The teaching loop | No diagram in this pack | Draw the Activate → Model → Practice → Feedback → Explain → Transfer loop from `source/notes/gbl/learning-design-brief.md`; the GDD team owns this diagram. |
 | The Neuron Keeper | `final/anatomy/sprites/agent-neuron.png` | Runtime character; the idle sheet is `agent-neuron-idle.png`. |
 | Scan / concept discovery | `final/anatomy/sprites/scan-synapse.png`, `scan-muscle.png` | These are the two POC-integrated scan plates. |
-| Dialogue | `screenshots/placeholder-era/m1-dialogue.png` | Placeholder-era; the dialogue system and Neuron Keeper are visible, but the art is not final. |
-| Concept log / debrief | **Missing capture** | No screenshot of the in-game concept log or debrief. Use a diagram or capture them later. |
+| Dialogue | [`03-dialogue-neuron`](walkthrough.html#03-dialogue-neuron) | Current final-art dialogue with the Neuron Keeper. The old `screenshots/placeholder-era/m1-dialogue.png` is historical only. |
+| Concept log / debrief | [`03-concept-log`](walkthrough.html#03-concept-log), [`03-debrief-filled`](walkthrough.html#03-debrief-filled), [`04-level-complete`](walkthrough.html#04-level-complete) | Current captures of the concept log, recorded debrief and completion overlay. |
 | Theory / lens mapping | `source/notes/m3-asset-requirements-v01.md` | Source notes; no image asset. |
 
 ### Gameplay
 
 | Need | Recommended file | Notes |
 |---|---|---|
-| Core loop / level view | `screenshots/placeholder-era/m1-nerve-forest.png` | Placeholder art; useful for layout and HUD, not final style. |
-| Gate interaction | `screenshots/placeholder-era/m1-gate.png` | Placeholder-era gate overlay. |
+| Core loop / level view | [`03-coop-wide`](walkthrough.html#03-coop-wide) | Current final-art Nerve Forest with the full HUD and co-op feedback. |
+| Gate interaction | [`silicon-concept-gate`](walkthrough.html#silicon-concept-gate), [`03-threshold-gate`](walkthrough.html#03-threshold-gate) | The wired concept-gate overlay is Silicon's transfer gate; 03's threshold gate is a world object. |
 | Gate object | `final/anatomy/sprites/gate-ferry.png` | Final/POC runtime gate. |
 | ACh packet | `final/anatomy/sprites/prop-tracer.png` | Final/POC runtime prop. |
 | Input pads | `final/anatomy/sprites/pad-dendrite.png`, `pad-terminal.png` | Runtime pads. |
@@ -47,11 +75,11 @@ Accessibility are optional.
 
 | Need | Recommended file | Notes |
 |---|---|---|
-| Full HUD | `screenshots/placeholder-era/m1-nerve-forest.png` | HUD, objectives, controls panel and feedback surfaces. Placeholder art. |
-| Dialogue surface | `screenshots/placeholder-era/m1-dialogue.png` | Dialogue card + continue affordance. |
-| Hub menu | `screenshots/current/m3.5-hub-final.png` | Current final hub art + DOM menu. |
+| Full HUD | [`03-coop-wide`](walkthrough.html#03-coop-wide) | HUD, objectives, controls panel and feedback surfaces with final art. |
+| Dialogue surface | [`03-dialogue-neuron`](walkthrough.html#03-dialogue-neuron), [`silicon-cpu-dialogue`](walkthrough.html#silicon-cpu-dialogue) | Speech bubbles with the Neuron Keeper and CPU Core. |
+| Hub menu | [`hub-default`](walkthrough.html#hub-default), [`hub-silicon-selected`](walkthrough.html#hub-silicon-selected) | Current final hub art + DOM menu in both cycle states. |
 | Controls table | No image | Use the controls table from the README / project docs. |
-| Map / pause / debrief | **Missing capture** | The map, concept log, pause menu, debrief and settings are DOM overlays; no current screenshot. |
+| Map / pause / debrief | [`03-map`](walkthrough.html#03-map), [`text-scale-125`](walkthrough.html#text-scale-125), [`03-debrief-prompt`](walkthrough.html#03-debrief-prompt) | Current captures of the map, pause settings and debrief. |
 
 ### Monetization
 
@@ -125,10 +153,12 @@ state clearly that the prototype has no music or ambience.
 
 ### Accessibility
 
-No current settings screenshot. The shipped accessibility features are
-keyboard-only input, text scale, reduced motion, mute, pause, and no
-audio-only cues. The GDD page should describe them and label the missing
-visual as a planned capture.
+The shipped accessibility features are keyboard-only input, text scale,
+reduced motion, mute, pause, and no audio-only cues. Current captures:
+[`hub-settings`](walkthrough.html#hub-settings),
+[`text-scale-125`](walkthrough.html#text-scale-125) and
+[`reduced-motion`](walkthrough.html#reduced-motion). The latter two show the
+settings in context; use them with the written feature list.
 
 ---
 
@@ -140,17 +170,17 @@ visual as a planned capture.
 | 2. What is Shrinkonauts | Premise, tiny astronaut, civilian, bathroom | hub shot, `civilian.png`, `tiny-astronaut.png` |
 | 3. Learning problem | Why recognition vs navigation matters | text + `agent-neuron.png` |
 | 4. Learning loop | Activate → model → practice → feedback → explain → transfer | diagram + `scan-synapse.png`, `scan-muscle.png` |
-| 5. Core gameplay | Explore → talk → scan → solve → debrief | `m1-nerve-forest.png`, `m1-dialogue.png`, `gate-ferry.png` |
-| 6. Node Run | Dendrite inputs → threshold → axon → exit | `pad-dendrite.png`, `pad-terminal.png`, `gate-ferry.png` |
-| 7. Endplate Ferry | Motor terminal → Ca²⁺ → ACh → receptor → muscle | `pulse-terminal.png`, `prop-tracer.png`, `receptor-triangle.png`, `receptor-circle.png` |
-| 8. Co-op | Two players, shared keyboard, attributed feedback | `players-lineup.png`, hub shot |
-| 9. UI / Controls | HUD, dialogue, hub menu | `m1-nerve-forest.png`, `m1-dialogue.png`, hub shot |
+| 5. Core gameplay | Explore → talk → scan → solve → debrief | `03-coop-wide`, `03-dialogue-neuron`, `03-scan-feedback`, `03-debrief-filled` |
+| 6. Node Run | Dendrite inputs → threshold → axon → exit | `03-node-run-input`, `03-node-run-threshold`, `03-node-run-exit-open` |
+| 7. Endplate Ferry | Motor terminal → Ca²⁺ → ACh → receptor → muscle | `04-ferry-active`, `04-ach-carry`, `04-nicotinic-receptor`, `04-pulse-muscle-wave` |
+| 8. Co-op | Two players, shared keyboard, attributed feedback | `03-coop-wide`, `03-solo`, `players-lineup.png` |
+| 9. UI / Controls | HUD, dialogue, hub menu | `03-coop-wide`, `03-dialogue-neuron`, `hub-default` |
 | 10. Characters | P1/P2/Neuron Keeper/props | `players-lineup.png`, `anatomy-entities.png` |
-| 11. Level / environment | Nerve Forest sky + bathroom | sky WebP, background contact sheet, bathroom wall |
+| 11. Level / environment | Nerve Forest sky + bathroom | `key-art-03`, `key-art-04`, `key-art-silicon`, sky WebP, bathroom wall |
 | 12. Art direction | Palette, pixel rules, source-to-runtime pipeline | `palette-and-type.png`, `pipeline-comparison.jpg`, `concepts-overview.jpg` |
-| 13. Silicon expansion | Same loop, different system | `silicon-entities.png`, silicon sky |
+| 13. Silicon expansion | Same loop, different system | `silicon-wide`, `silicon-cpu-dialogue`, `silicon-interrupt-puzzle`, `silicon-concept-gate` |
 | 14. Monetization | Free prologue → base game → packs → classroom | cartridge sprites + text |
-| 15. Sound & accessibility | Cue list, keyboard-only, text scale, reduced motion | text + hub screenshot |
+| 15. Sound & accessibility | Cue list, keyboard-only, text scale, reduced motion | `hub-settings`, `text-scale-125`, `reduced-motion` |
 
 ---
 
@@ -181,19 +211,19 @@ No third-party images or audio are included.
 
 ---
 
-## 6. Missing captures / future work
+## 6. Remaining capture gaps
 
-These would make the GDD materially stronger:
+The Playwright capture pass now produces the hub, 03, 04, Silicon, UI and
+accessibility set. Two content gaps remain visible in the captures:
 
-1. Hub: default, Silicon selected, settings open.
-2. 03: final-art gameplay, dialogue, scan, concept log, map, gate, Node Run,
-   debrief.
-3. 04: final-art gameplay, ferry active, carrying ACh, pulse, debrief, level
-   complete.
-4. Silicon: gameplay and puzzle.
-5. UI: pause, text scale, reduced motion.
-6. A final-vs-placeholder comparison shot.
+1. **03 concept gate** — `gate-nerve-01` is authored but `level.json` has
+   `"gateIds": []`; no 03 room entity opens it. The walkthrough uses the 03
+   threshold gate as the physical gate and Silicon's `gate-transfer` as the
+   concept-gate overlay.
+2. **04 muscle background** — `bg.muscle_endplate.sky` is declared without a
+   source file, so the room renders a procedural gradient behind the final
+   sprites. The 04 captions say this.
 
-A single Playwright capture pass can produce all of these; the existing e2e
-specs already drive the same states. They were deliberately **not** captured in
-this pack because the current scope was “reuse existing screenshots”.
+Also still missing: online co-op (M4 placeholder), audio files, and final
+concept-gate art for 03 if the gate is wired later. The capture commands are in
+[`CAPTURES.md`](CAPTURES.md).

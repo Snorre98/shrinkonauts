@@ -30,6 +30,10 @@ npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
 npm run pack:map       # regenerate the mapping document
 npm run pack:smoke     # dev simulation + headless runtime loop
 npm run smoke:e2e      # Playwright browser smoke using system Chrome
+npm run gdd:capture    # capture 34 action shots into ignored gdd-captures/
+npm run gdd:site       # build the public GDD gallery into public/gdd/
+npm run gdd:smoke      # smoke the generated gallery + walkthrough
+npm run build:site     # build the gallery + production build
 npm run art:key        # remove a flat magenta background from a concept plate
 npm run art:build-player # build P1/P2 POC animation sheets and previews
 npm run preview        # serve the production build
@@ -42,12 +46,14 @@ Playwright's `channel: "chrome"`. It never downloads a bundled browser.
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Type check + build, unit tests, pack validation, committed-mapping drift check, Playwright smoke |
+| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Gameplay capture, GDD gallery build, type check + build, unit tests, pack validation, committed-mapping drift check, Playwright smoke |
 | `.github/workflows/deploy-pages.yml` | push to `main`, manual dispatch | Runs CI, then publishes the tested `dist/` artifact to GitHub Pages |
 
 Live build: <https://snorre98.github.io/shrinkonauts/>
 
 GDD asset gallery: <https://snorre98.github.io/shrinkonauts/gdd/>
+
+Gameplay walkthrough: <https://snorre98.github.io/shrinkonauts/gdd/walkthrough.html>
 
 The Vite `base` is `./` and the runtime resolves content from
 `import.meta.env.BASE_URL`, so the same build works from the project subpath
@@ -244,6 +250,8 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
 
 - [`IMPLEMENTATION.md`](IMPLEMENTATION.md) — runtime lifecycle, module graph,
   validation, save format, accessibility, test matrix, and verification.
+- [`docs/gdd/README.md`](docs/gdd/README.md) — GDD asset pack, gallery build,
+  GDD section map and asset provenance.
 - [`docs/puzzle-engine/README.md`](docs/puzzle-engine/README.md) — engine
   upgrade index, implementation status, and reading order.
 - [`docs/m1.75/README.md`](docs/m1.75/README.md) — milestone status, definition
