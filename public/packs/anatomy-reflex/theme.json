@@ -41,9 +41,9 @@
       "debrief": "membrane"
     },
     "patterns": {
-      "panel": { "patternId": "bone-cortex", "space": "screen", "scale": 0.5, "opacity": 0.18 },
-      "dialogue": { "patternId": "nerve-fibers", "space": "screen", "scale": 0.5, "opacity": 0.18 },
-      "debrief": { "patternId": "membrane-cells", "space": "screen", "scale": 0.5, "opacity": 0.16 }
+      "panel": { "patternId": "bone-cortex", "space": "screen", "scale": 0.5, "opacity": 0 },
+      "dialogue": { "patternId": "nerve-fibers", "space": "screen", "scale": 0.5, "opacity": 0 },
+      "debrief": { "patternId": "membrane-cells", "space": "screen", "scale": 0.5, "opacity": 0 }
     },
     "assets": {
       "badge": "ui.icon.badge",

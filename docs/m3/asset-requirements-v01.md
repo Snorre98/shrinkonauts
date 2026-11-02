@@ -309,7 +309,7 @@ Rules:
 - **Tileable layers (future):** far/mid/near must repeat without a visible seam or obvious focal object. Author at 1024×512 with 2×2 minimum clusters; the runtime tiles them 1:1. They are not wired.
 - **Sky exception:** the current pretty sky is 1280×736 at 1× cover; the future quiet-sky target is 640×368 at an exact 2× cover. No fractional scaling.
 - **Material atlases:** keep 32×32 frames at 1:1; author each frame with a 2×2 minimum cluster grid. Bone is hard mineral; nerve is soft fibrous. Do not bake a directional edge; the autotile mask selects the edge. Assemble the 47 bone and 16 nerve frames in Aseprite.
-- **Patterns:** world, object, background, and UI patterns use the same ramps and dither. The current 03 sky has **no** pattern overlay; a future mid layer must not bake a competing bone texture if it is later wired.
+- **Patterns:** world, object, background, and UI patterns use the same ramps and dither. The current 03 sky has **no** pattern overlay; a future mid layer must not bake a competing bone texture if it is later wired. The text-heavy HUD, dialogue, and debrief panels opt out of the procedural stipple (UI pattern opacity 0) so small text stays crisp; the material colour remains.
 
 ### 4.6 Tone guard
 
