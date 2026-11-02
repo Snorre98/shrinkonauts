@@ -45,6 +45,7 @@ import {
   parsePatternBinding,
   parseTileMaterialRule,
 } from "./parse-materials";
+import { parseRoomPresentation } from "./parse-presentation";
 import type {
   MaterialId,
   MaterialsDocument,
@@ -826,6 +827,12 @@ export function parseRoom(value: unknown): Result<RoomDocument> {
     materialSeed = parsed.value;
   }
 
+  const presentation = parseRoomPresentation(value.presentation, code, {
+    width: value.width,
+    height: value.height,
+  });
+  if (!presentation.ok) return err(presentation.error);
+
   if (!isRecord(value.background)) {
     return err(`${code}: background must be an object`);
   }
@@ -868,6 +875,7 @@ export function parseRoom(value: unknown): Result<RoomDocument> {
     ...(materialSeed !== undefined ? { materialSeed } : {}),
     background: { id: backgroundId.value, layers },
     spawns: { player1: player1.value, player2: player2.value },
+    ...(presentation.value ? { presentation: presentation.value } : {}),
   };
 
   if (value.checkpoints !== undefined) {

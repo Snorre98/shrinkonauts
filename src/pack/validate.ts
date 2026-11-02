@@ -38,6 +38,7 @@ import {
   validatePuzzleDocument,
   type PuzzleDocument,
 } from "../puzzle";
+import { TETHER_LENGTHS } from "../puzzle/tether";
 import {
   collectMaterialAssetIds,
   collectRoomAssetIds,
@@ -45,11 +46,19 @@ import {
   collectThemeAssetIds,
 } from "./load";
 import { buildMapping, mappingDrift } from "./mapping";
+import {
+  PRESENTATION_CANVAS,
+  autoZoomFor,
+  derivePlayBand,
+  mergeCameraSettings,
+  zoomFitsPlayBand,
+} from "./presentation";
 import type {
   DialogueDocument,
   LevelDocument,
   LevelFeedbackTileTarget,
   PackContent,
+  PresentationConfig,
   RoomDocument,
   ThemeDocument,
 } from "./types";
@@ -98,7 +107,8 @@ export type PackIssueCode =
   | "MATERIAL_DEFERRED"
   | "TILE_MATERIAL_INVALID"
   | "BACKGROUND_MATERIAL_INVALID"
-  | "UI_MATERIAL_INVALID";
+  | "UI_MATERIAL_INVALID"
+  | "PRESENTATION_INVALID";
 
 export interface PackIssue {
   code: PackIssueCode;
@@ -435,6 +445,165 @@ function checkBackground(
         entity.sprite,
       );
     }
+  }
+}
+
+function maxTetherLengthForRoom(
+  content: PackContent | undefined,
+  roomId: string,
+): number {
+  if (!content) {
+    return TETHER_LENGTHS.normal;
+  }
+  const level = content.levels.find((entry) => entry.roomId === roomId);
+  let max = 0;
+  for (const puzzleId of level?.puzzleIds ?? []) {
+    const tether = content.puzzles[puzzleId]?.tether;
+    if (tether === "normal" || tether === "stretch") {
+      max = Math.max(max, TETHER_LENGTHS[tether]);
+    }
+  }
+  return max;
+}
+
+function checkPresentation(
+  room: RoomDocument,
+  packPresentation: PresentationConfig | undefined,
+  maxTetherLength: number,
+  addIssue: AddIssue,
+): void {
+  if (!packPresentation && !room.presentation) {
+    return;
+  }
+
+  const stage = packPresentation?.stage ?? {
+    x: 0,
+    y: 0,
+    width: PRESENTATION_CANVAS.width,
+    height: PRESENTATION_CANVAS.height,
+  };
+  if (
+    stage.x < 0 ||
+    stage.y < 0 ||
+    stage.width <= 0 ||
+    stage.height <= 0 ||
+    stage.x + stage.width > PRESENTATION_CANVAS.width ||
+    stage.y + stage.height > PRESENTATION_CANVAS.height
+  ) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation.stage must be a positive rect inside ${PRESENTATION_CANVAS.width}×${PRESENTATION_CANVAS.height}`,
+    );
+  }
+
+  const camera = mergeCameraSettings(
+    packPresentation?.camera,
+    room.presentation?.camera,
+  );
+  if (!Number.isInteger(camera.maxZoom) || camera.maxZoom < 1) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation.camera.maxZoom must be an integer >= 1`,
+    );
+  }
+  if (!Number.isFinite(camera.padding) || camera.padding < 0) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation.camera.padding must be >= 0`,
+    );
+  }
+
+  const autoZoom =
+    camera.zoom === "auto" ||
+    (camera.zoom === undefined && camera.framing === "fit-play-band");
+  if (
+    camera.zoom !== undefined &&
+    camera.zoom !== "auto" &&
+    (!Number.isInteger(camera.zoom) || camera.zoom < 1)
+  ) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation.camera.zoom must be an integer >= 1 or "auto"`,
+    );
+  }
+
+  const playBand = room.presentation?.playBand ?? derivePlayBand(room);
+  if (playBand) {
+    if (
+      playBand.x < 0 ||
+      playBand.y < 0 ||
+      playBand.width <= 0 ||
+      playBand.height <= 0 ||
+      playBand.x + playBand.width > room.width ||
+      playBand.y + playBand.height > room.height
+    ) {
+      addIssue(
+        "PRESENTATION_INVALID",
+        `room "${room.id}" presentation.playBand must be a positive tile rect inside the ${room.width}×${room.height} room`,
+      );
+    }
+  } else if (
+    camera.framing === "fit-play-band" ||
+    camera.zoom === "auto"
+  ) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation uses fit-play-band but has no playBand and no solid tiles`,
+    );
+    return;
+  }
+
+  let resolvedZoom = 1;
+  if (autoZoom) {
+    if (!playBand) return;
+    const result = autoZoomFor({
+      stage,
+      playBand,
+      tileSize: room.tileSize,
+      padding: camera.padding,
+      maxZoom: camera.maxZoom,
+      maxTetherLength,
+    });
+    if (!result.ok) {
+      addIssue(
+        "PRESENTATION_INVALID",
+        result.error === "PLAY_BAND_TOO_TALL"
+          ? `room "${room.id}" presentation.playBand does not fit the stage at zoom 1`
+          : `room "${room.id}" presentation stage is narrower than the ${maxTetherLength}px tether span`,
+      );
+      return;
+    }
+    resolvedZoom = result.zoom;
+  } else if (typeof camera.zoom === "number") {
+    if (!playBand) return;
+    if (
+      !zoomFitsPlayBand(
+        stage,
+        playBand,
+        room.tileSize,
+        camera.padding,
+        camera.zoom,
+      )
+    ) {
+      addIssue(
+        "PRESENTATION_INVALID",
+        `room "${room.id}" presentation.playBand does not fit the stage at zoom ${camera.zoom}`,
+      );
+      return;
+    }
+    resolvedZoom = camera.zoom;
+  }
+
+  const viewWidth = stage.width / resolvedZoom;
+  const viewHeight = stage.height / resolvedZoom;
+  if (
+    room.width * room.tileSize < viewWidth ||
+    room.height * room.tileSize < viewHeight
+  ) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" is smaller than the ${viewWidth}×${viewHeight} camera view at zoom ${resolvedZoom}`,
+    );
   }
 }
 
@@ -1840,6 +2009,12 @@ export function validatePack(
   checkManifest(packManifest, "pack", false, fileExists, addIssue);
   checkEntityAnimations(materialRooms, assets, addIssue, addWarning);
   checkBackground(room, assets, addIssue);
+  checkPresentation(
+    room,
+    content?.pack.presentation,
+    maxTetherLengthForRoom(content, room.id),
+    addIssue,
+  );
   checkUiAssets(theme, assets, addIssue);
   checkAudioAssets(room, theme, assets, addIssue);
   checkMaterials({
@@ -1861,6 +2036,12 @@ export function validatePack(
     for (const contentRoom of Object.values(content.rooms)) {
       if (contentRoom.id !== room.id) {
         checkBackground(contentRoom, assets, addIssue);
+        checkPresentation(
+          contentRoom,
+          content.pack.presentation,
+          maxTetherLengthForRoom(content, contentRoom.id),
+          addIssue,
+        );
         checkAudioAssets(contentRoom, theme, assets, addIssue);
       }
     }

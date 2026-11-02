@@ -40,6 +40,26 @@ export type {
 } from "./catalog";
 export { parsePuzzle } from "./parse-puzzle";
 export {
+  parsePackPresentation,
+  parseRoomPresentation,
+} from "./parse-presentation";
+export {
+  DEFAULT_CAMERA_PADDING,
+  DEFAULT_MAX_ZOOM,
+  PRESENTATION_CANVAS,
+  TETHER_VIEW_MARGIN,
+  autoZoomFor,
+  derivePlayBand,
+  mergeCameraSettings,
+  zoomFitsPlayBand,
+} from "./presentation";
+export type {
+  AutoZoomFailure,
+  AutoZoomInput,
+  AutoZoomResult,
+  MergedCameraSettings,
+} from "./presentation";
+export {
   loadMaterials,
   parseAtlasFrameRef,
   parseMaterialBinding,
@@ -69,6 +89,10 @@ export type {
 export type {
   BackgroundBlend,
   BackgroundFit,
+  CameraFollowX,
+  CameraFollowY,
+  CameraFraming,
+  CameraZoom,
   ConceptMapping,
   DialogueChoice,
   DialogueCondition,
@@ -104,6 +128,9 @@ export type {
   PackAssetManifests,
   PackContent,
   PackDocument,
+  PresentationCameraConfig,
+  PresentationConfig,
+  PresentationRect,
   RecordEvidenceEffect,
   RoomBackgroundLayer,
   RoomCheckpoint,
@@ -112,6 +139,7 @@ export type {
   RoomEntityComponents,
   RoomEntityType,
   RoomExit,
+  RoomPresentationConfig,
   RoomPropertyValue,
   RoomSpawn,
   RoomTrigger,

@@ -13,6 +13,45 @@ export type BackgroundFit = "cover" | "tile" | "stretch" | "contain";
 
 export type BackgroundBlend = "normal" | "add" | "multiply" | "screen";
 
+/* ------------------------------------------------------------------ */
+/* Presentation                                                        */
+/* ------------------------------------------------------------------ */
+
+/** A rect in logical canvas pixels (stage) or tile coordinates (play band). */
+export interface PresentationRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type CameraFraming = "fit-play-band";
+export type CameraZoom = "auto" | number;
+export type CameraFollowX = "players" | "p1" | "p2";
+export type CameraFollowY = "play-band" | "players";
+
+export interface PresentationCameraConfig {
+  framing?: CameraFraming;
+  zoom?: CameraZoom;
+  maxZoom?: number;
+  followX?: CameraFollowX;
+  followY?: CameraFollowY;
+  padding?: number;
+  snap?: boolean;
+}
+
+/** Pack-level defaults. */
+export interface PresentationConfig {
+  stage?: PresentationRect;
+  camera?: PresentationCameraConfig;
+}
+
+/** Room-level overrides. */
+export interface RoomPresentationConfig {
+  playBand?: PresentationRect;
+  camera?: PresentationCameraConfig;
+}
+
 export interface RoomBackgroundLayer {
   assetId: AssetId;
   depth: number;
@@ -177,6 +216,7 @@ export interface RoomDocument {
   triggers?: RoomTrigger[];
   music?: AssetId;
   ambience?: AssetId;
+  presentation?: RoomPresentationConfig;
 }
 
 export interface ThemePalette {
@@ -270,6 +310,7 @@ export interface PackDocument {
   ageRating?: string;
   description?: string;
   metadata?: Record<string, unknown>;
+  presentation?: PresentationConfig;
 }
 
 /* ------------------------------------------------------------------ */

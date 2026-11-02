@@ -347,6 +347,15 @@ describe("game runtime", () => {
     expect(snapshot.puzzle?.pulse).toBeNull();
     expect(snapshot.map.nodes.find((node) => node.current)?.visited).toBe(true);
     expect(snapshot.checkpointId).toBe("checkpoint-entry");
+    expect(snapshot.world.stage).toEqual({
+      x: 0,
+      y: 0,
+      width: 1280,
+      height: 720,
+    });
+    expect(snapshot.world.zoom).toBe(1);
+    expect(snapshot.world.camera.width).toBe(1280);
+    expect(snapshot.world.camera.height).toBe(720);
     expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
       "03-nerve-forest",
     );

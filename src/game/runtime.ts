@@ -95,6 +95,7 @@ import {
   PLAYER_HEIGHT,
   PLAYER_WIDTH,
   placePlayer as placeWorldPlayer,
+  resizeRoomSimulation,
   roomPixelHeight,
   roomPixelWidth,
   setPlayerActive,
@@ -107,6 +108,7 @@ import {
   type PropState,
   type RoomSimulation,
 } from "../world/simulation";
+import { TETHER_LENGTHS } from "../world/physics";
 import {
   initialMachine,
   transition,
@@ -128,6 +130,24 @@ const FEEDBACK_CUE_TTL_TICKS = 180;
 const FEEDBACK_STUCK_TICKS = 1800;
 const CONVERSATION_ACK_DISTANCE = 140;
 const ROOM_ENTITY_SIZE = 36;
+
+/**
+ * The camera must keep the widest tether span in the room visible. A room with
+ * no tether (or only `off`) returns 0, which disables the tether cap.
+ */
+function maxTetherLengthForLevel(
+  content: PackContent,
+  level: LevelDocument,
+): number {
+  let max = 0;
+  for (const puzzleId of level.puzzleIds ?? []) {
+    const tether = content.puzzles[puzzleId]?.tether;
+    if (tether === "normal" || tether === "stretch") {
+      max = Math.max(max, TETHER_LENGTHS[tether]);
+    }
+  }
+  return max;
+}
 
 export interface AudioPort {
   play(assetId: string): void;
@@ -351,7 +371,11 @@ export class GameRuntime implements WorldRuntime {
 
     this.level = level;
     this.room = room;
-    this.world = createRoomSimulation(room);
+    this.world = createRoomSimulation(
+      room,
+      undefined,
+      this.presentationInput(level),
+    );
   }
 
   /* ---------------------------------------------------------------- */
@@ -476,7 +500,11 @@ export class GameRuntime implements WorldRuntime {
 
     this.level = level;
     this.room = room;
-    this.world = createRoomSimulation(room);
+    this.world = createRoomSimulation(
+      room,
+      undefined,
+      this.presentationInput(level),
+    );
     this.puzzles = new Map();
     this.activatedPuzzles = new Set();
     this.puzzleHintIndex = 0;
@@ -2551,6 +2579,14 @@ export class GameRuntime implements WorldRuntime {
     return this.feedback.frame();
   }
 
+  private presentationInput(level: LevelDocument) {
+    return {
+      pack: this.content.pack.presentation,
+      room: this.room.presentation,
+      maxTetherLength: maxTetherLengthForLevel(this.content, level),
+    };
+  }
+
   private worldView(): WorldView {
     const playerView = (id: PlayerId): PlayerView => {
       const player = this.world.players[id];
@@ -2606,6 +2642,8 @@ export class GameRuntime implements WorldRuntime {
         width: this.world.viewport.width,
         height: this.world.viewport.height,
       },
+      stage: { ...this.world.presentation.stage },
+      zoom: this.world.presentation.zoom,
       tileSize: this.room.tileSize,
       players: { p1: playerView("p1"), p2: playerView("p2") },
       entities,
@@ -2999,9 +3037,11 @@ export class GameRuntime implements WorldRuntime {
 
   /** Matches the camera frame to the renderer's viewport on resize. */
   resize(width: number, height: number): void {
-    this.world.viewport = { width, height };
-    this.world.camera.width = width;
-    this.world.camera.height = height;
+    resizeRoomSimulation(
+      this.world,
+      { width, height },
+      this.presentationInput(this.level),
+    );
     this.emit();
   }
 

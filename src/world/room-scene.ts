@@ -46,6 +46,7 @@ import {
   type PlayerId,
   type RoomSimulation,
 } from "./simulation";
+import { cameraScrollForView } from "./presentation";
 import {
   composeTileVisual,
   createTileVisualState,
@@ -250,7 +251,11 @@ export class RoomScene
     this.applyInteractionHighlight(this.config.runtime.interactionId());
     this.syncPlayers();
     const camera = this.cameras.main;
-    camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
+    const scroll = cameraScrollForView(
+      this.simulation.presentation,
+      this.simulation.camera,
+    );
+    camera.setScroll(scroll.x, scroll.y);
     this.background?.update(camera);
 
     const reduced = this.config.isReducedMotion?.() ?? false;
@@ -348,9 +353,18 @@ export class RoomScene
     this.intents = new KeyboardIntentSource(this);
 
     const camera = this.cameras.main;
+    const presentation = this.simulation.presentation;
     camera.setBackgroundColor(theme.palette.bg);
+    camera.setViewport(
+      presentation.stage.x,
+      presentation.stage.y,
+      presentation.stage.width,
+      presentation.stage.height,
+    );
+    camera.setZoom(presentation.zoom);
     camera.setBounds(0, 0, roomPixelWidth(room), roomPixelHeight(room));
-    camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
+    const scroll = cameraScrollForView(presentation, this.simulation.camera);
+    camera.setScroll(scroll.x, scroll.y);
 
     if (this.config.materials && this.config.patterns) {
       this.patternLayer = new PatternLayer({

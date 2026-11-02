@@ -103,6 +103,43 @@ describe("validatePack", () => {
     expect(fixture.placeholders).toHaveLength(7);
   });
 
+  it("validates room presentation framing and reports impossible auto zoom", () => {
+    const valid = clone(room);
+    valid.presentation = {
+      playBand: { x: 0, y: 26, width: room.width, height: 6 },
+      camera: {
+        framing: "fit-play-band",
+        zoom: "auto",
+        maxZoom: 2,
+        followY: "play-band",
+        snap: true,
+      },
+    };
+    const validResult = validatePack({
+      room: valid,
+      theme,
+      finalManifest,
+      fileExists,
+    });
+    expect(validResult.issues).toEqual([]);
+
+    const broken = clone(room);
+    broken.presentation = {
+      playBand: { x: 0, y: 0, width: room.width, height: 30 },
+      camera: { framing: "fit-play-band", zoom: "auto" },
+    };
+    const brokenResult = validatePack({
+      room: broken,
+      theme,
+      finalManifest,
+      fileExists,
+    });
+    expect(brokenResult.ok).toBe(false);
+    expect(brokenResult.issues.map((issue) => issue.code)).toContain(
+      "PRESENTATION_INVALID",
+    );
+  });
+
   it("reports referenced IDs with unknown prefixes", () => {
     const broken: RoomDocument = clone(room);
     broken.tileset = "not-an-asset-id";

@@ -1,14 +1,13 @@
 import Matter from "matter-js";
 import type { RoomDocument, RoomEntity } from "../pack";
 import type { PropRunState, TetherPolicy } from "../puzzle";
+import { TETHER_LENGTHS } from "../puzzle/tether";
 import type { GameplayCue, PlayerId, PlayerState } from "./simulation";
+
+export { TETHER_LENGTHS };
 
 export const PLAYER_WIDTH = 28;
 export const PLAYER_HEIGHT = 44;
-export const TETHER_LENGTHS: Record<Exclude<TetherPolicy, "off">, number> = {
-  normal: 560,
-  stretch: 1150,
-};
 
 const MOVE_SPEED = 260;
 const JUMP_SPEED = 620;

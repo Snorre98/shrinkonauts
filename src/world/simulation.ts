@@ -8,6 +8,12 @@ import {
   type PropSnapshot,
   type PropState,
 } from "./physics";
+import {
+  resolvePresentation,
+  type ResolvedPresentation,
+  type RoomPresentationInput,
+  type ViewportLike,
+} from "./presentation";
 
 export { PLAYER_HEIGHT, PLAYER_WIDTH };
 export type { BodySnapshot, PropSnapshot, PropState };
@@ -71,6 +77,7 @@ export interface RoomSimulation {
   props: Record<string, PropState>;
   camera: CameraFrame;
   viewport: Viewport;
+  presentation: ResolvedPresentation;
   elapsed: number;
   tick: number;
   physics: RoomPhysics;
@@ -160,29 +167,73 @@ function activePlayers(simulation: RoomSimulation): PlayerState[] {
   return players.length > 0 ? players : [simulation.players.p1];
 }
 
+function cameraLimits(simulation: RoomSimulation): {
+  maxX: number;
+  maxY: number;
+  viewWidth: number;
+  viewHeight: number;
+} {
+  const { room, presentation } = simulation;
+  const viewWidth = presentation.stage.width / presentation.zoom;
+  const viewHeight = presentation.stage.height / presentation.zoom;
+  return {
+    viewWidth,
+    viewHeight,
+    maxX: Math.max(0, roomPixelWidth(room) - viewWidth),
+    maxY: Math.max(0, roomPixelHeight(room) - viewHeight),
+  };
+}
+
 export function cameraTarget(simulation: RoomSimulation): {
   x: number;
   y: number;
 } {
-  const { room, viewport } = simulation;
+  const { presentation } = simulation;
   const players = activePlayers(simulation);
   const averageX =
     players.reduce((total, player) => total + player.x, 0) / players.length;
   const averageY =
     players.reduce((total, player) => total + player.y, 0) / players.length - 40;
-  const maxX = Math.max(0, roomPixelWidth(room) - viewport.width);
-  const maxY = Math.max(0, roomPixelHeight(room) - viewport.height);
+  const { viewWidth, viewHeight, maxX, maxY } = cameraLimits(simulation);
 
-  return {
-    x: clamp(averageX - viewport.width / 2, 0, maxX),
-    y: clamp(averageY - viewport.height / 2, 0, maxY),
+  let focusX = averageX;
+  if (presentation.followX === "p1") {
+    focusX = simulation.players.p1.x;
+  } else if (presentation.followX === "p2") {
+    focusX = simulation.players.p2.x;
+  }
+
+  const focusY =
+    presentation.followY === "play-band"
+      ? (presentation.playBand.y + presentation.playBand.height / 2) *
+        simulation.room.tileSize
+      : averageY;
+
+  const target = {
+    x: clamp(focusX - viewWidth / 2, 0, maxX),
+    y: clamp(focusY - viewHeight / 2, 0, maxY),
   };
+
+  if (presentation.snap) {
+    target.x = clamp(Math.round(target.x), 0, maxX);
+    target.y = clamp(Math.round(target.y), 0, maxY);
+  }
+
+  return target;
 }
 
 export function createRoomSimulation(
   room: RoomDocument,
   viewport: Viewport = { width: 1280, height: 720 },
+  presentationInput: RoomPresentationInput = {},
 ): RoomSimulation {
+  const presentation = resolvePresentation({
+    viewport,
+    room,
+    packPresentation: presentationInput.pack,
+    roomPresentation: presentationInput.room,
+    maxTetherLength: presentationInput.maxTetherLength,
+  });
   const physics = new RoomPhysics(room);
   const simulation: RoomSimulation = {
     room,
@@ -195,10 +246,11 @@ export function createRoomSimulation(
     camera: {
       x: 0,
       y: 0,
-      width: viewport.width,
-      height: viewport.height,
+      width: presentation.stage.width / presentation.zoom,
+      height: presentation.stage.height / presentation.zoom,
     },
     viewport,
+    presentation,
     elapsed: 0,
     tick: 0,
     physics,
@@ -217,6 +269,28 @@ export function createRoomSimulation(
   simulation.camera.x = target.x;
   simulation.camera.y = target.y;
   return simulation;
+}
+
+/** Re-resolves the stage framing after a viewport change. */
+export function resizeRoomSimulation(
+  simulation: RoomSimulation,
+  viewport: ViewportLike,
+  presentationInput: RoomPresentationInput = {},
+): void {
+  const presentation = resolvePresentation({
+    viewport,
+    room: simulation.room,
+    packPresentation: presentationInput.pack,
+    roomPresentation: presentationInput.room,
+    maxTetherLength: presentationInput.maxTetherLength,
+  });
+  simulation.viewport = { width: viewport.width, height: viewport.height };
+  simulation.presentation = presentation;
+  simulation.camera.width = presentation.stage.width / presentation.zoom;
+  simulation.camera.height = presentation.stage.height / presentation.zoom;
+  const target = cameraTarget(simulation);
+  simulation.camera.x = target.x;
+  simulation.camera.y = target.y;
 }
 
 export function respawnPlayer(player: PlayerState): void {
@@ -329,6 +403,11 @@ export function stepRoomSimulation(
   const factor = Math.min(1, safeDt * CAMERA_SMOOTHING);
   simulation.camera.x += (target.x - simulation.camera.x) * factor;
   simulation.camera.y += (target.y - simulation.camera.y) * factor;
+  if (simulation.presentation.snap) {
+    const { maxX, maxY } = cameraLimits(simulation);
+    simulation.camera.x = clamp(Math.round(simulation.camera.x), 0, maxX);
+    simulation.camera.y = clamp(Math.round(simulation.camera.y), 0, maxY);
+  }
   simulation.elapsed += safeDt;
   simulation.tick += 1;
 }
