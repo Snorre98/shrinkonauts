@@ -1074,8 +1074,8 @@ describe("game runtime", () => {
       )?.content.text,
     ).toContain("Stimulus counter");
     expect(snapshot.world.entities["agent-neuron"]?.anchors.center).toEqual({
-      x: 18,
-      y: 18,
+      x: 48,
+      y: 48,
     });
     expect(runtime.drainEffects()).toEqual([]);
   });
@@ -1292,7 +1292,7 @@ describe("game runtime", () => {
   it("projects authored room sockets into the runtime world view", () => {
     const { runtime } = makeRuntimeWithContent(contentWithAnchors());
     const entity = runtime.snapshot().world.entities["agent-neuron"];
-    expect(entity?.anchors.center).toEqual({ x: 18, y: 18 });
+    expect(entity?.anchors.center).toEqual({ x: 48, y: 48 });
     expect(entity?.anchors.muzzle).toEqual({
       x: 30,
       y: 8,

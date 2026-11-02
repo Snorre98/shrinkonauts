@@ -95,7 +95,7 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; frame 0 of the 36-frame Neuron Keeper idle sheet; 18x18 fit; palette quantized"
+      "modified": "2026-11-02; frame 0 of the 36-frame Neuron Keeper idle sheet; 96x96 hero fit; palette quantized"
     },
     {
       "file": "shared/sprites/agent-neuron-idle.png",
@@ -103,63 +103,79 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; 36-frame Neuron Keeper idle sheet; 18x18 frames; palette quantized"
+      "modified": "2026-11-02; 36-frame Neuron Keeper idle sheet; 96x96 frames; palette quantized"
     },
     {
       "file": "shared/sprites/scan-synapse.png",
       "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + 18x18 fit + palette quantization",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; magenta keyed; trimmed; fitted to 18x18; palette quantized"
+      "modified": "2026-11-02; magenta keyed; trimmed; fitted to 36x36; palette quantized"
     },
     {
       "file": "shared/sprites/scan-muscle.png",
       "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + 18x18 fit + palette quantization",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; magenta keyed; trimmed; fitted to 18x18; palette quantized"
+      "modified": "2026-11-02; magenta keyed; trimmed; fitted to 36x36; palette quantized"
+    },
+    {
+      "file": "shared/sprites/pad-dendrite.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; dendrite input pad; magenta keyed; fitted to 64x64; palette quantized"
+    },
+    {
+      "file": "shared/sprites/pad-terminal.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; axon terminal pad; magenta keyed; fitted to 64x64; palette quantized"
     },
     {
       "file": "shared/sprites/gate-ferry.png",
       "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + 18x18 fit + palette quantization",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; closed organic gate; magenta keyed; fitted to 18x18; palette quantized"
+      "modified": "2026-11-02; closed organic gate; magenta keyed; fitted to 64x64; palette quantized"
     },
     {
       "file": "shared/sprites/prop-tracer.png",
       "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + 18x18 fit + palette quantization",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; ACh packet; magenta keyed; fitted to 18x18; palette quantized"
+      "modified": "2026-11-02; ACh packet; magenta keyed; fitted to 48x48; palette quantized"
     },
     {
       "file": "shared/sprites/pulse-terminal.png",
       "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + 18x18 fit + palette quantization",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; motor terminal; magenta keyed; fitted to 18x18; palette quantized"
+      "modified": "2026-11-02; motor terminal; magenta keyed; fitted to 64x64; palette quantized"
     },
     {
       "file": "shared/sprites/receptor-triangle.png",
       "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + 18x18 fit + palette quantization",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; triangular receptor socket; magenta keyed; fitted to 18x18; palette quantized"
+      "modified": "2026-11-02; triangular receptor socket; magenta keyed; fitted to 64x64; palette quantized"
     },
     {
       "file": "shared/sprites/receptor-circle.png",
       "type": "image",
-      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + 18x18 fit + palette quantization",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-11-01; circular receptor socket; magenta keyed; fitted to 18x18; palette quantized"
+      "modified": "2026-11-02; circular receptor socket; magenta keyed; fitted to 64x64; palette quantized"
     },
     {
       "file": "shared/backgrounds/nerve-forest-sky.webp",

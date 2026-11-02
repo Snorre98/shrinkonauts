@@ -410,9 +410,10 @@ function buildCharacter(
     clips.cell.width !== palette.cell.width ||
     clips.cell.height !== palette.cell.height
   ) {
-    throw new Error(
+    console.warn(
       `${config.character} clip cell ${clips.cell.width}×${clips.cell.height} ` +
-        `does not match palette cell ${palette.cell.width}×${palette.cell.height}`,
+        `does not match palette cell ${palette.cell.width}×${palette.cell.height}; ` +
+        `the clip cell wins (ADR-0075)`,
     );
   }
 

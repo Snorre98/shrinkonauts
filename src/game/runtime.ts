@@ -54,6 +54,7 @@ import {
   type ProgressionSnapshot,
 } from "../progression";
 import type { Syllabus } from "../syllabus";
+import { resolveEntityDisplay } from "../world/entity-style";
 import {
   PuzzleRuntime,
   type PuzzleDocument,
@@ -129,7 +130,6 @@ const PLACEHOLDER_ABILITY = "scan";
 const FEEDBACK_CUE_TTL_TICKS = 180;
 const FEEDBACK_STUCK_TICKS = 1800;
 const CONVERSATION_ACK_DISTANCE = 140;
-const ROOM_ENTITY_SIZE = 36;
 
 /**
  * The camera must keep the widest tether span in the room visible. A room with
@@ -318,6 +318,21 @@ export class GameRuntime implements WorldRuntime {
   private readonly listeners = new Set<Listener>();
   private readonly feedback: FeedbackDirector;
   private readonly stuckThresholdTicks: number;
+  private readonly entityDisplayOverrides = new Map<
+    string,
+    { width: number; height: number }
+  >();
+
+  get packPresentation() {
+    return this.content.pack.presentation;
+  }
+
+  registerEntityDisplay(
+    entityId: string,
+    size: { width: number; height: number },
+  ): void {
+    this.entityDisplayOverrides.set(entityId, size);
+  }
 
   private machine: MachineState = initialMachine();
   private level: LevelDocument;
@@ -2609,8 +2624,15 @@ export class GameRuntime implements WorldRuntime {
 
     const entities: Record<string, WorldEntityView> = {};
     for (const entity of this.room.entities ?? []) {
-      const width = ROOM_ENTITY_SIZE;
-      const height = ROOM_ENTITY_SIZE;
+      const override = this.entityDisplayOverrides.get(entity.id);
+      const resolved =
+        override ??
+        resolveEntityDisplay({
+          entity,
+          presentation: this.packPresentation,
+        });
+      const width = resolved.width;
+      const height = resolved.height;
       entities[entity.id] = {
         id: entity.id,
         x: (entity.x + 0.5) * this.room.tileSize,

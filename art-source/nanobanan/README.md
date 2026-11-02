@@ -135,9 +135,21 @@ If a plate has a soft or noisy edge, raise `--tolerance` before lowering
 
 ## Entity fit
 
-`npm run art:fit` takes the keyed PNG, crops to alpha bounds, fits the 18×18
-cell without stretching, hard-thresholds alpha, quantises to the approved
-non-orange ramps, and writes the runtime PNG, previews and a JSON report.
+`npm run art:fit` takes the keyed PNG, crops to alpha bounds, fits the
+configured cell without stretching, hard-thresholds alpha, quantises to the
+approved non-orange ramps, and writes the runtime PNG, previews and a JSON
+report.
+
+**Hero pass (2026-11-02, ADR-0075).** The hero configs (`fit.new.config.json`
+and `fit.silicon.config.json`) are schema 2 and declare per-class cells:
+`hero-npc` 96×96, `hero-interactable` 64×64, `hero-prop` 48×48, `ui-1x`
+36×36. The older `fit.config.json` and `fit.badge.config.json` remain schema 1
+for legacy 18×18 / badge review. The palette cell is advisory; the fit cell
+wins. The reports record the class, display, treatment, source scale and gates.
+The 2026-11-02 pass re-fitted the Keeper sheet, CPU, gates, consoles, sockets,
+receptors, pads and props as `fit-preview`; hand cleaning is still required
+before any hero asset is marked final. The Keeper sheet is now 3456×96
+(36 frames at 96×96) and the CPU static is 96×96.
 
 The original scan batch is in `fit.config.json`. The 2026-11-01 batch is in
 `fit.new.config.json`; it includes the accepted gate, tracer, pulse terminal,

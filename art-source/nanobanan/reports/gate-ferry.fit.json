@@ -1,8 +1,14 @@
 {
   "schemaVersion": 1,
   "id": "sprite.gate.ferry",
-  "status": "poc-integrated",
-  "notes": "Closed organic gate; the bone frame and teal curtain read at 36x36. The nerve-yellow central seam is subdued after the 18x18 fit.",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. The bone frame, teal curtain and nerve-yellow seam read; hand-clean remains required.",
   "config": "fit.new.config.json",
   "source": {
     "path": "art-source/nanobanan/keyed/gate-ferry.png",
@@ -18,17 +24,24 @@
   "output": {
     "path": "public/packs/anatomy-reflex/shared/sprites/gate-ferry.png",
     "runtime": true,
-    "written": true,
-    "width": 18,
-    "height": 18,
-    "bytes": 600
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 4610
   },
   "cell": {
-    "width": 18,
-    "height": 18
+    "width": 64,
+    "height": 64
   },
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 32.288,
   "ramps": [
     "teal",
     "bone",
@@ -46,50 +59,55 @@
     "height": 1905
   },
   "fit": {
-    "width": 16,
-    "height": 16,
-    "offsetX": 1,
-    "offsetY": 1,
-    "scale": 0.008307,
+    "width": 60,
+    "height": 59,
+    "offsetX": 2,
+    "offsetY": 3,
+    "scale": 0.031153,
     "upscaled": false
   },
   "finalBounds": {
-    "x": 1,
-    "y": 1,
-    "width": 16,
-    "height": 16
+    "x": 2,
+    "y": 3,
+    "width": 60,
+    "height": 59
   },
   "margins": {
-    "top": 1,
-    "right": 1,
-    "bottom": 1,
-    "left": 1
+    "top": 3,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
   },
   "quantization": {
-    "changedPixels": 206,
-    "maxDistance": 80.808,
-    "offPalettePixels": 206,
+    "changedPixels": 2830,
+    "maxDistance": 82.426,
+    "offPalettePixels": 2830,
     "alphaViolations": 0
   },
   "paletteValidation": {
     "offPalettePixels": 0,
     "alphaViolations": 0,
-    "opaquePixels": 206
+    "opaquePixels": 2830
   },
   "rampHistogram": {
-    "boneShadow": 66,
-    "sage": 14,
-    "bone": 13,
-    "ink": 43,
-    "joint": 70
+    "teal": 280,
+    "ink": 628,
+    "boneShadow": 382,
+    "bone": 310,
+    "sage": 149,
+    "muscle": 55,
+    "nerve": 31,
+    "joint": 995
   },
   "warnings": [
     "source content touches the image border (t 265, b 512, l 245, r 245); the concept plate may be clipped",
-    "max palette quantisation distance 80.8 exceeds 64"
+    "source-to-fit scale 32.3:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 82.4 exceeds 24"
   ],
   "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/gate-ferry-1x.png",
     "scale2x": "art-source/previews/nanobanan/entities/gate-ferry-2x.png",
-    "scale8x": "art-source/previews/nanobanan/entities/gate-ferry-8x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/gate-ferry-4x.png",
     "tint2x": "art-source/previews/nanobanan/entities/gate-ferry-tint-2x.png"
   }
 }

@@ -17,6 +17,7 @@ import {
   supportsVisualCategory,
   type AssetId,
   type AssetManifest,
+  type AssetsModule,
   type ManifestAssetEntry,
 } from "../assets";
 import { silentLogger } from "../core/logger";
@@ -46,6 +47,11 @@ import {
   collectThemeAssetIds,
 } from "./load";
 import { buildMapping, mappingDrift } from "./mapping";
+import {
+  inferEntityRole,
+  presentationSizeToDisplay,
+  resolveEntityDisplay,
+} from "./entity-presentation";
 import {
   PRESENTATION_CANVAS,
   autoZoomFor,
@@ -472,7 +478,11 @@ function checkPresentation(
   maxTetherLength: number,
   addIssue: AddIssue,
 ): void {
-  if (!packPresentation && !room.presentation) {
+  if (
+    !packPresentation?.stage &&
+    !packPresentation?.camera &&
+    !room.presentation
+  ) {
     return;
   }
 
@@ -604,6 +614,99 @@ function checkPresentation(
       "PRESENTATION_INVALID",
       `room "${room.id}" is smaller than the ${viewWidth}×${viewHeight} camera view at zoom ${resolvedZoom}`,
     );
+  }
+}
+
+function checkEntityPresentation(
+  room: RoomDocument,
+  packPresentation: PresentationConfig | undefined,
+  assets: AssetsModule,
+  addIssue: AddIssue,
+  addWarning: AddWarning,
+): void {
+  for (const entity of room.entities ?? []) {
+    if (!entity.sprite) continue;
+    const asset = assets.resolveById(entity.sprite);
+    const resolved = resolveEntityDisplay({
+      entity,
+      ...(asset ? { asset } : {}),
+      presentation: packPresentation,
+    });
+
+    if (resolved.width <= 0 || resolved.height <= 0) {
+      addIssue(
+        "PRESENTATION_INVALID",
+        `room "${room.id}" entity "${entity.id}" resolves to a non-positive display size`,
+      );
+    }
+
+    const role =
+      entity.presentation?.role ??
+      (packPresentation?.roles || packPresentation?.defaultRoles
+        ? inferEntityRole(entity.type, packPresentation?.defaultRoles)
+        : null);
+    const roleConfig = role ? packPresentation?.roles?.[role] : undefined;
+    const roleDisplay = presentationSizeToDisplay(roleConfig?.display);
+    if (
+      roleDisplay &&
+      asset?.display &&
+      (roleDisplay.width !== asset.display.width ||
+        roleDisplay.height !== asset.display.height)
+    ) {
+      addWarning(
+        `PRESENTATION_DISPLAY_MISMATCH: room "${room.id}" entity "${entity.id}" role "${role}" expects ${roleDisplay.width}×${roleDisplay.height} but asset "${entity.sprite}" declares ${asset.display.width}×${asset.display.height}`,
+      );
+    }
+
+    if (
+      roleConfig?.fidelity &&
+      asset?.fidelity &&
+      roleConfig.fidelity !== asset.fidelity
+    ) {
+      addWarning(
+        `PRESENTATION_FIDELITY_MISMATCH: room "${room.id}" entity "${entity.id}" role "${role}" uses ${roleConfig.fidelity} but asset "${entity.sprite}" declares ${asset.fidelity}`,
+      );
+    }
+
+    const sheetCell =
+      asset?.type === "sheet" &&
+      asset.frameWidth !== undefined &&
+      asset.frameHeight !== undefined
+        ? { width: asset.frameWidth, height: asset.frameHeight }
+        : null;
+    if (sheetCell) {
+      const scale =
+        asset?.fidelity === "hero-1x"
+          ? 1
+          : asset?.fidelity === "world-2x"
+            ? 2
+            : null;
+      if (
+        scale !== null &&
+        (resolved.width !== sheetCell.width * scale ||
+          resolved.height !== sheetCell.height * scale)
+      ) {
+        addWarning(
+          `PRESENTATION_CELL_MISMATCH: room "${room.id}" entity "${entity.id}" displays at ${resolved.width}×${resolved.height} but "${entity.sprite}" frames are ${sheetCell.width}×${sheetCell.height} at ${scale}×`,
+        );
+      }
+    }
+
+    for (const [name, point] of Object.entries(
+      entity.components?.anchors ?? {},
+    )) {
+      if (
+        point.x < 0 ||
+        point.y < 0 ||
+        point.x > resolved.width ||
+        point.y > resolved.height
+      ) {
+        addIssue(
+          "PRESENTATION_INVALID",
+          `room "${room.id}" entity "${entity.id}" anchor "${name}" lies outside the ${resolved.width}×${resolved.height} display bounds`,
+        );
+      }
+    }
   }
 }
 
@@ -2015,6 +2118,13 @@ export function validatePack(
     maxTetherLengthForRoom(content, room.id),
     addIssue,
   );
+  checkEntityPresentation(
+    room,
+    content?.pack.presentation,
+    assets,
+    addIssue,
+    addWarning,
+  );
   checkUiAssets(theme, assets, addIssue);
   checkAudioAssets(room, theme, assets, addIssue);
   checkMaterials({
@@ -2041,6 +2151,13 @@ export function validatePack(
           content.pack.presentation,
           maxTetherLengthForRoom(content, contentRoom.id),
           addIssue,
+        );
+        checkEntityPresentation(
+          contentRoom,
+          content.pack.presentation,
+          assets,
+          addIssue,
+          addWarning,
         );
         checkAudioAssets(contentRoom, theme, assets, addIssue);
       }

@@ -43,6 +43,46 @@ describe("parseManifest", () => {
     expect(result.value.warnings).toEqual([]);
   });
 
+  it("accepts display size and fidelity metadata", () => {
+    const input = validManifest();
+    (input.assets as Record<string, unknown>)["sprite.player.p1"] = {
+      type: "sprite",
+      src: "fixtures/player-p1.svg",
+      display: { width: 96, height: 96 },
+      fidelity: "hero-1x",
+    };
+
+    const result = parseManifest(input, MANIFEST_URL);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.manifest.assets["sprite.player.p1"]?.display).toEqual({
+      width: 96,
+      height: 96,
+    });
+    expect(result.value.manifest.assets["sprite.player.p1"]?.fidelity).toBe(
+      "hero-1x",
+    );
+  });
+
+  it("rejects an invalid display size and fidelity class", () => {
+    const badDisplay = validManifest();
+    (badDisplay.assets as Record<string, unknown>)["sprite.player.p1"] = {
+      type: "sprite",
+      src: "fixtures/player-p1.svg",
+      display: { width: 0, height: 96 },
+    };
+    expect(parseManifest(badDisplay, MANIFEST_URL).ok).toBe(false);
+
+    const badFidelity = validManifest();
+    (badFidelity.assets as Record<string, unknown>)["sprite.player.p1"] = {
+      type: "sprite",
+      src: "fixtures/player-p1.svg",
+      fidelity: "ultra-4k",
+    };
+    expect(parseManifest(badFidelity, MANIFEST_URL).ok).toBe(false);
+  });
+
   it("rejects unsupported schema versions", () => {
     const input = validManifest();
     input.schemaVersion = "2.0";

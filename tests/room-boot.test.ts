@@ -276,8 +276,8 @@ describe("anatomy level anchors", () => {
     for (const gateId of ["gate-threshold", "gate-behind", "gate-exit"]) {
       const gate = nerve.entities?.find((entity) => entity.id === gateId);
       expect(gate?.components?.anchors?.center, gateId).toEqual({
-        x: 18,
-        y: 18,
+        x: 32,
+        y: 32,
       });
     }
 
@@ -286,8 +286,8 @@ describe("anatomy level anchors", () => {
       (entity) => entity.id === "motor-terminal",
     );
     expect(terminal?.components?.anchors?.muzzle).toEqual({
-      x: 32,
-      y: 16,
+      x: 56,
+      y: 32,
       direction: 0,
     });
     for (const receptorId of ["nicotinic-receptor", "wrong-receptor"]) {
@@ -295,16 +295,16 @@ describe("anatomy level anchors", () => {
         (entity) => entity.id === receptorId,
       );
       expect(receptor?.components?.anchors?.mouth, receptorId).toEqual({
-        x: 4,
-        y: 16,
+        x: 7,
+        y: 28,
         direction: 3.14159,
       });
     }
     for (const gateId of ["ca-gate", "muscle-gate"]) {
       const gate = muscle.entities?.find((entity) => entity.id === gateId);
       expect(gate?.components?.anchors?.center, gateId).toEqual({
-        x: 18,
-        y: 18,
+        x: 32,
+        y: 32,
       });
     }
   });
@@ -343,14 +343,14 @@ describe("anatomy level anchors", () => {
     );
     expect(
       entityAnchorPoint(
-        36,
-        36,
+        64,
+        64,
         terminal?.components?.anchors,
         "muzzle",
       ),
-    ).toEqual({ x: 32, y: 16, direction: 0 });
+    ).toEqual({ x: 56, y: 32, direction: 0 });
     expect(
-      entityAnchorPoint(36, 36, terminal?.components?.anchors, "missing"),
-    ).toEqual({ x: 18, y: 18 });
+      entityAnchorPoint(64, 64, terminal?.components?.anchors, "missing"),
+    ).toEqual({ x: 32, y: 32 });
   });
 });

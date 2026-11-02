@@ -1,34 +1,47 @@
 {
   "schemaVersion": 1,
   "id": "sprite.pad.sensor",
-  "status": "poc-integrated",
-  "notes": "Floor sensor plate with corner bolts, contact strips, and a small cyan sensing eye.",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. Floor sensor plate with corner bolts, contact strips and a small cyan sensing eye.",
   "config": "fit.silicon.config.json",
   "source": {
     "path": "art-source/nanobanan/keyed/silicon/pad-sensor.png",
-    "width": 2048,
-    "height": 2048,
+    "width": 1804,
+    "height": 1804,
     "edgeContact": {
-      "top": 0,
-      "bottom": 0,
-      "left": 0,
-      "right": 0
+      "top": 1638,
+      "bottom": 1680,
+      "left": 1659,
+      "right": 1660
     }
   },
   "output": {
     "path": "public/packs/silicon-reflex/shared/sprites/pad-sensor.png",
     "runtime": true,
-    "written": true,
-    "width": 18,
-    "height": 18,
-    "bytes": 380
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 2565
   },
   "cell": {
-    "width": 18,
-    "height": 18
+    "width": 64,
+    "height": 64
   },
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 30.067,
   "ramps": [
     "teal",
     "bone",
@@ -38,54 +51,59 @@
     "ink"
   ],
   "trim": {
-    "x": 122,
-    "y": 122,
+    "x": 0,
+    "y": 0,
     "width": 1804,
     "height": 1804
   },
   "fit": {
-    "width": 16,
-    "height": 16,
-    "offsetX": 1,
-    "offsetY": 1,
-    "scale": 0.008869,
+    "width": 60,
+    "height": 60,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.033259,
     "upscaled": false
   },
   "finalBounds": {
-    "x": 1,
-    "y": 1,
-    "width": 16,
-    "height": 16
+    "x": 2,
+    "y": 2,
+    "width": 60,
+    "height": 60
   },
   "margins": {
-    "top": 1,
-    "right": 1,
-    "bottom": 1,
-    "left": 1
+    "top": 2,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
   },
   "quantization": {
-    "changedPixels": 256,
-    "maxDistance": 47.686,
-    "offPalettePixels": 256,
+    "changedPixels": 3589,
+    "maxDistance": 53.198,
+    "offPalettePixels": 3589,
     "alphaViolations": 0
   },
   "paletteValidation": {
     "offPalettePixels": 0,
     "alphaViolations": 0,
-    "opaquePixels": 256
+    "opaquePixels": 3589
   },
   "rampHistogram": {
-    "teal": 8,
-    "ink": 63,
-    "sage": 8,
-    "boneShadow": 141,
-    "bone": 32,
-    "joint": 4
+    "ink": 807,
+    "teal": 239,
+    "boneShadow": 1744,
+    "sage": 184,
+    "bone": 472,
+    "joint": 143
   },
-  "warnings": [],
+  "warnings": [
+    "source content touches the image border (t 1638, b 1680, l 1659, r 1660); the concept plate may be clipped",
+    "source-to-fit scale 30.1:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 53.2 exceeds 24"
+  ],
   "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/pad-sensor-1x.png",
     "scale2x": "art-source/previews/nanobanan/silicon/pad-sensor-2x.png",
-    "scale8x": "art-source/previews/nanobanan/silicon/pad-sensor-8x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/pad-sensor-4x.png",
     "tint2x": "art-source/previews/nanobanan/silicon/pad-sensor-tint-2x.png"
   }
 }

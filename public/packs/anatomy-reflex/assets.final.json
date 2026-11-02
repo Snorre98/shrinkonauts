@@ -171,44 +171,74 @@
     "sprite.agent.neuron": {
       "type": "sprite",
       "src": "shared/sprites/agent-neuron.png",
+      "display": { "width": 96, "height": 96 },
+      "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.agent.neuron.idle": {
       "type": "sheet",
       "src": "shared/sprites/agent-neuron-idle.png",
-      "frameWidth": 18,
-      "frameHeight": 18,
+      "frameWidth": 96,
+      "frameHeight": 96,
       "frames": 36,
       "fps": 12.5,
       "loop": true,
       "anchor": [0.5, 1],
+      "display": { "width": 96, "height": 96 },
+      "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.nerve": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x"
     },
     "sprite.scan.neuron": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x"
     },
     "sprite.scan.synapse": {
       "type": "sprite",
       "src": "shared/sprites/scan-synapse.png",
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.pathway": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x"
     },
     "sprite.scan.muscle": {
       "type": "sprite",
       "src": "shared/sprites/scan-muscle.png",
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.reflex": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x"
+    },
+    "sprite.pad.dendrite": {
+      "type": "sprite",
+      "src": "shared/sprites/pad-dendrite.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.pad.terminal": {
+      "type": "sprite",
+      "src": "shared/sprites/pad-terminal.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.checkpoint": {
       "type": "sprite",
@@ -216,7 +246,9 @@
     },
     "sprite.exit": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x"
     },
     "ui.icon.badge": {
       "type": "image",
@@ -305,26 +337,36 @@
     "sprite.prop.tracer": {
       "type": "sprite",
       "src": "shared/sprites/prop-tracer.png",
+      "display": { "width": 48, "height": 48 },
+      "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.pulse.terminal": {
       "type": "sprite",
       "src": "shared/sprites/pulse-terminal.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.triangle": {
       "type": "sprite",
       "src": "shared/sprites/receptor-triangle.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.circle": {
       "type": "sprite",
       "src": "shared/sprites/receptor-circle.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.ferry": {
       "type": "sprite",
       "src": "shared/sprites/gate-ferry.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     }
   }

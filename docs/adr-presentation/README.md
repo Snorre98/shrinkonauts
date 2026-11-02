@@ -33,8 +33,9 @@ The repository still has domain-local numbering collisions: M3 uses
 ADR-0047–0049, online uses ADR-0047–0057, hub uses ADR-0058–0059, art pipeline
 uses ADR-0060–0065, and controller uses ADR-0066–0069.
 
-The highest record in the repository is **ADR-0069**. This domain continues at
-**ADR-0070** so it does not collide with an existing range. These are new
+The highest record in the repository was **ADR-0069** before this domain. This
+domain continues at **ADR-0070**, and ADR-0074 follows it. ADR-0075 lives in the
+art-pipeline domain but continues the same global sequence. These are new
 records, not amendments. If the project later reconciles one global sequence,
 renumber before acceptance; accepted records are immutable.
 
@@ -46,6 +47,7 @@ renumber before acceptance; accepted records are immutable.
 | [0071](0071-background-space-and-composition.md) | Background space, sampling, and composition | Proposed |
 | [0072](0072-asset-fidelity-tiers-and-encoding.md) | Asset fidelity tiers, display sizes, and lossless encoding | Proposed |
 | [0073](0073-hud-density-and-canvas-scaling.md) | HUD density presets and integer canvas scaling | Proposed |
+| [0074](0074-hero-scale-npcs-and-interactables.md) | Hero-scale NPCs and interactables | Proposed |
 
 ## Relationship to accepted decisions
 
@@ -62,11 +64,13 @@ renumber before acceptance; accepted records are immutable.
   and 2× cluster rules for world-2x assets.
 - **ADR-0048:** half-resolution authoring with 2× display. ADR-0070 adds camera
   framing, and ADR-0072 supersedes the fixed entity/badge size portions while
-  keeping the 2× policy for characters.
+  keeping the 2× policy for characters. ADR-0074 adds the recorded `hero-1x`
+  exception for NPCs, interactables, and props.
 - **ADR-0049:** pixel UI chrome and typography. ADR-0073 extends the UI with
   density presets and stage-aware safe areas.
 - **ADR-0060–0065:** art pipeline. ADR-0072 adds fidelity tiers, display sizes,
-  readability gates, and the fit-preview/hand-cleaned status split.
+  readability gates, and the fit-preview/hand-cleaned status split. ADR-0075
+  adds per-class fit cells and hero-asset treatments.
 
 ## Acceptance
 

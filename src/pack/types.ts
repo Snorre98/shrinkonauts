@@ -1,4 +1,4 @@
-import type { AssetId } from "../assets";
+import type { AssetDisplaySize, AssetId, FidelityClass } from "../assets";
 import type {
   MaterialBinding,
   MaterialId,
@@ -40,10 +40,40 @@ export interface PresentationCameraConfig {
   snap?: boolean;
 }
 
+export type PresentationRoleName =
+  | "player"
+  | "npc"
+  | "interactable"
+  | "prop"
+  | "scan"
+  | "decor";
+
+/** JSON may use `[width, height]`; resolved values use the object form. */
+export type PresentationSize =
+  | [number, number]
+  | AssetDisplaySize;
+
+export interface PresentationRoleConfig {
+  display: PresentationSize;
+  fidelity?: FidelityClass;
+}
+
+export interface EntityPresentationConfig {
+  role?: PresentationRoleName;
+  display?: PresentationSize;
+  /** Optional depth tie-breaker for feet-aligned heroes. */
+  depthBias?: number;
+}
+
 /** Pack-level defaults. */
 export interface PresentationConfig {
   stage?: PresentationRect;
   camera?: PresentationCameraConfig;
+  roles?: Partial<Record<PresentationRoleName, PresentationRoleConfig>>;
+  /** Optional override of the built-in entity-type to role mapping. */
+  defaultRoles?: Partial<
+    Record<RoomEntityType, PresentationRoleName | "none">
+  >;
 }
 
 /** Room-level overrides. */
@@ -153,6 +183,8 @@ export interface RoomEntity {
   gateId?: string;
   conceptId?: string;
   label?: string;
+  /** Optional visual role/size override. ADR-0074. */
+  presentation?: EntityPresentationConfig;
   properties?: Record<string, RoomPropertyValue>;
   components?: RoomEntityComponents;
 }

@@ -97,12 +97,13 @@
     {
       "id": "agent-neuron",
       "type": "agent",
-      "x": 6,
+      "x": 30,
       "y": 20,
       "sprite": "sprite.agent.neuron",
       "idleAnimation": "sprite.agent.neuron.idle",
       "dialogueId": "dlg-neuron-01",
-      "label": "Neuron Keeper"
+      "label": "Neuron Keeper",
+      "presentation": { "role": "npc" }
     },
     {
       "id": "scan-neuron",
@@ -136,27 +137,30 @@
       "type": "scanTarget",
       "x": 7,
       "y": 20,
-      "sprite": "sprite.scan.neuron",
+      "sprite": "sprite.pad.dendrite",
       "conceptId": "CON-3",
-      "label": "Dendrite input A"
+      "label": "Dendrite input A",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "pad-input-b",
       "type": "scanTarget",
       "x": 10,
       "y": 20,
-      "sprite": "sprite.scan.neuron",
+      "sprite": "sprite.pad.dendrite",
       "conceptId": "CON-3",
-      "label": "Dendrite input B"
+      "label": "Dendrite input B",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "pad-terminal",
       "type": "scanTarget",
       "x": 34,
       "y": 20,
-      "sprite": "sprite.scan.pathway",
+      "sprite": "sprite.pad.terminal",
       "conceptId": "CON-5",
-      "label": "Axon terminal"
+      "label": "Axon terminal",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "gate-threshold",
@@ -170,7 +174,7 @@
           "gateId": "gate-threshold"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": { "x": 32, "y": 32 }
         }
       }
     },
@@ -186,7 +190,7 @@
           "gateId": "gate-behind"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": { "x": 32, "y": 32 }
         }
       }
     },
@@ -202,7 +206,7 @@
           "gateId": "gate-exit"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": { "x": 32, "y": 32 }
         }
       }
     },
@@ -212,7 +216,8 @@
       "x": 37,
       "y": 19,
       "sprite": "sprite.exit",
-      "label": "Muscle Effector exit"
+      "label": "Muscle Effector exit",
+      "presentation": { "role": "interactable" }
     }
   ],
   "exits": [

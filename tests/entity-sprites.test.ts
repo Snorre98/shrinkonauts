@@ -33,6 +33,8 @@ interface ManifestEntry {
   frames?: number;
   fps?: number;
   loop?: boolean;
+  display?: { width: number; height: number };
+  fidelity?: string;
 }
 
 const manifest = JSON.parse(
@@ -91,11 +93,12 @@ describe("integrated entity sprites", () => {
       expect(entry.license).toBe("Ludo.ai source (POC; plan TBD)");
       const path = join(PACK_DIR, entry.src as string);
       expect(existsSync(path)).toBe(true);
-      expect(statSync(path).size).toBeLessThanOrEqual(16 * 1024);
+      expect(statSync(path).size).toBeLessThanOrEqual(64 * 1024);
 
       const image = decode(entry.src as string);
-      expect(image.width).toBe(18);
-      expect(image.height).toBe(18);
+      const display = entry.display ?? { width: 36, height: 36 };
+      expect(image.width).toBe(display.width);
+      expect(image.height).toBe(display.height);
       expectPaletteAndMargins(image);
 
       expect(
@@ -121,12 +124,12 @@ describe("integrated entity sprites", () => {
 
 describe("Neuron Keeper idle sheet", () => {
   const entry = manifest.assets["sprite.agent.neuron.idle"];
-  it("is a 36-frame 18x18 looping sheet with a matching licence", () => {
+  it("is a 36-frame 96x96 looping sheet with a matching licence", () => {
     expect(entry).toBeDefined();
     if (!entry) return;
     expect(entry.type).toBe("sheet");
-    expect(entry.frameWidth).toBe(18);
-    expect(entry.frameHeight).toBe(18);
+    expect(entry.frameWidth).toBe(96);
+    expect(entry.frameHeight).toBe(96);
     expect(entry.frames).toBe(36);
     expect(entry.fps).toBeGreaterThan(0);
     expect(entry.loop).toBe(true);
@@ -141,12 +144,12 @@ describe("Neuron Keeper idle sheet", () => {
 
     const path = join(PACK_DIR, entry.src as string);
     expect(existsSync(path)).toBe(true);
-    expect(statSync(path).size).toBeLessThanOrEqual(64 * 1024);
+    expect(statSync(path).size).toBeLessThanOrEqual(512 * 1024);
     const sheet = decode(entry.src as string);
-    expect(sheet.width).toBe(18 * 36);
-    expect(sheet.height).toBe(18);
+    expect(sheet.width).toBe(96 * 36);
+    expect(sheet.height).toBe(96);
     for (let index = 0; index < 36; index += 1) {
-      expectPaletteAndMargins(frame(sheet, index, 18));
+      expectPaletteAndMargins(frame(sheet, index, 96));
     }
   });
 

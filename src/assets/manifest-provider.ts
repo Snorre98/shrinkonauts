@@ -118,6 +118,12 @@ export class ManifestProvider implements AssetProvider {
     if (entry.height !== undefined) {
       metadata.height = entry.height;
     }
+    if (entry.display !== undefined) {
+      metadata.display = entry.display;
+    }
+    if (entry.fidelity !== undefined) {
+      metadata.fidelity = entry.fidelity;
+    }
 
     return metadata;
   }

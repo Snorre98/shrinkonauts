@@ -1,35 +1,48 @@
 {
   "schemaVersion": 1,
   "id": "sprite.prop.work_token",
+  "class": "hero-prop",
   "status": "placeholder",
+  "treatment": "hero-prop",
+  "display": {
+    "width": 48,
+    "height": 48
+  },
   "missingReason": "Optional beat; the room does not reference it. Processed for review only and not added to the manifest.",
   "notes": "Gear token preview retained as evidence; no runtime write.",
   "config": "fit.silicon.config.json",
   "source": {
     "path": "art-source/nanobanan/keyed/silicon/prop-work-token.png",
-    "width": 2048,
-    "height": 2048,
+    "width": 1928,
+    "height": 1905,
     "edgeContact": {
-      "top": 0,
-      "bottom": 0,
-      "left": 0,
-      "right": 0
+      "top": 205,
+      "bottom": 204,
+      "left": 167,
+      "right": 203
     }
   },
   "output": {
     "path": "art-source/nanobanan/keyed/fit/silicon/prop-work-token.png",
     "runtime": false,
-    "written": true,
-    "width": 18,
-    "height": 18,
-    "bytes": 832
+    "written": false,
+    "width": 48,
+    "height": 48,
+    "bytes": 4112
   },
   "cell": {
-    "width": 18,
-    "height": 18
+    "width": 48,
+    "height": 48
   },
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 32,
+    "minOpaquePixels": 600,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 12
+  },
+  "sourceScale": 44.302,
   "ramps": [
     "teal",
     "bone",
@@ -39,54 +52,59 @@
     "ink"
   ],
   "trim": {
-    "x": 60,
-    "y": 82,
+    "x": 0,
+    "y": 0,
     "width": 1928,
     "height": 1905
   },
   "fit": {
-    "width": 16,
-    "height": 16,
-    "offsetX": 1,
-    "offsetY": 1,
-    "scale": 0.008299,
+    "width": 44,
+    "height": 43,
+    "offsetX": 2,
+    "offsetY": 3,
+    "scale": 0.022822,
     "upscaled": false
   },
   "finalBounds": {
-    "x": 1,
-    "y": 1,
-    "width": 16,
-    "height": 16
+    "x": 2,
+    "y": 3,
+    "width": 44,
+    "height": 43
   },
   "margins": {
-    "top": 1,
-    "right": 1,
-    "bottom": 1,
-    "left": 1
+    "top": 3,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
   },
   "quantization": {
-    "changedPixels": 182,
-    "maxDistance": 51.904,
-    "offPalettePixels": 182,
+    "changedPixels": 1315,
+    "maxDistance": 53.292,
+    "offPalettePixels": 1315,
     "alphaViolations": 0
   },
   "paletteValidation": {
     "offPalettePixels": 0,
     "alphaViolations": 0,
-    "opaquePixels": 182
+    "opaquePixels": 1316
   },
   "rampHistogram": {
-    "boneShadow": 42,
-    "sage": 17,
-    "bone": 16,
-    "ink": 50,
-    "teal": 33,
-    "joint": 24
+    "ink": 307,
+    "teal": 382,
+    "bone": 204,
+    "boneShadow": 145,
+    "sage": 79,
+    "joint": 199
   },
-  "warnings": [],
+  "warnings": [
+    "source content touches the image border (t 205, b 204, l 167, r 203); the concept plate may be clipped",
+    "source-to-fit scale 44.3:1 exceeds the 12:1 treatment limit",
+    "max palette quantisation distance 53.3 exceeds 24"
+  ],
   "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/prop-work-token-1x.png",
     "scale2x": "art-source/previews/nanobanan/silicon/prop-work-token-2x.png",
-    "scale8x": "art-source/previews/nanobanan/silicon/prop-work-token-8x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/prop-work-token-4x.png",
     "tint2x": "art-source/previews/nanobanan/silicon/prop-work-token-tint-2x.png"
   }
 }

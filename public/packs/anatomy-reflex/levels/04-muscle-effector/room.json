@@ -130,7 +130,8 @@
       "sprite": "sprite.agent.neuron",
       "idleAnimation": "sprite.agent.neuron.idle",
       "dialogueId": "dlg-muscle-01",
-      "label": "Muscle Effector"
+      "label": "Muscle Effector",
+      "presentation": { "role": "npc" }
     },
     {
       "id": "motor-terminal",
@@ -144,7 +145,7 @@
           "ability": "pulse"
         },
         "anchors": {
-          "muzzle": { "x": 32, "y": 16, "direction": 0 }
+          "muzzle": { "x": 56, "y": 32, "direction": 0 }
         }
       }
     },
@@ -153,9 +154,10 @@
       "type": "scanTarget",
       "x": 11,
       "y": 20,
-      "sprite": "sprite.scan.synapse",
+      "sprite": "sprite.pad.terminal",
       "conceptId": "CON-4",
-      "label": "Terminal plate"
+      "label": "Terminal plate",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "body-ach-packet",
@@ -204,7 +206,7 @@
           "gateId": "ca-gate"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": { "x": 32, "y": 32 }
         }
       }
     },
@@ -234,7 +236,7 @@
           }
         },
         "anchors": {
-          "mouth": { "x": 4, "y": 16, "direction": 3.14159 }
+          "mouth": { "x": 7, "y": 28, "direction": 3.14159 }
         }
       }
     },
@@ -264,7 +266,7 @@
           }
         },
         "anchors": {
-          "mouth": { "x": 4, "y": 16, "direction": 3.14159 }
+          "mouth": { "x": 7, "y": 28, "direction": 3.14159 }
         }
       }
     },
@@ -289,7 +291,7 @@
           "gateId": "muscle-gate"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": { "x": 32, "y": 32 }
         },
         "material": {
           "materialId": "muscle",
@@ -309,7 +311,8 @@
       "x": 35,
       "y": 19,
       "sprite": "sprite.exit",
-      "label": "Muscle lever / exit"
+      "label": "Muscle lever / exit",
+      "presentation": { "role": "interactable" }
     }
   ],
   "exits": [

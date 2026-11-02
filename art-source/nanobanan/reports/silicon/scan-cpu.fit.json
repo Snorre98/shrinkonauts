@@ -1,34 +1,47 @@
 {
   "schemaVersion": 1,
   "id": "sprite.scan.cpu",
-  "status": "poc-integrated",
-  "notes": "Ceramic CPU icon with cyan die window and pin rows; reads as hardware, not a brain. Fit report warns max palette distance 76.8; the final image is palette-only.",
+  "class": "ui-1x",
+  "status": "fit-preview",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "notes": "Ceramic CPU icon with cyan die window and pin rows; reads as hardware, not a brain.",
   "config": "fit.silicon.config.json",
   "source": {
     "path": "art-source/nanobanan/keyed/silicon/scan-cpu.png",
-    "width": 2048,
-    "height": 2048,
+    "width": 1844,
+    "height": 1844,
     "edgeContact": {
-      "top": 0,
-      "bottom": 0,
-      "left": 0,
-      "right": 0
+      "top": 1720,
+      "bottom": 1762,
+      "left": 1742,
+      "right": 1741
     }
   },
   "output": {
     "path": "public/packs/silicon-reflex/shared/sprites/scan-cpu.png",
     "runtime": true,
-    "written": true,
-    "width": 18,
-    "height": 18,
-    "bytes": 343
+    "written": false,
+    "width": 36,
+    "height": 36,
+    "bytes": 1097
   },
   "cell": {
-    "width": 18,
-    "height": 18
+    "width": 36,
+    "height": 36
   },
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 57.625,
   "ramps": [
     "teal",
     "bone",
@@ -38,56 +51,59 @@
     "ink"
   ],
   "trim": {
-    "x": 102,
-    "y": 102,
+    "x": 0,
+    "y": 0,
     "width": 1844,
     "height": 1844
   },
   "fit": {
-    "width": 16,
-    "height": 16,
-    "offsetX": 1,
-    "offsetY": 1,
-    "scale": 0.008677,
+    "width": 32,
+    "height": 32,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.017354,
     "upscaled": false
   },
   "finalBounds": {
-    "x": 1,
-    "y": 1,
-    "width": 16,
-    "height": 16
+    "x": 2,
+    "y": 2,
+    "width": 32,
+    "height": 32
   },
   "margins": {
-    "top": 1,
-    "right": 1,
-    "bottom": 1,
-    "left": 1
+    "top": 2,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
   },
   "quantization": {
-    "changedPixels": 256,
-    "maxDistance": 76.805,
-    "offPalettePixels": 256,
+    "changedPixels": 1022,
+    "maxDistance": 82.098,
+    "offPalettePixels": 1022,
     "alphaViolations": 0
   },
   "paletteValidation": {
     "offPalettePixels": 0,
     "alphaViolations": 0,
-    "opaquePixels": 256
+    "opaquePixels": 1022
   },
   "rampHistogram": {
-    "ink": 91,
-    "teal": 14,
-    "boneShadow": 26,
-    "bone": 45,
-    "sage": 44,
-    "joint": 36
+    "boneShadow": 143,
+    "ink": 236,
+    "teal": 117,
+    "sage": 171,
+    "bone": 209,
+    "joint": 146
   },
   "warnings": [
-    "max palette quantisation distance 76.8 exceeds 64"
+    "source content touches the image border (t 1720, b 1762, l 1742, r 1741); the concept plate may be clipped",
+    "source-to-fit scale 57.6:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 82.1 exceeds 24"
   ],
   "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/scan-cpu-1x.png",
     "scale2x": "art-source/previews/nanobanan/silicon/scan-cpu-2x.png",
-    "scale8x": "art-source/previews/nanobanan/silicon/scan-cpu-8x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/scan-cpu-4x.png",
     "tint2x": "art-source/previews/nanobanan/silicon/scan-cpu-tint-2x.png"
   }
 }

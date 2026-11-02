@@ -123,7 +123,8 @@
       "y": 20,
       "sprite": "sprite.agent.cpu",
       "dialogueId": "dlg-cpu-01",
-      "label": "CPU Core"
+      "label": "CPU Core",
+      "presentation": { "role": "npc" }
     },
     {
       "id": "sensor-console",
@@ -131,7 +132,8 @@
       "x": 11,
       "y": 20,
       "sprite": "sprite.console.sensor",
-      "label": "Sensor console"
+      "label": "Sensor console",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "pad-sensor",
@@ -139,7 +141,8 @@
       "x": 14,
       "y": 20,
       "sprite": "sprite.pad.sensor",
-      "label": "Sensor pad"
+      "label": "Sensor pad",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "body-route-plug",
@@ -182,7 +185,8 @@
       "x": 22,
       "y": 20,
       "sprite": "sprite.socket.controller",
-      "label": "Controller socket"
+      "label": "Controller socket",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "scan-controller",
@@ -208,7 +212,8 @@
       "x": 27,
       "y": 20,
       "sprite": "sprite.socket.cpu",
-      "label": "CPU socket (decoy)"
+      "label": "CPU socket (decoy)",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "scan-cpu",
@@ -249,7 +254,7 @@
           "gateId": "gate-actuator"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": { "x": 32, "y": 32 }
         }
       }
     },
@@ -259,7 +264,8 @@
       "x": 37,
       "y": 19,
       "sprite": "sprite.exit.silicon",
-      "label": "Actuator exit"
+      "label": "Actuator exit",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "transfer-console",

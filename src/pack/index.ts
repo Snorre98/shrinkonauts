@@ -40,8 +40,23 @@ export type {
 } from "./catalog";
 export { parsePuzzle } from "./parse-puzzle";
 export {
+  DEFAULT_ROLE_BY_ENTITY_TYPE,
+  DEFAULT_ROLE_DISPLAY,
+  DEFAULT_ROLE_FIDELITY,
+  LEGACY_ENTITY_DISPLAY_SIZE,
+  inferEntityRole,
+  presentationSizeToDisplay,
+  resolveEntityDisplay,
+} from "./entity-presentation";
+export type {
+  DisplaySize,
+  ResolvedEntityDisplay,
+} from "./entity-presentation";
+export {
+  parseEntityPresentation,
   parsePackPresentation,
   parseRoomPresentation,
+  PRESENTATION_ROLES,
 } from "./parse-presentation";
 export {
   DEFAULT_CAMERA_PADDING,
@@ -131,6 +146,10 @@ export type {
   PresentationCameraConfig,
   PresentationConfig,
   PresentationRect,
+  PresentationRoleConfig,
+  PresentationRoleName,
+  PresentationSize,
+  EntityPresentationConfig,
   RecordEvidenceEffect,
   RoomBackgroundLayer,
   RoomCheckpoint,

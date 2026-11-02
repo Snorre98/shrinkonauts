@@ -43,11 +43,36 @@ import {
 } from "./art/palette";
 import { ENTITY_INTERACTION_TINT } from "../src/world/entity-style";
 
-type AssetStatus = "poc-integrated" | "placeholder" | "alternate" | "reserve";
+type AssetStatus =
+  | "poc-integrated"
+  | "placeholder"
+  | "alternate"
+  | "reserve"
+  | "fit-preview"
+  | "hand-cleaned";
+
+type Treatment =
+  | "hero-npc"
+  | "hero-interactable"
+  | "hero-prop"
+  | "ui-1x"
+  | "world-2x"
+  | "legacy";
 
 interface PreviewConfig {
   scales?: number[];
   background?: string;
+}
+
+interface FitClassConfig {
+  cell: CellSize;
+  display?: CellSize;
+  margin?: number;
+  minReadablePx?: number;
+  minOpaquePixels?: number;
+  maxPaletteDistance?: number;
+  maxDownscale?: number;
+  treatment?: Treatment;
 }
 
 interface FitAssetConfig {
@@ -56,6 +81,15 @@ interface FitAssetConfig {
   source: string;
   output: string;
   runtime: boolean;
+  class?: string;
+  cell?: CellSize;
+  display?: CellSize;
+  margin?: number;
+  minReadablePx?: number;
+  minOpaquePixels?: number;
+  maxPaletteDistance?: number;
+  maxDownscale?: number;
+  treatment?: Treatment;
   missingReason?: string;
   notes?: string;
   ramps: string[];
@@ -64,12 +98,15 @@ interface FitAssetConfig {
 interface FitConfig {
   schemaVersion: number;
   palette: string;
-  cell: CellSize;
+  cell?: CellSize;
+  classes?: Record<string, FitClassConfig>;
   margin: number;
   alphaThreshold: number;
   maxBytes: number;
   minReadablePx: number;
+  minOpaquePixels: number;
   maxPaletteDistance: number;
+  maxDownscale: number;
   preview?: PreviewConfig;
   reportDir: string;
   previewDir: string;
@@ -146,6 +183,29 @@ function positiveInteger(value: string | number, label: string): number {
   return parsed;
 }
 
+function parseCellValue(value: unknown, label: string): CellSize {
+  if (typeof value === "string") {
+    return parseCellSize(value);
+  }
+  if (Array.isArray(value)) {
+    if (value.length !== 2) {
+      throw new Error(`${label} must be [width, height]`);
+    }
+    return {
+      width: positiveInteger(value[0] as number, `${label}.width`),
+      height: positiveInteger(value[1] as number, `${label}.height`),
+    };
+  }
+  if (typeof value === "object" && value !== null) {
+    const record = value as Record<string, unknown>;
+    return {
+      width: positiveInteger(record.width as number, `${label}.width`),
+      height: positiveInteger(record.height as number, `${label}.height`),
+    };
+  }
+  throw new Error(`${label} must be [width, height] or a size object`);
+}
+
 function integerInRange(
   value: string | number,
   label: string,
@@ -206,25 +266,153 @@ function parseArgs(args: string[]): CliOptions {
   };
 }
 
+const ASSET_STATUSES: readonly AssetStatus[] = [
+  "poc-integrated",
+  "placeholder",
+  "alternate",
+  "reserve",
+  "fit-preview",
+  "hand-cleaned",
+];
+
+const TREATMENTS: readonly Treatment[] = [
+  "hero-npc",
+  "hero-interactable",
+  "hero-prop",
+  "ui-1x",
+  "world-2x",
+  "legacy",
+];
+
+function optionalPositiveInteger(
+  value: unknown,
+  label: string,
+): number | undefined {
+  if (value === undefined) return undefined;
+  return positiveInteger(value as number, label);
+}
+
+function parseTreatment(
+  value: unknown,
+  label: string,
+): Treatment | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || !TREATMENTS.includes(value as Treatment)) {
+    throw new Error(`${label} must be one of ${TREATMENTS.join(", ")}`);
+  }
+  return value as Treatment;
+}
+
 function parseConfig(value: unknown): FitConfig {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new Error("fit config must be an object");
   }
   const record = value as Record<string, unknown>;
-  if (record.schemaVersion !== 1) {
-    throw new Error("fit config schemaVersion must be 1");
+  const schemaVersion = record.schemaVersion;
+  if (schemaVersion !== 1 && schemaVersion !== 2) {
+    throw new Error("fit config schemaVersion must be 1 or 2");
   }
   if (typeof record.palette !== "string" || record.palette.trim() === "") {
     throw new Error("fit config palette must be a path");
   }
-  if (typeof record.cell !== "object" || record.cell === null) {
-    throw new Error("fit config cell must be an object");
+
+  const legacyCell =
+    record.cell !== undefined
+      ? parseCellValue(record.cell, "config.cell")
+      : undefined;
+  if (schemaVersion === 1 && !legacyCell) {
+    throw new Error("fit config schemaVersion 1 requires a cell");
   }
-  const cellRecord = record.cell as Record<string, unknown>;
-  const cell = {
-    width: positiveInteger(cellRecord.width as number, "config.cell.width"),
-    height: positiveInteger(cellRecord.height as number, "config.cell.height"),
-  };
+
+  const classes: Record<string, FitClassConfig> = {};
+  if (record.classes !== undefined) {
+    if (
+      typeof record.classes !== "object" ||
+      record.classes === null ||
+      Array.isArray(record.classes)
+    ) {
+      throw new Error("fit config classes must be an object");
+    }
+    for (const [name, rawClass] of Object.entries(
+      record.classes as Record<string, unknown>,
+    )) {
+      if (typeof rawClass !== "object" || rawClass === null || Array.isArray(rawClass)) {
+        throw new Error(`fit config classes.${name} must be an object`);
+      }
+      const entry = rawClass as Record<string, unknown>;
+      if (entry.cell === undefined) {
+        throw new Error(`fit config classes.${name}.cell is required`);
+      }
+      const cell = parseCellValue(entry.cell, `config.classes.${name}.cell`);
+      classes[name] = {
+        cell,
+        ...(entry.display !== undefined
+          ? {
+              display: parseCellValue(
+                entry.display,
+                `config.classes.${name}.display`,
+              ),
+            }
+          : {}),
+        ...(entry.margin !== undefined
+          ? {
+              margin: positiveInteger(
+                entry.margin as number,
+                `config.classes.${name}.margin`,
+              ),
+            }
+          : {}),
+        ...(entry.minReadablePx !== undefined
+          ? {
+              minReadablePx: positiveInteger(
+                entry.minReadablePx as number,
+                `config.classes.${name}.minReadablePx`,
+              ),
+            }
+          : {}),
+        ...(entry.minOpaquePixels !== undefined
+          ? {
+              minOpaquePixels: positiveInteger(
+                entry.minOpaquePixels as number,
+                `config.classes.${name}.minOpaquePixels`,
+              ),
+            }
+          : {}),
+        ...(entry.maxPaletteDistance !== undefined
+          ? {
+              maxPaletteDistance: positiveInteger(
+                entry.maxPaletteDistance as number,
+                `config.classes.${name}.maxPaletteDistance`,
+              ),
+            }
+          : {}),
+        ...(entry.maxDownscale !== undefined
+          ? {
+              maxDownscale: positiveInteger(
+                entry.maxDownscale as number,
+                `config.classes.${name}.maxDownscale`,
+              ),
+            }
+          : {}),
+        ...(parseTreatment(
+          entry.treatment,
+          `config.classes.${name}.treatment`,
+        )
+          ? {
+              treatment: parseTreatment(
+                entry.treatment,
+                `config.classes.${name}.treatment`,
+              ),
+            }
+          : {}),
+      };
+    }
+  }
+
+  if (schemaVersion === 2 && Object.keys(classes).length === 0) {
+    throw new Error("fit config schemaVersion 2 requires a non-empty classes object");
+  }
+
   const preview =
     typeof record.preview === "object" && record.preview !== null
       ? (record.preview as PreviewConfig)
@@ -247,12 +435,7 @@ function parseConfig(value: unknown): FitConfig {
     }
     const asset = raw as Record<string, unknown>;
     const status = asset.status;
-    if (
-      status !== "poc-integrated" &&
-      status !== "placeholder" &&
-      status !== "alternate" &&
-      status !== "reserve"
-    ) {
+    if (!ASSET_STATUSES.includes(status as AssetStatus)) {
       throw new Error(
         `fit config assets[${index}].status is not a supported status`,
       );
@@ -285,12 +468,108 @@ function parseConfig(value: unknown): FitConfig {
         `fit config assets[${index}] is a placeholder but runtime=true`,
       );
     }
+    if (asset.class !== undefined && typeof asset.class !== "string") {
+      throw new Error(`fit config assets[${index}].class must be a string`);
+    }
+    if (schemaVersion === 2 && typeof asset.class !== "string") {
+      throw new Error(
+        `fit config assets[${index}].class is required in schema 2`,
+      );
+    }
+    if (typeof asset.class === "string" && !classes[asset.class]) {
+      throw new Error(
+        `fit config assets[${index}].class "${asset.class}" is not declared`,
+      );
+    }
     return {
       id: asset.id,
-      status,
+      status: status as AssetStatus,
       source: asset.source,
       output: asset.output,
       runtime: asset.runtime,
+      ...(typeof asset.class === "string" ? { class: asset.class } : {}),
+      ...(asset.cell !== undefined
+        ? {
+            cell: parseCellValue(
+              asset.cell,
+              `config.assets[${index}].cell`,
+            ),
+          }
+        : {}),
+      ...(asset.display !== undefined
+        ? {
+            display: parseCellValue(
+              asset.display,
+              `config.assets[${index}].display`,
+            ),
+          }
+        : {}),
+      ...(optionalPositiveInteger(
+        asset.margin,
+        `config.assets[${index}].margin`,
+      ) !== undefined
+        ? {
+            margin: optionalPositiveInteger(
+              asset.margin,
+              `config.assets[${index}].margin`,
+            ) as number,
+          }
+        : {}),
+      ...(optionalPositiveInteger(
+        asset.minReadablePx,
+        `config.assets[${index}].minReadablePx`,
+      ) !== undefined
+        ? {
+            minReadablePx: optionalPositiveInteger(
+              asset.minReadablePx,
+              `config.assets[${index}].minReadablePx`,
+            ) as number,
+          }
+        : {}),
+      ...(optionalPositiveInteger(
+        asset.minOpaquePixels,
+        `config.assets[${index}].minOpaquePixels`,
+      ) !== undefined
+        ? {
+            minOpaquePixels: optionalPositiveInteger(
+              asset.minOpaquePixels,
+              `config.assets[${index}].minOpaquePixels`,
+            ) as number,
+          }
+        : {}),
+      ...(optionalPositiveInteger(
+        asset.maxPaletteDistance,
+        `config.assets[${index}].maxPaletteDistance`,
+      ) !== undefined
+        ? {
+            maxPaletteDistance: optionalPositiveInteger(
+              asset.maxPaletteDistance,
+              `config.assets[${index}].maxPaletteDistance`,
+            ) as number,
+          }
+        : {}),
+      ...(optionalPositiveInteger(
+        asset.maxDownscale,
+        `config.assets[${index}].maxDownscale`,
+      ) !== undefined
+        ? {
+            maxDownscale: optionalPositiveInteger(
+              asset.maxDownscale,
+              `config.assets[${index}].maxDownscale`,
+            ) as number,
+          }
+        : {}),
+      ...(parseTreatment(
+        asset.treatment,
+        `config.assets[${index}].treatment`,
+      )
+        ? {
+            treatment: parseTreatment(
+              asset.treatment,
+              `config.assets[${index}].treatment`,
+            ),
+          }
+        : {}),
       ...(typeof asset.missingReason === "string"
         ? { missingReason: asset.missingReason }
         : {}),
@@ -300,24 +579,38 @@ function parseConfig(value: unknown): FitConfig {
   });
 
   return {
-    schemaVersion: 1,
+    schemaVersion,
     palette: record.palette,
-    cell,
-    margin: positiveInteger(record.margin as number, "config.margin"),
+    ...(legacyCell ? { cell: legacyCell } : {}),
+    ...(Object.keys(classes).length > 0 ? { classes } : {}),
+    margin: record.margin !== undefined
+      ? positiveInteger(record.margin as number, "config.margin")
+      : 1,
     alphaThreshold: integerInRange(
-      record.alphaThreshold as number,
+      (record.alphaThreshold as number) ?? 128,
       "config.alphaThreshold",
       0,
       255,
     ),
-    maxBytes: positiveInteger(record.maxBytes as number, "config.maxBytes"),
+    maxBytes: positiveInteger(
+      (record.maxBytes as number) ?? 16384,
+      "config.maxBytes",
+    ),
     minReadablePx: positiveInteger(
-      record.minReadablePx as number,
+      (record.minReadablePx as number) ?? 8,
       "config.minReadablePx",
     ),
+    minOpaquePixels: positiveInteger(
+      (record.minOpaquePixels as number) ?? 100,
+      "config.minOpaquePixels",
+    ),
     maxPaletteDistance: positiveInteger(
-      record.maxPaletteDistance as number,
+      (record.maxPaletteDistance as number) ?? 64,
       "config.maxPaletteDistance",
+    ),
+    maxDownscale: positiveInteger(
+      (record.maxDownscale as number) ?? 16,
+      "config.maxDownscale",
     ),
     preview,
     reportDir:
@@ -414,10 +707,41 @@ function runAsset(
   const sourcePath = resolve(asset.source);
   const outputPath = resolve(asset.output);
   const image = decodePng(sourcePath);
-  const cell = options.cell ?? config.cell;
-  const margin = options.margin ?? config.margin;
+  const classConfig = asset.class ? config.classes?.[asset.class] : undefined;
+  const cell =
+    options.cell ??
+    asset.cell ??
+    classConfig?.cell ??
+    config.cell ?? { width: 18, height: 18 };
+  const display =
+    asset.display ??
+    classConfig?.display ??
+    cell;
+  const margin =
+    options.margin ??
+    asset.margin ??
+    classConfig?.margin ??
+    config.margin;
   const alphaThreshold = options.alphaThreshold ?? config.alphaThreshold;
   const maxBytes = options.maxBytes ?? config.maxBytes;
+  const minReadablePx =
+    asset.minReadablePx ??
+    classConfig?.minReadablePx ??
+    config.minReadablePx;
+  const minOpaquePixels =
+    asset.minOpaquePixels ??
+    classConfig?.minOpaquePixels ??
+    config.minOpaquePixels;
+  const maxPaletteDistance =
+    asset.maxPaletteDistance ??
+    classConfig?.maxPaletteDistance ??
+    config.maxPaletteDistance;
+  const maxDownscale =
+    asset.maxDownscale ??
+    classConfig?.maxDownscale ??
+    config.maxDownscale;
+  const treatment =
+    asset.treatment ?? classConfig?.treatment ?? "legacy";
   const previewDir = options.previewDir ?? resolve(config.previewDir);
   const reportDir = options.reportDir ?? resolve(config.reportDir);
   const scales = config.preview?.scales ?? DEFAULT_PREVIEW_SCALES;
@@ -485,9 +809,23 @@ function runAsset(
     );
   }
   const minFit = Math.min(result.placed.fitWidth, result.placed.fitHeight);
-  if (minFit < config.minReadablePx) {
+  if (minFit < minReadablePx) {
     warnings.push(
-      `fitted content is ${result.placed.fitWidth}x${result.placed.fitHeight}; minimum dimension ${minFit}px is below the ${config.minReadablePx}px readability policy`,
+      `fitted content is ${result.placed.fitWidth}x${result.placed.fitHeight}; minimum dimension ${minFit}px is below the ${minReadablePx}px readability policy`,
+    );
+  }
+  if (result.paletteValidation.opaquePixels < minOpaquePixels) {
+    warnings.push(
+      `fitted content has ${result.paletteValidation.opaquePixels} opaque pixels; below the ${minOpaquePixels}px minimum`,
+    );
+  }
+  const sourceScale = Math.max(
+    result.placed.sourceBounds.width / result.placed.fitWidth,
+    result.placed.sourceBounds.height / result.placed.fitHeight,
+  );
+  if (sourceScale > maxDownscale) {
+    warnings.push(
+      `source-to-fit scale ${sourceScale.toFixed(1)}:1 exceeds the ${maxDownscale}:1 treatment limit`,
     );
   }
   if (!result.rampHistogram.joint) {
@@ -495,16 +833,19 @@ function runAsset(
       "no joint-ramp pixels survived; the cyan scan rim may be missing",
     );
   }
-  if (result.quantization.maxDistance > config.maxPaletteDistance) {
+  if (result.quantization.maxDistance > maxPaletteDistance) {
     warnings.push(
-      `max palette quantisation distance ${result.quantization.maxDistance.toFixed(1)} exceeds ${config.maxPaletteDistance}`,
+      `max palette quantisation distance ${result.quantization.maxDistance.toFixed(1)} exceeds ${maxPaletteDistance}`,
     );
   }
 
   const report = {
     schemaVersion: 1,
     id: asset.id,
+    class: asset.class ?? null,
     status: asset.status,
+    treatment,
+    display,
     ...(asset.missingReason ? { missingReason: asset.missingReason } : {}),
     ...(asset.notes ? { notes: asset.notes } : {}),
     config: options.config ? basename(options.config) : null,
@@ -525,6 +866,13 @@ function runAsset(
     cell,
     margin,
     alphaThreshold,
+    gates: {
+      minReadablePx,
+      minOpaquePixels,
+      maxPaletteDistance,
+      maxDownscale,
+    },
+    sourceScale: Number(sourceScale.toFixed(3)),
     ramps: asset.ramps,
     trim: result.placed.sourceBounds,
     fit: {
@@ -590,12 +938,15 @@ function main(): void {
       JSON.parse(readFileSync(palettePath, "utf8")),
     );
     if (
-      palette.cell.width !== (options.cell ?? config.cell).width ||
-      palette.cell.height !== (options.cell ?? config.cell).height
+      config.schemaVersion === 1 &&
+      config.cell &&
+      (palette.cell.width !== (options.cell ?? config.cell).width ||
+        palette.cell.height !== (options.cell ?? config.cell).height)
     ) {
-      throw new Error(
+      console.warn(
         `Palette cell ${palette.cell.width}x${palette.cell.height} does not match ` +
-          `fit cell ${(options.cell ?? config.cell).width}x${(options.cell ?? config.cell).height}`,
+          `fit cell ${(options.cell ?? config.cell).width}x${(options.cell ?? config.cell).height}; ` +
+          `the fit cell wins (ADR-0075)`,
       );
     }
     const assets = configAssets(config, options);
@@ -614,11 +965,6 @@ function main(): void {
     JSON.parse(readFileSync(options.palette, "utf8")),
   );
   const cell = options.cell ?? { width: 18, height: 18 };
-  if (palette.cell.width !== cell.width || palette.cell.height !== cell.height) {
-    throw new Error(
-      `Palette cell ${palette.cell.width}x${palette.cell.height} does not match fit cell ${cell.width}x${cell.height}`,
-    );
-  }
   const asset: FitAssetConfig = {
     id: basename(options.output, ".png"),
     status: "poc-integrated",
@@ -635,7 +981,9 @@ function main(): void {
     alphaThreshold: options.alphaThreshold ?? 128,
     maxBytes: options.maxBytes ?? 16384,
     minReadablePx: DEFAULT_MIN_READABLE_PX,
+    minOpaquePixels: 100,
     maxPaletteDistance: DEFAULT_MAX_PALETTE_DISTANCE,
+    maxDownscale: 16,
     preview: {
       scales: DEFAULT_PREVIEW_SCALES,
       background: DEFAULT_PREVIEW_BACKGROUND,

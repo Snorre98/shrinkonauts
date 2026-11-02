@@ -10,6 +10,11 @@
   anchor, the 2× pixel policy for world characters, and the palette/outline
   rules remain.
 
+> **Superseded in part (2026-11-02):** ADR-0074 replaces the `world-2x entity`
+> 24×24 / 48×48 row and the agent/prop target rows with the `npc`,
+> `interactable`, and `prop` hero roles. The player, decor, scan, encoding, and
+> status rules in this record remain in force.
+
 ## Context
 
 The runtime art is lossless. Sprites are PNG, the sky is lossless VP8L WebP,

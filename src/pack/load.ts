@@ -45,7 +45,7 @@ import {
   parsePatternBinding,
   parseTileMaterialRule,
 } from "./parse-materials";
-import { parseRoomPresentation } from "./parse-presentation";
+import { parseEntityPresentation, parseRoomPresentation } from "./parse-presentation";
 import type {
   MaterialId,
   MaterialsDocument,
@@ -691,6 +691,14 @@ function parseEntity(
   );
   if (!properties.ok) return err(properties.error);
   if (properties.value) entity.properties = properties.value;
+
+  const presentation = parseEntityPresentation(
+    value.presentation,
+    code,
+    `entities[${index}].presentation`,
+  );
+  if (!presentation.ok) return err(presentation.error);
+  if (presentation.value) entity.presentation = presentation.value;
 
   const components = parseEntityComponents(value.components, index, code);
   if (!components.ok) return err(components.error);

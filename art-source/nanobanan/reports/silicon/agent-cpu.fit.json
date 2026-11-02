@@ -1,34 +1,47 @@
 {
   "schemaVersion": 1,
   "id": "sprite.agent.cpu",
-  "status": "poc-integrated",
-  "notes": "Boxy ceramic CPU worker with hard hat, cyan visor bar, pin legs, and repair tool; no human face or brain read.",
+  "class": "hero-npc",
+  "status": "fit-preview",
+  "treatment": "hero-npc",
+  "display": {
+    "width": 96,
+    "height": 96
+  },
+  "notes": "Hero re-fit at 96×96. Boxy ceramic CPU worker with hard hat, cyan visor bar, pin legs and repair tool; hand-clean remains required.",
   "config": "fit.silicon.config.json",
   "source": {
     "path": "art-source/nanobanan/keyed/silicon/agent-cpu.png",
-    "width": 2048,
-    "height": 2048,
+    "width": 1291,
+    "height": 1292,
     "edgeContact": {
-      "top": 0,
-      "bottom": 0,
-      "left": 0,
-      "right": 0
+      "top": 163,
+      "bottom": 386,
+      "left": 102,
+      "right": 103
     }
   },
   "output": {
     "path": "public/packs/silicon-reflex/shared/sprites/agent-cpu.png",
     "runtime": true,
-    "written": true,
-    "width": 18,
-    "height": 18,
-    "bytes": 603
+    "written": false,
+    "width": 96,
+    "height": 96,
+    "bytes": 7232
   },
   "cell": {
-    "width": 18,
-    "height": 18
+    "width": 96,
+    "height": 96
   },
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 72,
+    "minOpaquePixels": 3500,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 4
+  },
+  "sourceScale": 14.043,
   "ramps": [
     "teal",
     "bone",
@@ -38,54 +51,59 @@
     "ink"
   ],
   "trim": {
-    "x": 491,
-    "y": 368,
+    "x": 0,
+    "y": 0,
     "width": 1291,
     "height": 1292
   },
   "fit": {
-    "width": 16,
-    "height": 16,
-    "offsetX": 1,
-    "offsetY": 1,
-    "scale": 0.012384,
+    "width": 92,
+    "height": 92,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.071207,
     "upscaled": false
   },
   "finalBounds": {
-    "x": 1,
-    "y": 1,
-    "width": 16,
-    "height": 16
+    "x": 2,
+    "y": 2,
+    "width": 92,
+    "height": 92
   },
   "margins": {
-    "top": 1,
-    "right": 1,
-    "bottom": 1,
-    "left": 1
+    "top": 2,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
   },
   "quantization": {
-    "changedPixels": 163,
-    "maxDistance": 46.065,
-    "offPalettePixels": 163,
+    "changedPixels": 5212,
+    "maxDistance": 55.109,
+    "offPalettePixels": 5212,
     "alphaViolations": 0
   },
   "paletteValidation": {
     "offPalettePixels": 0,
     "alphaViolations": 0,
-    "opaquePixels": 163
+    "opaquePixels": 5214
   },
   "rampHistogram": {
-    "teal": 24,
-    "ink": 40,
-    "boneShadow": 47,
-    "sage": 20,
-    "bone": 25,
-    "joint": 7
+    "teal": 1089,
+    "ink": 1013,
+    "boneShadow": 710,
+    "sage": 608,
+    "bone": 1381,
+    "joint": 413
   },
-  "warnings": [],
+  "warnings": [
+    "source content touches the image border (t 163, b 386, l 102, r 103); the concept plate may be clipped",
+    "source-to-fit scale 14.0:1 exceeds the 4:1 treatment limit",
+    "max palette quantisation distance 55.1 exceeds 24"
+  ],
   "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/agent-cpu-1x.png",
     "scale2x": "art-source/previews/nanobanan/silicon/agent-cpu-2x.png",
-    "scale8x": "art-source/previews/nanobanan/silicon/agent-cpu-8x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/agent-cpu-4x.png",
     "tint2x": "art-source/previews/nanobanan/silicon/agent-cpu-tint-2x.png"
   }
 }

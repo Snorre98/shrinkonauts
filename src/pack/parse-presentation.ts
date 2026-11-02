@@ -4,15 +4,54 @@ import { PRESENTATION_CANVAS } from "./presentation";
 import type {
   CameraFollowX,
   CameraFollowY,
+  EntityPresentationConfig,
   PresentationCameraConfig,
   PresentationConfig,
   PresentationRect,
+  PresentationRoleConfig,
+  PresentationRoleName,
+  PresentationSize,
+  RoomEntityType,
   RoomPresentationConfig,
 } from "./types";
 
 const FRAMINGS = ["fit-play-band"] as const;
 const FOLLOW_X = ["players", "p1", "p2"] as const;
 const FOLLOW_Y = ["play-band", "players"] as const;
+
+export const PRESENTATION_ROLES: readonly PresentationRoleName[] = [
+  "player",
+  "npc",
+  "interactable",
+  "prop",
+  "scan",
+  "decor",
+];
+
+const FIDELITY_CLASSES = [
+  "world-2x",
+  "hero-1x",
+  "ui-1x",
+  "atlas",
+  "painted-screen",
+] as const;
+
+const ENTITY_TYPES: readonly RoomEntityType[] = [
+  "agent",
+  "movingPlatform",
+  "hazard",
+  "pickup",
+  "trigger",
+  "gate",
+  "checkpoint",
+  "scanTarget",
+  "decor",
+  "body",
+  "prop",
+  "receptor",
+  "pulseSource",
+  "puzzleGate",
+];
 
 interface RectOptions {
   integer?: boolean;
@@ -158,6 +197,168 @@ function parseCamera(
   return ok(camera);
 }
 
+function parseSize(
+  value: unknown,
+  code: string,
+  label: string,
+): Result<PresentationSize> {
+  if (Array.isArray(value)) {
+    if (
+      value.length !== 2 ||
+      !Number.isInteger(value[0]) ||
+      !Number.isInteger(value[1]) ||
+      value[0] <= 0 ||
+      value[1] <= 0
+    ) {
+      return err(`${code}: ${label} must be [width, height] with positive integers`);
+    }
+    return ok([value[0], value[1]]);
+  }
+  if (isRecord(value)) {
+    if (
+      !Number.isInteger(value.width) ||
+      !Number.isInteger(value.height) ||
+      (value.width as number) <= 0 ||
+      (value.height as number) <= 0
+    ) {
+      return err(
+        `${code}: ${label} must have positive integer width and height`,
+      );
+    }
+    return ok({
+      width: value.width as number,
+      height: value.height as number,
+    });
+  }
+  return err(`${code}: ${label} must be [width, height] or a size object`);
+}
+
+function parseRoleName(
+  value: unknown,
+  code: string,
+  label: string,
+): Result<PresentationRoleName> {
+  if (!PRESENTATION_ROLES.includes(value as PresentationRoleName)) {
+    return err(
+      `${code}: ${label} must be one of ${PRESENTATION_ROLES.join(", ")}`,
+    );
+  }
+  return ok(value as PresentationRoleName);
+}
+
+function parseRoleConfig(
+  value: unknown,
+  code: string,
+  label: string,
+): Result<PresentationRoleConfig> {
+  if (!isRecord(value)) {
+    return err(`${code}: ${label} must be an object`);
+  }
+  if (value.display === undefined) {
+    return err(`${code}: ${label}.display is required`);
+  }
+  const display = parseSize(value.display, code, `${label}.display`);
+  if (!display.ok) return err(display.error);
+
+  const role: PresentationRoleConfig = { display: display.value };
+
+  if (value.fidelity !== undefined) {
+    if (
+      !FIDELITY_CLASSES.includes(
+        value.fidelity as (typeof FIDELITY_CLASSES)[number],
+      )
+    ) {
+      return err(
+        `${code}: ${label}.fidelity must be one of ${FIDELITY_CLASSES.join(", ")}`,
+      );
+    }
+    role.fidelity = value.fidelity as PresentationRoleConfig["fidelity"];
+  }
+
+  return ok(role);
+}
+
+function parseRoles(
+  value: unknown,
+  code: string,
+  label: string,
+): Result<PresentationConfig["roles"]> {
+  if (value === undefined) return ok(undefined);
+  if (!isRecord(value)) {
+    return err(`${code}: ${label} must be an object`);
+  }
+
+  const roles: NonNullable<PresentationConfig["roles"]> = {};
+  for (const [name, rawRole] of Object.entries(value)) {
+    const roleName = parseRoleName(name, code, `${label}.${name}`);
+    if (!roleName.ok) return err(roleName.error);
+    const parsed = parseRoleConfig(rawRole, code, `${label}.${name}`);
+    if (!parsed.ok) return err(parsed.error);
+    roles[roleName.value] = parsed.value;
+  }
+  return ok(roles);
+}
+
+function parseDefaultRoles(
+  value: unknown,
+  code: string,
+  label: string,
+): Result<PresentationConfig["defaultRoles"]> {
+  if (value === undefined) return ok(undefined);
+  if (!isRecord(value)) {
+    return err(`${code}: ${label} must be an object`);
+  }
+
+  const defaults: NonNullable<PresentationConfig["defaultRoles"]> = {};
+  for (const [type, rawRole] of Object.entries(value)) {
+    if (!ENTITY_TYPES.includes(type as RoomEntityType)) {
+      return err(`${code}: ${label}.${type} is not a supported entity type`);
+    }
+    if (rawRole === "none") {
+      defaults[type as RoomEntityType] = "none";
+      continue;
+    }
+    const parsed = parseRoleName(rawRole, code, `${label}.${type}`);
+    if (!parsed.ok) return err(parsed.error);
+    defaults[type as RoomEntityType] = parsed.value;
+  }
+  return ok(defaults);
+}
+
+export function parseEntityPresentation(
+  value: unknown,
+  code: string,
+  label: string,
+): Result<EntityPresentationConfig | undefined> {
+  if (value === undefined) return ok(undefined);
+  if (!isRecord(value)) {
+    return err(`${code}: ${label} must be an object`);
+  }
+
+  const presentation: EntityPresentationConfig = {};
+
+  if (value.role !== undefined) {
+    const role = parseRoleName(value.role, code, `${label}.role`);
+    if (!role.ok) return err(role.error);
+    presentation.role = role.value;
+  }
+
+  if (value.display !== undefined) {
+    const display = parseSize(value.display, code, `${label}.display`);
+    if (!display.ok) return err(display.error);
+    presentation.display = display.value;
+  }
+
+  if (value.depthBias !== undefined) {
+    if (!isFiniteNumber(value.depthBias)) {
+      return err(`${code}: ${label}.depthBias must be a finite number`);
+    }
+    presentation.depthBias = value.depthBias;
+  }
+
+  return ok(presentation);
+}
+
 export function parsePackPresentation(
   value: unknown,
   code: string,
@@ -183,6 +384,18 @@ export function parsePackPresentation(
   const camera = parseCamera(value.camera, code, "presentation.camera");
   if (!camera.ok) return err(camera.error);
   if (camera.value) presentation.camera = camera.value;
+
+  const roles = parseRoles(value.roles, code, "presentation.roles");
+  if (!roles.ok) return err(roles.error);
+  if (roles.value) presentation.roles = roles.value;
+
+  const defaultRoles = parseDefaultRoles(
+    value.defaultRoles,
+    code,
+    "presentation.defaultRoles",
+  );
+  if (!defaultRoles.ok) return err(defaultRoles.error);
+  if (defaultRoles.value) presentation.defaultRoles = defaultRoles.value;
 
   return ok(presentation);
 }

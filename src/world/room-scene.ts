@@ -21,8 +21,8 @@ import {
 import type { PlayerClip } from "./player-animation";
 import { EntityIdleAnimator } from "./entity-idle-animator";
 import {
-  ENTITY_DISPLAY_SIZE,
   ENTITY_INTERACTION_TINT,
+  resolveEntityDisplay,
 } from "./entity-style";
 import { RoomEffectLayer } from "./effects";
 import { MaterialTextureCache } from "./material-textures";
@@ -631,14 +631,30 @@ export class RoomScene
       const x = (entity.x + 0.5) * room.tileSize;
       const y = entity.y * room.tileSize;
       const depth = 4 + entity.y / 100;
+      const display = resolveEntityDisplay({
+        entity,
+        asset,
+        presentation: this.config.runtime.packPresentation,
+      });
+      this.config.runtime.registerEntityDisplay?.(entity.id, {
+        width: display.width,
+        height: display.height,
+      });
 
       const glow = this.add
-        .ellipse(x, y - 4, ENTITY_DISPLAY_SIZE * 1.25, 10, 0xffd166, 0)
+        .ellipse(
+          x,
+          y - 4,
+          Math.min(display.width * 1.25, 96),
+          10,
+          0xffd166,
+          0,
+        )
         .setDepth(depth - 0.5);
       const sprite = this.add
         .sprite(x, y, key)
         .setOrigin(0.5, 1)
-        .setDisplaySize(ENTITY_DISPLAY_SIZE, ENTITY_DISPLAY_SIZE)
+        .setDisplaySize(display.width, display.height)
         .setDepth(depth);
 
       this.entityGlows.set(entity.id, glow);
@@ -646,7 +662,7 @@ export class RoomScene
       if (entity.type === "prop") {
         this.propSprites.set(entity.id, sprite);
       }
-      this.createEntityIdleAnimator(entity, sprite, key);
+      this.createEntityIdleAnimator(entity, sprite, key, display);
 
       const materialBinding = entity.components?.material;
       if (materialBinding && this.config.materials) {
@@ -672,6 +688,7 @@ export class RoomScene
     entity: RoomEntity,
     sprite: Phaser.GameObjects.Sprite,
     staticTexture: string,
+    display: { width: number; height: number },
   ): void {
     if (!entity.idleAnimation) return;
 
@@ -709,6 +726,7 @@ export class RoomScene
           fps: asset.fps,
           loop: asset.loop === true,
         },
+        display,
         isReducedMotion: () => this.config.isReducedMotion?.() ?? false,
       });
       this.entityIdleAnimators.set(entity.id, animator);

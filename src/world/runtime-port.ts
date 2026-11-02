@@ -1,4 +1,4 @@
-import type { RoomDocument } from "../pack";
+import type { PresentationConfig, RoomDocument } from "../pack";
 import type {
   GameplayCue,
   Intents,
@@ -56,11 +56,21 @@ export interface RuntimeInput {
 
 export interface WorldRuntime {
   readonly roomDocument: RoomDocument;
+  /** Pack-level role and fidelity defaults from ADR-0074. */
+  readonly packPresentation?: PresentationConfig;
   readonly simulation: RoomSimulation;
   resize(width: number, height: number): void;
   step(dt: number, input: RuntimeInput): GameplayCue[];
   /** Entity id under the interaction cursor, or null. */
   interactionId(): string | null;
+  /**
+   * Lets the renderer report the resolved display size so UI anchors use the
+   * same footprint as the sprite. Optional for test doubles.
+   */
+  registerEntityDisplay?(
+    entityId: string,
+    size: { width: number; height: number },
+  ): void;
   /**
    * Returns the currently running cosmetic effect plans for the scene sink.
    * The result is stable for one feedback frame so multiple consumers cannot

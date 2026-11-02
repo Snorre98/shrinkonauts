@@ -4,7 +4,7 @@
 **Owner:** Snorre  
 **Scope:** Final 2D pixel art and audio for the M3 vertical slice  
 **Target milestone:** M3 — Art/audio pass + capture (4–5 November 2026)  
-**Governing decisions:** ADR-0029 (asset provider), ADR-0030 (sprite format), ADR-0031 (layered backgrounds), ADR-0032 (audio cues), ADR-0033 (final asset timing), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0049 (pixel UI chrome), ADR-0060–0065 (source/working/runtime art pipeline, palette variants, animation, previews, P2 palette), ADR-0070–0073 (proposed: stage/camera framing, background composition, asset fidelity/encoding, HUD density)
+**Governing decisions:** ADR-0029 (asset provider), ADR-0030 (sprite format), ADR-0031 (layered backgrounds), ADR-0032 (audio cues), ADR-0033 (final asset timing), ADR-0047 (pixel-art direction), ADR-0048 (2× pixel rendering), ADR-0049 (pixel UI chrome), ADR-0060–0065 (source/working/runtime art pipeline, palette variants, animation, previews, P2 palette), ADR-0070–0074 (proposed: stage/camera framing, background composition, asset fidelity/encoding, HUD density, hero-scale roles), ADR-0075 (proposed: hero-asset treatment profiles)
 
 **Related:** [`implementation-plan.md`](../shrinkonauts/base-game/implementation-plan.md) · [`contracts/pack-schema.md`](../shrinkonauts/base-game/contracts/pack-schema.md) · [`level-authoring.md`](../shrinkonauts/base-game/level-authoring.md) · [`DESIGN.md`](../shrinkonauts/DESIGN.md) · [`learning-design-brief.md`](../shrinkonauts/learning-design-brief.md) · [`cards/`](../shrinkonauts/base-game/cards/) · [`adr-m3/`](../adr-m3/README.md)
 
@@ -27,6 +27,14 @@
 > partial and the muscle rim is missing. All new art is **POC integrated /
 > final art approval pending**; the generalized entity animation system remains
 > deferred.
+>
+> **Hero-scale note (2026-11-02).** ADR-0074 introduces role-based display
+> sizes: `npc` 96×96 (1:1), `interactable` 64×64 (1:1), `prop` 48×48 (1:1),
+> `scan` 36×36 (1:1), with the player unchanged at 28×44 (2×) and decor at
+> 36×36 (2×). ADR-0075 defines the per-class fit pipeline and treatment gates.
+> Where this document's older 36×36 / 18×18 table conflicts with those roles,
+> the ADRs win. The `hero-1x` assets are deliberate density exceptions; the
+> player and decor remain on the 2× grid.
 >
 > **Nanobanan batch note (2026-11-01).** The new closed gate, ACh tracer, motor
 > terminal, and triangle/circle receptor plates are POC-integrated through
@@ -232,7 +240,7 @@ These are current implementation facts plus the render changes recorded in ADR-0
 | Constraint | Evidence | Consequence for M3 |
 |---|---|---|
 | Players are displayed at **28×44 px** | `src/world/physics.ts` (`PLAYER_WIDTH`, `PLAYER_HEIGHT`) | Author at **14×22**, displayed at 2×. Do not export 28×44 or the sprite will lose its chunky grid. |
-| Entities are displayed at **36×36 px** | `src/world/room-scene.ts` (`ENTITY_SIZE = 36`) | Author at **18×18**, displayed at 2×. Design for 36 px readability. |
+| Hero display sizes are role data, not a global constant | ADR-0074 + `src/pack/entity-presentation.ts` | NPCs 96×96, interactables 64×64, props 48×48 at 1:1; player 28×44 and decor 36×36 at 2×. |
 | The room uses **material grids and atlases** (`tileSize: 32`) | `room.json` (`tileMaterials`), `materials.json`, `room-scene.ts` | 03 needs bone/nerve atlas frames; 04 muscle/membrane tiles stay placeholder. |
 | Atlas frames are **32×32** and the frame grid is fixed | `materials.json`, `room-scene.ts` | Keep **32×32 frames at 1:1**, authored with a 2×2 minimum cluster grid. Do not change the frame size to 16×16. |
 | The current pack has **one placeholder atlas** | `assets.final.json` (`tile.anatomy.atlas`), `materials.json` (`nerve-edge`) | Final art targets two atlases; the pack mapping is a separate content task. |
@@ -261,7 +269,7 @@ These are current implementation facts plus the render changes recorded in ADR-0
 2. **Chunky but textured** — three-step colour ramps, 50% dither for damp and grimy surfaces, minimum 2×2 colour blocks at display size.
 3. **Damp and grimy** — membrane sheen, condensation, dust, mineral grit, scuffed suit, discoloured tissue; built from dither and palette, never from gradients.
 4. **Gross-cute, not edgy** — weird, fleshy, and funny; never gory, never shock humour.
-5. **Readable at actual size** — 28×44 player, 36×36 entities, 32×32 atlas frames. Silhouette first; no fine detail.
+5. **Readable at actual size** — 28×44 player, 96×96 NPC, 64×64 interactable, 48×48 prop, 36×36 scan, 32×32 atlas frames. Silhouette first; no fine detail.
 6. **Body as a workplace** — cells are tired workers with jobs, not monsters.
 7. **Side-view platformer** — characters in side or slight 3/4 view; backgrounds orthographic side view.
 8. **Chunky silhouette, not copied content** — big head/helmet, short body, chunky boots, strong outline. No copied characters, no top-down perspective, no religious horror, no gore.
@@ -444,18 +452,20 @@ Ludo does not reliably parse anatomical terms as visual nouns. “Soma”, “de
 
 | Asset ID | Entity role | Rendered in | Display / source | File path | Priority |
 |---|---|---|---:|---|---|
-| `sprite.agent.neuron` | Neuron Keeper; 04's Muscle Effector agent currently reuses this ID | 03, 04 | 36×36 / 18×18 PNG | `shared/sprites/agent-neuron.png` | P0 |
-| `sprite.scan.neuron` | Neuron, myelin sheath and dendrite input pads | 03 | 36×36 / 18×18 PNG | `shared/sprites/scan-neuron.png` | P0 |
-| `sprite.scan.synapse` | Terminal plate, synaptic cleft and receptor scans | 04 | 36×36 / 18×18 PNG | `shared/sprites/scan-synapse.png` | P1 |
-| `sprite.scan.pathway` | One-way pathway and axon terminal | 03 | 36×36 / 18×18 PNG | `shared/sprites/scan-pathway.png` | P1 |
-| `sprite.scan.muscle` | Muscle effector scan | 04 | 36×36 / 18×18 PNG | `shared/sprites/scan-muscle.png` | P1 |
-| `sprite.scan.reflex` | Reflex-arc scan, reserve | — | 36×36 / 18×18 PNG | `shared/sprites/scan-reflex.png` | P2 |
-| `sprite.gate.ferry` | Threshold, one-way, exit and muscle gate | 03, 04 | 36×36 / 18×18 PNG | `shared/sprites/gate-ferry.png` | P0 |
-| `sprite.exit` | Level exit and muscle lever | 03, 04 | 36×36 / 18×18 PNG | `shared/sprites/exit.png` | P1 |
-| `sprite.prop.tracer` | ACh packet | 04 | 36×36 / 18×18 PNG | `shared/sprites/prop-tracer.png` | P1 |
-| `sprite.pulse.terminal` | Motor terminal | 04 | 36×36 / 18×18 PNG | `shared/sprites/pulse-terminal.png` | P1 |
-| `sprite.receptor.triangle` | Nicotinic receptor | 04 | 36×36 / 18×18 PNG | `shared/sprites/receptor-triangle.png` | P1 |
-| `sprite.receptor.circle` | Wrong receptor | 04 | 36×36 / 18×18 PNG | `shared/sprites/receptor-circle.png` | P1 |
+| `sprite.agent.neuron` | Neuron Keeper; 04's Muscle Effector agent currently reuses this ID | 03, 04 | 96×96 / 96×96 PNG, `npc` | `shared/sprites/agent-neuron.png` | P0 |
+| `sprite.scan.neuron` | Neuron and myelin scan diagrams | 03 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-neuron.png` | P0 |
+| `sprite.scan.synapse` | Terminal plate, synaptic cleft and receptor scans | 04 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-synapse.png` | P1 |
+| `sprite.scan.pathway` | One-way pathway and axon terminal | 03 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-pathway.png` | P1 |
+| `sprite.scan.muscle` | Muscle effector scan | 04 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-muscle.png` | P1 |
+| `sprite.scan.reflex` | Reflex-arc scan, reserve | — | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-reflex.png` | P2 |
+| `sprite.pad.dendrite` | Dendrite input plates | 03 | 64×64 / 64×64 PNG, `interactable` | `shared/sprites/pad-dendrite.png` | P0 |
+| `sprite.pad.terminal` | Axon terminal plate | 03, 04 | 64×64 / 64×64 PNG, `interactable` | `shared/sprites/pad-terminal.png` | P1 |
+| `sprite.gate.ferry` | Threshold, one-way, exit and muscle gate | 03, 04 | 64×64 / 64×64 PNG, `interactable` | `shared/sprites/gate-ferry.png` | P0 |
+| `sprite.exit` | Level exit and muscle lever | 03, 04 | 64×64 / 64×64 PNG, `interactable` | `shared/sprites/exit.png` | P1 |
+| `sprite.prop.tracer` | ACh packet | 04 | 48×48 / 48×48 PNG, `prop` | `shared/sprites/prop-tracer.png` | P1 |
+| `sprite.pulse.terminal` | Motor terminal | 04 | 64×64 / 64×64 PNG, `interactable` | `shared/sprites/pulse-terminal.png` | P1 |
+| `sprite.receptor.triangle` | Nicotinic receptor | 04 | 64×64 / 64×64 PNG, `interactable` | `shared/sprites/receptor-triangle.png` | P1 |
+| `sprite.receptor.circle` | Wrong receptor | 04 | 64×64 / 64×64 PNG, `interactable` | `shared/sprites/receptor-circle.png` | P1 |
 
 **POC entity status (2026-11-01).** The manifest is authoritative: an entry
 without `src` is a placeholder. This table records why.
@@ -629,7 +639,11 @@ remaster`; the two paths were compared at 8× before choosing the runtime output
 | Asset type | Author/source | Runtime display | Scale | Format |
 |---|---|---|---|---|
 | Player | 14×22 | 28×44 | 2× | PNG with alpha |
-| Entity | 18×18 | 36×36 | 2× | PNG with alpha |
+| NPC (hero) | 96×96 | 96×96 | 1:1 | PNG with alpha |
+| Interactable (hero) | 64×64 | 64×64 | 1:1 | PNG with alpha |
+| Prop (hero) | 48×48 | 48×48 | 1:1 | PNG with alpha |
+| Scan plate | 36×36 | 36×36 | 1:1 | PNG with alpha |
+| Decor | 18×18 | 36×36 | 2× | PNG with alpha |
 | Background sky — current pretty plate | 1280×736 | 1280×736 cover | 1× | lossless WebP, opaque; no palette quantisation |
 | Background sky — future quiet target | 640×368 | 1280×736 cover | 2× | lossless WebP or PNG, opaque |
 | Parallax layer — future target | 1024×512, 2×2 clusters | tile on both axes | 1:1 | lossless WebP or PNG with alpha |

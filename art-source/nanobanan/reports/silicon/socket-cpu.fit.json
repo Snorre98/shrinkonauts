@@ -1,34 +1,47 @@
 {
   "schemaVersion": 1,
   "id": "sprite.socket.cpu",
-  "status": "poc-integrated",
-  "notes": "Closed, blank decoy socket; dark by design and distinct from the cyan-lit controller socket. No joint-ramp pixels expected.",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. Closed, blank decoy socket; dark by design and distinct from the cyan-lit controller socket.",
   "config": "fit.silicon.config.json",
   "source": {
     "path": "art-source/nanobanan/keyed/silicon/socket-cpu.png",
-    "width": 2048,
-    "height": 2048,
+    "width": 1680,
+    "height": 1680,
     "edgeContact": {
-      "top": 0,
-      "bottom": 0,
-      "left": 0,
-      "right": 0
+      "top": 1537,
+      "bottom": 1640,
+      "left": 1620,
+      "right": 1558
     }
   },
   "output": {
     "path": "public/packs/silicon-reflex/shared/sprites/socket-cpu.png",
     "runtime": true,
-    "written": true,
-    "width": 18,
-    "height": 18,
-    "bytes": 230
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 1370
   },
   "cell": {
-    "width": 18,
-    "height": 18
+    "width": 64,
+    "height": 64
   },
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 28,
   "ramps": [
     "teal",
     "bone",
@@ -38,53 +51,58 @@
     "ink"
   ],
   "trim": {
-    "x": 184,
-    "y": 184,
+    "x": 0,
+    "y": 0,
     "width": 1680,
     "height": 1680
   },
   "fit": {
-    "width": 16,
-    "height": 16,
-    "offsetX": 1,
-    "offsetY": 1,
-    "scale": 0.009524,
+    "width": 60,
+    "height": 60,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.035714,
     "upscaled": false
   },
   "finalBounds": {
-    "x": 1,
-    "y": 1,
-    "width": 16,
-    "height": 16
+    "x": 2,
+    "y": 2,
+    "width": 60,
+    "height": 60
   },
   "margins": {
-    "top": 1,
-    "right": 1,
-    "bottom": 1,
-    "left": 1
+    "top": 2,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
   },
   "quantization": {
-    "changedPixels": 255,
-    "maxDistance": 38.328,
-    "offPalettePixels": 255,
+    "changedPixels": 3589,
+    "maxDistance": 42.532,
+    "offPalettePixels": 3589,
     "alphaViolations": 0
   },
   "paletteValidation": {
     "offPalettePixels": 0,
     "alphaViolations": 0,
-    "opaquePixels": 255
+    "opaquePixels": 3589
   },
   "rampHistogram": {
-    "teal": 155,
-    "ink": 81,
-    "boneShadow": 19
+    "ink": 1265,
+    "teal": 1886,
+    "boneShadow": 347,
+    "sage": 91
   },
   "warnings": [
-    "no joint-ramp pixels survived; the cyan scan rim may be missing"
+    "source content touches the image border (t 1537, b 1640, l 1620, r 1558); the concept plate may be clipped",
+    "source-to-fit scale 28.0:1 exceeds the 10:1 treatment limit",
+    "no joint-ramp pixels survived; the cyan scan rim may be missing",
+    "max palette quantisation distance 42.5 exceeds 24"
   ],
   "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/socket-cpu-1x.png",
     "scale2x": "art-source/previews/nanobanan/silicon/socket-cpu-2x.png",
-    "scale8x": "art-source/previews/nanobanan/silicon/socket-cpu-8x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/socket-cpu-4x.png",
     "tint2x": "art-source/previews/nanobanan/silicon/socket-cpu-tint-2x.png"
   }
 }

@@ -19,6 +19,16 @@
     "placeholder": "assets.placeholder.json",
     "final": "assets.final.json"
   },
+  "presentation": {
+    "roles": {
+      "npc": { "display": [96, 96], "fidelity": "hero-1x" },
+      "interactable": { "display": [64, 64], "fidelity": "hero-1x" },
+      "prop": { "display": [48, 48], "fidelity": "hero-1x" },
+      "scan": { "display": [36, 36], "fidelity": "ui-1x" },
+      "decor": { "display": [36, 36], "fidelity": "world-2x" },
+      "player": { "display": [28, 44], "fidelity": "world-2x" }
+    }
+  },
   "assets": {
     "tilesets": [
       "tileset.anatomy"
@@ -31,6 +41,8 @@
       "sprite.scan.pathway",
       "sprite.scan.muscle",
       "sprite.scan.reflex",
+      "sprite.pad.dendrite",
+      "sprite.pad.terminal",
       "sprite.checkpoint",
       "sprite.exit",
       "sprite.prop.tracer",
