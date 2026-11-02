@@ -347,6 +347,15 @@ describe("game runtime", () => {
     expect(snapshot.puzzle?.pulse).toBeNull();
     expect(snapshot.map.nodes.find((node) => node.current)?.visited).toBe(true);
     expect(snapshot.checkpointId).toBe("checkpoint-entry");
+    expect(snapshot.world.stage).toEqual({
+      x: 0,
+      y: 0,
+      width: 1280,
+      height: 720,
+    });
+    expect(snapshot.world.zoom).toBe(1);
+    expect(snapshot.world.camera.width).toBe(1280);
+    expect(snapshot.world.camera.height).toBe(720);
     expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
       "03-nerve-forest",
     );
@@ -422,6 +431,7 @@ describe("game runtime", () => {
       "One input is below threshold. The trigger gate needs a second dendrite input.",
     );
     stepWith(runtime);
+    runtime.requestFeedback("p1");
     expect(
       runtime
         .snapshot()
@@ -1001,6 +1011,44 @@ describe("game runtime", () => {
     expect(reloaded.settings.accessibility.textScale).toBe(1.3);
   });
 
+  it("defaults shared feedback on and persists the pause toggle", () => {
+    const { runtime, storage } = makeRuntime();
+
+    expect(runtime.snapshot().settings.feedback.showShared).toBe(true);
+    runtime.toggleSharedFeedback();
+    expect(runtime.snapshot().settings.feedback.showShared).toBe(false);
+
+    const reloaded = createSave({ storage });
+    expect(reloaded.settings.feedback.showShared).toBe(false);
+
+    runtime.toggleSharedFeedback();
+    expect(runtime.snapshot().settings.feedback.showShared).toBe(true);
+  });
+
+  it("applies a persisted shared feedback opt-out at boot", () => {
+    const storage = new MemorySaveStorage();
+    createSave({ storage }).updateFeedback({ showShared: false });
+
+    const { runtime } = makeRuntime(storage);
+    const snapshot = runtime.snapshot();
+    expect(snapshot.settings.feedback.showShared).toBe(false);
+    expect(
+      snapshot.feedback.surfaces.some(
+        (surface) => surface.owner === "shared",
+      ),
+    ).toBe(false);
+    expect(snapshot.feedback.beats).toEqual([]);
+
+    runtime.placePlayer("p1", 960, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
+    expect(runtime.snapshot().puzzle?.counters.helpRequests ?? 0).toBe(0);
+  });
+
   it("opens and closes map, concept log, and pause with shared keys", () => {
     const { runtime } = makeRuntime();
 
@@ -1065,8 +1113,8 @@ describe("game runtime", () => {
       )?.content.text,
     ).toContain("Stimulus counter");
     expect(snapshot.world.entities["agent-neuron"]?.anchors.center).toEqual({
-      x: 18,
-      y: 18,
+      x: 48,
+      y: 48,
     });
     expect(runtime.drainEffects()).toEqual([]);
   });
@@ -1283,7 +1331,7 @@ describe("game runtime", () => {
   it("projects authored room sockets into the runtime world view", () => {
     const { runtime } = makeRuntimeWithContent(contentWithAnchors());
     const entity = runtime.snapshot().world.entities["agent-neuron"];
-    expect(entity?.anchors.center).toEqual({ x: 18, y: 18 });
+    expect(entity?.anchors.center).toEqual({ x: 48, y: 48 });
     expect(entity?.anchors.muzzle).toEqual({
       x: 30,
       y: 8,
@@ -1294,11 +1342,14 @@ describe("game runtime", () => {
   it("attributes a P2 plate press to P2 and keeps it out of the toast", () => {
     const { runtime } = makeRuntime();
     pressSensor(runtime, "input-a", "p2");
+    runtime.requestFeedback("p2");
     const snapshot = runtime.snapshot();
-    const cue = snapshot.feedback.cues.find((item) =>
-      item.cause.startsWith("puzzle:platePress:input-a"),
+    const p2Captions = snapshot.feedback.cues.filter(
+      (item) =>
+        item.actor === "p2" && item.presentation === "playerCaption",
     );
-    expect(cue).toMatchObject({
+    expect(p2Captions).toHaveLength(1);
+    expect(p2Captions[0]).toMatchObject({
       actor: "p2",
       owner: "p2",
       anchor: { kind: "player", playerId: "p2" },
@@ -1310,6 +1361,7 @@ describe("game runtime", () => {
   it("keeps solved feedback shared and on the screen anchor", () => {
     const { runtime } = makeRuntime();
     solveNodeRun(runtime);
+    runtime.requestFeedback("p1");
     const cue = runtime
       .snapshot()
       .feedback.cues.find((item) => item.cause.startsWith("puzzle:solved"));
@@ -1328,18 +1380,19 @@ describe("game runtime", () => {
     activateEndplate(runtime);
     stepWith(runtime, playerActions({ pulse: true }));
     waitRuntime(runtime, 10);
+    runtime.requestFeedback("p1");
     const cue = runtime
       .snapshot()
       .feedback.cues.find((item) =>
-        item.cause.startsWith("puzzle:receptorRejected:nicotinic-receptor"),
+        item.cause.startsWith("puzzle:receptorRejected:"),
       );
     expect(cue).toMatchObject({
       actor: "p1",
       owner: "p1",
-      anchor: { kind: "entity", entityId: "nicotinic-receptor" },
       presentation: "speechBubble",
       reason: "empty",
     });
+    expect(cue?.anchor).toMatchObject({ kind: "entity" });
   });
 
   it("lets P1 and P2 talk to different entities at once", () => {
@@ -1399,28 +1452,27 @@ describe("game runtime", () => {
     expect(runtime.conversations.size).toBe(1);
   });
 
-  it("shows the stuck affordance after a stable run and dismisses it on hint", () => {
-    const audio = new FakeAudio();
-    const save = createSave({ storage: new MemorySaveStorage() });
-    const runtime = new GameRuntime({
-      content,
-      save,
-      audio,
-      now: () => new Date("2026-10-26T12:00:00.000Z"),
-      stuckThresholdTicks: 3,
-    });
-    runtime.start();
-    for (let index = 0; index < 3; index += 1) stepWith(runtime);
+  it("shows the shared help affordance only after a scan request inside an info area", () => {
+    const { runtime } = makeRuntime();
+    runtime.placePlayer("p1", 960, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+
     const surface = runtime
       .snapshot()
-      .feedback.surfaces.find((item) => item.id.startsWith("fb:stuck:"));
+      .feedback.surfaces.find((item) => item.id.startsWith("fb:help:"));
     expect(surface).toBeDefined();
+    expect(surface).toMatchObject({
+      owner: "shared",
+      audience: "both",
+      presentation: "hudStatus",
+      lifetime: { sticky: false, ttlTicks: 300 },
+    });
     expect(surface?.content.choices?.map((choice) => choice.id)).toEqual([
       "hint",
       "reset",
     ]);
     expect(runtime.snapshot().puzzle?.hint).toBeNull();
-    expect(runtime.snapshot().puzzle?.counters.stuckWarnings).toBe(1);
+    expect(runtime.snapshot().puzzle?.counters.helpRequests).toBe(1);
 
     runtime.surfaceAction(surface!.id, {
       type: "choose",
@@ -1430,7 +1482,149 @@ describe("game runtime", () => {
     expect(
       runtime
         .snapshot()
-        .feedback.surfaces.some((item) => item.id.startsWith("fb:stuck:")),
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
+  });
+
+  it("does not show the help affordance outside an info area or when a scan target wins", () => {
+    const { runtime } = makeRuntime();
+
+    runtime.placePlayer("p1", 96, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
+
+    const pad = runtime.entityPixel("pad-input-a");
+    if (!pad) throw new Error("pad-input-a missing");
+    runtime.placePlayer("p1", pad.x, pad.y);
+    stepWith(runtime, playerActions({ scan: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
+    expect(
+      runtime.snapshot().feedback.cues.some((cue) =>
+        cue.cause.startsWith("action:p1:scan:completed"),
+      ),
+    ).toBe(true);
+  });
+
+  it("expires the requested help surface and allows P2 to refresh it", () => {
+    const copy = structuredClone(content);
+    const room = copy.rooms["room-nerve-forest"];
+    if (!room?.infoAreas?.[0]) throw new Error("info area missing");
+    room.infoAreas[0].ttlTicks = 3;
+    const { runtime } = makeRuntimeWithContent(copy);
+
+    runtime.placePlayer("p1", 960, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+    const helpId = "fb:help:puzzle-node-run";
+    expect(
+      runtime.snapshot().feedback.surfaces.some((item) => item.id === helpId),
+    ).toBe(true);
+
+    stepWith(runtime);
+    stepWith(runtime);
+    stepWith(runtime);
+    expect(
+      runtime.snapshot().feedback.surfaces.some((item) => item.id === helpId),
+    ).toBe(false);
+
+    runtime.placePlayer("p2", 960, 640);
+    stepWith(runtime, playerActions(), playerActions({ scan: true }));
+    expect(
+      runtime.snapshot().feedback.surfaces.some((item) => item.id === helpId),
+    ).toBe(true);
+  });
+
+  it("hides shared cues, state surfaces, and beats when disabled", () => {
+    const { runtime } = makeRuntime();
+    solveNodeRun(runtime);
+    expect(runtime.requestFeedback("p1")).toBe(true);
+    expect(
+      runtime
+        .snapshot()
+        .feedback.cues.some((cue) => cue.owner === "shared"),
+    ).toBe(true);
+
+    runtime.toggleSharedFeedback();
+    const snapshot = runtime.snapshot();
+    expect(snapshot.feedback.cues.some((cue) => cue.owner === "shared")).toBe(
+      false,
+    );
+    expect(
+      snapshot.feedback.surfaces.some(
+        (surface) => surface.owner === "shared",
+      ),
+    ).toBe(false);
+    expect(snapshot.feedback.beats).toEqual([]);
+    expect(snapshot.settings.feedback.showShared).toBe(false);
+    expect(runtime.drainEffects().length).toBeGreaterThan(0);
+  });
+
+  it("restores shared state surfaces and beats when re-enabled", () => {
+    const { runtime } = makeRuntime();
+    const before = runtime.snapshot().feedback;
+    const surfaceIds = before.surfaces.map((surface) => surface.id);
+    const beatLabels = before.beats.map((beat) => beat.label);
+    expect(surfaceIds.length).toBeGreaterThan(0);
+    expect(beatLabels.length).toBeGreaterThan(0);
+
+    runtime.toggleSharedFeedback();
+    expect(runtime.snapshot().feedback.surfaces).toEqual([]);
+    expect(runtime.snapshot().feedback.beats).toEqual([]);
+
+    runtime.toggleSharedFeedback();
+    const after = runtime.snapshot().feedback;
+    expect(after.surfaces.map((surface) => surface.id)).toEqual(surfaceIds);
+    expect(after.beats.map((beat) => beat.label)).toEqual(beatLabels);
+  });
+
+  it("keeps player feedback and skips shared help while disabled", () => {
+    const { runtime } = makeRuntime();
+    runtime.toggleSharedFeedback();
+
+    runtime.placePlayer("p1", 960, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+    let snapshot = runtime.snapshot();
+    expect(
+      snapshot.feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
+    expect(
+      snapshot.feedback.surfaces.some(
+        (surface) => surface.owner === "shared",
+      ),
+    ).toBe(false);
+    expect(snapshot.feedback.beats).toEqual([]);
+    expect(snapshot.puzzle?.counters.helpRequests ?? 0).toBe(0);
+    expect(
+      snapshot.feedback.cues.find((cue) => cue.actor === "p1"),
+    ).toMatchObject({
+      owner: "p1",
+      presentation: "playerCaption",
+    });
+    expect(
+      snapshot.feedback.cues.some((cue) =>
+        cue.content.text?.includes("Nothing to scan here"),
+      ),
+    ).toBe(true);
+
+    runtime.toggleSharedFeedback();
+    stepWith(runtime, playerActions({ scan: true }));
+    snapshot = runtime.snapshot();
+    expect(
+      snapshot.feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(true);
+
+    runtime.toggleSharedFeedback();
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
     ).toBe(false);
   });
 
@@ -1523,6 +1717,7 @@ describe("game runtime", () => {
       now: () => new Date("2026-10-26T12:10:00.000Z"),
     });
     restored.start();
+    restored.requestFeedback("p1");
     expect(restored.conversations.size).toBe(0);
     expect(
       restored

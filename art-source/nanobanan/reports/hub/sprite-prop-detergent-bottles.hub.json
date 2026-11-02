@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.detergent.bottles",
+  "source": {
+    "path": "art-source/nanobanan/keyed/hub-detergent-bottles.png",
+    "width": 2408,
+    "height": 1343
+  },
+  "crop": null,
+  "masks": [],
+  "cell": {
+    "width": 32,
+    "height": 32
+  },
+  "margin": 0,
+  "align": "bottom-center",
+  "anchor": null,
+  "fit": {
+    "sourceBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 2408,
+      "height": 1343
+    },
+    "fit": {
+      "width": 32,
+      "height": 18,
+      "offsetX": 0,
+      "offsetY": 14
+    },
+    "margins": {
+      "top": 14,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    }
+  },
+  "quantized": true,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink",
+    "appliance"
+  ],
+  "palette": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 433
+  },
+  "bytes": 955,
+  "maxBytes": 8192,
+  "output": "public/hub/bathroom/shared/sprites/detergent-bottles.png",
+  "note": null
+}

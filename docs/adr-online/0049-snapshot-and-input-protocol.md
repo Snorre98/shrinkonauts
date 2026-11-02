@@ -116,7 +116,7 @@ client-local fields:
   `error`, `mode`;
 - feedback includes surfaces and effect plans; the guest renders them, never
   re-runs the feedback director;
-- gate/debrief/map/concept views are host-owned in M4.0 and read-only on the
+- gate/debrief/map/concept views are host-owned in M4.0b and read-only on the
   guest.
 
 The guest may also receive `world` and `ui` in one combined message when the
@@ -128,6 +128,10 @@ requirement.
 The guest sends `input` at **30–60 Hz**, or only when the input state changes
 plus a keepalive at 10 Hz. `NetInput` contains the guest’s P2 intents and
 player actions:
+
+> **Controller phase (M4.0a):** the phone controller reuses this `NetInput`
+> shape for one slot. ADR-0068 defines the controller subset and defers this
+> ADR's §3 world snapshots, §4 UI snapshots, and §6 interpolation.
 
 ```ts
 interface NetInput {
@@ -148,7 +152,7 @@ Rules:
 - Edge-triggered actions are queued, not lost, if several arrive before a step.
 - Duplicate/stale `seq` frames are dropped.
 - Global actions (`pause`, `map`, `log`, `mute`, `toggleP2`) are host-only in
-  M4.0. Guest `mute` is local and never sent.
+  M4.0b. Guest `mute` is local and never sent.
 - Guest `ui` actions are only valid on surfaces owned by P2; host rejects
   owner mismatch.
 

@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-01",
+  "source": {
+    "directory": "art-source/nanobanan/new",
+    "files": {
+      "far": "bg-nerve_forest-far-updated.jpeg",
+      "mid": "bg-nerve_forest-mid-updated.jpeg",
+      "near": "bg-nerve_forest-near-updated.jpeg",
+      "sky": "bg-nerve_forest-sky-updated.jpeg"
+    },
+    "size": { "width": 2912, "height": 1440 },
+    "skySize": { "width": 2720, "height": 1568 }
+  },
+  "layers": {
+    "far": {
+      "crop": { "x": 432, "y": 416, "width": 2048, "height": 1024 },
+      "key": { "colour": "#ff00ff", "tolerance": 0.18, "softness": 0.08, "trim": false },
+      "downscale": "1024x512 nearest (exact 2x)",
+      "palette": "art-source/nanobanan/palette.nerve-forest-layer.json",
+      "cleanup": { "band": 2, "minComponent": 4, "snap2x2": true, "weldX": "union", "weldY": "union" },
+      "keyCoverage": 0.4596,
+      "finalCoverage": 0.4651,
+      "edgeMismatchBefore": { "leftRight": 417, "topBottom": 652 },
+      "edgeMismatchAfter": { "leftRight": 0, "topBottom": 0 },
+      "uniqueColours": 12,
+      "runtime": "public/packs/anatomy-reflex/shared/backgrounds/nerve-forest-far.webp",
+      "status": "wired"
+    },
+    "mid": {
+      "crop": { "x": 432, "y": 208, "width": 2048, "height": 1024 },
+      "key": { "colour": "#ff00ff", "tolerance": 0.18, "softness": 0.08, "trim": false },
+      "downscale": "1024x512 nearest (exact 2x)",
+      "palette": "art-source/nanobanan/palette.nerve-forest-layer.json",
+      "cleanup": { "band": 2, "minComponent": 4, "snap2x2": true, "weldX": "union", "weldY": "union" },
+      "keyCoverage": 0.5065,
+      "finalCoverage": 0.5172,
+      "edgeMismatchBefore": { "leftRight": 491, "topBottom": 614 },
+      "edgeMismatchAfter": { "leftRight": 0, "topBottom": 0 },
+      "uniqueColours": 16,
+      "runtime": "public/packs/anatomy-reflex/shared/backgrounds/nerve-forest-mid.webp",
+      "status": "wired"
+    },
+    "near": {
+      "crop": { "x": 432, "y": 208, "width": 2048, "height": 1024 },
+      "key": { "colour": "#ff00ff", "tolerance": 0.18, "softness": 0.08, "trim": false },
+      "downscale": "1024x512 nearest (exact 2x)",
+      "palette": "art-source/nanobanan/palette.nerve-forest-layer.json",
+      "cleanup": { "band": 2, "minComponent": 4, "snap2x2": true, "weldX": "union", "weldY": "union" },
+      "keyCoverage": 0.2315,
+      "finalCoverage": 0.2392,
+      "edgeMismatchBefore": { "leftRight": 167, "topBottom": 828 },
+      "edgeMismatchAfter": { "leftRight": 0, "topBottom": 0 },
+      "uniqueColours": 9,
+      "status": "deferred",
+      "reason": "The 1024x512 tile repeats vertically at screen y=512. The hanging canopy band lands across the play band and would obscure the player and platforms."
+    }
+  },
+  "sky": {
+    "crop": { "x": 0, "y": 2, "width": 2720, "height": 1564 },
+    "downscale": "640x368 area",
+    "palette": "art-source/nanobanan/palette.nerve-forest-sky.json",
+    "runtime": "public/packs/anatomy-reflex/shared/backgrounds/nerve-forest-sky.webp",
+    "status": "replaced",
+    "reason": "The updated plate is calmer and removes the previous sky's muscle-pink drapes; dark framing trunks remain a visual-review note."
+  },
+  "reviewStill": "screenshots/m3-nerve-forest-backgrounds.png",
+  "webpVerification": {
+    "decoder": "dwebp",
+    "decodedPixelBytesDifferentFromMaster": {
+      "sky": 0,
+      "far": 0,
+      "mid": 0,
+      "near": 0
+    },
+    "magentaPixels": 0,
+    "musclePixels": 0,
+    "fileBytes": {
+      "sky": 17620,
+      "far": 6420,
+      "mid": 14966,
+      "near": 5410
+    },
+    "budgetBytes": 307200
+  },
+  "notes": [
+    "Exact 2x crops were used instead of the 2880x1440 crop so the 2x2 cluster rule is native and the composition is not resampled by 2.8125x.",
+    "The 2px edge weld makes opposite tile edges pixel-identical; it does not hand-repaint the composition across the seam.",
+    "Near is processed and previewed but not wired because the vertical repeat obscures the play band."
+  ]
+}

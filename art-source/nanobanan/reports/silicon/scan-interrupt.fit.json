@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.scan.interrupt",
+  "class": "ui-1x",
+  "status": "placeholder",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "missingReason": "The 36×36 fit collapses to a thin strip; the cyan trace and scan rim vanish and the icon does not read. Placeholder retained.",
+  "notes": "Preview and report retained as failure evidence; no runtime write.",
+  "config": "fit.silicon.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/silicon/scan-interrupt.png",
+    "width": 1476,
+    "height": 328,
+    "edgeContact": {
+      "top": 1394,
+      "bottom": 1394,
+      "left": 83,
+      "right": 84
+    }
+  },
+  "output": {
+    "path": "art-source/nanobanan/keyed/fit/silicon/scan-interrupt.png",
+    "runtime": false,
+    "written": false,
+    "width": 36,
+    "height": 36,
+    "bytes": 327
+  },
+  "cell": {
+    "width": 36,
+    "height": 36
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 46.857,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1476,
+    "height": 328
+  },
+  "fit": {
+    "width": 32,
+    "height": 7,
+    "offsetX": 2,
+    "offsetY": 27,
+    "scale": 0.02168,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 27,
+    "width": 32,
+    "height": 7
+  },
+  "margins": {
+    "top": 27,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 220,
+    "maxDistance": 46.755,
+    "offPalettePixels": 220,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 220
+  },
+  "rampHistogram": {
+    "ink": 80,
+    "teal": 110,
+    "boneShadow": 4,
+    "joint": 25,
+    "sage": 1
+  },
+  "warnings": [
+    "source content touches the image border (t 1394, b 1394, l 83, r 84); the concept plate may be clipped",
+    "fitted content is 32x7; minimum dimension 7px is below the 24px readability policy",
+    "fitted content has 220 opaque pixels; below the 300px minimum",
+    "source-to-fit scale 46.9:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 46.8 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/scan-interrupt-1x.png",
+    "scale2x": "art-source/previews/nanobanan/silicon/scan-interrupt-2x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/scan-interrupt-4x.png",
+    "tint2x": "art-source/previews/nanobanan/silicon/scan-interrupt-tint-2x.png"
+  }
+}

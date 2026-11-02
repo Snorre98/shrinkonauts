@@ -14,6 +14,22 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: [["list"]],
+  projects: [
+    {
+      name: "smoke",
+      testIgnore: ["**/capture/**", "**/gallery/**"],
+    },
+    {
+      name: "capture",
+      testDir: "./e2e/capture",
+      timeout: 180_000,
+      use: {
+        trace: "off",
+        screenshot: "off",
+        video: "off",
+      },
+    },
+  ],
   use: {
     baseURL,
     channel: "chrome",

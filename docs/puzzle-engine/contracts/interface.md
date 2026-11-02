@@ -1,7 +1,7 @@
 # Interface contract
 
 Public operations introduced or changed by the puzzle-engine, M1.75 feedback, and
-M1.8 material/pattern work. Source ADRs: ADR-0001–0017. Existing operations keep
+M1.8 material/pattern work. Source ADRs: ADR-0001–0022. Existing operations keep
 their current signatures.
 
 ## Implementation status
@@ -12,6 +12,10 @@ their current signatures.
 | Feedback director, surfaces, cues, descriptors, effects | Implemented |
 | World effect/tile visual ports | Implemented |
 | Entity conversations and per-player surface routing | Implemented |
+| Player-attached caption slot and surface TTL | Implemented |
+| Request-gated shared help and room info areas | Implemented |
+| Deferred transient cues and on-demand reveal | Implemented |
+| Persisted shared-feedback visibility, shared state/beat filtering, and help suppression | Implemented |
 | Level `feedback` content block | Implemented |
 | Feedback validation vocabulary injection | Implemented |
 | Material/pattern catalog, tile grids, autotiling, variants | Implemented; `wang` deferred |
@@ -71,6 +75,29 @@ type LevelTileTarget =
 
 All feedback fields are optional. A level without `feedback` parses and runs
 with capability defaults.
+
+Rooms may declare shared-help relevance zones:
+
+```ts
+interface RoomInfoArea {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  puzzleId?: string;
+  ttlTicks?: number;
+}
+
+interface RoomDocument {
+  // existing fields
+  infoAreas?: RoomInfoArea[];
+}
+```
+
+`scan` is the deliberate information request. It scans an unrevealed target
+first; otherwise, if the player is inside an info area, it opens the shared help
+surface. The surface is transient and never appears from an idle timer.
 
 ```ts
 interface FeedbackValidationVocabulary {
@@ -243,25 +270,58 @@ interface FeedbackSurface {
 surface answers “what is true now?”; a cue answers “what just happened?” and is
 deduplicated by cause.
 
+Player-anchored transient cues occupy one slot per player. A newer cue evicts
+the current player caption; entity speech bubbles and HUD cues are not affected.
+Runtime-owned non-sticky surfaces expire after their `ttlTicks`.
+
+When deferred cues are enabled, ingested cues are stored per player instead of
+appearing in the frame. Shared cues are copied to both players. Only the latest
+pending cue per player is kept. `requestLatest` consumes and reveals it, starting
+the cue TTL. Pending cues are never rendered, announced, or saved.
+
 ### 3.3 Director
 
 ```ts
 interface FeedbackDirector {
   ingest(fact: FeedbackFact): void;
   ingestAll(facts: readonly FeedbackFact[]): void;
+  ingestNow(fact: FeedbackFact): void;
   projectSticky(input: FeedbackProjection): void;
   putSurface(spec: FeedbackSurfaceSpec & { id: string }): void;
   removeSurface(surfaceId: string): void;
+  requestLatest(playerId: PlayerId): boolean;
+  setSharedFeedbackEnabled(enabled: boolean): void;
   tick(dt: number): void;
   view(): FeedbackView;
   frame(): FeedbackFrame;
   reset(): void;
 }
 
+interface FeedbackDirectorOptions {
+  defaultCueTtlTicks?: number;
+  /** Store cues per player instead of spawning them immediately. */
+  deferCues?: boolean;
+  isAnchorAlive?: (anchor: AnchorRef) => boolean;
+}
+
 function createFeedbackDirector(
   options?: FeedbackDirectorOptions,
 ): FeedbackDirector;
 ```
+
+`GameRuntime` enables `deferCues` and uses `ingestNow` for action outcomes so a
+scan request can reveal the result in the same input frame. Cosmetic effect
+plans on deferred cues still start immediately from a hidden effect host.
+
+`setSharedFeedbackEnabled(false)` drops shared-owned cue specs before they enter
+either inbox, clears pending shared copies, and despawns visible shared cues.
+Player-owned cues are unaffected. Effects keep their immediate lifecycle.
+
+`GameRuntime` additionally filters shared-owned persistent surfaces and beats
+from `RuntimeSnapshot.feedback` while the setting is off. The director still
+projects them so `drainEffects()` keeps the world effects running. Re-enabling
+restores the current shared state surfaces and beats; dropped transient cues are
+not replayed. The runtime also refuses the requested help surface while off.
 
 The runtime ticks the director once per fixed step and calls `frame()` to obtain
 the snapshot-safe view.
@@ -376,6 +436,7 @@ class GameRuntime {
   readonly conversations: Map<SurfaceId, ConversationState>;
   startConversation(dialogueId: string, owner: PlayerId, entityId: string): void;
   surfaceAction(surfaceId: string, action: SurfaceAction): void;
+  toggleSharedFeedback(): GameSettings;
   drainEffects(): readonly WorldEffectPlan[];
   debriefPromptList(): DebriefPrompt[];
   // existing snapshot/step/save/evidence methods
@@ -390,8 +451,10 @@ function routeSurfaceInput(
 function toWorldEffectPlan(instance: EffectInstance): WorldEffectPlan;
 ```
 
-`RuntimeSnapshot` exposes `feedback: FeedbackFrame`; the old `dialogue` view is
-not present. Soft conversations do not enter a blocking state. Hard overlays
+`RuntimeSnapshot` exposes `feedback: FeedbackFrame`; while shared feedback is
+off, the snapshot omits shared-owned surfaces and beats but keeps `effects`. The
+old `dialogue` view is not present. Soft conversations do not enter a blocking
+state. Hard overlays
 (gate, pause, map, concept log, debrief, complete) remain explicit.
 
 Deferred: `travelToSideLevel(levelId)` and the `returnTo` snapshot.
@@ -406,6 +469,7 @@ interface FeedbackSurfaceRenderer {
 
 interface GameUiCallbacks {
   onSurfaceAction(surfaceId: string, action: SurfaceAction): void;
+  onToggleSharedFeedback(): void;
   // existing modal callbacks for gate/debrief/pause/map/log
 }
 ```
@@ -433,6 +497,24 @@ interface RunSnapshot {
   dialogue?: { dialogueId: string; nodeId: string };
   // returnTo?: LevelRunSnapshot; — deferred
 }
+```
+
+Settings use a separate storage slot:
+
+```ts
+interface GameSettings {
+  schemaVersion: string; // 2.0
+  audio: { muted: boolean; volume: number };
+  accessibility: { textScale: number; reducedMotion: boolean };
+  feedback: {
+    /** Global; missing values default to true. */
+    showShared: boolean;
+  };
+}
+
+function updateFeedback(
+  patch: Partial<GameSettings["feedback"]>,
+): GameSettings;
 ```
 
 Feedback ECS state is ephemeral and never saved. Conversation sessions are run

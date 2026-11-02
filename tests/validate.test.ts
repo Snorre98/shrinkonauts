@@ -103,6 +103,43 @@ describe("validatePack", () => {
     expect(fixture.placeholders).toHaveLength(7);
   });
 
+  it("validates room presentation framing and reports impossible auto zoom", () => {
+    const valid = clone(room);
+    valid.presentation = {
+      playBand: { x: 0, y: 26, width: room.width, height: 6 },
+      camera: {
+        framing: "fit-play-band",
+        zoom: "auto",
+        maxZoom: 2,
+        followY: "play-band",
+        snap: true,
+      },
+    };
+    const validResult = validatePack({
+      room: valid,
+      theme,
+      finalManifest,
+      fileExists,
+    });
+    expect(validResult.issues).toEqual([]);
+
+    const broken = clone(room);
+    broken.presentation = {
+      playBand: { x: 0, y: 0, width: room.width, height: 30 },
+      camera: { framing: "fit-play-band", zoom: "auto" },
+    };
+    const brokenResult = validatePack({
+      room: broken,
+      theme,
+      finalManifest,
+      fileExists,
+    });
+    expect(brokenResult.ok).toBe(false);
+    expect(brokenResult.issues.map((issue) => issue.code)).toContain(
+      "PRESENTATION_INVALID",
+    );
+  });
+
   it("reports referenced IDs with unknown prefixes", () => {
     const broken: RoomDocument = clone(room);
     broken.tileset = "not-an-asset-id";
@@ -561,5 +598,53 @@ describe("puzzle gate recovery warnings", () => {
     });
     expect(legacy.ok).toBe(true);
     expect(legacy.issues).toEqual([]);
+  });
+});
+
+describe("info area validation", () => {
+  const content = loadContent(packDirectory("anatomy-reflex"));
+  const final = packManifest(
+    content.pack.assetManifests.final ?? "assets.final.json",
+  );
+  const placeholder = packManifest(
+    content.pack.assetManifests.placeholder ?? "assets.placeholder.json",
+  );
+
+  function validate(mutate: (copy: PackContent) => void) {
+    const copy = structuredClone(content);
+    mutate(copy);
+    return validatePack({
+      room: primaryRoom(copy),
+      theme: copy.theme,
+      finalManifest: final,
+      packManifest: placeholder,
+      fileExists,
+      content: copy,
+      feedbackVocabulary,
+    });
+  }
+
+  it("rejects info areas outside the room bounds", () => {
+    const result = validate((copy) => {
+      const info = primaryRoom(copy).infoAreas?.[0];
+      if (!info) throw new Error("info area missing");
+      info.x = primaryRoom(copy).width;
+    });
+    expect(result.ok).toBe(false);
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "INFO_AREA_INVALID",
+    );
+  });
+
+  it("rejects info areas that reference a puzzle outside the level", () => {
+    const result = validate((copy) => {
+      const info = primaryRoom(copy).infoAreas?.[0];
+      if (!info) throw new Error("info area missing");
+      info.puzzleId = "puzzle-missing";
+    });
+    expect(result.ok).toBe(false);
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "INFO_AREA_INVALID",
+    );
   });
 });

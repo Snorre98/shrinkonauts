@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.route_plug",
+  "class": "hero-prop",
+  "status": "fit-preview",
+  "treatment": "hero-prop",
+  "display": {
+    "width": 48,
+    "height": 48
+  },
+  "notes": "Hero re-fit at 48×48. Cyan jumper plug with two pins, thumb tab and ceramic collar.",
+  "config": "fit.silicon.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/silicon/prop-route-plug.png",
+    "width": 1436,
+    "height": 1436,
+    "edgeContact": {
+      "top": 30,
+      "bottom": 73,
+      "left": 80,
+      "right": 62
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/sprites/prop-route-plug.png",
+    "runtime": true,
+    "written": false,
+    "width": 48,
+    "height": 48,
+    "bytes": 2755
+  },
+  "cell": {
+    "width": 48,
+    "height": 48
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 32,
+    "minOpaquePixels": 600,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 12
+  },
+  "sourceScale": 32.636,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1436,
+    "height": 1436
+  },
+  "fit": {
+    "width": 44,
+    "height": 44,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.030641,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 2,
+    "width": 44,
+    "height": 44
+  },
+  "margins": {
+    "top": 2,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 991,
+    "maxDistance": 62.008,
+    "offPalettePixels": 991,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 991
+  },
+  "rampHistogram": {
+    "ink": 136,
+    "teal": 160,
+    "boneShadow": 91,
+    "sage": 48,
+    "joint": 428,
+    "bone": 128
+  },
+  "warnings": [
+    "source content touches the image border (t 30, b 73, l 80, r 62); the concept plate may be clipped",
+    "source-to-fit scale 32.6:1 exceeds the 12:1 treatment limit",
+    "max palette quantisation distance 62.0 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/prop-route-plug-1x.png",
+    "scale2x": "art-source/previews/nanobanan/silicon/prop-route-plug-2x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/prop-route-plug-4x.png",
+    "tint2x": "art-source/previews/nanobanan/silicon/prop-route-plug-tint-2x.png"
+  }
+}

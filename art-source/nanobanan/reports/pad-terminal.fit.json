@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "pad-terminal",
+  "class": null,
+  "status": "poc-integrated",
+  "treatment": "legacy",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "config": null,
+  "source": {
+    "path": "/home/snorre/Documents/Studies/shrinkonauts/art-source/nanobanan/keyed/scan-pathway.png",
+    "width": 1864,
+    "height": 740,
+    "edgeContact": {
+      "top": 40,
+      "bottom": 40,
+      "left": 102,
+      "right": 42
+    }
+  },
+  "output": {
+    "path": "/home/snorre/Documents/Studies/shrinkonauts/public/packs/anatomy-reflex/shared/sprites/pad-terminal.png",
+    "runtime": true,
+    "written": true,
+    "width": 64,
+    "height": 64,
+    "bytes": 2274
+  },
+  "cell": {
+    "width": 64,
+    "height": 64
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 8,
+    "minOpaquePixels": 100,
+    "maxPaletteDistance": 64,
+    "maxDownscale": 16
+  },
+  "sourceScale": 31.067,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1864,
+    "height": 740
+  },
+  "fit": {
+    "width": 60,
+    "height": 24,
+    "offsetX": 2,
+    "offsetY": 38,
+    "scale": 0.032189,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 38,
+    "width": 60,
+    "height": 24
+  },
+  "margins": {
+    "top": 38,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 558,
+    "maxDistance": 65.376,
+    "offPalettePixels": 558,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 558
+  },
+  "rampHistogram": {
+    "joint": 103,
+    "boneShadow": 148,
+    "ink": 44,
+    "sage": 99,
+    "teal": 5,
+    "bone": 107,
+    "nerve": 52
+  },
+  "warnings": [
+    "source content touches the image border (t 40, b 40, l 102, r 42); the concept plate may be clipped",
+    "source-to-fit scale 31.1:1 exceeds the 16:1 treatment limit",
+    "max palette quantisation distance 65.4 exceeds 64"
+  ],
+  "previews": {
+    "scale2x": "art-source/previews/nanobanan/entities/pad-terminal-2x.png",
+    "scale8x": "art-source/previews/nanobanan/entities/pad-terminal-8x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/pad-terminal-tint-2x.png"
+  }
+}

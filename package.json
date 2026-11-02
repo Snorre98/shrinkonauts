@@ -11,6 +11,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:site": "npm run gdd:site && npm run build",
+    "gdd:site": "tsx scripts/gdd-site.ts",
+    "gdd:capture": "playwright test --project=capture",
+    "gdd:smoke": "playwright test --config playwright.gallery.config.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -18,7 +22,16 @@
     "pack:validate": "tsx scripts/pack-validate.ts",
     "pack:map": "tsx scripts/pack-map.ts",
     "pack:smoke": "tsx scripts/pack-smoke.ts",
-    "smoke:e2e": "playwright test"
+    "art:slice": "tsx scripts/art-slice.ts",
+    "art:key": "tsx scripts/art-key.ts",
+    "art:fit": "tsx scripts/art-fit.ts",
+    "art:hub": "tsx scripts/art-hub.ts",
+    "art:build-player": "tsx scripts/art-build-player.ts",
+    "smoke:e2e": "playwright test --project=smoke",
+    "art:normalize": "tsx scripts/art-normalize.ts",
+    "art:tile-clean": "node scripts/art-tile-clean.mjs",
+    "art:variant": "tsx scripts/art-variant.ts",
+    "art:remaster": "tsx scripts/art-remaster.ts"
   },
   "dependencies": {
     "matter-js": "^0.20.0",
@@ -28,6 +41,9 @@
     "@playwright/test": "^1.64.1",
     "@types/matter-js": "^0.20.2",
     "@types/node": "^24.19.2",
+    "@types/pngjs": "^6.0.5",
+    "marked": "^18.1.2",
+    "pngjs": "^7.0.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "vite": "^7.3.7",

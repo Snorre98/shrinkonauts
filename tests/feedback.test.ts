@@ -332,6 +332,254 @@ describe("feedback facts and cues", () => {
     expect(frame.tick).toBe(2);
   });
 
+  it("defers transient cues until a player requests the latest one", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingestAll([
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "pickup",
+        result: "accepted",
+        text: "Old P1 message",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "drop",
+        result: "accepted",
+        text: "Newest P1 message",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p2",
+        action: "pickup",
+        result: "accepted",
+        text: "P2 message",
+      },
+    ]);
+    director.tick(1 / 60);
+    expect(director.frame().cues).toEqual([]);
+
+    expect(director.requestLatest("p1")).toBe(true);
+    const p1Cue = director.frame().cues[0];
+    expect(p1Cue).toMatchObject({
+      actor: "p1",
+      presentation: "playerCaption",
+    });
+    expect(p1Cue?.content.text).toContain("Newest P1 message");
+    expect(director.requestLatest("p1")).toBe(false);
+
+    expect(director.requestLatest("p2")).toBe(true);
+    expect(
+      director
+        .frame()
+        .cues.find((cue) => cue.actor === "p2")?.content.text,
+    ).toContain("P2 message");
+  });
+
+  it("copies shared deferred cues to both players and consumes both copies", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingest({
+      kind: "system.outcome",
+      outcome: "gate.open",
+      source: { kind: "system", id: "gate" },
+      text: "The gate is open",
+    });
+    director.tick(1 / 60);
+    expect(director.frame().cues).toEqual([]);
+
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.frame().cues[0]).toMatchObject({
+      actor: null,
+      owner: "shared",
+      content: { text: "The gate is open" },
+    });
+    expect(director.requestLatest("p2")).toBe(false);
+  });
+
+  it("drops shared deferred cues while keeping player-specific cues", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.setSharedFeedbackEnabled(false);
+    director.ingestAll([
+      {
+        kind: "system.outcome",
+        outcome: "gate.open",
+        source: { kind: "system", id: "gate" },
+        text: "The gate is open",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "pickup",
+        result: "accepted",
+        text: "P1 message",
+      },
+    ]);
+    director.tick(1 / 60);
+
+    expect(director.requestLatest("p2")).toBe(false);
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.frame().cues).toHaveLength(1);
+    expect(director.frame().cues[0]).toMatchObject({
+      actor: "p1",
+      owner: "p1",
+      content: { text: "P1: P1 message" },
+    });
+  });
+
+  it("clears pending shared copies and does not restore them when re-enabled", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingest({
+      kind: "system.outcome",
+      outcome: "gate.open",
+      source: { kind: "system", id: "gate" },
+      text: "The gate is open",
+    });
+    director.tick(1 / 60);
+
+    director.setSharedFeedbackEnabled(false);
+    expect(director.requestLatest("p1")).toBe(false);
+    expect(director.requestLatest("p2")).toBe(false);
+
+    director.setSharedFeedbackEnabled(true);
+    expect(director.requestLatest("p1")).toBe(false);
+    expect(director.requestLatest("p2")).toBe(false);
+    expect(director.frame().cues).toEqual([]);
+  });
+
+  it("removes visible shared cues without touching player cues", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingestAll([
+      {
+        kind: "system.outcome",
+        outcome: "gate.open",
+        source: { kind: "system", id: "gate" },
+        text: "The gate is open",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "pickup",
+        result: "accepted",
+        text: "P1 message",
+      },
+    ]);
+    director.tick(1 / 60);
+
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.requestLatest("p2")).toBe(true);
+    expect(director.frame().cues).toHaveLength(2);
+
+    director.setSharedFeedbackEnabled(false);
+    const cues = director.frame().cues;
+    expect(cues).toHaveLength(1);
+    expect(cues[0]).toMatchObject({
+      actor: "p1",
+      owner: "p1",
+      content: { text: "P1: P1 message" },
+    });
+  });
+
+  it("does not leak player-specific deferred cues to the other player", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingest({
+      kind: "action.outcome",
+      actor: "p1",
+      action: "pulse",
+      result: "rejected",
+      reason: "cooldown",
+      text: "Still recharging",
+    });
+    director.tick(1 / 60);
+
+    expect(director.requestLatest("p2")).toBe(false);
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.frame().cues).toHaveLength(1);
+  });
+
+  it("processes ingestNow immediately for same-frame requests", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingestNow({
+      kind: "action.outcome",
+      actor: "p1",
+      action: "scan",
+      result: "rejected",
+      reason: "out-of-range",
+      text: "Nothing to scan here",
+    });
+
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.frame().cues[0]?.content.text).toBe(
+      "P1: Nothing to scan here",
+    );
+  });
+
+  it("keeps one player-attached cue per player and shows the newest", () => {
+    const director = createFeedbackDirector();
+    director.ingestAll([
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "pickup",
+        result: "rejected",
+        reason: "out-of-range",
+        text: "First P1 cue",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "drop",
+        result: "accepted",
+        text: "Newest P1 cue",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p2",
+        action: "pickup",
+        result: "accepted",
+        text: "P2 cue",
+      },
+    ]);
+    director.tick(1 / 60);
+    const frame = director.frame();
+    const p1 = frame.cues.filter(
+      (cue) => cue.anchor.kind === "player" && cue.anchor.playerId === "p1",
+    );
+    const p2 = frame.cues.filter(
+      (cue) => cue.anchor.kind === "player" && cue.anchor.playerId === "p2",
+    );
+
+    expect(p1).toHaveLength(1);
+    expect(p1[0]?.content.text).toBe("P1: Newest P1 cue");
+    expect(p2).toHaveLength(1);
+    expect(p2[0]?.content.text).toBe("P2: P2 cue");
+  });
+
+  it("does not apply the player slot to entity speech bubbles", () => {
+    const director = createFeedbackDirector();
+    director.ingestAll([
+      {
+        kind: "conversation.start",
+        actor: "p1",
+        entityId: "agent-muscle",
+        dialogueId: "dialogue-muscle",
+      },
+      {
+        kind: "conversation.start",
+        actor: "p2",
+        entityId: "agent-muscle",
+        dialogueId: "dialogue-muscle",
+      },
+    ]);
+    director.tick(1 / 60);
+    const bubbles = director
+      .frame()
+      .cues.filter((cue) => cue.presentation === "speechBubble");
+
+    expect(bubbles).toHaveLength(2);
+    expect(bubbles.map((cue) => cue.owner).sort()).toEqual(["p1", "p2"]);
+  });
+
   it("creates player captions and target bubbles for action outcomes", () => {
     const document = readPuzzle("04-muscle-effector");
     const director = createFeedbackDirector();
@@ -400,6 +648,55 @@ describe("feedback facts and cues", () => {
     director.removeSurface(spec.id);
     director.tick(1 / 60);
     expect(director.frame().surfaces).toEqual([]);
+  });
+
+  it("expires non-sticky runtime-owned surfaces and refreshes on upsert", () => {
+    const director = createFeedbackDirector();
+    const spec = {
+      id: "fb:help:test",
+      capability: "affordance" as const,
+      source: { kind: "node" as const, id: "puzzle" },
+      actor: null,
+      owner: "shared" as const,
+      audience: "both" as const,
+      anchor: { kind: "hud" as const, slot: "bottom" as const },
+      presentation: "hudStatus" as const,
+      content: { text: "Need a nudge?" },
+      state: "blocked" as const,
+      lifetime: { sticky: false, ttlTicks: 3 },
+    };
+    director.putSurface(spec);
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
+
+    director.tick(1 / 60);
+    director.putSurface(spec);
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
+
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toEqual([]);
+  });
+
+  it("keeps sticky runtime-owned surfaces", () => {
+    const director = createFeedbackDirector();
+    director.putSurface({
+      id: "fb:sticky:test",
+      capability: "affordance",
+      source: { kind: "node", id: "puzzle" },
+      actor: null,
+      owner: "shared",
+      audience: "both",
+      anchor: { kind: "hud", slot: "bottom" },
+      presentation: "hudStatus",
+      content: { text: "Sticky" },
+      state: "active",
+      lifetime: { sticky: true },
+    });
+    for (let index = 0; index < 10; index += 1) director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
   });
 
   it("keeps sticky projections from multiple puzzles", () => {

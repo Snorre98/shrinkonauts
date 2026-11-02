@@ -14,31 +14,9 @@
       {
         "assetId": "bg.bathroom.wall",
         "depth": -40,
-        "parallaxX": 0.05,
-        "parallaxY": 0.02,
+        "parallaxX": 0,
+        "parallaxY": 0,
         "fit": "cover"
-      },
-      {
-        "assetId": "bg.bathroom.far",
-        "depth": -30,
-        "parallaxX": 0.15,
-        "parallaxY": 0.08,
-        "fit": "tile"
-      },
-      {
-        "assetId": "bg.bathroom.mid",
-        "depth": -20,
-        "parallaxX": 0.35,
-        "parallaxY": 0.15,
-        "fit": "tile"
-      },
-      {
-        "assetId": "bg.bathroom.near",
-        "depth": -10,
-        "parallaxX": 0.7,
-        "parallaxY": 0.3,
-        "fit": "tile",
-        "opacity": 0.75
       }
     ]
   },
@@ -46,26 +24,77 @@
     "body": "sprite.prop.washer",
     "door": "sprite.prop.washer.door",
     "drum": "sprite.prop.washer.drum",
-    "x": 1000,
-    "y": 820,
-    "scale": 1.1,
+    "x": 340,
+    "y": 720,
+    "scale": 2,
     "screen": {
-      "x": 840,
-      "y": 444,
-      "width": 200,
-      "height": 56
+      "x": 178,
+      "y": 295,
+      "width": 102,
+      "height": 49
     },
-    "doorAnchor": { "x": 1000, "y": 700 },
-    "drumAnchor": { "x": 1000, "y": 700 }
+    "nameplate": {
+      "x": 177,
+      "y": 363,
+      "width": 82,
+      "height": 28
+    },
+    "doorAnchor": { "x": 340, "y": 503 },
+    "drumAnchor": { "x": 340, "y": 503 }
   },
   "player": {
     "civilian": "sprite.player.civilian",
     "astronaut": "sprite.player.p1",
-    "idle": { "x": 560, "y": 650 },
-    "entry": { "x": 980, "y": 700 },
-    "exit": { "x": 870, "y": 700 },
-    "scale": 1,
-    "tinyScale": 0.35
+    "idle": { "x": 640, "y": 700 },
+    "entry": { "x": 340, "y": 700 },
+    "exit": { "x": 180, "y": 700 },
+    "scale": 2,
+    "tinyScale": 1
+  },
+  "dressing": {
+    "logo": {
+      "assetId": "ui.logo.shrinkonauts",
+      "x": 48,
+      "y": 40,
+      "scale": 2,
+      "origin": "top-left",
+      "depth": 7
+    },
+    "poster": {
+      "assetId": "sprite.prop.poster",
+      "x": 627,
+      "y": 312,
+      "scale": 3.1,
+      "origin": "center",
+      "depth": 1
+    },
+    "props": [
+      {
+        "assetId": "sprite.prop.laundry.basket",
+        "x": 560,
+        "y": 700,
+        "scale": 2,
+        "origin": "bottom-center",
+        "depth": 6
+      },
+      {
+        "assetId": "sprite.prop.plush.neuron",
+        "x": 560,
+        "y": 655,
+        "scale": 2,
+        "origin": "bottom-center",
+        "depth": 7
+      }
+    ],
+    "cartridge": {
+      "anatomy": "sprite.prop.cartridge.anatomy",
+      "silicon": "sprite.prop.cartridge.silicon",
+      "x": 447,
+      "y": 314,
+      "scale": 2,
+      "origin": "top-center",
+      "depth": 6
+    }
   },
   "audio": {
     "click": "audio.cue.hub.click",

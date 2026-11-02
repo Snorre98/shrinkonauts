@@ -570,7 +570,9 @@ function cueFromActionOutcome(
     audience: "both",
     anchor,
     presentation,
-    content: { text },
+    content: {
+      text: presentation === "playerCaption" ? a11yText : text,
+    },
     state,
     ...(fact.reason ? { reason: fact.reason } : {}),
     severity: severityForResult(fact.result),

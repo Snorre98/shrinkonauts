@@ -23,13 +23,19 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 32 files, 317 unit/integration tests
+npm test               # 45 files, 423 unit/integration tests
 npm run smoke          # room boot + module boundary tests
 npm run build          # type check and production build
 npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
 npm run pack:map       # regenerate the mapping document
 npm run pack:smoke     # dev simulation + headless runtime loop
 npm run smoke:e2e      # Playwright browser smoke using system Chrome
+npm run gdd:capture    # capture 34 action shots into ignored gdd-captures/
+npm run gdd:site       # build the public GDD gallery into public/gdd/
+npm run gdd:smoke      # smoke the generated gallery + walkthrough
+npm run build:site     # build the gallery + production build
+npm run art:key        # remove a flat magenta background from a concept plate
+npm run art:build-player # build P1/P2 POC animation sheets and previews
 npm run preview        # serve the production build
 ```
 
@@ -40,10 +46,14 @@ Playwright's `channel: "chrome"`. It never downloads a bundled browser.
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Type check + build, unit tests, pack validation, committed-mapping drift check, Playwright smoke |
+| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Gameplay capture, GDD gallery build, type check + build, unit tests, pack validation, committed-mapping drift check, Playwright smoke |
 | `.github/workflows/deploy-pages.yml` | push to `main`, manual dispatch | Runs CI, then publishes the tested `dist/` artifact to GitHub Pages |
 
 Live build: <https://snorre98.github.io/shrinkonauts/>
+
+GDD asset gallery: <https://snorre98.github.io/shrinkonauts/gdd/>
+
+Gameplay walkthrough: <https://snorre98.github.io/shrinkonauts/gdd/walkthrough.html>
 
 The Vite `base` is `./` and the runtime resolves content from
 `import.meta.env.BASE_URL`, so the same build works from the project subpath
@@ -181,12 +191,15 @@ room/boot tests, but the app does not boot it.
 | `/?skipMenu=1&pack=anatomy-reflex` | Direct boot into the selected pack |
 | `/?pack=silicon-reflex` | Preselects the gated Silicon cycle in the hub; Start is disabled |
 | `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
-| `/?assets=final` | Selects the final manifests; shipped entries are still placeholders |
+| `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, and the 03 pretty sky are final, while deferred entries remain placeholders |
 
-The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 44/44
-placeholders. The dev fixture still resolves 10/10 placeholders, or 7/10 with
-its fixture manifest selected by the scripts. Unknown `?assets=` values fall back
-to placeholder mode.
+The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 31/51
+placeholders; the POC player sheets, Neuron Keeper static/idle, readable
+scan/entity sprites, and the pretty 03 sky are final. `bg.nerve_forest.far`,
+`.mid` and `.near` are declared placeholders/future layered work; the room
+wires only the sky. The dev fixture still resolves 10/10 placeholders, or 7/10
+with its fixture manifest selected by the scripts. Unknown `?assets=` values
+fall back to placeholder mode.
 
 ## Project layout
 
@@ -237,6 +250,8 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
 
 - [`IMPLEMENTATION.md`](IMPLEMENTATION.md) — runtime lifecycle, module graph,
   validation, save format, accessibility, test matrix, and verification.
+- [`docs/gdd/README.md`](docs/gdd/README.md) — GDD asset pack, gallery build,
+  GDD section map and asset provenance.
 - [`docs/puzzle-engine/README.md`](docs/puzzle-engine/README.md) — engine
   upgrade index, implementation status, and reading order.
 - [`docs/m1.75/README.md`](docs/m1.75/README.md) — milestone status, definition
@@ -247,6 +262,8 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
   deliberately missing and which milestone owns it.
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
   pre-game shell and save/catalog model.
+- [`docs/adr-controller/README.md`](docs/adr-controller/README.md) — ADR-0066–0069
+  for phone-controller same-screen co-op (M4.0a).
 
 `docs/puzzle-engine/` and `docs/adr-m1.5/` are maintained in this repository.
 `docs/shrinkonauts` is a symlink into the read-only Obsidian vault and is not
@@ -257,10 +274,17 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (37 files / 362 tests), pack validation/smoke pass, and the browser
+suite passes (45 files / 423 tests), pack validation/smoke pass, and the browser
 smoke passes 7/7. The hub starts Anatomy in Solo or Local co-op, returns to the
 bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
-M2 and M4.
+M2 and M4.0b. Phone-controller same-screen co-op is planned as M4.0a; see
+[`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
+
+M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, and land
+sheets play in `03-nerve-forest`, P2 uses the approved bone-suit/joint-cyan
+source sheets (ADR-0065), and `npm run art:key` removes magenta backgrounds from
+the nanobanan concept plates. Entity/background animation, final art approval,
+and the full ADR-0062 descriptor remain future work.
 
 M1.75 remains **implementation complete; manual solo/co-op playtest pending**.
 `authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until a

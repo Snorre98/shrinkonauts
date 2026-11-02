@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.player.p1",
+  "source": "public/packs/anatomy-reflex/shared/sprites/player-p1.png",
+  "output": "public/hub/bathroom/shared/sprites/tiny-astronaut.png",
+  "width": 14,
+  "height": 22,
+  "note": "Reused P1 tiny astronaut; hub.player.tinyScale is 1."
+}

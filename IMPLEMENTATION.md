@@ -6,7 +6,8 @@ The app boots into a bathroom, selects a cycle and player mode in the washing
 machine menu, plays a launch transition, and enters the selected pack. Anatomy
 starts at **03 — Nerve Forest**, plays Node Run, transitions to **04 — Endplate
 Ferry**, and finishes with teach-back evidence export. Silicon is visible but
-gated until M2; online co-op is a disabled M4 placeholder.
+gated until M2; online co-op is a disabled M4.0b placeholder. Phone-controller
+same-screen co-op is planned as M4.0a but is not implemented on this branch.
 
 M1.8 adds `materials.json`, material grids and autotiling, deterministic tile
 variants, atlas regions, world/object/background pattern projection, and UI
@@ -32,7 +33,8 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Per-pack saves (`shrinkonauts.run.<packId>`) | Working |
 | Anatomy cycle start, launch, and return | Working |
 | Silicon cycle | Visible; gated until M2 |
-| Online co-op lobby | Visible placeholder; M4 |
+| Online co-op lobby | Visible placeholder; M4.0b |
+| Phone controller co-op | Planned; ADR-0066–0069 and M4.0a plan drafted |
 | Direct boot into `03-nerve-forest` | Working via `?skipMenu=1` |
 | 03 → 04 transition through debrief | Working |
 | Pack + syllabus loading from `public/` | Working |
@@ -41,7 +43,7 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Concept scan and concept log | Working |
 | Node Run and Endplate Ferry puzzles | Working |
 | Capability feedback surfaces and attributed cues | Working |
-| Beat progress and stuck hint/reset affordance | Working |
+| Beat progress and requested hint/reset affordance | Working |
 | Composable cosmetic effects and tile visuals | Working |
 | Material/pattern catalog, tile grids, autotiling, variants | Working |
 | Atlas assets, named regions, frame refs, placeholder atlas | Working |
@@ -75,13 +77,15 @@ Run from `shrinkonauts/`:
 ```bash
 npm install
 npm run dev             # http://127.0.0.1:5173/
-npm test                # 37 files, 362 unit/integration tests
+npm test                # 45 files, 423 unit/integration tests
 npm run smoke           # room boot + module boundary tests
 npm run build           # tsc --noEmit + Vite production build
 npm run pack:validate   # dev fixture + anatomy + catalog/hub validation
 npm run pack:map        # regenerate/check the mapping document
 npm run pack:smoke      # dev simulation + headless runtime loop
 npm run smoke:e2e       # Playwright, system Chrome, port 4173
+npm run art:key         # remove a flat magenta background from a concept plate
+npm run art:build-player # build P1/P2 POC animation sheets and previews
 npm run preview         # serve dist/
 ```
 
@@ -213,10 +217,16 @@ restoreRun()
 ```
 
 `step(dt, input)` advances the simulation, routes soft-surface input, drains
-one-shot actions, checks checkpoints/triggers/exits, ticks the feedback director,
-updates the stuck affordance, and returns gameplay cues (`jump`, `land`, `dash`).
-Actions are latched by the input source, so an `E` tap is consumed exactly once
-by the next fixed step even when several render frames occur first.
+one-shot actions, checks checkpoints/triggers/exits, and ticks the feedback
+director. It returns gameplay cues (`jump`, `land`, `dash`). Transient feedback
+cues are deferred into per-player inboxes and only appear when a player presses
+scan; cosmetic effects still run immediately. The scan button also opens the
+shared hint/reset affordance inside an authored info area. A persisted global
+“Shared feedback” pause setting hides shared-owned transient cues, persistent
+state surfaces, the beat tracker, and the requested help surface without
+affecting player cues; cosmetic effects keep running. Actions are latched by the
+input source, so an `E` tap is consumed exactly once by the next fixed step even
+when several render frames occur first.
 
 ### State machine
 
@@ -275,14 +285,17 @@ relevant entity/player, and cues carry P1/P2 attribution.
 - `descriptors.ts` defines exhaustive `NODE_FEEDBACK` and `LINK_FEEDBACK` tables,
   capability defaults, labels, and persistent state projection.
 - `director.ts` owns the ECS-backed sticky surfaces, transient cues, beats,
-  effect instances, ordering, dedupe, TTL, and cancellation.
+  effect instances, ordering, dedupe, TTL, cancellation, and shared-feedback
+  visibility.
 - `effect-presets.ts` defines named cosmetic recipes built from the closed
   operator/path vocabulary.
 - `beats.ts` derives authored or win-graph beat progress.
 
 `GameRuntime` ingests facts and projects sticky surfaces once per fixed step.
-`RuntimeSnapshot.feedback` contains surfaces, cues, beats, and effect instances.
-The scene consumes only `WorldEffectPlan`/tile ports through `drainEffects()`.
+`RuntimeSnapshot.feedback` contains surfaces, cues, beats, and effect instances;
+while shared feedback is off, it omits shared-owned surfaces and beats. The scene
+consumes only `WorldEffectPlan`/tile ports through `drainEffects()`, which still
+receives the unfiltered effect list.
 
 ### Accessibility contract
 
@@ -372,7 +385,7 @@ talk, scan, open a gate, or cross the exit. The tether keeps the pair within
 560 px; when they separate further, P2 is pulled toward P1 so the shared camera
 cannot lose a player. `P` only changes P2 at a checkpoint, and rejoining places
 P2 beside P1 at that checkpoint. Soft-surface routing is owner-aware: hard
-overlays consume all input; conversation/stuck surfaces consume only their
+overlays consume all input; conversation/help surfaces consume only their
 owner's (or shared) UI actions.
 
 ## Save format
@@ -463,6 +476,9 @@ The accessibility baseline is:
 - Reduced motion: sets `data-reduced-motion="true"`, disables CSS animation, and
   simplifies movement effects while keeping surfaces/text.
 - Mute toggle (`M`) from gameplay and from every overlay, with HUD status.
+- Persisted global “Shared feedback” toggle in the pause settings; it hides
+  shared transient cues, shared persistent state surfaces, beats, and shared
+  help while keeping player cues and cosmetic effects.
 - Focus management: overlays are `role="dialog"`, `aria-modal`, labelled,
   autofocus the first meaningful control, trap `Tab`/`Shift+Tab`, and restore
   focus to the previous element on close.
@@ -582,11 +598,11 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/progression.test.ts` | Abilities, gates, all three puzzles, map traversal |
 | `tests/narrative.test.ts` | Linear dialogue, choices, effects, unknown choice |
 | `tests/curriculum.test.ts` | Evidence matching, objective progress, debrief, export |
-| `tests/save.test.ts` | Settings/run persistence, per-pack slots, legacy migration, version/pack rejection, conversations |
+| `tests/save.test.ts` | Settings/run persistence, shared-feedback defaults, per-pack slots, legacy migration, version/pack rejection, conversations |
 | `tests/catalog.test.ts` | Pack catalog ordering, statuses, paths, duplicates |
 | `tests/app-state.test.ts` | Hub phases, cycle/mode selection, start eligibility, error recovery |
 | `tests/hub.test.ts` | Bathroom document parsing, IDs, manifests, validation |
-| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, solo start, overlays |
+| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, shared-feedback state/beat filtering, solo start, overlays |
 | `tests/puzzle.test.ts`, `puzzle-dispatch.test.ts`, `endplate-ferry.test.ts` | Puzzle schema/dataflow, dispatch, timers, gate recovery |
 | `tests/recoverability.test.ts` | Exhaustive stable-state reachability |
 | `tests/ecs.test.ts` | Spawn/despawn/query/system order/determinism |
@@ -605,23 +621,23 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, materials purity, module graph |
 | `e2e/hub.spec.ts` | Browser: bathroom, cycle selection, launch skip, solo start, return |
 | `e2e/m1.spec.ts` | Browser: 03 → 04, conversations, attribution, reduced motion, live region, export |
+| `e2e/shared-feedback.spec.ts` | Browser: shared-feedback pause toggle, persistence, shared state/beat/help suppression and restoration |
 
 `npm run smoke` runs the room-boot and boundary suites. `pack:smoke` adds a
 headless full-loop runtime run plus the M0 placeholder/fixture simulation
-regression. `smoke:e2e` runs four Playwright tests against the dev server using
-system Chrome.
+regression. `smoke:e2e` runs the Playwright smoke project against the dev server
+using system Chrome.
 
 ## Verification performed
 
-On 2026-10-29, after the M1.8 material/pattern changes:
+On 2026-11-01, after the P2 re-baseline and POC player animation:
 
 ```text
-npm test             37 files, 362 tests passed
+npm test             45 files, 423 tests passed
 npm run build        tsc clean + Vite production build
 npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
-npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (45 IDs, 45 placeholders)
-npx playwright test   7/7 passed (system Chrome, port 4173)
-git diff --check      clean
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (45 IDs, 43 placeholders)
+npm run smoke:e2e     7/7 passed (system Chrome, port 4173)
 ```
 
 ### Screenshots
@@ -649,7 +665,9 @@ procedural placeholder:
 - Conditional dialogue-node skipping; M1 supports linear nodes, choices, and
   effects only.
 - Final bathroom hub art (M3.5); procedural hub placeholders ship now.
-- Real online host/join/ready (M4); the hub shows a disabled placeholder.
+- Real online host/join/ready (M4.0b); the hub shows a disabled placeholder.
+- Phone-controller co-op (M4.0a); ADRs and plan exist, no transport or touch UI
+  is implemented on this branch.
 - Physical puzzle-gate bodies (ADR-0002 target).
 - `locked`/`unlock`/`propReleased` (ADR-0004 target).
 - `requires`/`message`/`linkBlocked` (ADR-0005 target).
@@ -673,8 +691,9 @@ procedural placeholder:
   and manifests; it is not a playable pack.
 - **One Phaser game at a time.** The hub game is destroyed before the room game
   is created, avoiding texture-key collisions between packs.
-- **Online is a placeholder.** The hub exposes the M4 section but no transport,
-  room code, or session state until M4.
+- **Online is a placeholder.** The hub exposes the M4.0b section but no
+  transport, room code, or session state until M4.0b. M4.0a phone-controller
+  co-op is planned separately and is not wired into the hub yet.
 - **Two-level slice.** `03-nerve-forest` starts and transitions through debrief
   to `04-muscle-effector`, which ends the pack. `05-reflex-core` is a forward
   reference only.

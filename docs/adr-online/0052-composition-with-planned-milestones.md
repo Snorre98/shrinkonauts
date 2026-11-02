@@ -75,13 +75,13 @@ contradict them, and must not create a parallel path that bypasses them.
 
 ### 5. M2 multi-level content and puzzles
 
-- M4.0 ships **one level**, `03-nerve-forest`, with the final M3 asset set.
+- M4.0b ships **one level**, `03-nerve-forest`, with the final M3 asset set.
 - The online session is level-scoped: `levelId`, `roomId`, `checkpointId`, and
   `RunSnapshot` are host-authoritative.
 - On a host level transition (`onLevelChange`), the host sends a new `run` or a
   `level` message; the guest rebuilds its scene with the same mechanism as the
   local renderer.
-- M4.0 does not support guest-initiated map travel, side-level travel, or
+- M4.0b does not support guest-initiated map travel, side-level travel, or
   post-debrief transitions; the host drives them.
 - The M2 pack is used in tests to ensure the protocol does not assume a single
   level. M4.1 extends online play to the full pack.
@@ -97,7 +97,7 @@ contradict them, and must not create a parallel path that bypasses them.
   and playback is not synchronized.
 - Static sprites remain static; online does not add animation.
 - Deferred UI assets remain deferred; online does not create a new UI skin.
-- Capture mode is local-only. M4.0 does not add networked capture, spectator
+- Capture mode is local-only. M4.0b does not add networked capture, spectator
   views, or a second camera. A future host capture mode must not change the
   protocol’s authority model.
 - The M3 `?assets=final` path must work for both host and guest.
@@ -110,9 +110,9 @@ contradict them, and must not create a parallel path that bypasses them.
 | Conditional dialogue skipping | Host narrative state; guest mirrors; no guest graph evaluation. |
 | Music/ambience loops | Local playback; no synchronization. |
 | Map travel and side levels | Host authority; guest mirrors; guest-initiated travel deferred. |
-| Capture mode | Local only; no network capture in M4. |
-| Mobile/touch | Out of scope; input protocol is agnostic but no touch UI. |
-| Spectators | Out of scope; DO has two slots. |
+| Capture mode | Local only; no network capture in M4.0b. |
+| Mobile/touch | M4.0a adds a phone controller UI with touch input; no mobile game rendering. M4.0b remains touch-free. |
+| Spectators | Out of scope; the DO has two player slots. M4.0a allows host + up to two controllers, still no spectators. |
 | Full M2 pack online | M4.1; same authority, level/session lifecycle work. |
 | Guest prediction | Deferred; separate ADR; must not change host authority. |
 | Host migration | Out of scope; would require a new authority ADR. |
@@ -151,7 +151,7 @@ paths.
 
 **Constrained:**
 
-- One level in M4.0.
+- One level in M4.0b.
 - No new content or asset IDs.
 - No guest-driven level travel or side travel.
 - No networked capture/spectators.
@@ -168,7 +168,7 @@ paths.
 - **Make the guest run materials/autotiling independently from host state.**
   Rejected: materials are deterministic content, but tile visual effects and
   variant state must follow the host snapshot.
-- **Support the full M2 pack in M4.0.** Deferred; level/session lifecycle would
+- **Support the full M2 pack in M4.0b.** Deferred; level/session lifecycle would
   dominate the milestone.
 
 ## Tests

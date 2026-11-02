@@ -35,6 +35,11 @@ describe("bathroom hub content", () => {
     expect(ids).toContain("sprite.prop.washer");
     expect(ids).toContain("sprite.player.civilian");
     expect(ids).toContain("audio.cue.hub.shrink");
+    expect(ids).toContain("sprite.prop.poster");
+    expect(ids).toContain("sprite.prop.cartridge.anatomy");
+    expect(ids).toContain("sprite.prop.cartridge.silicon");
+    expect(ids).toContain("sprite.prop.laundry.basket");
+    expect(ids).toContain("ui.logo.shrinkonauts");
 
     const result = validateHub({
       hub: parsed.value,
@@ -71,5 +76,31 @@ describe("bathroom hub content", () => {
     const invalid = structuredClone(valid);
     invalid.player = { ...player, scale: 0 };
     expect(parseHubDocument(invalid)).toMatchObject({ ok: false });
+  });
+
+  it("parses dressing and machine nameplate, and rejects invalid dressing values", () => {
+    const valid = readHub("hub.json") as Record<string, unknown>;
+    const parsed = parseHubDocument(valid);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.value.machine.nameplate).toMatchObject({ width: 82 });
+    expect(parsed.value.dressing?.cartridge?.anatomy).toBe(
+      "sprite.prop.cartridge.anatomy",
+    );
+    expect(parsed.value.dressing?.props?.map((entry) => entry.assetId)).toContain(
+      "sprite.prop.laundry.basket",
+    );
+
+    const invalidOrigin = structuredClone(valid) as {
+      dressing: { poster: { origin: string } };
+    };
+    invalidOrigin.dressing.poster.origin = "somewhere";
+    expect(parseHubDocument(invalidOrigin)).toMatchObject({ ok: false });
+
+    const invalidScale = structuredClone(valid) as {
+      dressing: { poster: { scale: number } };
+    };
+    invalidScale.dressing.poster.scale = 0;
+    expect(parseHubDocument(invalidScale)).toMatchObject({ ok: false });
   });
 });

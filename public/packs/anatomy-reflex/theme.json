@@ -3,23 +3,35 @@
   "id": "anatomy-atlas",
   "palette": {
     "bg": "#101a20",
+    "tealDark": "#05090b",
+    "tealLight": "#1d2f38",
     "bone": "#f2e8d5",
     "boneShadow": "#7a8f8a",
+    "boneDark": "#5f736e",
+    "boneLight": "#fff8e8",
     "nerve": "#ffd166",
     "nerveGlow": "#fff3b0",
+    "nerveDark": "#b8862b",
     "joint": "#7bdff2",
+    "jointDark": "#3f9fb5",
+    "jointLight": "#c9f7ff",
     "muscle": "#ef476f",
+    "muscleDark": "#a82a4a",
+    "muscleLight": "#ff9fb2",
+    "orange": "#e59b34",
+    "orangeDark": "#813115",
+    "orangeLight": "#ffd28a",
     "text": "#f7f3ea",
     "muted": "#9db4ad",
     "accent": "#7bdff2",
     "danger": "#ef476f"
   },
   "fonts": {
-    "ui": "Inter, system-ui, sans-serif",
-    "display": "Space Grotesk, Inter, system-ui, sans-serif"
+    "ui": "Pixelify Sans, monospace",
+    "display": "Silkscreen, Pixelify Sans, monospace"
   },
   "ui": {
-    "radius": 12,
+    "radius": 0,
     "border": 2,
     "fontScale": 1,
     "reducedMotion": false,
@@ -29,9 +41,9 @@
       "debrief": "membrane"
     },
     "patterns": {
-      "panel": { "patternId": "bone-cortex", "space": "screen", "scale": 0.5, "opacity": 0.18 },
-      "dialogue": { "patternId": "nerve-fibers", "space": "screen", "scale": 0.5, "opacity": 0.18 },
-      "debrief": { "patternId": "membrane-cells", "space": "screen", "scale": 0.5, "opacity": 0.16 }
+      "panel": { "patternId": "bone-cortex", "space": "screen", "scale": 0.5, "opacity": 0 },
+      "dialogue": { "patternId": "nerve-fibers", "space": "screen", "scale": 0.5, "opacity": 0 },
+      "debrief": { "patternId": "membrane-cells", "space": "screen", "scale": 0.5, "opacity": 0 }
     },
     "assets": {
       "badge": "ui.icon.badge",

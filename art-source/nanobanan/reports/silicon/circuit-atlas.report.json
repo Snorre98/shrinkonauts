@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "assetId": "tile.circuit.atlas",
+  "source": "art-source/nanobanan/new-silicon/tile-circuit-atlas.jpeg",
+  "sourceSize": {
+    "width": 2048,
+    "height": 2048
+  },
+  "target": {
+    "width": 128,
+    "height": 128,
+    "cell": 32,
+    "grid": "4x4",
+    "regions": "mask-0..mask-15"
+  },
+  "palette": "art-source/nanobanan/palette.json",
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "attempts": {
+    "directDownscale": {
+      "dimensions": {
+        "width": 128,
+        "height": 128
+      },
+      "uniqueColours": 12,
+      "offPalettePixels": 0,
+      "alphaViolations": 0,
+      "non2x2Pixels": 0,
+      "framesWithEdgeMismatch": 16,
+      "leftRightMismatchPixels": 408,
+      "topBottomMismatchPixels": 414,
+      "notes": "Exact six-ramp quantize plus aligned 2x2 snap. Palette, alpha and 2x2 checks pass, but all 16 frames have opposite-edge mismatches and the 1-2 px traces collapse into a noisy field at 32x32."
+    },
+    "sixteenCrop": {
+      "dimensions": {
+        "width": 128,
+        "height": 128
+      },
+      "uniqueColours": 12,
+      "offPalettePixels": 0,
+      "alphaViolations": 0,
+      "non2x2Pixels": 0,
+      "framesWithEdgeMismatch": 16,
+      "leftRightMismatchPixels": 334,
+      "topBottomMismatchPixels": 342,
+      "notes": "16 spread 32x32 logical crops at 1:1, exact six-ramp quantize and 2x2 snap. Traces survive, but the frames are non-tileable fragments; the room simulation turns the floor into a bright cyan patchwork band."
+    },
+    "sixteenCropMaskEdges": {
+      "dimensions": {
+        "width": 128,
+        "height": 128
+      },
+      "uniqueColours": 12,
+      "offPalettePixels": 0,
+      "alphaViolations": 0,
+      "non2x2Pixels": 0,
+      "framesWithEdgeMismatch": 15,
+      "leftRightMismatchPixels": 316,
+      "topBottomMismatchPixels": 306,
+      "notes": "The 16-crop fills plus 2 px mask-specific edges (N=1, E=2, S=4, W=8). The edge math is correct, but the fills are arbitrary fragments; the atlas sheet reads as a grid and the room floor is still a bright cyan band. A frame with an edge is not expected to self-tile on the edged side; the failure is the fill/readability and the hand-authored gap."
+    }
+  },
+  "fallback": {
+    "runtimeFile": "public/packs/silicon-reflex/shared/tiles/circuit-atlas.svg",
+    "license": "CC0-1.0",
+    "reason": "The supplied plate is one continuous dense PCB material swatch, not a 4x4 frame atlas. A faithful 128x128 assembly requires 16 distinct 32x32 frames that are opaque, palette-only, 2x2-cluster clean, and tileable per cell with mask-correct edges. The direct downscale destroys the traces; the 16-crop and mask-edge assemblies are non-tileable and overly bright in the room. Producing the required frames would need hand-authoring, so the coherent SVG placeholder is retained.",
+    "verdict": "placeholder retained; source swatch recorded as source-only/deferred"
+  },
+  "previews": {
+    "directDownscale": "art-source/previews/nanobanan/silicon/circuit-atlas-128-direct-4x.png",
+    "directDownscale1x": "art-source/previews/nanobanan/silicon/circuit-atlas-128-direct.png",
+    "sixteenCrop": "art-source/previews/nanobanan/silicon/circuit-atlas-16crop-4x.png",
+    "sixteenCrop1x": "art-source/previews/nanobanan/silicon/circuit-atlas-16crop.png",
+    "sixteenCropMaskEdges": "art-source/previews/nanobanan/silicon/circuit-atlas-mask-edge-4x.png",
+    "sixteenCropMaskEdges1x": "art-source/previews/nanobanan/silicon/circuit-atlas-mask-edge.png",
+    "roomSimulation": "art-source/previews/nanobanan/silicon/circuit-atlas-room-sim.png"
+  }
+}

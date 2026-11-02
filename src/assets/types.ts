@@ -11,6 +11,23 @@ export type AssetType =
   | "audio"
   | "font";
 
+/**
+ * Authoring/encoding class from ADR-0072 and ADR-0075. The renderer uses the
+ * class to validate display sizes; the art pipeline uses the same names.
+ */
+export type FidelityClass =
+  | "world-2x"
+  | "hero-1x"
+  | "ui-1x"
+  | "atlas"
+  | "painted-screen";
+
+export interface AssetDisplaySize {
+  width: number;
+  height: number;
+}
+
+
 export type AssetCategory = "sprite" | "image" | "audio" | "font";
 
 export type AssetSource = "final" | "pack" | "placeholder";
@@ -108,6 +125,10 @@ export interface AssetDescriptor {
   regions?: Record<string, AtlasRegion>;
   width?: number;
   height?: number;
+  /** Native display size at camera zoom 1. ADR-0072/ADR-0074. */
+  display?: AssetDisplaySize;
+  /** Authoring/encoding class. ADR-0072/ADR-0075. */
+  fidelity?: FidelityClass;
   source: AssetSource;
   placeholderSpec?: PlaceholderSpec;
 }
@@ -130,6 +151,8 @@ export interface ManifestAssetEntry {
   regions?: Record<string, AtlasRegion>;
   width?: number;
   height?: number;
+  display?: AssetDisplaySize;
+  fidelity?: FidelityClass;
 }
 
 export interface AssetManifest {

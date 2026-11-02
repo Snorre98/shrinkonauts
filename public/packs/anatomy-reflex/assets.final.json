@@ -4,13 +4,101 @@
   "assets": {
     "sprite.player.p1": {
       "type": "sprite",
-      "placeholder": true,
-      "license": "Placeholder until final art"
+      "src": "shared/sprites/player-p1.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.player.p1.walk": {
+      "type": "sheet",
+      "src": "shared/sprites/player-p1-walk.png",
+      "frameWidth": 14,
+      "frameHeight": 22,
+      "frames": 49,
+      "fps": 38,
+      "loop": true,
+      "anchor": [0.5, 1],
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.player.p1.jump": {
+      "type": "sheet",
+      "src": "shared/sprites/player-p1-jump.png",
+      "frameWidth": 14,
+      "frameHeight": 22,
+      "frames": 12,
+      "fps": 30,
+      "loop": false,
+      "anchor": [0.5, 1],
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.player.p1.fall": {
+      "type": "sheet",
+      "src": "shared/sprites/player-p1-fall.png",
+      "frameWidth": 14,
+      "frameHeight": 22,
+      "frames": 10,
+      "fps": 15,
+      "loop": true,
+      "anchor": [0.5, 1],
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.player.p1.land": {
+      "type": "sheet",
+      "src": "shared/sprites/player-p1-land.png",
+      "frameWidth": 14,
+      "frameHeight": 22,
+      "frames": 8,
+      "fps": 30,
+      "loop": false,
+      "anchor": [0.5, 1],
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p2": {
       "type": "sprite",
-      "placeholder": true,
-      "license": "Placeholder until final art"
+      "src": "shared/sprites/player-p2.png",
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.player.p2.walk": {
+      "type": "sheet",
+      "src": "shared/sprites/player-p2-walk.png",
+      "frameWidth": 14,
+      "frameHeight": 22,
+      "frames": 36,
+      "fps": 28,
+      "loop": true,
+      "anchor": [0.5, 1],
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.player.p2.jump": {
+      "type": "sheet",
+      "src": "shared/sprites/player-p2-jump.png",
+      "frameWidth": 14,
+      "frameHeight": 22,
+      "frames": 12,
+      "fps": 30,
+      "loop": false,
+      "anchor": [0.5, 1],
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.player.p2.fall": {
+      "type": "sheet",
+      "src": "shared/sprites/player-p2-fall.png",
+      "frameWidth": 14,
+      "frameHeight": 22,
+      "frames": 10,
+      "fps": 15,
+      "loop": true,
+      "anchor": [0.5, 1],
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.player.p2.land": {
+      "type": "sheet",
+      "src": "shared/sprites/player-p2-land.png",
+      "frameWidth": 14,
+      "frameHeight": 22,
+      "frames": 8,
+      "fps": 30,
+      "loop": false,
+      "anchor": [0.5, 1],
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "tileset.anatomy": {
       "type": "image",
@@ -49,7 +137,8 @@
     },
     "bg.nerve_forest.sky": {
       "type": "background",
-      "placeholder": true
+      "src": "shared/backgrounds/nerve-forest-sky.webp",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "bg.nerve_forest.far": {
       "type": "background",
@@ -81,31 +170,75 @@
     },
     "sprite.agent.neuron": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/agent-neuron.png",
+      "display": { "width": 96, "height": 96 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.agent.neuron.idle": {
+      "type": "sheet",
+      "src": "shared/sprites/agent-neuron-idle.png",
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "frames": 36,
+      "fps": 12.5,
+      "loop": true,
+      "anchor": [0.5, 1],
+      "display": { "width": 96, "height": 96 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.nerve": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x"
     },
     "sprite.scan.neuron": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x"
     },
     "sprite.scan.synapse": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/scan-synapse.png",
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.pathway": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x"
     },
     "sprite.scan.muscle": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/scan-muscle.png",
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.reflex": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 36, "height": 36 },
+      "fidelity": "ui-1x"
+    },
+    "sprite.pad.dendrite": {
+      "type": "sprite",
+      "src": "shared/sprites/pad-dendrite.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "sprite.pad.terminal": {
+      "type": "sprite",
+      "src": "shared/sprites/pad-terminal.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.checkpoint": {
       "type": "sprite",
@@ -113,7 +246,9 @@
     },
     "sprite.exit": {
       "type": "sprite",
-      "placeholder": true
+      "placeholder": true,
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x"
     },
     "ui.icon.badge": {
       "type": "image",
@@ -201,23 +336,38 @@
     },
     "sprite.prop.tracer": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/prop-tracer.png",
+      "display": { "width": 48, "height": 48 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.pulse.terminal": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/pulse-terminal.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.triangle": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/receptor-triangle.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.circle": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/receptor-circle.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.ferry": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/gate-ferry.png",
+      "display": { "width": 64, "height": 64 },
+      "fidelity": "hero-1x",
+      "license": "Ludo.ai source (POC; plan TBD)"
     }
   }
 }

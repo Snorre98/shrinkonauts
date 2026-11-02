@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.scan.pathway",
+  "class": "ui-1x",
+  "status": "placeholder",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "missingReason": "The dendrite-to-terminal reading, myelin gaps and cyan rim are lost at 36×36.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/sprite-scan-pathway.png",
+    "width": 1864,
+    "height": 740,
+    "edgeContact": {
+      "top": 40,
+      "bottom": 40,
+      "left": 102,
+      "right": 42
+    }
+  },
+  "output": {
+    "path": "art-source/nanobanan/keyed/fit/scan-pathway.png",
+    "runtime": false,
+    "written": false,
+    "width": 36,
+    "height": 36,
+    "bytes": 945
+  },
+  "cell": {
+    "width": 36,
+    "height": 36
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 58.25,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1864,
+    "height": 740
+  },
+  "fit": {
+    "width": 32,
+    "height": 13,
+    "offsetX": 2,
+    "offsetY": 21,
+    "scale": 0.017167,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 21,
+    "width": 32,
+    "height": 13
+  },
+  "margins": {
+    "top": 21,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 159,
+    "maxDistance": 58.924,
+    "offPalettePixels": 159,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 159
+  },
+  "rampHistogram": {
+    "joint": 24,
+    "boneShadow": 52,
+    "sage": 42,
+    "bone": 30,
+    "nerve": 11
+  },
+  "warnings": [
+    "source content touches the image border (t 40, b 40, l 102, r 42); the concept plate may be clipped",
+    "fitted content is 32x13; minimum dimension 13px is below the 24px readability policy",
+    "fitted content has 159 opaque pixels; below the 300px minimum",
+    "source-to-fit scale 58.3:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 58.9 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/scan-pathway-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/scan-pathway-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/scan-pathway-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/scan-pathway-tint-2x.png"
+  }
+}

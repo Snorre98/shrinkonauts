@@ -1,7 +1,11 @@
 export { createAssets, DefaultAssetsModule } from "./assets";
 export type { AssetsModule, CreateAssetsOptions } from "./assets";
-export { PLAYER_ASSET_IDS } from "./ids";
-export type { PlayerAssetKey } from "./ids";
+export { PLAYER_ANIMATION_ASSET_IDS, PLAYER_ASSET_IDS } from "./ids";
+export type {
+  PlayerAnimationAssetKey,
+  PlayerAnimationClip,
+  PlayerAssetKey,
+} from "./ids";
 export { loadManifest, parseManifest } from "./manifest";
 export { ManifestProvider } from "./manifest-provider";
 export { PlaceholderProvider } from "./placeholder-provider";
@@ -24,12 +28,14 @@ export {
 export type {
   AssetCategory,
   AssetDescriptor,
+  AssetDisplaySize,
   AssetId,
   AssetManifest,
   AssetSource,
   AssetType,
   AtlasFrameRef,
   AtlasRegion,
+  FidelityClass,
   GradientStop,
   ManifestAssetEntry,
   ManifestLoadResult,

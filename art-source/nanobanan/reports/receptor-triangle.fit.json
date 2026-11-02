@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.receptor.triangle",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. Triangular socket and membrane rim; hand-clean remains required.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/receptor-triangle.png",
+    "width": 1720,
+    "height": 1670,
+    "edgeContact": {
+      "top": 124,
+      "bottom": 164,
+      "left": 216,
+      "right": 288
+    }
+  },
+  "output": {
+    "path": "public/packs/anatomy-reflex/shared/sprites/receptor-triangle.png",
+    "runtime": true,
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 5937
+  },
+  "cell": {
+    "width": 64,
+    "height": 64
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 28.793,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1720,
+    "height": 1670
+  },
+  "fit": {
+    "width": 60,
+    "height": 58,
+    "offsetX": 2,
+    "offsetY": 4,
+    "scale": 0.034884,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 4,
+    "width": 60,
+    "height": 58
+  },
+  "margins": {
+    "top": 4,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 2442,
+    "maxDistance": 97.99,
+    "offPalettePixels": 2442,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 2442
+  },
+  "rampHistogram": {
+    "ink": 476,
+    "teal": 574,
+    "sage": 218,
+    "boneShadow": 379,
+    "bone": 397,
+    "joint": 114,
+    "muscle": 156,
+    "nerve": 128
+  },
+  "warnings": [
+    "source content touches the image border (t 124, b 164, l 216, r 288); the concept plate may be clipped",
+    "source-to-fit scale 28.8:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 98.0 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/receptor-triangle-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/receptor-triangle-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/receptor-triangle-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/receptor-triangle-tint-2x.png"
+  }
+}

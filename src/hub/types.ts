@@ -24,8 +24,43 @@ export interface HubMachine {
   scale: number;
   /** Control-panel/screen rectangle in world coordinates. */
   screen: HubRect;
+  /** Blank nameplate rectangle on the final machine body. */
+  nameplate?: HubRect;
   doorAnchor: HubPoint;
   drumAnchor: HubPoint;
+}
+
+export type HubOrigin =
+  | "top-left"
+  | "top-center"
+  | "center"
+  | "bottom-left"
+  | "bottom-center";
+
+export interface HubDressingEntry {
+  assetId: AssetId;
+  x: number;
+  y: number;
+  scale?: number;
+  origin?: HubOrigin;
+  depth?: number;
+}
+
+export interface HubCartridgeSlot {
+  anatomy: AssetId;
+  silicon: AssetId;
+  x: number;
+  y: number;
+  scale?: number;
+  origin?: HubOrigin;
+  depth?: number;
+}
+
+export interface HubDressing {
+  logo?: HubDressingEntry;
+  poster?: HubDressingEntry;
+  props?: HubDressingEntry[];
+  cartridge?: HubCartridgeSlot;
 }
 
 export interface HubPlayer {
@@ -71,6 +106,7 @@ export interface HubDocument {
   player: HubPlayer;
   audio: HubAudio;
   intro: HubIntro;
+  dressing?: HubDressing;
 }
 
 export interface LoadedHubContent {

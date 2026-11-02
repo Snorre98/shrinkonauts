@@ -72,45 +72,7 @@
         "depth": -40,
         "parallaxX": 0.05,
         "parallaxY": 0.02,
-        "fit": "cover",
-        "materialId": "nerve",
-        "pattern": {
-          "patternId": "nerve-fibers",
-          "space": "screen",
-          "scale": 0.6,
-          "opacity": 0.14,
-          "blend": "overlay"
-        }
-      },
-      {
-        "assetId": "bg.nerve_forest.far",
-        "depth": -30,
-        "parallaxX": 0.2,
-        "parallaxY": 0.1,
-        "fit": "tile"
-      },
-      {
-        "assetId": "bg.nerve_forest.mid",
-        "depth": -20,
-        "parallaxX": 0.45,
-        "parallaxY": 0.2,
-        "fit": "tile",
-        "materialId": "bone",
-        "pattern": {
-          "patternId": "bone-cortex",
-          "space": "world",
-          "scale": 0.75,
-          "opacity": 0.12,
-          "blend": "overlay"
-        }
-      },
-      {
-        "assetId": "bg.nerve_forest.near",
-        "depth": -10,
-        "parallaxX": 0.75,
-        "parallaxY": 0.35,
-        "fit": "tile",
-        "opacity": 0.9
+        "fit": "cover"
       }
     ]
   },
@@ -135,11 +97,13 @@
     {
       "id": "agent-neuron",
       "type": "agent",
-      "x": 6,
+      "x": 30,
       "y": 20,
       "sprite": "sprite.agent.neuron",
+      "idleAnimation": "sprite.agent.neuron.idle",
       "dialogueId": "dlg-neuron-01",
-      "label": "Neuron Keeper"
+      "label": "Neuron Keeper",
+      "presentation": { "role": "npc" }
     },
     {
       "id": "scan-neuron",
@@ -173,27 +137,30 @@
       "type": "scanTarget",
       "x": 7,
       "y": 20,
-      "sprite": "sprite.scan.neuron",
+      "sprite": "sprite.pad.dendrite",
       "conceptId": "CON-3",
-      "label": "Dendrite input A"
+      "label": "Dendrite input A",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "pad-input-b",
       "type": "scanTarget",
       "x": 10,
       "y": 20,
-      "sprite": "sprite.scan.neuron",
+      "sprite": "sprite.pad.dendrite",
       "conceptId": "CON-3",
-      "label": "Dendrite input B"
+      "label": "Dendrite input B",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "pad-terminal",
       "type": "scanTarget",
       "x": 34,
       "y": 20,
-      "sprite": "sprite.scan.pathway",
+      "sprite": "sprite.pad.terminal",
       "conceptId": "CON-5",
-      "label": "Axon terminal"
+      "label": "Axon terminal",
+      "presentation": { "role": "interactable" }
     },
     {
       "id": "gate-threshold",
@@ -207,7 +174,7 @@
           "gateId": "gate-threshold"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": { "x": 32, "y": 32 }
         }
       }
     },
@@ -223,7 +190,7 @@
           "gateId": "gate-behind"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": { "x": 32, "y": 32 }
         }
       }
     },
@@ -239,7 +206,7 @@
           "gateId": "gate-exit"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": { "x": 32, "y": 32 }
         }
       }
     },
@@ -249,7 +216,8 @@
       "x": 37,
       "y": 19,
       "sprite": "sprite.exit",
-      "label": "Muscle Effector exit"
+      "label": "Muscle Effector exit",
+      "presentation": { "role": "interactable" }
     }
   ],
   "exits": [
@@ -263,5 +231,15 @@
       "puzzleId": "puzzle-node-run"
     }
   ],
-  "triggers": []
+  "triggers": [],
+  "infoAreas": [
+    {
+      "id": "info-nerve-forest",
+      "x": 6,
+      "y": 17,
+      "width": 32,
+      "height": 4,
+      "puzzleId": "puzzle-node-run"
+    }
+  ]
 }

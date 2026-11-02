@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.scan.controller",
+  "class": "ui-1x",
+  "status": "fit-preview",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "notes": "Socketed controller icon with cyan-lit slot and pin rows; reads at 36×36.",
+  "config": "fit.silicon.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/silicon/scan-controller.png",
+    "width": 1968,
+    "height": 1968,
+    "edgeContact": {
+      "top": 368,
+      "bottom": 248,
+      "left": 286,
+      "right": 286
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/sprites/scan-controller.png",
+    "runtime": true,
+    "written": false,
+    "width": 36,
+    "height": 36,
+    "bytes": 1609
+  },
+  "cell": {
+    "width": 36,
+    "height": 36
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 61.5,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1968,
+    "height": 1968
+  },
+  "fit": {
+    "width": 32,
+    "height": 32,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.01626,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 3,
+    "y": 7,
+    "width": 30,
+    "height": 27
+  },
+  "margins": {
+    "top": 7,
+    "right": 3,
+    "bottom": 2,
+    "left": 3
+  },
+  "quantization": {
+    "changedPixels": 767,
+    "maxDistance": 64.101,
+    "offPalettePixels": 767,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 778
+  },
+  "rampHistogram": {
+    "ink": 260,
+    "teal": 247,
+    "boneShadow": 80,
+    "bone": 80,
+    "sage": 65,
+    "joint": 46
+  },
+  "warnings": [
+    "source content touches the image border (t 368, b 248, l 286, r 286); the concept plate may be clipped",
+    "source-to-fit scale 61.5:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 64.1 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/scan-controller-1x.png",
+    "scale2x": "art-source/previews/nanobanan/silicon/scan-controller-2x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/scan-controller-4x.png",
+    "tint2x": "art-source/previews/nanobanan/silicon/scan-controller-tint-2x.png"
+  }
+}

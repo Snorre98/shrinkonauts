@@ -12,6 +12,7 @@ import {
   type FeedbackSurfaceRenderer,
 } from "./feedback-renderer";
 import type { CanvasRect } from "./anchors";
+import { snapTextScale, TEXT_SCALES } from "./text-scale";
 
 export interface GameUiDiagnostics {
   modeLabel: string;
@@ -35,6 +36,7 @@ export interface GameUiCallbacks {
   onMute(): void;
   onTextScale(scale: number): void;
   onToggleReducedMotion(): void;
+  onToggleSharedFeedback(): void;
   onDebriefAnswer(promptId: string, answer: string): void;
   onDebriefFinish(): void;
   onExport(): void;
@@ -65,7 +67,6 @@ interface Overlay {
   update?: OverlayUpdater;
 }
 
-const TEXT_SCALES = [0.9, 1, 1.1, 1.3, 1.5] as const;
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -203,10 +204,12 @@ export function mountGameUi(
   /* ---------------------------------------------------------------- */
 
   function applySettings(settings: SettingsView): void {
+    const scale = snapTextScale(settings.accessibility.textScale);
     document.documentElement.style.setProperty(
       "--ui-font-scale",
-      String(settings.accessibility.textScale),
+      String(scale),
     );
+    document.documentElement.dataset.textScale = String(scale);
     document.documentElement.dataset.reducedMotion = String(
       settings.accessibility.reducedMotion,
     );
@@ -720,7 +723,7 @@ export function mountGameUi(
   function renderPause(snapshot: RuntimeSnapshot): Overlay {
     const { root: node, body } = panel("overlay--pause", "Paused", "Paused");
     const settingsBlock = el("section", "settings");
-    settingsBlock.append(el("h3", "overlay__subheading", "Accessibility"));
+    settingsBlock.append(el("h3", "overlay__subheading", "Settings"));
 
     const scaleRow = el("div", "settings__row");
     scaleRow.append(el("span", "settings__label", "Text size"));
@@ -750,7 +753,16 @@ export function mountGameUi(
       callbacks.onMute(),
     );
     muteRow.append(muteToggle);
-    settingsBlock.append(scaleRow, motionRow, muteRow);
+
+    const sharedRow = el("div", "settings__row");
+    const sharedLabel = el("span", "settings__label", "Shared feedback");
+    sharedLabel.id = "settings-shared-feedback-label";
+    const sharedToggle = button("", "button button--small", () =>
+      callbacks.onToggleSharedFeedback(),
+    );
+    sharedToggle.setAttribute("aria-labelledby", sharedLabel.id);
+    sharedRow.append(sharedLabel, sharedToggle);
+    settingsBlock.append(scaleRow, motionRow, muteRow, sharedRow);
 
     const controls = el("section", "pause__controls");
     controls.append(el("h3", "overlay__subheading", "Controls"));
@@ -804,9 +816,9 @@ export function mountGameUi(
     node.dataset.autofocus = "true";
 
     const update = (next: RuntimeSnapshot): void => {
+      const activeScale = snapTextScale(next.settings.accessibility.textScale);
       for (const control of scaleControls) {
-        const active =
-          Math.abs(control.scale - next.settings.accessibility.textScale) < 0.01;
+        const active = Math.abs(control.scale - activeScale) < 0.01;
         control.node.dataset.active = String(active);
         control.node.setAttribute("aria-pressed", String(active));
       }
@@ -814,6 +826,9 @@ export function mountGameUi(
       motion.textContent = reduced ? "On" : "Off";
       motion.setAttribute("aria-pressed", String(reduced));
       muteToggle.textContent = next.muted ? "Unmute (M)" : "Mute (M)";
+      const shared = next.settings.feedback.showShared;
+      sharedToggle.textContent = shared ? "On" : "Off";
+      sharedToggle.setAttribute("aria-pressed", String(shared));
       hintText.textContent =
         next.puzzle?.hint ?? "No hint requested yet.";
       hintButton.disabled = !next.puzzle?.canHint;

@@ -1,4 +1,4 @@
-import type { AssetId } from "../assets";
+import type { AssetDisplaySize, AssetId, FidelityClass } from "../assets";
 import type {
   MaterialBinding,
   MaterialId,
@@ -12,6 +12,75 @@ import type { Syllabus } from "../syllabus";
 export type BackgroundFit = "cover" | "tile" | "stretch" | "contain";
 
 export type BackgroundBlend = "normal" | "add" | "multiply" | "screen";
+
+/* ------------------------------------------------------------------ */
+/* Presentation                                                        */
+/* ------------------------------------------------------------------ */
+
+/** A rect in logical canvas pixels (stage) or tile coordinates (play band). */
+export interface PresentationRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type CameraFraming = "fit-play-band";
+export type CameraZoom = "auto" | number;
+export type CameraFollowX = "players" | "p1" | "p2";
+export type CameraFollowY = "play-band" | "players";
+
+export interface PresentationCameraConfig {
+  framing?: CameraFraming;
+  zoom?: CameraZoom;
+  maxZoom?: number;
+  followX?: CameraFollowX;
+  followY?: CameraFollowY;
+  padding?: number;
+  snap?: boolean;
+}
+
+export type PresentationRoleName =
+  | "player"
+  | "npc"
+  | "interactable"
+  | "prop"
+  | "scan"
+  | "decor";
+
+/** JSON may use `[width, height]`; resolved values use the object form. */
+export type PresentationSize =
+  | [number, number]
+  | AssetDisplaySize;
+
+export interface PresentationRoleConfig {
+  display: PresentationSize;
+  fidelity?: FidelityClass;
+}
+
+export interface EntityPresentationConfig {
+  role?: PresentationRoleName;
+  display?: PresentationSize;
+  /** Optional depth tie-breaker for feet-aligned heroes. */
+  depthBias?: number;
+}
+
+/** Pack-level defaults. */
+export interface PresentationConfig {
+  stage?: PresentationRect;
+  camera?: PresentationCameraConfig;
+  roles?: Partial<Record<PresentationRoleName, PresentationRoleConfig>>;
+  /** Optional override of the built-in entity-type to role mapping. */
+  defaultRoles?: Partial<
+    Record<RoomEntityType, PresentationRoleName | "none">
+  >;
+}
+
+/** Room-level overrides. */
+export interface RoomPresentationConfig {
+  playBand?: PresentationRect;
+  camera?: PresentationCameraConfig;
+}
 
 export interface RoomBackgroundLayer {
   assetId: AssetId;
@@ -108,10 +177,14 @@ export interface RoomEntity {
   x: number;
   y: number;
   sprite?: AssetId;
+  /** Optional POC idle sheet played in addition to the static sprite. */
+  idleAnimation?: AssetId;
   dialogueId?: string;
   gateId?: string;
   conceptId?: string;
   label?: string;
+  /** Optional visual role/size override. ADR-0074. */
+  presentation?: EntityPresentationConfig;
   properties?: Record<string, RoomPropertyValue>;
   components?: RoomEntityComponents;
 }
@@ -145,6 +218,22 @@ export interface RoomTrigger {
   event?: string;
 }
 
+/**
+ * Authored relevance zone for shared help requests. Coordinates are in tiles,
+ * matching room triggers and entities.
+ */
+export interface RoomInfoArea {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Puzzle whose hint is requested; defaults to the active puzzle. */
+  puzzleId?: string;
+  /** Optional display duration for the requested help surface. */
+  ttlTicks?: number;
+}
+
 export interface RoomDocument {
   schemaVersion: string;
   id: string;
@@ -173,8 +262,10 @@ export interface RoomDocument {
   exits?: RoomExit[];
   entities?: RoomEntity[];
   triggers?: RoomTrigger[];
+  infoAreas?: RoomInfoArea[];
   music?: AssetId;
   ambience?: AssetId;
+  presentation?: RoomPresentationConfig;
 }
 
 export interface ThemePalette {
@@ -189,6 +280,23 @@ export interface ThemePalette {
   muted: string;
   accent: string;
   danger: string;
+  /** Optional pixel ramp tokens (theme schema 1.1). */
+  tealDark?: string;
+  tealLight?: string;
+  boneDark?: string;
+  boneLight?: string;
+  nerveDark?: string;
+  jointDark?: string;
+  jointLight?: string;
+  muscleDark?: string;
+  muscleLight?: string;
+  orange?: string;
+  orangeDark?: string;
+  orangeLight?: string;
+  /** Hub-only cool appliance ramp. Do not use in M3 gameplay assets. */
+  appliance?: string;
+  applianceShadow?: string;
+  applianceHighlight?: string;
 }
 
 export interface ThemeFonts {
@@ -251,6 +359,7 @@ export interface PackDocument {
   ageRating?: string;
   description?: string;
   metadata?: Record<string, unknown>;
+  presentation?: PresentationConfig;
 }
 
 /* ------------------------------------------------------------------ */

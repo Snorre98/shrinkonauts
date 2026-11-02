@@ -91,9 +91,10 @@ M4; it would replace the Pages deployment rather than duplicate it.
 - `VITE_NET_URL` — public Worker WebSocket origin.
 - `ALLOWED_ORIGINS` — Worker environment variable, comma-separated.
 - `ROOM_CODE_LENGTH` — default 6.
-- `MAX_ROOM_SOCKETS` — 2, not configurable in M4.
+- `MAX_ROOM_SOCKETS` — 2 for M4.0b guest rooms; 3 for M4.0a controller
+  rooms (host + up to two controllers); not configurable beyond that.
 - `HEARTBEAT_SECONDS` — 25.
-- `GUEST_RECONNECT_SECONDS` — 60.
+- `GUEST_RECONNECT_SECONDS` — 60; the same grace applies per controller slot.
 - No secrets in the client bundle.
 
 ### 6. Local development
@@ -124,7 +125,8 @@ M4 documents:
 - DO incoming messages are billed at 20:1; outgoing and protocol pings are free.
 - DO Free: 100,000 requests/day, 13,000 GB-s/day, 5 GB SQLite.
 - 100-second edge idle timeout; heartbeat 25 s.
-- A two-player session at 20 Hz snapshots + 60 Hz input is small; measure after
+- A two-player M4.0b session at 20 Hz snapshots + 60 Hz input is small;
+  an M4.0a controller session carries input only and is smaller. Measure after
   a 30-minute session.
 - If a session approaches limits, cap snapshots/inputs; do not upgrade to Paid
   for M4.

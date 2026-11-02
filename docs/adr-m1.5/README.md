@@ -38,10 +38,12 @@ records, not amendments or edits to the existing files.
 | [0044](0044-hazard-sensors-checkpoint-respawn.md) | Hazard sensors and checkpoint respawn | Accepted |
 | [0045](0045-recoverable-save-version-mismatch.md) | Recoverable save version mismatch | Accepted |
 | [0046](0046-level-transitions.md) | Level transitions after the debrief | Accepted |
+| [0047](0047-relay-timer-start-dispatch.md) | Relay activation dispatches timer start links | Accepted |
 
 ADR-0034–0041 are unchanged close-out records from the original M1.5 pass.
 ADR-0042–0045 record the decisions made while closing the verified gaps.
 ADR-0046 records the M2 multi-level transition and room-scene rebuild.
+ADR-0047 records the relay-to-timer dispatch needed by the Silicon fixture.
 
 ## Related accepted records
 

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.pulse.terminal",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. Round motor terminal with vesicles and a cyan emitter; hand-clean remains required.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/pulse-terminal.png",
+    "width": 1885,
+    "height": 1395,
+    "edgeContact": {
+      "top": 225,
+      "bottom": 26,
+      "left": 58,
+      "right": 144
+    }
+  },
+  "output": {
+    "path": "public/packs/anatomy-reflex/shared/sprites/pulse-terminal.png",
+    "runtime": true,
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 3971
+  },
+  "cell": {
+    "width": 64,
+    "height": 64
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 31.705,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1885,
+    "height": 1395
+  },
+  "fit": {
+    "width": 60,
+    "height": 44,
+    "offsetX": 2,
+    "offsetY": 18,
+    "scale": 0.03183,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 18,
+    "width": 60,
+    "height": 44
+  },
+  "margins": {
+    "top": 18,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 1676,
+    "maxDistance": 101.848,
+    "offPalettePixels": 1676,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 1676
+  },
+  "rampHistogram": {
+    "teal": 143,
+    "ink": 326,
+    "boneShadow": 445,
+    "sage": 173,
+    "joint": 467,
+    "bone": 54,
+    "nerve": 41,
+    "muscle": 27
+  },
+  "warnings": [
+    "source content touches the image border (t 225, b 26, l 58, r 144); the concept plate may be clipped",
+    "fitted content is 60x44; minimum dimension 44px is below the 48px readability policy",
+    "source-to-fit scale 31.7:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 101.8 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/pulse-terminal-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/pulse-terminal-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/pulse-terminal-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/pulse-terminal-tint-2x.png"
+  }
+}

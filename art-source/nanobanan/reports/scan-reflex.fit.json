@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.scan.reflex",
+  "class": "ui-1x",
+  "status": "placeholder",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "missingReason": "The two-cell loop reads, but the dorsal/ventral roots and muscle spindle do not read at 36×36.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/scan-reflex.png",
+    "width": 1844,
+    "height": 1702,
+    "edgeContact": {
+      "top": 450,
+      "bottom": 411,
+      "left": 267,
+      "right": 248
+    }
+  },
+  "output": {
+    "path": "art-source/nanobanan/keyed/fit/scan-reflex.png",
+    "runtime": false,
+    "written": false,
+    "width": 36,
+    "height": 36,
+    "bytes": 2084
+  },
+  "cell": {
+    "width": 36,
+    "height": 36
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 57.625,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1844,
+    "height": 1702
+  },
+  "fit": {
+    "width": 32,
+    "height": 30,
+    "offsetX": 2,
+    "offsetY": 4,
+    "scale": 0.017354,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 4,
+    "width": 32,
+    "height": 30
+  },
+  "margins": {
+    "top": 4,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 533,
+    "maxDistance": 81.896,
+    "offPalettePixels": 533,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 533
+  },
+  "rampHistogram": {
+    "joint": 34,
+    "sage": 111,
+    "nerve": 69,
+    "boneShadow": 218,
+    "bone": 81,
+    "ink": 20
+  },
+  "warnings": [
+    "source content touches the image border (t 450, b 411, l 267, r 248); the concept plate may be clipped",
+    "source-to-fit scale 57.6:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 81.9 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/scan-reflex-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/scan-reflex-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/scan-reflex-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/scan-reflex-tint-2x.png"
+  }
+}

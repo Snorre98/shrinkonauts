@@ -16,6 +16,7 @@ import {
 } from "./effect-types";
 import type { PlayerId, RoomSimulation } from "./simulation";
 import { PLAYER_HEIGHT, PLAYER_WIDTH } from "./simulation";
+import { cameraWorldView } from "./presentation";
 import { resolveTexture } from "./textures";
 
 type EffectObject =
@@ -819,9 +820,10 @@ export class RoomEffectLayer {
         return { x: anchor.x, y: anchor.y };
       case "hud": {
         const camera = this.options.scene.cameras.main;
+        const view = cameraWorldView(camera);
         return {
-          x: camera.scrollX + camera.width / 2,
-          y: camera.scrollY + 48,
+          x: view.x + view.width / 2,
+          y: view.y + 48 / (camera.zoom > 0 ? camera.zoom : 1),
         };
       }
     }

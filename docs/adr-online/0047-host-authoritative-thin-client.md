@@ -36,7 +36,7 @@ The host is one player's browser. It owns:
   narrative state;
 - `RoomSimulation` and Matter.js bodies;
 - autosave and evidence;
-- level transitions, gate/debrief/pause state in M4.0;
+- level transitions, gate/debrief/pause state in M4.0b;
 - the authoritative clock and fixed-step tick.
 
 The guest is a **thin client**. It:
@@ -70,9 +70,14 @@ These may be separate future ADRs. They are not implementation details of M4.
 M4 fixes host = P1 and guest = P2. Local key mapping is per client. The host
 disables local P2 sampling while online.
 
-### 5. Guest latency is accepted in M4.0
+**Controller phase (M4.0a).** For phone-controller couch co-op, the host is
+authority/display and P1/P2 are independent input slots; the host may own
+neither slot. See ADR-0067. The host = P1 / guest = P2 rule remains for the
+M4.0b remote guest.
 
-The guest's own movement is delayed by the host round trip. M4.0 measures and
+### 5. Guest latency is accepted in M4.0b
+
+The guest's own movement is delayed by the host round trip. M4.0b measures and
 documents this rather than adding prediction. Prediction is a later increment
 that must not change the authority model.
 
@@ -99,7 +104,7 @@ that must not change the authority model.
 
 **Constrained:**
 
-- No guest authority over save, evidence, gate, debrief, or pause in M4.0.
+- No guest authority over save, evidence, gate, debrief, or pause in M4.0b.
 - No spectators, matchmaking, accounts, or more than two players.
 - No server-side validation of physics or anti-cheat.
 - A public guest is not trusted assessment evidence.

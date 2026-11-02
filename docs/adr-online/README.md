@@ -1,16 +1,23 @@
 # Online Co-op — ADR domain
 
-**Status:** Proposed, 2026-10-28  
-**Owner:** Snorre  
-**Scope:** authority, session, protocol, ownership, persistence, failure,
-security, deployment, and verification for M4 online co-op  
-**Milestone:** [`../m4/README.md`](../m4/README.md) — M4  
-**Format:** Nygard-style, matching `docs/adr-m1.5/` and
-`docs/puzzle-engine/adr/`.
+- **Status:** Proposed, 2026-10-28; M4.0b scope clarified 2026-11-01
+- **Owner:** Snorre
+- **Scope:** authority, session, protocol, ownership, persistence, failure,
+  security, deployment, and verification for M4.0b remote co-op
+- **Milestone:** [`../m4/README.md`](../m4/README.md) — M4.0b
+- **Format:** Nygard-style, matching `docs/adr-m1.5/` and
+  `docs/puzzle-engine/adr/`.
 
 This domain is deliberately separate from the puzzle-engine and M1.5 ADR sets.
 It does not rewrite accepted records. It adds the decisions needed to run the
 existing local co-op game across two browsers.
+
+**Controller phase:** same-screen phone-controller co-op is M4.0a and is
+recorded in [`../adr-controller/`](../adr-controller/README.md). This domain
+remains the remote guest (M4.0b) and owns the shared transport, room, input,
+failure, security, deployment, and test decisions that the controller phase
+reuses. The controller phase does not adopt this domain's world/UI snapshots or
+guest renderer.
 
 ## Numbering
 
@@ -31,7 +38,7 @@ renumbered before acceptance; accepted records are immutable.
 | Online composition with M1.75, M1.8, M2, M3 | New content, art, audio, puzzle types, or save fields |
 | Worker + one Durable Object per room | Cloudflare Containers or paid-only infrastructure |
 | Wrangler-owned Worker/DO config; optional Terraform account layer | Terraform-owned Worker code or dual-managed resources |
-| Failure, security, deployment, and tests | Anti-cheat, chat/voice, mobile/touch |
+| Failure, security, deployment, and tests | Anti-cheat, chat/voice, mobile game client |
 
 ## Index
 
@@ -59,15 +66,18 @@ renumbered before acceptance; accepted records are immutable.
   tether policy, assessment, save v2, activation, feedback hints, hazards,
   save-version recovery, level transitions.
 - `architecture.md` §7 and `failure-semantics.md` / `concurrency-topology.md`:
-  local-only assumptions. M4 narrows them for an optional online session; local
+  local-only assumptions. M4.0b narrows them for an optional online session; local
   single-player and local co-op remain unchanged.
+- ADR-0066–0069 (controller domain): M4.0a phone-controller co-op reuses the
+  transport, room, and input subset; it does not use this domain's snapshots,
+  interpolation, or guest renderer.
 
 ## Acceptance
 
-M4 Phase 0 accepts this domain when:
+M4.0b Phase 0 accepts this domain when:
 
 1. Each ADR has a decision, consequences, alternatives, and tests.
-2. The M4 milestone references every ADR.
+2. The M4.0b milestone references every ADR.
 3. The local-only contracts are amended rather than silently violated.
 4. No accepted ADR is edited; amendments are new records.
 5. The domain explicitly excludes lockstep, server authority, and host
@@ -76,7 +86,7 @@ M4 Phase 0 accepts this domain when:
 ## Status vocabulary
 
 - **Proposed:** drafted, not yet accepted.
-- **Accepted:** M4 Phase 0 approved; implementation may proceed.
+- **Accepted:** M4.0b Phase 0 approved; implementation may proceed.
 - **Superseded:** replaced by a later ADR; kept immutable.
 - **Rejected:** considered and not adopted.
 

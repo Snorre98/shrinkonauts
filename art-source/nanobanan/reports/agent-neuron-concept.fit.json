@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.agent.neuron",
+  "class": "hero-npc",
+  "status": "alternate",
+  "treatment": "hero-npc",
+  "display": {
+    "width": 96,
+    "height": 96
+  },
+  "missingReason": "Runtime static is generated from the animated Neuron Keeper sheet; this concept-plate fit is an alternate review asset.",
+  "notes": "Hero-class review fit at 96×96; the runtime Keeper comes from the character sheet pipeline.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/sprite-agent-neuron.png",
+    "width": 1660,
+    "height": 1681,
+    "edgeContact": {
+      "top": 123,
+      "bottom": 244,
+      "left": 124,
+      "right": 102
+    }
+  },
+  "output": {
+    "path": "art-source/previews/nanobanan/entities/agent-neuron-concept.png",
+    "runtime": false,
+    "written": false,
+    "width": 96,
+    "height": 96,
+    "bytes": 7248
+  },
+  "cell": {
+    "width": 96,
+    "height": 96
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 72,
+    "minOpaquePixels": 3500,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 4
+  },
+  "sourceScale": 18.272,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1660,
+    "height": 1681
+  },
+  "fit": {
+    "width": 91,
+    "height": 92,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.054729,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 2,
+    "width": 91,
+    "height": 92
+  },
+  "margins": {
+    "top": 2,
+    "right": 3,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 3775,
+    "maxDistance": 88.465,
+    "offPalettePixels": 3775,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 3775
+  },
+  "rampHistogram": {
+    "ink": 713,
+    "boneShadow": 487,
+    "bone": 1785,
+    "teal": 318,
+    "sage": 371,
+    "joint": 20,
+    "nerve": 81
+  },
+  "warnings": [
+    "source content touches the image border (t 123, b 244, l 124, r 102); the concept plate may be clipped",
+    "source-to-fit scale 18.3:1 exceeds the 4:1 treatment limit",
+    "max palette quantisation distance 88.5 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/agent-neuron-concept-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/agent-neuron-concept-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/agent-neuron-concept-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/agent-neuron-concept-tint-2x.png"
+  }
+}

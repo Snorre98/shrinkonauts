@@ -21,12 +21,15 @@ P2 without giving the guest authority over host-only state.
 ### 1. Player slots and local key maps
 
 - Host = P1; guest = P2.
-- Each client uses its own local key map for its own character. In M4.0 the
+- Each client uses its own local key map for its own character. In M4.0b the
   guest may use the existing P1/WASD map locally; the host translates it to P2.
 - The host disables local P2 sampling while online. The guest never samples a
   local P2 keyboard pair.
 - Key rebinding remains local and future; the protocol carries actions, not
   physical keys.
+- **Controller phase (M4.0a):** the host = P1 assumption does not apply. The
+  host is authority/display, and P1/P2 are independent keyboard-or-phone slots.
+  See ADR-0067. This rule remains for the M4.0b remote guest.
 
 ### 2. Host applies all guest input
 
@@ -68,7 +71,7 @@ type NetAction =
 The host validates the action against current state and ownership before
 applying it. Guest actions never mutate save/evidence directly.
 
-### 4. M4.0 interaction parity
+### 4. M4.0b interaction parity
 
 Both players can:
 
@@ -79,7 +82,7 @@ Both players can:
 - start and advance their own entity conversations;
 - see P1/P2 attribution on surfaces and effects.
 
-M4.0 keeps these **host-owned**:
+M4.0b keeps these **host-owned**:
 
 - gate modal and gate answer submission;
 - debrief answers and finish;
@@ -94,7 +97,7 @@ the guest remains a full second player in the world and in conversations, not a
 second owner of the assessment flow.
 
 M4.1 may route guest gate/debrief actions through the same `NetAction` path; the
-protocol is designed for it, but the UI and validation are not in M4.0.
+protocol is designed for it, but the UI and validation are not in M4.0b.
 
 ### 5. Attribution
 
@@ -117,7 +120,7 @@ M1.75 allows one conversation per owner/entity pair. Online must preserve that:
 ### 7. Pause and focus
 
 - Host pause is global; it pauses simulation and sends a `pause` state.
-- Guest pause request is rejected in M4.0.
+- Guest pause request is rejected in M4.0b.
 - Guest local focus loss does not pause the host; the guest shows a reconnect
   overlay if its socket drops.
 - Host tab hidden pauses the entire session (ADR-0053).
@@ -141,7 +144,7 @@ M1.75 allows one conversation per owner/entity pair. Online must preserve that:
 
 **Constrained:**
 
-- No guest gate/debrief/pause in M4.0.
+- No guest gate/debrief/pause in M4.0b.
 - No guest key rebinding UI.
 - No host migration of ownership.
 - No guest evidence export.
@@ -154,7 +157,7 @@ M1.75 allows one conversation per owner/entity pair. Online must preserve that:
   Rejected.
 - **Guest runs its own UI state and only syncs world.** Rejected; gate/debrief/
   feedback would drift.
-- **Guest gets full gate/debrief parity in M4.0.** Deferred; increases UI and
+- **Guest gets full gate/debrief parity in M4.0b.** Deferred; increases UI and
   evidence validation scope without proving the core online loop.
 - **Send physical key events.** Rejected; key maps and accessibility are local.
 

@@ -51,7 +51,19 @@ export { RoomScene } from "./room-scene";
 export type { RoomSceneConfig } from "./room-scene";
 export { HubScene } from "./hub-scene";
 export type { HubLaunchOptions, HubSceneConfig, HubSelectionView } from "./hub-scene";
-export { PLAYER_ASSET_IDS } from "./ids";
+export { PLAYER_ANIMATION_ASSET_IDS, PLAYER_ASSET_IDS } from "./ids";
+export type {
+  PlayerAnimationAssetKey,
+  PlayerAnimationClip,
+} from "./ids";
+export { PlayerAnimator } from "./player-animator";
+export type { PlayerAnimationAsset } from "./player-animator";
+export { choosePlayerClip } from "./player-animation";
+export type {
+  PlayerAnimationInput,
+  PlayerAnimationMemory,
+  PlayerClip,
+} from "./player-animation";
 export {
   cameraTarget,
   createRoomSimulation,
@@ -59,6 +71,7 @@ export {
   placePlayer,
   PLAYER_HEIGHT,
   PLAYER_WIDTH,
+  resizeRoomSimulation,
   respawnPlayer,
   roomPixelHeight,
   roomPixelWidth,
@@ -82,6 +95,19 @@ export type {
   Solid,
   Viewport,
 } from "./simulation";
+export {
+  cameraScrollForView,
+  cameraWorldView,
+  resolvePresentation,
+} from "./presentation";
+export type {
+  CameraViewLike,
+  CameraWorldView,
+  ResolvedPresentation,
+  ResolvePresentationInput,
+  RoomPresentationInput,
+  ViewportLike,
+} from "./presentation";
 export { COLLISION_LAYERS, RoomPhysics, TETHER_LENGTHS } from "./physics";
 export {
   ensurePlaceholderTexture,

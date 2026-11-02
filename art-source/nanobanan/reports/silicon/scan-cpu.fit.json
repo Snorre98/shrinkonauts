@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.scan.cpu",
+  "class": "ui-1x",
+  "status": "fit-preview",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "notes": "Ceramic CPU icon with cyan die window and pin rows; reads as hardware, not a brain.",
+  "config": "fit.silicon.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/silicon/scan-cpu.png",
+    "width": 1844,
+    "height": 1844,
+    "edgeContact": {
+      "top": 1720,
+      "bottom": 1762,
+      "left": 1742,
+      "right": 1741
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/sprites/scan-cpu.png",
+    "runtime": true,
+    "written": false,
+    "width": 36,
+    "height": 36,
+    "bytes": 1097
+  },
+  "cell": {
+    "width": 36,
+    "height": 36
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 57.625,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1844,
+    "height": 1844
+  },
+  "fit": {
+    "width": 32,
+    "height": 32,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.017354,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 2,
+    "width": 32,
+    "height": 32
+  },
+  "margins": {
+    "top": 2,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 1022,
+    "maxDistance": 82.098,
+    "offPalettePixels": 1022,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 1022
+  },
+  "rampHistogram": {
+    "boneShadow": 143,
+    "ink": 236,
+    "teal": 117,
+    "sage": 171,
+    "bone": 209,
+    "joint": 146
+  },
+  "warnings": [
+    "source content touches the image border (t 1720, b 1762, l 1742, r 1741); the concept plate may be clipped",
+    "source-to-fit scale 57.6:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 82.1 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/scan-cpu-1x.png",
+    "scale2x": "art-source/previews/nanobanan/silicon/scan-cpu-2x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/scan-cpu-4x.png",
+    "tint2x": "art-source/previews/nanobanan/silicon/scan-cpu-tint-2x.png"
+  }
+}

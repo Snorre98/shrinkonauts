@@ -4,6 +4,7 @@ import {
   ASSET_TYPES,
   type AssetManifest,
   type AssetType,
+  type FidelityClass,
   type ManifestAssetEntry,
   type ManifestLoadResult,
 } from "./types";
@@ -32,6 +33,21 @@ function isPositiveInteger(value: unknown): value is number {
     Number.isFinite(value) &&
     Number.isInteger(value) &&
     value > 0
+  );
+}
+
+const FIDELITY_CLASSES: readonly FidelityClass[] = [
+  "world-2x",
+  "hero-1x",
+  "ui-1x",
+  "atlas",
+  "painted-screen",
+];
+
+function isFidelityClass(value: unknown): value is FidelityClass {
+  return (
+    typeof value === "string" &&
+    FIDELITY_CLASSES.includes(value as FidelityClass)
   );
 }
 
@@ -107,6 +123,31 @@ function parseEntry(
       return err(`ASSET_MANIFEST_INVALID: ${id} has invalid ${key}`);
     }
     entry[key] = raw[key];
+  }
+
+  if (raw.display !== undefined) {
+    if (!isRecord(raw.display)) {
+      return err(`ASSET_MANIFEST_INVALID: ${id} display must be an object`);
+    }
+    if (
+      !isPositiveInteger(raw.display.width) ||
+      !isPositiveInteger(raw.display.height)
+    ) {
+      return err(
+        `ASSET_MANIFEST_INVALID: ${id} display needs positive integer width and height`,
+      );
+    }
+    entry.display = {
+      width: raw.display.width,
+      height: raw.display.height,
+    };
+  }
+
+  if (raw.fidelity !== undefined) {
+    if (!isFidelityClass(raw.fidelity)) {
+      return err(`ASSET_MANIFEST_INVALID: ${id} has invalid fidelity class`);
+    }
+    entry.fidelity = raw.fidelity;
   }
 
   if (raw.src !== undefined) {

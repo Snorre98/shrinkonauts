@@ -2,6 +2,7 @@ import {
   createAssets,
   loadManifest,
   PlaceholderProvider,
+  PLAYER_ANIMATION_ASSET_IDS,
   PLAYER_ASSET_IDS,
   type AssetManifest,
   type AssetsModule,
@@ -35,6 +36,7 @@ import {
   mountGameUi,
   mountHubUi,
   resolveUiMaterialStyles,
+  snapTextScale,
   type GameUi,
   type GameUiDiagnostics,
   type HubMode,
@@ -60,7 +62,11 @@ import {
   selectedPack,
   type AppState,
 } from "./app-state";
-import { parseAssetMode, modeLabel, type AssetMode } from "./asset-mode";
+import {
+  modeLabel,
+  resolveAssetMode,
+  type AssetMode,
+} from "./asset-mode";
 import { GameRuntime, type AudioPort } from "./runtime";
 
 export interface BootOptions {
@@ -247,7 +253,7 @@ export class AppController {
   }
 
   async boot(): Promise<void> {
-    this.mode = parseAssetMode(this.search);
+    this.mode = resolveAssetMode(this.search);
     this.saveData = createSave();
 
     const catalog = await loadPackCatalog(
@@ -268,8 +274,10 @@ export class AppController {
     clearUiMaterialStyles();
     document.title = "Shrinkonauts — The Bathroom";
 
+    const hubFinalManifest =
+      this.mode === "placeholder" ? null : this.hubContent.finalManifest;
     this.hubAssets = createAssets({
-      finalManifest: this.hubContent.finalManifest,
+      finalManifest: hubFinalManifest,
       packManifest: this.hubContent.placeholderManifest,
       placeholder: new PlaceholderProvider({
         palette: this.hubContent.theme.palette,
@@ -292,7 +300,7 @@ export class AppController {
     }
     for (const issue of this.hubAssets.validate(
       hubIds,
-      this.hubContent.finalManifest ?? undefined,
+      hubFinalManifest ?? undefined,
     ).issues) {
       this.warnings.push(`${issue.code}: ${issue.message}`);
     }
@@ -374,10 +382,12 @@ export class AppController {
 
   private applySettings(): void {
     const settings = this.saveData.settings;
+    const scale = snapTextScale(settings.accessibility.textScale);
     document.documentElement.style.setProperty(
       "--ui-font-scale",
-      String(settings.accessibility.textScale),
+      String(scale),
     );
+    document.documentElement.dataset.textScale = String(scale);
     document.documentElement.dataset.reducedMotion = String(
       settings.accessibility.reducedMotion,
     );
@@ -392,16 +402,23 @@ export class AppController {
     const entry = selectedPack(this.state);
     const hasSave = entry ? this.saveData.hasRun(entry.id) : false;
     const start = canStart(this.state, hasSave);
-    const packs = this.catalogData.packs.map((pack) => ({
-      id: pack.id,
-      title: pack.title,
-      subtitle: pack.subtitle ?? null,
-      description: pack.description ?? null,
-      status: pack.status,
-      online: pack.online,
-      selected: pack.id === this.state?.selectedPackId,
-      hasSave: this.saveData.hasRun(pack.id),
-    }));
+    const packs = this.catalogData.packs.map((pack) => {
+      const iconId = this.hubContent.theme.ui.assets[pack.id];
+      const icon = iconId ? this.hubAssets.image(iconId) : undefined;
+      return {
+        id: pack.id,
+        title: pack.title,
+        subtitle: pack.subtitle ?? null,
+        description: pack.description ?? null,
+        status: pack.status,
+        online: pack.online,
+        selected: pack.id === this.state?.selectedPackId,
+        hasSave: this.saveData.hasRun(pack.id),
+        ...(icon && icon.source !== "placeholder" && icon.src
+          ? { iconSrc: icon.src }
+          : {}),
+      };
+    });
     const view: HubView = {
       phase:
         this.state.phase === "boot"
@@ -633,6 +650,11 @@ export class AppController {
     } finally {
       skipButton?.remove();
       if (skipKey) window.removeEventListener("keydown", skipKey);
+      // The launch button was focused and then removed. Re-focus the live
+      // room canvas so the shared keyboard controls keep working.
+      document
+        .querySelector<HTMLCanvasElement>(`#${this.parentId} canvas[data-room-id]`)
+        ?.focus({ preventScroll: true });
     }
   }
 
@@ -699,6 +721,9 @@ export class AppController {
       ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
       ...Object.values(PLAYER_ASSET_IDS),
+      ...Object.values(PLAYER_ANIMATION_ASSET_IDS)
+        .flatMap((clips) => Object.values(clips))
+        .filter((id) => finalManifest?.assets[id] !== undefined),
     ];
     const plan = assets.preload(ids);
     warnings.push(...plan.warnings);
@@ -818,6 +843,7 @@ export class AppController {
         onMute: () => bundle.runtime.toggleMute(),
         onTextScale: (scale) => bundle.runtime.setTextScale(scale),
         onToggleReducedMotion: () => bundle.runtime.toggleReducedMotion(),
+        onToggleSharedFeedback: () => bundle.runtime.toggleSharedFeedback(),
         onDebriefAnswer: (promptId, answer) =>
           bundle.runtime.submitDebrief(promptId, answer),
         onDebriefFinish: () => bundle.runtime.finishDebrief(),
@@ -913,6 +939,9 @@ export class AppController {
               "aria-label",
               "Shrinkonauts game canvas. Use the listed keyboard controls.",
             );
+            // Starting from the hub leaves focus on a removed button. Focus
+            // the game surface so shared keyboard controls work immediately.
+            canvas.focus({ preventScroll: true });
           }
           resolve();
         },

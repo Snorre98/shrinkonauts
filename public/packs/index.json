@@ -14,12 +14,12 @@
     {
       "id": "silicon-reflex",
       "path": "silicon-reflex/",
-      "status": "coming-soon",
+      "status": "available",
       "online": false,
       "order": 20,
       "title": "Silicon: Interrupt Loop",
       "subtitle": "Hardware transfer",
-      "description": "A one-room transfer fixture: sensor, interrupt line, controller, CPU, actuator. Arrives with the M2 content pass."
+      "description": "A one-room transfer fixture: route a sensor interrupt through the interrupt controller to wake the CPU and open the actuator."
     }
   ]
 }

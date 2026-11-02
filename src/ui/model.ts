@@ -1,6 +1,6 @@
 import type { DebriefPrompt, ObjectiveProgress } from "../curriculum";
 import type { FeedbackFrame } from "../feedback";
-import type { GateDocument } from "../pack";
+import type { GateDocument, PresentationRect } from "../pack";
 
 /**
  * Presentation contract between `game` and `ui`. The runtime produces these
@@ -116,6 +116,7 @@ export interface PuzzleView {
 export interface SettingsView {
   audio: { muted: boolean; volume: number };
   accessibility: { textScale: number; reducedMotion: boolean };
+  feedback: { showShared: boolean };
 }
 
 export interface WorldAnchorPoint {
@@ -138,6 +139,10 @@ export interface WorldView {
   camera: CameraView;
   /** Logical game resolution; the canvas may be scaled/letterboxed. */
   viewport: { width: number; height: number };
+  /** Stage rect in logical canvas pixels. */
+  stage: PresentationRect;
+  /** Integer camera zoom applied inside the stage. */
+  zoom: number;
   tileSize: number;
   players: Record<PlayerId, PlayerView>;
   entities: Record<string, WorldEntityView>;

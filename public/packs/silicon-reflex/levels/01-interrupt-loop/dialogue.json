@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0",
+  "id": "dlg-cpu-01",
+  "speaker": "CPU Core",
+  "portrait": "cpu",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "text": "You are on the interrupt board. The sensor is ringing, but the line is wired straight to me. Nothing happens.",
+      "next": "problem"
+    },
+    "problem": {
+      "text": "A sensor does not shout directly at the CPU. The interrupt line rings the controller. The controller decides what I should do. I am the output side, not the spinal cord.",
+      "next": "clue"
+    },
+    "clue": {
+      "text": "Find the controller socket. Route the interrupt line to the controller, not to me. The controller is the integration point.",
+      "next": "check"
+    },
+    "check": {
+      "text": "Which part is the integration point?",
+      "choices": [
+        { "id": "cpu", "text": "The CPU", "next": "retry" },
+        { "id": "controller", "text": "The interrupt controller", "next": "right" }
+      ]
+    },
+    "retry": {
+      "text": "No. I am the output side. The controller is the integration point.",
+      "next": "check"
+    },
+    "right": {
+      "text": "Exactly. The controller maps to the spinal cord in this analogy. It integrates the sensor's interrupt and wakes me. I am the output side.",
+      "effects": [
+        { "type": "revealConcept", "conceptId": "CON-7" },
+        { "type": "revealConcept", "conceptId": "CON-8" },
+        { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-8" },
+        { "type": "revealMap", "nodeId": "map-interrupt-loop" }
+      ],
+      "next": "handoff"
+    },
+    "handoff": {
+      "text": "Start the loop at the sensor console. Step on the sensor pad, carry the route plug to the controller socket, and wait for the controller to wake me. Then the actuator responds.",
+      "next": null
+    }
+  }
+}

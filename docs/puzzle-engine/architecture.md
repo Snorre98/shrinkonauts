@@ -7,7 +7,8 @@ puzzle design (`03`–`05`, Silicon, optional `01`/`02`)
 [precise contracts](contracts/), [traceability](traceability.md),
 [implementation plan](implementation-plan.md), [M2 puzzle design](../m2/nervous-puzzles/README.md),
 [ADR-0046 level transitions](../adr-m1.5/0046-level-transitions.md),
-[M4 online co-op](../m4/README.md), [online ADR domain](../adr-online/README.md)
+[M4 multiplayer](../m4/README.md), [online ADR domain](../adr-online/README.md),
+[controller ADR domain](../adr-controller/README.md)
 
 ---
 
@@ -61,6 +62,9 @@ current branch.
 | Q4 | Backward compatibility | Given an existing 1.0 puzzle, 1.0 level, or 2.0 save, when it is loaded by the upgraded runtime, then its old behavior is preserved and optional feedback/conversation fields default off. | ADR-0008, ADR-0011; `schema-compatibility.feature`, `entity-conversations.feature` |
 | Q5 | Testability and observability | Given a surface, cue, effect, conversation, or tile visual change, when it is produced, then the pure feedback frame and simulation state expose it without Phaser/Matter, and the browser test can verify the rendered room, live region, and evidence export. | ADR-0001, ADR-0009–0017; all behavior contracts |
 | Q11 | Material language without gameplay authority | Given a room mixes materials, patterns, variants, or UI slots, when it is validated and rendered, then its visual language is data-driven and deterministic, while `layers.tiles` alone decides collision and materials add no save fields. | ADR-0014–0017; `material-patterns.feature` |
+| Q12 | Deliberate information request | Given a player is inside an authored info area, when they press scan and no unrevealed scan target is in range, then the shared help surface appears temporarily; it never appears from an idle or proximity timer, and choosing a hint or reset follows the existing hint/reset behavior. | ADR-0019; `requested-hints.feature` |
+| Q13 | On-demand transient feedback | Given a player action or puzzle event produces transient feedback, when the player has not pressed scan, then no feedback box appears and the live region stays quiet; pressing scan reveals and consumes the newest pending message for that player, while persistent state and cosmetic effects remain immediate. | ADR-0020; `on-demand-feedback.feature` |
+| Q14 | Shared feedback visibility | Given shared feedback is turned off, when shared cues are produced, shared state is projected, or the player asks for help, then shared state boxes, cues, help, and the beat tracker are hidden, pending shared copies are cleared, and the setting persists; player cues and cosmetic effects keep working. | ADR-0021, ADR-0022; `shared-feedback-toggle.feature` |
 
 ### 1.3 Stakeholders
 
@@ -86,7 +90,7 @@ current branch.
 | Save v2 remains the run format; the optional `conversations` list is the new field (`returnTo` is deferred) | ADR-0041, ADR-0045, ADR-0008, ADR-0011 |
 | Placeholder-first assets; no final art requirement | ADR-0029–0033 |
 | Existing 03/04 content and 2.0 saves remain valid | ADR-0008 |
-| Keyboard-only, reduced-motion-friendly, no mouse-only action | ADR-0018, ADR-0020 |
+| Keyboard-only, reduced-motion-friendly, no mouse-only action | ADR-0018, ADR-0020, ADR-0021 |
 | Docs live outside the Obsidian vault | repo documentation rule |
 
 ## 3. Context & Scope
@@ -264,8 +268,11 @@ sequenceDiagram
 Order is deliberately single-writer: the puzzle graph evaluates first, the
 orchestrator applies world changes, feedback projects the resulting facts and
 state, and the scene renders the frame. Feedback and effects never write puzzle,
-physics, or collision state. Conditional links and physical gate bodies remain
-deferred.
+physics, or collision state. A persisted `feedback.showShared` preference can
+suppress shared transient cues and the requested help surface without affecting
+player cues or effects. Persistent shared state surfaces and beat progress are
+filtered from the snapshot, while the director keeps their effects running.
+Conditional links and physical gate bodies remain deferred.
 
 ### 6.2 Prop lifecycle
 
@@ -413,6 +420,16 @@ unchanged and do not require the Worker. See
 [`../adr-online/README.md`](../adr-online/README.md) and
 [`../m4/README.md`](../m4/README.md).
 
+**Optional controller input amendment.** M4.0a adds a phone web app as an input
+device for same-screen co-op. The host browser remains the single writer of game
+state; the phone sends input for one player slot and receives no world, UI,
+puzzle, dialogue, or save state. A Cloudflare Worker and Durable Object relay
+controller input; the DO stores membership only. Keyboard co-op remains the
+default and the fallback. Local single-player and keyboard co-op remain
+unchanged and do not require the Worker. See
+[`../adr-controller/README.md`](../adr-controller/README.md) and
+[`../m4/phone-coop-implementation-plan.md`](../m4/phone-coop-implementation-plan.md).
+
 ## 8. Cross-cutting Concepts
 
 | Concept | Approach |
@@ -420,7 +437,7 @@ unchanged and do not require the Worker. See
 | Module sealing / public APIs | ADR-0001; [`contracts/module-boundaries.md`](contracts/module-boundaries.md) |
 | Gate and prop state ownership | Puzzle graph owns logical state; world owns bodies; `GameRuntime` is the single synchronizer |
 | Schema evolution | Optional fields + minor versions; old content/saves default off (ADR-0008) |
-| Feedback | State-projected persistent surfaces plus sequenced, deduplicated transient cues; capability descriptors; co-op attribution; entity conversations; cosmetic effect plans (ADR-0009–0013) |
+| Feedback | State-projected persistent surfaces plus on-demand transient cues; capability descriptors; co-op attribution; entity conversations; cosmetic effect plans; player caption slots; request-gated shared help; persisted shared-feedback visibility (ADR-0009–0013, ADR-0018–0022) |
 | No-fail recovery | Reset, checkpoint, and save/restore restore valid state; blocked actions never consume evidence. Side return is deferred. |
 | Presentation as projection | Puzzle state drives sticky feedback surfaces; `RoomSimulation` prop state, `WorldEffectPlan`, material grids, and pattern bindings drive `RoomScene`; `world` imports no feedback. |
 | Material and pattern layer | `materials` resolves visual roles, autotile masks, variants, and cached pattern resources; `layers.tiles` remains the sole collision authority; atlases stay storage-agnostic behind `AtlasFrameRef`. |
@@ -444,6 +461,11 @@ unchanged and do not require the Worker. See
 | [0011](adr/0011-entity-conversations.md) | Entity conversations replace the global dialogue overlay | Accepted |
 | [0012](adr/0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Accepted |
 | [0013](adr/0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects, composable effect plans, and accessibility | Accepted |
+| [0018](adr/0018-player-attached-feedback-slot.md) | One player-attached caption slot per player and compact world surfaces | Accepted |
+| [0019](adr/0019-request-gated-shared-help.md) | Request-gated shared help surfaces and authored info areas | Accepted |
+| [0020](adr/0020-on-demand-transient-feedback.md) | On-demand transient feedback via scan and compact captions | Accepted |
+| [0021](adr/0021-shared-feedback-visibility-toggle.md) | Persisted global visibility for shared transient feedback | Accepted |
+| [0022](adr/0022-hide-shared-state-and-beats.md) | Hide shared state surfaces and beat progress with shared feedback | Accepted |
 
 Material and pattern architecture:
 
@@ -457,7 +479,13 @@ Material and pattern architecture:
 ADR-0009 and ADR-0010 supersede the old "feedback is a toast / no new UI
 surface" constraints in §2, §4 (strategy item 4), and §8. ADR-0013 amends
 ADR-0003's no-animation constraint; ADR-0011 adds the optional conversation save
-field. Acceptance is not implementation: see the status table above for the
+field. ADR-0018 amends ADR-0010's player-caption stacking rule. ADR-0019 amends
+ADR-0009's automatic stuck-affordance trigger. ADR-0020 amends ADR-0009's
+immediate transient-cue presentation and ADR-0018's caption chrome. ADR-0021
+amends ADR-0019's unconditional help request and ADR-0020's shared transient-cue
+scope with a persisted visibility toggle. ADR-0022 extends that toggle to
+persistent shared state surfaces and the beat tracker while keeping effects
+immediate. Acceptance is not implementation: see the status table above for the
 deferred M1.5 capabilities.
 
 Implementation: [`feedback-implementation-plan.md`](feedback-implementation-plan.md)
@@ -522,12 +550,18 @@ flowchart TD
 | Q9 | A new node type requires one descriptor; every event is cued or explicitly silent | `capability-coverage.feature` |
 | Q10 | Effects never mutate state or collision; reduced motion preserves text and state | `cosmetic-effects.feature` |
 | Q11 | Material/pattern changes are visual and deterministic; collision, puzzle, and save state stay owned by their existing modules | `material-patterns.feature` |
+| Q12 | Shared help is request-only, info-area gated, and temporary | `requested-hints.feature` |
+| Q13 | Transient cues are deferred, latest-wins, and revealed by scan; effects stay immediate | `on-demand-feedback.feature` |
+| Q14 | Shared state boxes, transient cues, help, and beats can be globally hidden while player cues and effects keep working | `shared-feedback-toggle.feature` |
 
 ### 10.2b Functional behavior contracts
 
 | Feature file | Concern | Source ADRs | Status |
 |---|---|---|---|
-| `behaviors/feedback-surfaces.feature` | Persistent state, transient cues, ownership, anchors, input | 0009, 0010, 0012 | Implemented |
+| `behaviors/feedback-surfaces.feature` | Persistent state, transient cues, ownership, anchors, input, player caption slot | 0009, 0010, 0012, 0018 | Implemented |
+| `behaviors/requested-hints.feature` | Request-only shared help, info areas, temporary surface | 0019 | Implemented |
+| `behaviors/on-demand-feedback.feature` | Deferred cues, latest-wins inbox, scan reveal, immediate effects | 0020 | Implemented |
+| `behaviors/shared-feedback-toggle.feature` | Persisted shared-feedback visibility, shared state/beats filtering, cue/inbox/help clearing, player-cue preservation | 0021, 0022 | Implemented |
 | `behaviors/entity-conversations.feature` | Concurrent conversations, save/restore, recovery | 0011 | Implemented |
 | `behaviors/capability-coverage.feature` | Descriptor coverage, rejection reasons, event coverage | 0012 | Implemented |
 | `behaviors/cosmetic-effects.feature` | Direction/path/follow/cancel, tile visuals, reduced motion | 0013 | Implemented |
@@ -572,6 +606,8 @@ The documentation set is complete when:
 |---|---|
 | Feedback surface | A persistent, state-projected UI element owned by a player or shared; rebuilt from puzzle/world state. |
 | Feedback cue | A transient, sequenced response to a fact; deduplicated by cause and expired by TTL. |
+| Player caption slot | The single player-anchored transient cue allowed for one player at a time; newest wins. Entity bubbles are not affected. |
+| Pending cue | A transient cue stored in a player's deferred inbox; it is not rendered or announced until the player requests it with scan. |
 | Capability descriptor | The code table mapping a puzzle node/link type to feedback capabilities, projection, cues, and default effects. |
 | Effect plan | A cosmetic composition of closed visual operators, paths, timing, binding, and cancellation; never gameplay state. |
 | Conversation surface | A `speechBubble` surface owned by the interacting player and anchored to an entity. |

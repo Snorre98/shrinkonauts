@@ -28,6 +28,11 @@ in [`architecture.md`](architecture.md) is the authority where these differ.
 | 0015 | §4, §5.2, §6.1, §8, §10 | material-patterns | data-model, interface, state-machine | Q3, Q11 | Implemented; `wang` deferred |
 | 0016 | §4, §5.2, §6.5, §6.6, §8, §10 | material-patterns | module-boundaries, data-model, interface | Q5, Q10, Q11 | Implemented; animation and image/atlas UI patterns deferred |
 | 0017 | §2, §5.2, §8, §10 | material-patterns | data-model, interface, module-boundaries | Q4, Q11 | Implemented |
+| 0018 | §4, §5.1, §5.2, §6.1, §6.5, §8, §10 | feedback-surfaces | interface, state-machine | Q6, Q7 | Implemented |
+| 0019 | §4, §5.2, §6.1, §6.5, §8, §10 | requested-hints | interface, data-model, state-machine | Q2, Q5, Q12 | Implemented |
+| 0020 | §4, §5.2, §6.1, §6.5, §8, §10 | on-demand-feedback | interface, state-machine, failure-semantics | Q5, Q6, Q13 | Implemented |
+| 0021 | §4, §5.2, §6.1, §6.5, §8, §10 | shared-feedback-toggle | interface, data-model, state-machine, failure-semantics | Q5, Q6, Q13, Q14 | Implemented |
+| 0022 | §4, §5.2, §6.1, §6.5, §8, §10 | shared-feedback-toggle | interface, data-model, state-machine, failure-semantics | Q5, Q13, Q14 | Implemented |
 
 ## Behavior contract ↔ quality scenario coverage
 
@@ -44,12 +49,18 @@ in [`architecture.md`](architecture.md) is the authority where these differ.
 | Q9 descriptor/event coverage | `capability-coverage.feature` |
 | Q10 cosmetic effects and reduced motion | `cosmetic-effects.feature` |
 | Q11 material/pattern visual language, variants, UI parity | `material-patterns.feature` |
+| Q12 deliberate information request and temporary shared help | `requested-hints.feature` |
+| Q13 on-demand transient feedback and latest-wins inbox | `on-demand-feedback.feature` |
+| Q14 shared state, cue, help, and beat visibility with player-feedback preservation | `shared-feedback-toggle.feature` |
 
 ## Behavior contract ↔ ADR coverage
 
 | Behavior contract | ADRs |
 |---|---|
-| `feedback-surfaces.feature` | 0009, 0010, 0012 |
+| `feedback-surfaces.feature` | 0009, 0010, 0012, 0018 |
+| `requested-hints.feature` | 0019 |
+| `on-demand-feedback.feature` | 0020 |
+| `shared-feedback-toggle.feature` | 0021, 0022 |
 | `entity-conversations.feature` | 0011 |
 | `capability-coverage.feature` | 0012 |
 | `cosmetic-effects.feature` | 0013 |
@@ -84,6 +95,11 @@ in [`architecture.md`](architecture.md) is the authority where these differ.
 | 0015 | data-model, interface, state-machine | 3, 7 |
 | 0016 | interface, module-boundaries, data-model | 4, 5, 7 |
 | 0017 | data-model, interface, module-boundaries | 1, 7 |
+| 0018 | interface, state-machine | post-M1.75 follow-up |
+| 0019 | data-model, interface, state-machine | post-M1.75 follow-up |
+| 0020 | interface, state-machine, failure-semantics | post-M1.75 follow-up |
+| 0021 | interface, data-model, state-machine, failure-semantics | post-M1.75 follow-up |
+| 0022 | interface, data-model, state-machine, failure-semantics | post-M1.75 follow-up |
 
 ## Feedback layer (M1.75)
 
@@ -95,6 +111,10 @@ implementation.
 | Area | Behavior contract | Precise contracts |
 |---|---|---|
 | ECS kernel, facts, director, surfaces/cues | `feedback-surfaces.feature` | module-boundaries, interface, state-machine |
+| Player-attached caption slot and compact world surfaces | `feedback-surfaces.feature` | interface, state-machine |
+| Request-gated shared help and authored info areas | `requested-hints.feature` | interface, data-model, state-machine |
+| On-demand transient cues, latest-wins inbox, compact captions | `on-demand-feedback.feature` | interface, state-machine, failure-semantics |
+| Shared feedback visibility, shared state/beat filtering, cue/inbox/help clearing, settings persistence | `shared-feedback-toggle.feature` | interface, data-model, state-machine, failure-semantics |
 | Co-op ownership and per-player input | `feedback-surfaces.feature` | interface, state-machine |
 | Entity conversations | `entity-conversations.feature` | interface, data-model, state-machine |
 | Capability descriptors, event coverage, reasons | `capability-coverage.feature` | interface, module-boundaries, data-model |

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.console.sensor",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. Graphite console with cyan screen, dial and probe antenna.",
+  "config": "fit.silicon.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/silicon/console-sensor.png",
+    "width": 1209,
+    "height": 1394,
+    "edgeContact": {
+      "top": 36,
+      "bottom": 205,
+      "left": 616,
+      "right": 144
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/sprites/console-sensor.png",
+    "runtime": true,
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 2235
+  },
+  "cell": {
+    "width": 64,
+    "height": 64
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 23.25,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1209,
+    "height": 1394
+  },
+  "fit": {
+    "width": 52,
+    "height": 60,
+    "offsetX": 6,
+    "offsetY": 2,
+    "scale": 0.043042,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 6,
+    "y": 2,
+    "width": 52,
+    "height": 60
+  },
+  "margins": {
+    "top": 2,
+    "right": 6,
+    "bottom": 2,
+    "left": 6
+  },
+  "quantization": {
+    "changedPixels": 2004,
+    "maxDistance": 55.839,
+    "offPalettePixels": 2004,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 2004
+  },
+  "rampHistogram": {
+    "teal": 524,
+    "boneShadow": 197,
+    "joint": 404,
+    "ink": 510,
+    "sage": 106,
+    "bone": 263
+  },
+  "warnings": [
+    "source content touches the image border (t 36, b 205, l 616, r 144); the concept plate may be clipped",
+    "source-to-fit scale 23.3:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 55.8 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/console-sensor-1x.png",
+    "scale2x": "art-source/previews/nanobanan/silicon/console-sensor-2x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/console-sensor-4x.png",
+    "tint2x": "art-source/previews/nanobanan/silicon/console-sensor-tint-2x.png"
+  }
+}

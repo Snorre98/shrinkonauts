@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.tracer",
+  "class": "hero-prop",
+  "status": "fit-preview",
+  "treatment": "hero-prop",
+  "display": {
+    "width": 48,
+    "height": 48
+  },
+  "notes": "Hero re-fit at 48×48. Triangular ACh packet with rear tabs; the cyan rim is partial.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/prop-tracer.png",
+    "width": 1496,
+    "height": 1292,
+    "edgeContact": {
+      "top": 80,
+      "bottom": 124,
+      "left": 145,
+      "right": 82
+    }
+  },
+  "output": {
+    "path": "public/packs/anatomy-reflex/shared/sprites/prop-tracer.png",
+    "runtime": true,
+    "written": false,
+    "width": 48,
+    "height": 48,
+    "bytes": 3302
+  },
+  "cell": {
+    "width": 48,
+    "height": 48
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 32,
+    "minOpaquePixels": 600,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 12
+  },
+  "sourceScale": 34,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1496,
+    "height": 1292
+  },
+  "fit": {
+    "width": 44,
+    "height": 38,
+    "offsetX": 2,
+    "offsetY": 8,
+    "scale": 0.029412,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 8,
+    "width": 44,
+    "height": 38
+  },
+  "margins": {
+    "top": 8,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 930,
+    "maxDistance": 90.244,
+    "offPalettePixels": 930,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 930
+  },
+  "rampHistogram": {
+    "teal": 123,
+    "ink": 100,
+    "joint": 9,
+    "boneShadow": 184,
+    "sage": 139,
+    "bone": 161,
+    "muscle": 172,
+    "nerve": 42
+  },
+  "warnings": [
+    "source content touches the image border (t 80, b 124, l 145, r 82); the concept plate may be clipped",
+    "source-to-fit scale 34.0:1 exceeds the 12:1 treatment limit",
+    "max palette quantisation distance 90.2 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/prop-tracer-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/prop-tracer-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/prop-tracer-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/prop-tracer-tint-2x.png"
+  }
+}

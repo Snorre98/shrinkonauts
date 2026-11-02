@@ -23,6 +23,7 @@ import {
   Reason,
   SourceRef,
   State,
+  SurfaceTtl,
   Visual,
 } from "./components";
 import { deriveBeats } from "./beats";
@@ -45,6 +46,7 @@ import type {
   Direction,
   EffectInstance,
   EffectPlan,
+  FeedbackAnchor,
   FeedbackBeat,
   FeedbackCue,
   FeedbackCueSpec,
@@ -52,16 +54,23 @@ import type {
   FeedbackDirectorOptions,
   FeedbackFact,
   FeedbackFrame,
+  FeedbackOwner,
   FeedbackProjection,
   FeedbackProjectionContext,
   FeedbackSurface,
   FeedbackSurfaceSpec,
   FeedbackView,
   NodeFeedbackDescriptor,
+  PlayerId,
 } from "./types";
 
 interface FeedbackTickPayload {
   facts?: readonly FeedbackFact[];
+}
+
+interface PendingCue {
+  spec: FeedbackCueSpec;
+  seq: number;
 }
 
 const DEFAULT_CUE_TTL_TICKS = 180;
@@ -71,8 +80,20 @@ function compareText(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
+function cueOwner(spec: FeedbackCueSpec): FeedbackOwner {
+  return spec.owner ?? spec.actor ?? "shared";
+}
+
 function compareEffects(left: EffectInstance, right: EffectInstance): number {
   return compareText(left.id, right.id);
+}
+
+/**
+ * Player-anchored captions share one slot per player. Entity-anchored bubbles
+ * are deliberately excluded: two players may talk to the same entity at once.
+ */
+function playerCaptionSlot(anchor: FeedbackAnchor): string | null {
+  return anchor.kind === "player" ? `player:${anchor.playerId}` : null;
 }
 
 function collectAnchors(instance: EffectInstance): AnchorRef[] {
@@ -176,13 +197,17 @@ export function orderAndDedupe(
 class FeedbackDirectorImpl implements FeedbackDirector {
   private readonly world: EcsWorld;
   private readonly defaultCueTtlTicks: number;
+  private readonly deferCues: boolean;
   private readonly isAnchorAlive?: (anchor: AnchorRef) => boolean;
+  private sharedFeedbackEnabled = true;
 
   private pendingFacts: FeedbackFact[] = [];
   private readonly pendingProjections = new Map<string, FeedbackProjection>();
+  private readonly pendingCueByPlayer = new Map<PlayerId, PendingCue>();
 
   private readonly stickyIds = new Set<string>();
   private readonly cueEntityByCause = new Map<string, EntityId>();
+  private readonly cueEntityByPlayerSlot = new Map<string, EntityId>();
   private readonly effectSignatures = new Map<string, string>();
   private beats: FeedbackBeat[] = [];
   private readonly documents = new Map<string, PuzzleDocument>();
@@ -197,6 +222,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   constructor(options: FeedbackDirectorOptions = {}) {
     this.defaultCueTtlTicks =
       options.defaultCueTtlTicks ?? DEFAULT_CUE_TTL_TICKS;
+    this.deferCues = options.deferCues ?? false;
     this.isAnchorAlive = options.isAnchorAlive;
     this.world = createEcsWorld();
     this.registerSystems();
@@ -208,6 +234,10 @@ class FeedbackDirectorImpl implements FeedbackDirector {
 
   ingestAll(facts: readonly FeedbackFact[]): void {
     this.pendingFacts.push(...facts);
+  }
+
+  ingestNow(fact: FeedbackFact): void {
+    this.ingestFacts([fact]);
   }
 
   projectSticky(input: FeedbackProjection): void {
@@ -228,10 +258,41 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   }
 
   removeSurface(surfaceId: string): void {
-    this.world.despawn(createEntityId(surfaceId));
-    this.stickyIds.delete(surfaceId);
-    this.effectSignatures.delete(surfaceId);
-    this.cancelEffectsForOwner(surfaceId);
+    this.despawnSurface(createEntityId(surfaceId));
+  }
+
+  requestLatest(playerId: PlayerId): boolean {
+    const pending = this.pendingCueByPlayer.get(playerId);
+    if (!pending) return false;
+
+    const owner = cueOwner(pending.spec);
+    if (owner === "shared" && !this.sharedFeedbackEnabled) {
+      this.clearPendingSharedCues();
+      return false;
+    }
+
+    this.pendingCueByPlayer.delete(playerId);
+    if (owner === "shared") {
+      const other: PlayerId = playerId === "p1" ? "p2" : "p1";
+      if (this.pendingCueByPlayer.get(other)?.seq === pending.seq) {
+        this.pendingCueByPlayer.delete(other);
+      }
+    }
+
+    this.addCue(pending.spec);
+    return true;
+  }
+
+  setSharedFeedbackEnabled(enabled: boolean): void {
+    this.sharedFeedbackEnabled = enabled;
+    if (enabled) return;
+
+    this.clearPendingSharedCues();
+    for (const entity of this.world.query(CueStateComponent)) {
+      if (this.world.get(entity, Ownership)?.owner === "shared") {
+        this.despawnCue(entity);
+      }
+    }
   }
 
   tick(dt: number): void {
@@ -257,8 +318,10 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     }
     this.pendingFacts = [];
     this.pendingProjections.clear();
+    this.pendingCueByPlayer.clear();
     this.stickyIds.clear();
     this.cueEntityByCause.clear();
+    this.cueEntityByPlayerSlot.clear();
     this.effectSignatures.clear();
     this.beats = [];
     this.documents.clear();
@@ -340,9 +403,60 @@ class FeedbackDirectorImpl implements FeedbackDirector {
         defaultTtlTicks: this.defaultCueTtlTicks,
       });
       if (spec) {
-        this.addCue(spec);
+        if (this.deferCues) {
+          this.deferCue(spec);
+        } else {
+          this.addCue(spec);
+        }
       }
     }
+  }
+
+  private deferCue(spec: FeedbackCueSpec): void {
+    const seq = this.nextCueSeq;
+    this.nextCueSeq += 1;
+    const { effects, ...cueSpec } = spec;
+    const owner = cueOwner(spec);
+
+    if (owner === "shared" && !this.sharedFeedbackEnabled) {
+      // ADR-0020: effects are part of the world response, not text boxes.
+      if (effects && effects.length > 0) {
+        this.spawnEffectHost(effects, seq);
+      }
+      return;
+    }
+
+    const players: readonly PlayerId[] =
+      owner === "shared" ? ["p1", "p2"] : [owner];
+    for (const playerId of players) {
+      this.pendingCueByPlayer.set(playerId, { spec: cueSpec, seq });
+    }
+    if (effects && effects.length > 0) {
+      this.spawnEffectHost(effects, seq);
+    }
+  }
+
+  /**
+   * Deferred text must not defer cosmetic effects. Effects run immediately from
+   * a hidden host entity that expires after the longest effect stage.
+   */
+  private spawnEffectHost(
+    effects: readonly EffectPlan[],
+    seq: number,
+  ): void {
+    const ends = effects.map((effect) => effectEndTicks(effect.stages));
+    const end = ends.some((value) => !Number.isFinite(value))
+      ? Number.POSITIVE_INFINITY
+      : Math.max(0, ...ends);
+    const ttlTicks = Number.isFinite(end) ? Math.max(1, end + 2) : 600;
+    const entity = createEntityId(`fb:fx:${seq}`);
+    this.world.spawn(entity);
+    this.world.add(entity, Effects, effects);
+    this.world.add(entity, State, "active");
+    this.world.add(entity, SurfaceTtl, {
+      ttlTicks,
+      remainingTicks: ttlTicks,
+    });
   }
 
   private documentForFact(fact: FeedbackFact): PuzzleDocument | undefined {
@@ -498,6 +612,19 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     this.world.add(entity, Accessibility, surface.a11y);
     this.world.add(entity, State, surface.state);
 
+    const ttlTicks =
+      surface.lifetime.sticky === false
+        ? surface.lifetime.ttlTicks
+        : undefined;
+    if (ttlTicks !== undefined && ttlTicks > 0) {
+      this.world.add(entity, SurfaceTtl, {
+        ttlTicks,
+        remainingTicks: ttlTicks,
+      });
+    } else {
+      this.world.remove(entity, SurfaceTtl);
+    }
+
     if (surface.reason) {
       this.world.add(entity, Reason, surface.reason);
     } else {
@@ -557,12 +684,27 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   }
 
   private addCue(spec: FeedbackCueSpec): void {
+    const owner = cueOwner(spec);
+    if (owner === "shared" && !this.sharedFeedbackEnabled) {
+      const seq = this.nextCueSeq;
+      this.nextCueSeq += 1;
+      if (spec.effects && spec.effects.length > 0) {
+        this.spawnEffectHost(spec.effects, seq);
+      }
+      return;
+    }
+
     const existing = this.cueEntityByCause.get(spec.cause);
     if (existing) {
-      this.world.despawn(existing);
-      this.cueEntityByCause.delete(spec.cause);
-      this.effectSignatures.delete(existing);
-      this.cancelEffectsForOwner(existing);
+      this.despawnCue(existing);
+    }
+
+    const playerSlot = playerCaptionSlot(spec.anchor);
+    if (playerSlot) {
+      const occupant = this.cueEntityByPlayerSlot.get(playerSlot);
+      if (occupant) {
+        this.despawnCue(occupant);
+      }
     }
 
     const seq = this.nextCueSeq;
@@ -570,7 +712,6 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     const id = `fb:cue:${seq}`;
     const entity = createEntityId(id);
     const actor = spec.actor ?? null;
-    const owner = spec.owner ?? actor ?? "shared";
     const ttlTicks = spec.ttlTicks ?? this.defaultCueTtlTicks;
     const text = spec.content.text;
     const cue: FeedbackCue = {
@@ -632,19 +773,32 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     });
 
     this.cueEntityByCause.set(cue.cause, entity);
+    if (playerSlot) {
+      this.cueEntityByPlayerSlot.set(playerSlot, entity);
+    }
   }
 
   private lifetimeTick(): void {
+    for (const entity of this.world.query(SurfaceTtl)) {
+      const ttl = this.world.get(entity, SurfaceTtl);
+      if (!ttl) continue;
+
+      const remainingTicks = ttl.remainingTicks - 1;
+      if (remainingTicks <= 0) {
+        this.despawnSurface(entity);
+        continue;
+      }
+
+      this.world.add(entity, SurfaceTtl, { ...ttl, remainingTicks });
+    }
+
     for (const entity of this.world.query(CueStateComponent)) {
       const cueState = this.world.get(entity, CueStateComponent);
       if (!cueState) continue;
 
       const remainingTicks = cueState.remainingTicks - 1;
       if (remainingTicks <= 0) {
-        this.world.despawn(entity);
-        this.cueEntityByCause.delete(cueState.cause);
-        this.effectSignatures.delete(entity);
-        this.cancelEffectsForOwner(entity);
+        this.despawnCue(entity);
         continue;
       }
 
@@ -781,6 +935,43 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     }
 
     return false;
+  }
+
+  private clearPendingSharedCues(): void {
+    for (const [playerId, pending] of this.pendingCueByPlayer) {
+      if (cueOwner(pending.spec) === "shared") {
+        this.pendingCueByPlayer.delete(playerId);
+      }
+    }
+  }
+
+  private despawnCue(entity: EntityId): void {
+    const cueState = this.world.get(entity, CueStateComponent);
+    const anchor = this.world.get(entity, Anchor);
+    this.world.despawn(entity);
+
+    if (
+      cueState &&
+      this.cueEntityByCause.get(cueState.cause) === entity
+    ) {
+      this.cueEntityByCause.delete(cueState.cause);
+    }
+    if (anchor) {
+      const slot = playerCaptionSlot(anchor);
+      if (slot && this.cueEntityByPlayerSlot.get(slot) === entity) {
+        this.cueEntityByPlayerSlot.delete(slot);
+      }
+    }
+
+    this.effectSignatures.delete(entity);
+    this.cancelEffectsForOwner(entity);
+  }
+
+  private despawnSurface(entity: EntityId): void {
+    this.world.despawn(entity);
+    this.stickyIds.delete(entity);
+    this.effectSignatures.delete(entity);
+    this.cancelEffectsForOwner(entity);
   }
 
   private cancelEffectsForOwner(ownerId: string): void {

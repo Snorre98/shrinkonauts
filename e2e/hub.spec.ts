@@ -1,59 +1,50 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import {
+  bootHub,
+  collectConsoleErrors,
+  type ShrinkonautsWindow,
+} from "./support";
 
-interface AppBridge {
-  readonly phase: string;
-  readonly runtime: {
-    snapshot(): { activeP2: boolean; level: { id: string } };
-  } | null;
-  readonly game: {
-    scene: { isActive(key: string): boolean };
-  } | null;
-}
+test("selects and starts the Silicon cycle from a deep link", async ({ page }) => {
+  const consoleErrors = collectConsoleErrors(page);
 
-type ShrinkonautsWindow = Window & {
-  __shrinkonauts?: AppBridge;
-};
-
-async function bootHub(page: Page): Promise<string[]> {
-  const consoleErrors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
-  });
-  page.on("pageerror", (error) => consoleErrors.push(error.message));
-
-  await page.goto("/");
-  await page.waitForFunction(() => {
-    const app = (window as ShrinkonautsWindow).__shrinkonauts;
-    return Boolean(app) && app?.phase === "hub";
-  });
-  await expect(page.locator(".hub__title")).toHaveText("The bathroom");
-  await expect(page.locator(".hub-card")).toHaveCount(2);
-  await expect(page.locator(".hub-card", { hasText: "Anatomy" })).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
-  await expect(page.locator(".hub-card", { hasText: "Silicon" })).toHaveAttribute(
-    "data-status",
-    "coming-soon",
-  );
-  await expect(page.locator(".hub__online-copy")).toContainText("M4");
-  return consoleErrors;
-}
-
-test("shows the gated Silicon cycle from a deep link without starting it", async ({
-  page,
-}) => {
   await page.goto("/?pack=silicon-reflex");
   await page.waitForFunction(() => {
     const app = (window as ShrinkonautsWindow).__shrinkonauts;
     return app?.phase === "hub";
   });
-  await expect(page.locator(".hub-card", { hasText: "Silicon" })).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
-  await expect(page.getByRole("button", { name: "Start cycle" })).toBeDisabled();
-  await expect(page.locator(".hub__status")).toContainText("M2 content pass");
+  const silicon = page.locator(".hub-card", { hasText: "Silicon" });
+  await expect(silicon).toHaveAttribute("data-selected", "true");
+  await expect(silicon).toHaveAttribute("data-status", "available");
+  await expect(silicon.locator("input")).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Start cycle" })).toBeEnabled();
+  await expect(page.locator(".hub__status")).toBeHidden();
+
+  await page.getByRole("button", { name: "Start cycle" }).click();
+  await expect(page.getByRole("button", { name: "Skip launch" })).toBeVisible();
+  await page.getByRole("button", { name: "Skip launch" }).click();
+  await page.waitForFunction(() => {
+    const app = (window as ShrinkonautsWindow).__shrinkonauts;
+    return Boolean(app?.runtime) && app?.game?.scene.isActive("room") === true;
+  });
+  await expect(page.locator(".hud__title")).toHaveText("Interrupt Loop");
+  expect(consoleErrors).toEqual([]);
+});
+
+test("boots final art by default and keeps the procedural placeholder path", async ({
+  page,
+}) => {
+  const consoleErrors = await bootHub(page);
+  await expect(page.locator(".hub__asset-mode")).toHaveText("Final assets");
+
+  await page.goto("/?assets=placeholder");
+  await page.waitForFunction(() => {
+    const app = (window as ShrinkonautsWindow).__shrinkonauts;
+    return app?.phase === "hub";
+  });
+  await expect(page.locator(".hub__title")).toHaveText("The bathroom");
+  await expect(page.locator(".hub__asset-mode")).toHaveText("Placeholder assets");
+  expect(consoleErrors).toEqual([]);
 });
 
 test("starts with reduced motion enabled without the spin animation", async ({
@@ -84,10 +75,6 @@ test("boots into the bathroom, starts a solo anatomy cycle, and returns to the h
 }) => {
   const consoleErrors = await bootHub(page);
 
-  // The Silicon cartridge is visible but not selectable before M2.
-  await expect(
-    page.locator(".hub-card", { hasText: "Silicon" }).locator("input"),
-  ).toBeDisabled();
   await expect(page.locator(".hub-card", { hasText: "Anatomy" })).toHaveAttribute(
     "data-selected",
     "true",
@@ -123,6 +110,7 @@ test("boots into the bathroom, starts a solo anatomy cycle, and returns to the h
     .toBe(false);
 
   // Pause and leave the level; the bathroom shell is rebuilt.
+  await expect(page.locator(".hub-skip")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Leave to bathroom" }).click();
   await page.waitForFunction(() => {

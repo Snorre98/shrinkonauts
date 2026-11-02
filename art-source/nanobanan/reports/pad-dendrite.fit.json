@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "pad-dendrite",
+  "class": null,
+  "status": "poc-integrated",
+  "treatment": "legacy",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "config": null,
+  "source": {
+    "path": "/home/snorre/Documents/Studies/shrinkonauts/art-source/nanobanan/keyed/scan-neuron.png",
+    "width": 1886,
+    "height": 1004,
+    "edgeContact": {
+      "top": 62,
+      "bottom": 62,
+      "left": 62,
+      "right": 54
+    }
+  },
+  "output": {
+    "path": "/home/snorre/Documents/Studies/shrinkonauts/public/packs/anatomy-reflex/shared/sprites/pad-dendrite.png",
+    "runtime": true,
+    "written": true,
+    "width": 64,
+    "height": 64,
+    "bytes": 2517
+  },
+  "cell": {
+    "width": 64,
+    "height": 64
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 8,
+    "minOpaquePixels": 100,
+    "maxPaletteDistance": 64,
+    "maxDownscale": 16
+  },
+  "sourceScale": 31.433,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1886,
+    "height": 1004
+  },
+  "fit": {
+    "width": 60,
+    "height": 32,
+    "offsetX": 2,
+    "offsetY": 30,
+    "scale": 0.031813,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 30,
+    "width": 60,
+    "height": 32
+  },
+  "margins": {
+    "top": 30,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 717,
+    "maxDistance": 63.411,
+    "offPalettePixels": 717,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 717
+  },
+  "rampHistogram": {
+    "joint": 172,
+    "ink": 87,
+    "boneShadow": 140,
+    "sage": 84,
+    "bone": 135,
+    "nerve": 92,
+    "teal": 7
+  },
+  "warnings": [
+    "source content touches the image border (t 62, b 62, l 62, r 54); the concept plate may be clipped",
+    "source-to-fit scale 31.4:1 exceeds the 16:1 treatment limit"
+  ],
+  "previews": {
+    "scale2x": "art-source/previews/nanobanan/entities/pad-dendrite-2x.png",
+    "scale8x": "art-source/previews/nanobanan/entities/pad-dendrite-8x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/pad-dendrite-tint-2x.png"
+  }
+}

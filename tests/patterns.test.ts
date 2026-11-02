@@ -78,6 +78,24 @@ describe("procedural patterns", () => {
     expect(url.startsWith("data:image/svg+xml,")).toBe(true);
     expect(url.length).toBeGreaterThan(100);
   });
+
+  it("applies the placement opacity cap to the CSS serialization", () => {
+    const bitmap = generatePatternBitmap(
+      {
+        kind: "procedural",
+        generator: "cellular",
+        seed: 4,
+      },
+      { contrast: 0.4 },
+    );
+    const encoded = bitmapToSvgDataUrl(bitmap, 0.2).split(",")[1] ?? "";
+    const svg = decodeURIComponent(encoded);
+    const opacities = [...svg.matchAll(/fill-opacity="([0-9.]+)"/g)].map(
+      (match) => Number(match[1]),
+    );
+    expect(opacities.length).toBeGreaterThan(0);
+    expect(Math.max(...opacities)).toBeLessThanOrEqual(0.2);
+  });
 });
 
 describe("pattern provider", () => {

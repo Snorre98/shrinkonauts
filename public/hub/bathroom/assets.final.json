@@ -4,39 +4,118 @@
   "assets": {
     "bg.bathroom.wall": {
       "type": "background",
-      "placeholder": true
-    },
-    "bg.bathroom.far": {
-      "type": "background",
-      "placeholder": true
-    },
-    "bg.bathroom.mid": {
-      "type": "background",
-      "placeholder": true
-    },
-    "bg.bathroom.near": {
-      "type": "background",
-      "placeholder": true
+      "src": "shared/backgrounds/bathroom-wall.webp",
+      "width": 640,
+      "height": 360,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "sprite.prop.washer": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/washer.png",
+      "width": 180,
+      "height": 240,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "sprite.prop.washer.door": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/washer-door.png",
+      "width": 88,
+      "height": 88,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "sprite.prop.washer.drum": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/washer-drum.png",
+      "width": 80,
+      "height": 80,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "sprite.player.civilian": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/civilian.png",
+      "width": 32,
+      "height": 64,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "sprite.player.p1": {
       "type": "sprite",
-      "placeholder": true
+      "src": "shared/sprites/tiny-astronaut.png",
+      "width": 14,
+      "height": 22,
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "ui.logo.shrinkonauts": {
+      "type": "image",
+      "placeholder": true,
+      "license": "Placeholder: Silkscreen wordmark fallback; the delivered plate has a washer baked behind the letters"
+    },
+    "sprite.prop.poster": {
+      "type": "sprite",
+      "src": "shared/sprites/poster.png",
+      "width": 48,
+      "height": 64,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.cartridge.anatomy": {
+      "type": "sprite",
+      "src": "shared/sprites/cartridge-anatomy.png",
+      "width": 24,
+      "height": 32,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.cartridge.silicon": {
+      "type": "sprite",
+      "src": "shared/sprites/cartridge-silicon.png",
+      "width": 24,
+      "height": 32,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.icon.cycle.anatomy": {
+      "type": "image",
+      "src": "shared/ui/icon-cycle-anatomy.png",
+      "width": 16,
+      "height": 16,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.icon.cycle.silicon": {
+      "type": "image",
+      "src": "shared/ui/icon-cycle-silicon.png",
+      "width": 16,
+      "height": 16,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.toy.astronaut": {
+      "type": "sprite",
+      "placeholder": true,
+      "license": "Placeholder until a toy astronaut plate is delivered"
+    },
+    "sprite.prop.plush.neuron": {
+      "type": "sprite",
+      "src": "shared/sprites/plush-neuron.png",
+      "width": 24,
+      "height": 24,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.detergent.bottles": {
+      "type": "sprite",
+      "src": "shared/sprites/detergent-bottles.png",
+      "width": 32,
+      "height": 32,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.laundry.basket": {
+      "type": "sprite",
+      "src": "shared/sprites/laundry-basket.png",
+      "width": 32,
+      "height": 24,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.towel": {
+      "type": "sprite",
+      "src": "shared/sprites/towel.png",
+      "width": 16,
+      "height": 32,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "audio.cue.hub.click": {
       "type": "audio",

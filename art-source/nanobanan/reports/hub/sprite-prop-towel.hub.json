@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.towel",
+  "source": {
+    "path": "art-source/nanobanan/keyed/hub-towel-final2.png",
+    "width": 467,
+    "height": 1330
+  },
+  "crop": null,
+  "masks": [],
+  "cell": {
+    "width": 16,
+    "height": 32
+  },
+  "margin": 0,
+  "align": "top-center",
+  "anchor": null,
+  "fit": {
+    "sourceBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 467,
+      "height": 1330
+    },
+    "fit": {
+      "width": 11,
+      "height": 32,
+      "offsetX": 2,
+      "offsetY": 0
+    },
+    "margins": {
+      "top": 0,
+      "right": 3,
+      "bottom": 0,
+      "left": 2
+    }
+  },
+  "quantized": true,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink",
+    "appliance"
+  ],
+  "palette": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 221
+  },
+  "bytes": 798,
+  "maxBytes": 8192,
+  "output": "public/hub/bathroom/shared/sprites/towel.png",
+  "note": null
+}

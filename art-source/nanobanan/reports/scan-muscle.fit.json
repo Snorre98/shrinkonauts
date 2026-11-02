@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.scan.muscle",
+  "class": "ui-1x",
+  "status": "fit-preview",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "notes": "The muscle bundle and nerve contact read at 36×36. No joint-ramp pixels survived, so the cyan scan rim is missing.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/sprite-scan-muscle.png",
+    "width": 1804,
+    "height": 1478,
+    "edgeContact": {
+      "top": 10,
+      "bottom": 285,
+      "left": 102,
+      "right": 82
+    }
+  },
+  "output": {
+    "path": "public/packs/anatomy-reflex/shared/sprites/scan-muscle.png",
+    "runtime": true,
+    "written": false,
+    "width": 36,
+    "height": 36,
+    "bytes": 1527
+  },
+  "cell": {
+    "width": 36,
+    "height": 36
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 56.846,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1804,
+    "height": 1478
+  },
+  "fit": {
+    "width": 32,
+    "height": 26,
+    "offsetX": 2,
+    "offsetY": 8,
+    "scale": 0.017738,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 8,
+    "width": 32,
+    "height": 26
+  },
+  "margins": {
+    "top": 8,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 458,
+    "maxDistance": 76.039,
+    "offPalettePixels": 458,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 458
+  },
+  "rampHistogram": {
+    "ink": 83,
+    "boneShadow": 44,
+    "nerve": 37,
+    "sage": 8,
+    "bone": 16,
+    "joint": 11,
+    "teal": 33,
+    "muscle": 226
+  },
+  "warnings": [
+    "source content touches the image border (t 10, b 285, l 102, r 82); the concept plate may be clipped",
+    "source-to-fit scale 56.8:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 76.0 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/scan-muscle-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/scan-muscle-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/scan-muscle-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/scan-muscle-tint-2x.png"
+  }
+}

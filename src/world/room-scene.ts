@@ -10,10 +10,20 @@ import {
   type MaterialCatalog,
   type PatternProvider,
 } from "../materials";
-import type { RoomDocument, ThemeDocument } from "../pack";
+import type { RoomDocument, RoomEntity, ThemeDocument } from "../pack";
 import { LayeredBackground } from "./background";
-import { PLAYER_ASSET_IDS } from "./ids";
+import { PLAYER_ANIMATION_ASSET_IDS, PLAYER_ASSET_IDS } from "./ids";
 import { KeyboardIntentSource } from "./input";
+import {
+  PlayerAnimator,
+  type PlayerAnimationAsset,
+} from "./player-animator";
+import type { PlayerClip } from "./player-animation";
+import { EntityIdleAnimator } from "./entity-idle-animator";
+import {
+  ENTITY_INTERACTION_TINT,
+  resolveEntityDisplay,
+} from "./entity-style";
 import { RoomEffectLayer } from "./effects";
 import { MaterialTextureCache } from "./material-textures";
 import { PatternLayer } from "./pattern-layer";
@@ -36,6 +46,7 @@ import {
   type PlayerId,
   type RoomSimulation,
 } from "./simulation";
+import { cameraScrollForView } from "./presentation";
 import {
   composeTileVisual,
   createTileVisualState,
@@ -67,7 +78,6 @@ export interface RoomSceneConfig {
 const FIXED_STEP = 1 / 60;
 const MAX_FRAME_DELTA = 0.25;
 const PLAYER_IDS: readonly PlayerId[] = ["p1", "p2"];
-const ENTITY_SIZE = 36;
 
 function isSvgSource(src: string): boolean {
   return src.split("?")[0]?.toLowerCase().endsWith(".svg") ?? false;
@@ -117,13 +127,17 @@ export class RoomScene
   private intents!: KeyboardIntentSource;
   private background: LayeredBackground | null = null;
   private readonly playerSprites: Partial<
-    Record<PlayerId, Phaser.GameObjects.Image>
+    Record<PlayerId, Phaser.GameObjects.Sprite>
+  > = {};
+  private readonly playerAnimators: Partial<
+    Record<PlayerId, PlayerAnimator>
   > = {};
   private readonly playerShadows: Partial<
     Record<PlayerId, Phaser.GameObjects.Ellipse>
   > = {};
   private readonly entitySprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly entityGlows = new Map<string, Phaser.GameObjects.Ellipse>();
+  private readonly entityIdleAnimators = new Map<string, EntityIdleAnimator>();
   private readonly propSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly tileImages = new Map<string, Phaser.GameObjects.Image>();
   private readonly tileBase = new Map<string, TileBaseVisual>();
@@ -237,13 +251,20 @@ export class RoomScene
     this.applyInteractionHighlight(this.config.runtime.interactionId());
     this.syncPlayers();
     const camera = this.cameras.main;
-    camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
+    const scroll = cameraScrollForView(
+      this.simulation.presentation,
+      this.simulation.camera,
+    );
+    camera.setScroll(scroll.x, scroll.y);
     this.background?.update(camera);
 
     const reduced = this.config.isReducedMotion?.() ?? false;
     if (reduced !== this.lastReducedMotion) {
       this.lastReducedMotion = reduced;
       this.effectLayer?.clear();
+    }
+    for (const animator of this.entityIdleAnimators.values()) {
+      animator.update();
     }
     this.patternLayer?.update(delta, camera, reduced);
     this.syncEffects();
@@ -290,11 +311,13 @@ export class RoomScene
     this.patternLayer = null;
     this.materialTextures = null;
     for (const id of PLAYER_IDS) {
+      delete this.playerAnimators[id];
       delete this.playerSprites[id];
       delete this.playerShadows[id];
     }
     this.entitySprites.clear();
     this.entityGlows.clear();
+    this.entityIdleAnimators.clear();
     this.propSprites.clear();
     this.tileImages.clear();
     this.tileBase.clear();
@@ -306,6 +329,7 @@ export class RoomScene
     const room = runtime.roomDocument;
 
     for (const id of PLAYER_IDS) {
+      delete this.playerAnimators[id];
       delete this.playerSprites[id];
       delete this.playerShadows[id];
     }
@@ -316,6 +340,7 @@ export class RoomScene
     this.materialTextures = null;
     this.entitySprites.clear();
     this.entityGlows.clear();
+    this.entityIdleAnimators.clear();
     this.propSprites.clear();
     this.tileImages.clear();
     this.tileBase.clear();
@@ -328,9 +353,18 @@ export class RoomScene
     this.intents = new KeyboardIntentSource(this);
 
     const camera = this.cameras.main;
+    const presentation = this.simulation.presentation;
     camera.setBackgroundColor(theme.palette.bg);
+    camera.setViewport(
+      presentation.stage.x,
+      presentation.stage.y,
+      presentation.stage.width,
+      presentation.stage.height,
+    );
+    camera.setZoom(presentation.zoom);
     camera.setBounds(0, 0, roomPixelWidth(room), roomPixelHeight(room));
-    camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
+    const scroll = cameraScrollForView(presentation, this.simulation.camera);
+    camera.setScroll(scroll.x, scroll.y);
 
     if (this.config.materials && this.config.patterns) {
       this.patternLayer = new PatternLayer({
@@ -597,14 +631,30 @@ export class RoomScene
       const x = (entity.x + 0.5) * room.tileSize;
       const y = entity.y * room.tileSize;
       const depth = 4 + entity.y / 100;
+      const display = resolveEntityDisplay({
+        entity,
+        asset,
+        presentation: this.config.runtime.packPresentation,
+      });
+      this.config.runtime.registerEntityDisplay?.(entity.id, {
+        width: display.width,
+        height: display.height,
+      });
 
       const glow = this.add
-        .ellipse(x, y - 4, ENTITY_SIZE * 1.25, 10, 0xffd166, 0)
+        .ellipse(
+          x,
+          y - 4,
+          Math.min(display.width * 1.25, 96),
+          10,
+          0xffd166,
+          0,
+        )
         .setDepth(depth - 0.5);
       const sprite = this.add
-        .image(x, y, key)
+        .sprite(x, y, key)
         .setOrigin(0.5, 1)
-        .setDisplaySize(ENTITY_SIZE, ENTITY_SIZE)
+        .setDisplaySize(display.width, display.height)
         .setDepth(depth);
 
       this.entityGlows.set(entity.id, glow);
@@ -612,6 +662,7 @@ export class RoomScene
       if (entity.type === "prop") {
         this.propSprites.set(entity.id, sprite);
       }
+      this.createEntityIdleAnimator(entity, sprite, key, display);
 
       const materialBinding = entity.components?.material;
       if (materialBinding && this.config.materials) {
@@ -633,13 +684,68 @@ export class RoomScene
     }
   }
 
+  private createEntityIdleAnimator(
+    entity: RoomEntity,
+    sprite: Phaser.GameObjects.Sprite,
+    staticTexture: string,
+    display: { width: number; height: number },
+  ): void {
+    if (!entity.idleAnimation) return;
+
+    const asset = this.config.assets.resolveById(entity.idleAnimation);
+    if (!asset || asset.type !== "sheet") {
+      this.config.onWarning?.(
+        `ENTITY_IDLE_ANIMATION_UNRESOLVED: ${entity.id} (${entity.idleAnimation})`,
+      );
+      return;
+    }
+    if (!asset.frames || !asset.fps) {
+      this.config.onWarning?.(
+        `ENTITY_IDLE_ANIMATION_INVALID: ${entity.id} (${entity.idleAnimation})`,
+      );
+      return;
+    }
+
+    const texture = resolveTexture(this, asset, this.config.theme.fonts.ui);
+    if (!texture) {
+      this.config.onWarning?.(
+        `ENTITY_IDLE_TEXTURE_UNRESOLVED: ${entity.id} (${entity.idleAnimation})`,
+      );
+      return;
+    }
+
+    try {
+      const animator = new EntityIdleAnimator({
+        scene: this,
+        entityId: entity.id,
+        sprite,
+        staticTexture,
+        asset: {
+          textureKey: texture,
+          frames: asset.frames,
+          fps: asset.fps,
+          loop: asset.loop === true,
+        },
+        display,
+        isReducedMotion: () => this.config.isReducedMotion?.() ?? false,
+      });
+      this.entityIdleAnimators.set(entity.id, animator);
+    } catch (error) {
+      this.config.onWarning?.(
+        `ENTITY_IDLE_ANIMATION_FAILED: ${entity.id} (${
+          error instanceof Error ? error.message : String(error)
+        })`,
+      );
+    }
+  }
+
   private applyInteractionHighlight(entityId: string | null): void {
     for (const [id, glow] of this.entityGlows) {
       glow.setFillStyle(0xffd166, id === entityId ? 0.45 : 0);
     }
     for (const [id, sprite] of this.entitySprites) {
       if (id === entityId) {
-        sprite.setTint(0xffe08a);
+        sprite.setTint(ENTITY_INTERACTION_TINT);
       } else {
         sprite.clearTint();
       }
@@ -671,13 +777,52 @@ export class RoomScene
       .setDepth(9);
 
     const sprite = this.add
-      .image(player.x, player.y, key)
+      .sprite(player.x, player.y, key)
       .setOrigin(0.5, 1)
       .setDisplaySize(PLAYER_WIDTH, PLAYER_HEIGHT)
       .setDepth(10);
 
     this.playerShadows[id] = shadow;
     this.playerSprites[id] = sprite;
+    this.playerAnimators[id] = new PlayerAnimator({
+      scene: this,
+      playerId: id,
+      sprite,
+      idleTexture: key,
+      animations: this.playerAnimationAssets(id),
+      isReducedMotion: () => this.config.isReducedMotion?.() ?? false,
+    });
+  }
+
+  private playerAnimationAssets(
+    id: PlayerId,
+  ): Partial<Record<PlayerClip, PlayerAnimationAsset>> {
+    const animations: Partial<Record<PlayerClip, PlayerAnimationAsset>> = {};
+    for (const clip of ["walk", "jump", "fall", "land"] as const) {
+      const asset = this.config.assets.sprite(
+        PLAYER_ANIMATION_ASSET_IDS[id][clip],
+      );
+      if (
+        asset.type !== "sheet" ||
+        !asset.src ||
+        asset.source === "placeholder" ||
+        !asset.frames ||
+        !asset.fps
+      ) {
+        continue;
+      }
+      const texture = textureKey(asset.id);
+      if (!this.textures.exists(texture)) {
+        continue;
+      }
+      animations[clip] = {
+        textureKey: texture,
+        frames: asset.frames,
+        fps: asset.fps,
+        loop: asset.loop === true,
+      };
+    }
+    return animations;
   }
 
   private syncPlayers(): void {
@@ -687,6 +832,7 @@ export class RoomScene
       const shadow = this.playerShadows[id];
 
       if (sprite) {
+        this.playerAnimators[id]?.update(player);
         sprite.setPosition(player.x, player.y);
         sprite.setFlipX(player.facing === -1);
         sprite.setVisible(player.active);

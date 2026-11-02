@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 2,
+  "palette": "art-source/nanobanan/palette.json",
+  "classes": {
+    "hero-npc": {
+      "cell": [96, 96],
+      "display": [96, 96],
+      "margin": 2,
+      "minReadablePx": 72,
+      "minOpaquePixels": 3500,
+      "maxPaletteDistance": 24,
+      "maxDownscale": 4,
+      "treatment": "hero-npc"
+    },
+    "hero-interactable": {
+      "cell": [64, 64],
+      "display": [64, 64],
+      "margin": 2,
+      "minReadablePx": 48,
+      "minOpaquePixels": 1400,
+      "maxPaletteDistance": 24,
+      "maxDownscale": 10,
+      "treatment": "hero-interactable"
+    },
+    "hero-prop": {
+      "cell": [48, 48],
+      "display": [48, 48],
+      "margin": 2,
+      "minReadablePx": 32,
+      "minOpaquePixels": 600,
+      "maxPaletteDistance": 24,
+      "maxDownscale": 12,
+      "treatment": "hero-prop"
+    },
+    "ui-1x": {
+      "cell": [36, 36],
+      "display": [36, 36],
+      "margin": 2,
+      "minReadablePx": 24,
+      "minOpaquePixels": 300,
+      "maxPaletteDistance": 24,
+      "maxDownscale": 10,
+      "treatment": "ui-1x"
+    }
+  },
+  "alphaThreshold": 128,
+  "maxBytes": 65536,
+  "preview": {
+    "scales": [1, 2, 4],
+    "background": "#101a20"
+  },
+  "reportDir": "art-source/nanobanan/reports",
+  "previewDir": "art-source/previews/nanobanan/entities",
+  "assets": [
+    {
+      "id": "sprite.agent.neuron",
+      "class": "hero-npc",
+      "status": "alternate",
+      "source": "art-source/nanobanan/keyed/sprite-agent-neuron.png",
+      "output": "art-source/previews/nanobanan/entities/agent-neuron-concept.png",
+      "runtime": false,
+      "missingReason": "Runtime static is generated from the animated Neuron Keeper sheet; this concept-plate fit is an alternate review asset.",
+      "notes": "Hero-class review fit at 96×96; the runtime Keeper comes from the character sheet pipeline.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "sage", "ink"]
+    },
+    {
+      "id": "sprite.scan.neuron",
+      "class": "ui-1x",
+      "status": "placeholder",
+      "source": "art-source/nanobanan/keyed/sprite-scan-neuron.png",
+      "output": "art-source/nanobanan/keyed/fit/scan-neuron.png",
+      "runtime": false,
+      "missingReason": "The myelin sleeves, nodes and forked terminals do not read at 36×36; the cyan rim is largely lost.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "sage", "ink"]
+    },
+    {
+      "id": "sprite.scan.synapse",
+      "class": "ui-1x",
+      "status": "fit-preview",
+      "source": "art-source/nanobanan/keyed/sprite-scan-synapse.png",
+      "output": "public/packs/anatomy-reflex/shared/sprites/scan-synapse.png",
+      "runtime": true,
+      "notes": "Two cells and the cleft read at 36×36. The cyan rim is partial because the source plate clips the postsynaptic wall at the canvas edge.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    },
+    {
+      "id": "sprite.scan.pathway",
+      "class": "ui-1x",
+      "status": "placeholder",
+      "source": "art-source/nanobanan/keyed/sprite-scan-pathway.png",
+      "output": "art-source/nanobanan/keyed/fit/scan-pathway.png",
+      "runtime": false,
+      "missingReason": "The dendrite-to-terminal reading, myelin gaps and cyan rim are lost at 36×36.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "sage", "ink"]
+    },
+    {
+      "id": "sprite.scan.muscle",
+      "class": "ui-1x",
+      "status": "fit-preview",
+      "source": "art-source/nanobanan/keyed/sprite-scan-muscle.png",
+      "output": "public/packs/anatomy-reflex/shared/sprites/scan-muscle.png",
+      "runtime": true,
+      "notes": "The muscle bundle and nerve contact read at 36×36. No joint-ramp pixels survived, so the cyan scan rim is missing.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    },
+    {
+      "id": "sprite.scan.reflex",
+      "class": "ui-1x",
+      "status": "placeholder",
+      "source": "art-source/nanobanan/keyed/scan-reflex.png",
+      "output": "art-source/nanobanan/keyed/fit/scan-reflex.png",
+      "runtime": false,
+      "missingReason": "The two-cell loop reads, but the dorsal/ventral roots and muscle spindle do not read at 36×36.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "sage", "ink"]
+    },
+    {
+      "id": "sprite.gate.ferry",
+      "class": "hero-interactable",
+      "status": "fit-preview",
+      "source": "art-source/nanobanan/keyed/gate-ferry.png",
+      "output": "public/packs/anatomy-reflex/shared/sprites/gate-ferry.png",
+      "runtime": true,
+      "notes": "Hero re-fit at 64×64. The bone frame, teal curtain and nerve-yellow seam read; hand-clean remains required.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    },
+    {
+      "id": "sprite.prop.tracer",
+      "class": "hero-prop",
+      "status": "fit-preview",
+      "source": "art-source/nanobanan/keyed/prop-tracer.png",
+      "output": "public/packs/anatomy-reflex/shared/sprites/prop-tracer.png",
+      "runtime": true,
+      "notes": "Hero re-fit at 48×48. Triangular ACh packet with rear tabs; the cyan rim is partial.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    },
+    {
+      "id": "sprite.pulse.terminal",
+      "class": "hero-interactable",
+      "status": "fit-preview",
+      "source": "art-source/nanobanan/keyed/pulse-terminal.png",
+      "output": "public/packs/anatomy-reflex/shared/sprites/pulse-terminal.png",
+      "runtime": true,
+      "notes": "Hero re-fit at 64×64. Round motor terminal with vesicles and a cyan emitter; hand-clean remains required.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    },
+    {
+      "id": "sprite.receptor.triangle",
+      "class": "hero-interactable",
+      "status": "fit-preview",
+      "source": "art-source/nanobanan/keyed/receptor-triangle.png",
+      "output": "public/packs/anatomy-reflex/shared/sprites/receptor-triangle.png",
+      "runtime": true,
+      "notes": "Hero re-fit at 64×64. Triangular socket and membrane rim; hand-clean remains required.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    },
+    {
+      "id": "sprite.receptor.circle",
+      "class": "hero-interactable",
+      "status": "fit-preview",
+      "source": "art-source/nanobanan/keyed/receptor-circle.png",
+      "output": "public/packs/anatomy-reflex/shared/sprites/receptor-circle.png",
+      "runtime": true,
+      "notes": "Hero re-fit at 64×64. Circular socket and membrane rim; hand-clean remains required.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    }
+  ]
+}

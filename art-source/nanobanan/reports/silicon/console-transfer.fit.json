@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.console.transfer",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. Compact terminal with cyan screen, card slot and ceramic buttons.",
+  "config": "fit.silicon.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/silicon/console-transfer.png",
+    "width": 984,
+    "height": 1272,
+    "edgeContact": {
+      "top": 40,
+      "bottom": 164,
+      "left": 492,
+      "right": 554
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/sprites/console-transfer.png",
+    "runtime": true,
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 2020
+  },
+  "cell": {
+    "width": 64,
+    "height": 64
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 21.391,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 984,
+    "height": 1272
+  },
+  "fit": {
+    "width": 46,
+    "height": 60,
+    "offsetX": 9,
+    "offsetY": 2,
+    "scale": 0.04717,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 9,
+    "y": 2,
+    "width": 46,
+    "height": 60
+  },
+  "margins": {
+    "top": 2,
+    "right": 9,
+    "bottom": 2,
+    "left": 9
+  },
+  "quantization": {
+    "changedPixels": 1626,
+    "maxDistance": 58.6,
+    "offPalettePixels": 1626,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 1626
+  },
+  "rampHistogram": {
+    "ink": 312,
+    "joint": 259,
+    "sage": 92,
+    "boneShadow": 206,
+    "teal": 474,
+    "bone": 283
+  },
+  "warnings": [
+    "source content touches the image border (t 40, b 164, l 492, r 554); the concept plate may be clipped",
+    "fitted content is 46x60; minimum dimension 46px is below the 48px readability policy",
+    "source-to-fit scale 21.4:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 58.6 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/console-transfer-1x.png",
+    "scale2x": "art-source/previews/nanobanan/silicon/console-transfer-2x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/console-transfer-4x.png",
+    "tint2x": "art-source/previews/nanobanan/silicon/console-transfer-tint-2x.png"
+  }
+}

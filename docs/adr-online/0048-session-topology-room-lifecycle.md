@@ -45,6 +45,10 @@ The DO accepts:
 - at most one `guest`;
 - no spectators and no third player.
 
+**Controller phase (M4.0a).** A controller room accepts one host and up to two
+controllers instead of a guest; see ADR-0068. The host/guest profile here
+remains the M4.0b membership model.
+
 A second host, second guest, or unknown role is rejected with a close code and
 a human-readable reason. The host creates the code; the guest joins it. The
 host may regenerate a code before the guest joins.
@@ -76,7 +80,7 @@ hibernate, and no persistent room state survives.
 
 - **Guest disconnect:** the host pauses the simulation and shows “P2
   disconnected.” The guest may rejoin the same room with the same role within
-  the grace window (recommended 60 s). After the window, M4.0 ends the session;
+  the grace window (recommended 60 s). After the window, M4.0b ends the session;
   continuing with a closed guest slot is a future option.
 - **Host disconnect:** the session ends. The guest sees “host left.” There is no
   host migration.

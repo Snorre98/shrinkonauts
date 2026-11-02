@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "ui.icon.badge",
+  "status": "placeholder",
+  "missingReason": "The 16x16 fit collapses the helmet dome into the ring; only an amber visor block reads in the 32x32 target and ~45x27 pill crop.",
+  "notes": "Audit evidence only. The HUD keeps the CSS ui.icon.badge placeholder.",
+  "config": "fit.badge.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/badge.png",
+    "width": 1468,
+    "height": 1492,
+    "edgeContact": {
+      "top": 54,
+      "bottom": 70,
+      "left": 115,
+      "right": 127
+    }
+  },
+  "output": {
+    "path": "art-source/nanobanan/keyed/fit/badge.png",
+    "runtime": false,
+    "written": false,
+    "width": 16,
+    "height": 16,
+    "bytes": 696
+  },
+  "cell": {
+    "width": 16,
+    "height": 16
+  },
+  "margin": 1,
+  "alphaThreshold": 128,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1468,
+    "height": 1492
+  },
+  "fit": {
+    "width": 14,
+    "height": 14,
+    "offsetX": 1,
+    "offsetY": 1,
+    "scale": 0.009383,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 1,
+    "y": 1,
+    "width": 14,
+    "height": 14
+  },
+  "margins": {
+    "top": 1,
+    "right": 1,
+    "bottom": 1,
+    "left": 1
+  },
+  "quantization": {
+    "changedPixels": 116,
+    "maxDistance": 79.126,
+    "offPalettePixels": 116,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 116
+  },
+  "rampHistogram": {
+    "ink": 24,
+    "sage": 18,
+    "boneShadow": 38,
+    "teal": 11,
+    "bone": 2,
+    "nerve": 21,
+    "muscle": 2
+  },
+  "warnings": [
+    "source content touches the image border (t 54, b 70, l 115, r 127); the concept plate may be clipped",
+    "no joint-ramp pixels survived; the cyan scan rim may be missing",
+    "max palette quantisation distance 79.1 exceeds 64"
+  ],
+  "previews": {
+    "scale2x": "art-source/previews/nanobanan/entities/badge-2x.png",
+    "scale8x": "art-source/previews/nanobanan/entities/badge-8x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/badge-tint-2x.png"
+  }
+}

@@ -92,10 +92,16 @@ export interface AccessibilitySettings {
   reducedMotion: boolean;
 }
 
+export interface FeedbackSettings {
+  /** Global visibility of shared-owned transient cues and requested help. */
+  showShared: boolean;
+}
+
 export interface GameSettings {
   schemaVersion: string;
   audio: AudioSettingsSnapshot;
   accessibility: AccessibilitySettings;
+  feedback: FeedbackSettings;
 }
 
 export interface SaveStorage {
@@ -145,6 +151,7 @@ export function defaultSettings(): GameSettings {
     schemaVersion: SAVE_SCHEMA_VERSION,
     audio: { muted: false, volume: 0.7 },
     accessibility: { textScale: 1, reducedMotion: false },
+    feedback: { showShared: true },
   };
 }
 
@@ -176,6 +183,7 @@ function parseSettings(raw: string | null): GameSettings {
   const accessibility = isRecord(parsed.accessibility)
     ? parsed.accessibility
     : {};
+  const feedback = isRecord(parsed.feedback) ? parsed.feedback : {};
 
   return {
     schemaVersion:
@@ -190,9 +198,15 @@ function parseSettings(raw: string | null): GameSettings {
     },
     accessibility: {
       textScale: isFiniteNumber(accessibility.textScale)
-        ? clamp(accessibility.textScale, 0.8, 1.6)
+        ? clamp(accessibility.textScale, 0.8, 2)
         : fallback.accessibility.textScale,
       reducedMotion: accessibility.reducedMotion === true,
+    },
+    feedback: {
+      showShared:
+        typeof feedback.showShared === "boolean"
+          ? feedback.showShared
+          : fallback.feedback.showShared,
     },
   };
 }
@@ -357,6 +371,7 @@ export interface SaveModule {
   saveSettings(settings: GameSettings): void;
   updateAudio(patch: Partial<AudioSettingsSnapshot>): GameSettings;
   updateAccessibility(patch: Partial<AccessibilitySettings>): GameSettings;
+  updateFeedback(patch: Partial<FeedbackSettings>): GameSettings;
   saveRun(run: Omit<RunSnapshot, "savedAt"> & { savedAt?: string }): void;
   loadRun(
     packId?: string,
@@ -424,8 +439,11 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
         volume: clamp(next.audio.volume, 0, 1),
       },
       accessibility: {
-        textScale: clamp(next.accessibility.textScale, 0.8, 1.6),
+        textScale: clamp(next.accessibility.textScale, 0.8, 2),
         reducedMotion: next.accessibility.reducedMotion === true,
+      },
+      feedback: {
+        showShared: next.feedback?.showShared !== false,
       },
     };
     persistSettings();
@@ -601,6 +619,12 @@ export function createSave(options: CreateSaveOptions = {}): SaveModule {
       return applySettings({
         ...settings,
         accessibility: { ...settings.accessibility, ...patch },
+      });
+    },
+    updateFeedback(patch) {
+      return applySettings({
+        ...settings,
+        feedback: { ...settings.feedback, ...patch },
       });
     },
     saveRun(run) {

@@ -286,10 +286,12 @@ export class PlaceholderProvider implements AssetProvider {
     return {
       kind: "css",
       label: shortLabel(id),
-      background: withAlpha(this.palette.bg, 0.78),
+      // Pixel UI placeholders use hard square chrome; no pill radius or
+      // translucent glass fill.
+      background: this.palette.bg,
       color: this.palette.text,
       border: withAlpha(this.palette.accent, 0.65),
-      radius: 999,
+      radius: 0,
     };
   }
 }

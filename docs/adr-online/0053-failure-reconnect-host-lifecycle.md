@@ -42,6 +42,11 @@ clean, explicit pause/end over silent divergence or false recovery.
 
 No gameplay is simulated while the guest is absent. No P2 input is fabricated.
 
+**Controller phase (M4.0a).** The same pause/reconnect rules apply per
+controller slot: the host pauses, the phone reconnects within the grace window,
+and the host may instead continue that slot on the keyboard. See ADR-0067 and
+ADR-0068.
+
 ### 3. Host disconnect
 
 1. Guest receives `session-end` or detects close.

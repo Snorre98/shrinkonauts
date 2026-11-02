@@ -6,7 +6,12 @@ import {
   type ResolvedAsset,
 } from "../assets";
 import type { ThemeDocument } from "../pack";
-import type { HubDocument, HubRect } from "../hub";
+import type {
+  HubDocument,
+  HubDressingEntry,
+  HubOrigin,
+  HubRect,
+} from "../hub";
 import { LayeredBackground } from "./background";
 
 export interface HubSceneConfig {
@@ -56,6 +61,23 @@ function isFinalAsset(asset: ResolvedAsset): boolean {
   return asset.source !== "placeholder" && typeof asset.src === "string" && asset.src.length > 0;
 }
 
+function originValue(
+  origin: HubOrigin | undefined,
+): [number, number] {
+  switch (origin) {
+    case "top-left":
+      return [0, 0];
+    case "top-center":
+      return [0.5, 0];
+    case "bottom-left":
+      return [0, 1];
+    case "bottom-center":
+      return [0.5, 1];
+    default:
+      return [0.5, 0.5];
+  }
+}
+
 export class HubScene extends Phaser.Scene {
   private player: Phaser.GameObjects.Container | Phaser.GameObjects.Image | null = null;
   private tinyAstronaut: Phaser.GameObjects.Container | Phaser.GameObjects.Image | null = null;
@@ -63,6 +85,10 @@ export class HubScene extends Phaser.Scene {
   private drum: Phaser.GameObjects.Container | Phaser.GameObjects.Image | null = null;
   private screenGlow: Phaser.GameObjects.Rectangle | null = null;
   private screenLabel: Phaser.GameObjects.Text | null = null;
+  private cartridgeImages: Map<string, Phaser.GameObjects.Image> | null = null;
+  private cartridgeGlow: Phaser.GameObjects.Rectangle | null = null;
+  private readonly failedTextures = new Set<string>();
+  private hasFinalBackground = false;
   private launchSkip: (() => void) | null = null;
   private launchSkipped = false;
 
@@ -74,6 +100,7 @@ export class HubScene extends Phaser.Scene {
     this.load.on(
       Phaser.Loader.Events.FILE_LOAD_ERROR,
       (file: Phaser.Loader.File) => {
+        this.failedTextures.add(file.key);
         const message = `Failed to load ${file.src}; falling back to placeholder`;
         console.warn(`[shrinkonauts] ${message}`);
         this.config.onWarning?.(message);
@@ -88,6 +115,14 @@ export class HubScene extends Phaser.Scene {
     }
   }
 
+  private isUsableAsset(asset: ResolvedAsset): boolean {
+    return (
+      isFinalAsset(asset) &&
+      !this.failedTextures.has(textureKey(asset.id)) &&
+      this.textures.exists(textureKey(asset.id))
+    );
+  }
+
   create(): void {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
     try {
@@ -95,10 +130,10 @@ export class HubScene extends Phaser.Scene {
       this.cameras.main.setBackgroundColor(colorNumber(theme.palette.bg));
       this.cameras.main.setBounds(0, 0, hub.width, hub.height);
 
-      const hasFinalBackground = hub.background.layers.some((layer) =>
-        isFinalAsset(this.config.assets.image(layer.assetId)),
+      this.hasFinalBackground = hub.background.layers.some((layer) =>
+        this.isUsableAsset(this.config.assets.image(layer.assetId)),
       );
-      if (hasFinalBackground) {
+      if (this.hasFinalBackground) {
         new LayeredBackground(
           this,
           hub.background.layers,
@@ -111,9 +146,13 @@ export class HubScene extends Phaser.Scene {
         this.drawBathroomPlaceholder();
       }
 
+      this.drawLogo();
       this.drawMachine();
       this.createPlayer();
       this.createTinyAstronaut();
+      this.drawDressing();
+      this.createCartridges();
+      this.drawPoster();
       this.createAmbientMotion();
       this.config.onReady?.();
     } catch (error) {
@@ -156,6 +195,15 @@ export class HubScene extends Phaser.Scene {
       );
       this.screenLabel.setColor(accent);
     }
+    if (this.cartridgeImages) {
+      const selectedId = anatomy
+        ? this.config.hub.dressing?.cartridge?.anatomy
+        : this.config.hub.dressing?.cartridge?.silicon;
+      for (const [id, image] of this.cartridgeImages) {
+        image.setVisible(id === selectedId);
+      }
+    }
+    this.cartridgeGlow?.setFillStyle(colorNumber(accent), 0.2);
   }
 
   skipLaunch(): void {
@@ -214,8 +262,6 @@ export class HubScene extends Phaser.Scene {
         await tween({
           targets: this.door,
           alpha: 0.15,
-          scaleX: 1.08,
-          scaleY: 1.08,
           duration: 420,
           ease: "Sine.easeOut",
         });
@@ -237,8 +283,6 @@ export class HubScene extends Phaser.Scene {
         await tween({
           targets: this.player,
           alpha: 0,
-          scaleX: 0.65,
-          scaleY: 0.65,
           duration: 360,
           ease: "Sine.easeIn",
         });
@@ -306,10 +350,11 @@ export class HubScene extends Phaser.Scene {
   }
 
   private tinyScale(): number {
-    const tiny = this.config.hub.player.tinyScale;
+    // The procedural container is authored at a larger internal size; its
+    // Phase-1 scale is 0.35. The final P1 image uses hub.player.tinyScale.
     return this.tinyAstronaut instanceof Phaser.GameObjects.Image
-      ? tiny
-      : 1;
+      ? this.config.hub.player.tinyScale
+      : 0.35;
   }
 
   private drawBathroomPlaceholder(): void {
@@ -340,74 +385,80 @@ export class HubScene extends Phaser.Scene {
       tiles.lineBetween(x, 520, x, hub.height);
     }
 
-    // Mirror and sink on the left.
+    // Mirror and sink hug the far-left wall, clear of the logo safe zone.
     this.add
-      .rectangle(170, 250, 230, 300, mixColor(theme.palette.bone, theme.palette.bg, 0.42))
+      .rectangle(70, 330, 120, 180, mixColor(theme.palette.bone, theme.palette.bg, 0.42))
       .setStrokeStyle(8, colorNumber(theme.palette.boneShadow))
       .setDepth(-2);
     this.add
-      .rectangle(170, 250, 190, 255, mixColor(theme.palette.joint, theme.palette.bg, 0.65))
+      .rectangle(70, 330, 100, 158, mixColor(theme.palette.joint, theme.palette.bg, 0.65))
       .setDepth(-2);
     this.add
-      .rectangle(170, 250, 190, 255, colorNumber(theme.palette.bone), 0.08)
+      .rectangle(70, 330, 100, 158, colorNumber(theme.palette.bone), 0.08)
       .setDepth(-2);
     this.add
-      .rectangle(80, 470, 260, 46, mixColor(theme.palette.bone, theme.palette.bg, 0.25))
+      .rectangle(64, 470, 160, 42, mixColor(theme.palette.bone, theme.palette.bg, 0.25))
       .setStrokeStyle(4, colorNumber(theme.palette.boneShadow))
       .setDepth(-2);
     this.add
-      .ellipse(80, 465, 260, 56, mixColor(theme.palette.bg, theme.palette.bone, 0.12))
+      .ellipse(64, 464, 160, 48, mixColor(theme.palette.bg, theme.palette.bone, 0.12))
       .setStrokeStyle(3, colorNumber(theme.palette.boneShadow))
       .setDepth(-1);
     this.add
-      .rectangle(80, 440, 18, 50, colorNumber(theme.palette.boneShadow))
+      .rectangle(64, 444, 14, 36, colorNumber(theme.palette.boneShadow))
       .setDepth(-1);
     this.add
-      .circle(80, 424, 12, colorNumber(theme.palette.boneShadow))
+      .circle(64, 434, 10, colorNumber(theme.palette.boneShadow))
       .setDepth(-1);
 
-    // Shelf and bottles.
+    // Shelf and bottles sit above the machine, leaving the top-left quiet.
     this.add
-      .rectangle(440, 170, 180, 14, colorNumber(theme.palette.boneShadow))
+      .rectangle(340, 222, 300, 14, colorNumber(theme.palette.boneShadow))
       .setDepth(-1);
     for (const [x, color, width, height] of [
-      [400, theme.palette.nerve, 22, 56],
-      [432, theme.palette.joint, 28, 74],
-      [468, theme.palette.muscle, 20, 48],
+      [280, theme.palette.nerve, 22, 50],
+      [330, theme.palette.joint, 28, 66],
+      [380, theme.palette.muscle, 20, 44],
     ] as const) {
       this.add
-        .rectangle(x, 170 - height / 2, width, height, colorNumber(color))
+        .rectangle(x, 222 - 7 - height / 2, width, height, colorNumber(color))
         .setStrokeStyle(3, ink)
         .setDepth(-1);
       this.add
-        .rectangle(x, 170 - height - 6, width * 0.45, 10, colorNumber(theme.palette.bone))
+        .rectangle(
+          x,
+          222 - 7 - height - 5,
+          width * 0.45,
+          10,
+          colorNumber(theme.palette.bone),
+        )
         .setDepth(-1);
     }
 
-    // Laundry basket and bath mat.
+    // Laundry basket and bath mat sit centre/right, clear of the machine.
     this.add
-      .rectangle(350, 635, 150, 100, mixColor(theme.palette.boneShadow, theme.palette.bg, 0.35))
+      .rectangle(560, 691, 80, 58, mixColor(theme.palette.boneShadow, theme.palette.bg, 0.35))
       .setStrokeStyle(4, ink)
       .setDepth(1);
     this.add
-      .rectangle(350, 590, 160, 16, mixColor(theme.palette.bone, theme.palette.bg, 0.4))
+      .rectangle(560, 660, 88, 14, mixColor(theme.palette.bone, theme.palette.bg, 0.4))
       .setStrokeStyle(3, ink)
       .setDepth(1);
     this.add
-      .ellipse(620, 690, 300, 42, mixColor(theme.palette.joint, theme.palette.bg, 0.58), 0.9)
+      .ellipse(660, 700, 200, 38, mixColor(theme.palette.joint, theme.palette.bg, 0.58), 0.9)
       .setDepth(0);
     this.add
-      .ellipse(620, 690, 260, 30, mixColor(theme.palette.bone, theme.palette.bg, 0.4), 0.6)
+      .ellipse(660, 700, 170, 28, mixColor(theme.palette.bone, theme.palette.bg, 0.4), 0.6)
       .setDepth(0);
 
     // A small poster nods at the body-horror cartoon tone without relying on art.
     this.add
-      .rectangle(760, 210, 120, 170, mixColor(theme.palette.nerve, theme.palette.bg, 0.72))
+      .rectangle(600, 260, 96, 128, mixColor(theme.palette.nerve, theme.palette.bg, 0.72))
       .setStrokeStyle(5, ink)
       .setDepth(-1)
       .setAngle(-3);
     this.add
-      .text(760, 210, "STAY\nSMALL", {
+      .text(600, 260, "STAY\nSMALL", {
         fontFamily: this.config.theme.fonts.display,
         fontSize: "18px",
         color: this.config.theme.palette.bg,
@@ -417,6 +468,109 @@ export class HubScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(-1)
       .setAngle(-3);
+  }
+
+  private drawLogo(): void {
+    const { theme, hub, assets } = this.config;
+    const entry = hub.dressing?.logo;
+    const x = entry?.x ?? 48;
+    const y = entry?.y ?? 40;
+    const asset = entry ? assets.image(entry.assetId) : null;
+    if (entry && asset && this.isUsableAsset(asset)) {
+      const [originX, originY] = originValue(entry.origin);
+      this.add
+        .image(x, y, textureKey(asset.id))
+        .setOrigin(originX, originY)
+        .setScale(entry.scale ?? 1)
+        .setDepth(entry.depth ?? 7);
+      return;
+    }
+
+    // The delivered logo plate has a washing machine baked behind the
+    // wordmark, so it is not usable as a clean alpha asset. Keep the
+    // Silkscreen fallback; the dark stroke protects it against the pipes.
+    this.add
+      .text(x, y, "SHRINKONAUTS", {
+        fontFamily: theme.fonts.display,
+        fontSize: "32px",
+        color: theme.palette.bone,
+        fontStyle: "bold",
+        letterSpacing: 2,
+      })
+      .setStroke(theme.palette.bg, 5)
+      .setOrigin(0, 0)
+      .setDepth(entry?.depth ?? 7);
+  }
+
+  private drawDressingEntry(entry: HubDressingEntry): Phaser.GameObjects.Image | null {
+    const asset = this.config.assets.sprite(entry.assetId);
+    if (!this.isUsableAsset(asset)) return null;
+    const [originX, originY] = originValue(entry.origin);
+    return this.add
+      .image(entry.x, entry.y, textureKey(asset.id))
+      .setOrigin(originX, originY)
+      .setScale(entry.scale ?? 1)
+      .setDepth(entry.depth ?? 5);
+  }
+
+  private drawDressing(): void {
+    for (const entry of this.config.hub.dressing?.props ?? []) {
+      this.drawDressingEntry(entry);
+    }
+  }
+
+  private createCartridges(): void {
+    const slot = this.config.hub.dressing?.cartridge;
+    if (!slot) return;
+    const [originX, originY] = originValue(slot.origin);
+    const scale = slot.scale ?? 1;
+    const depth = slot.depth ?? 6;
+    const images = new Map<string, Phaser.GameObjects.Image>();
+    for (const id of [slot.anatomy, slot.silicon]) {
+      const asset = this.config.assets.sprite(id);
+      if (!this.isUsableAsset(asset)) continue;
+      images.set(
+        id,
+        this.add
+          .image(slot.x, slot.y, textureKey(asset.id))
+          .setOrigin(originX, originY)
+          .setScale(scale)
+          .setDepth(depth)
+          .setVisible(false),
+      );
+    }
+    if (images.size === 0) return;
+    this.cartridgeImages = images;
+    this.cartridgeGlow = this.add
+      .rectangle(slot.x, slot.y + 8 * scale, 56, 40, 0x7bdff2, 0.2)
+      .setDepth(depth - 1);
+  }
+
+  private drawPoster(): void {
+    const entry = this.config.hub.dressing?.poster;
+    if (!entry || !this.hasFinalBackground) return;
+    const asset = this.config.assets.sprite(entry.assetId);
+    if (!this.isUsableAsset(asset)) return;
+    const [originX, originY] = originValue(entry.origin);
+    const depth = entry.depth ?? 1;
+    const image = this.add
+      .image(entry.x, entry.y, textureKey(asset.id))
+      .setOrigin(originX, originY)
+      .setScale(entry.scale ?? 1)
+      .setDepth(depth);
+    const bounds = image.getBounds();
+    const { theme } = this.config;
+    this.add
+      .text(bounds.centerX, bounds.y + bounds.height * 0.135, "STAY SMALL", {
+        fontFamily: theme.fonts.display,
+        fontSize: "10px",
+        color: theme.palette.bg,
+        align: "center",
+        fontStyle: "bold",
+        letterSpacing: 0,
+      })
+      .setOrigin(0.5)
+      .setDepth(depth + 1);
   }
 
   private drawMachine(): void {
@@ -429,35 +583,70 @@ export class HubScene extends Phaser.Scene {
     const drumAsset = assets.sprite(hub.machine.drum);
     const ink = colorNumber(theme.palette.bg);
     const metal = mixColor(theme.palette.bone, theme.palette.bg, 0.3);
+    const hasFinalBody = this.isUsableAsset(bodyAsset);
 
-    if (isFinalAsset(bodyAsset)) {
+    if (hasFinalBody) {
       this.add
         .image(x, y, textureKey(bodyAsset.id))
         .setOrigin(0.5, 1)
         .setScale(scale)
         .setDepth(2);
     } else {
+      this.add
+        .ellipse(
+          x,
+          y - 6,
+          360,
+          36,
+          mixColor(theme.palette.bg, "#000000", 0.4),
+          0.45,
+        )
+        .setDepth(1);
+
       const body = this.add.graphics().setDepth(2);
       body.fillStyle(metal, 1);
       body.lineStyle(6, ink, 1);
-      body.fillRoundedRect(x - 175, y - 400, 350, 400, 30);
-      body.strokeRoundedRect(x - 175, y - 400, 350, 400, 30);
+      body.fillRoundedRect(x - 180, y - 480, 360, 480, 30);
+      body.strokeRoundedRect(x - 180, y - 480, 360, 480, 30);
+
+      // Blank nameplate across the top of the body.
       body.fillStyle(mixColor(theme.palette.bone, theme.palette.bg, 0.55), 1);
-      body.fillRoundedRect(x - 158, y - 382, 316, 90, 18);
+      body.fillRoundedRect(x - 170, y - 472, 340, 48, 14);
       body.lineStyle(4, ink, 0.7);
-      body.strokeRoundedRect(x - 158, y - 382, 316, 90, 18);
+      body.strokeRoundedRect(x - 170, y - 472, 340, 48, 14);
+
+      // Control-panel housing around the cycle display.
       body.fillStyle(mixColor(theme.palette.bg, theme.palette.bone, 0.12), 1);
-      body.fillRoundedRect(x - 158, y - 280, 316, 255, 22);
+      body.fillRoundedRect(x - 125, y - 420, 250, 64, 14);
       body.lineStyle(4, ink, 0.7);
-      body.strokeRoundedRect(x - 158, y - 280, 316, 255, 22);
-      body.fillStyle(mixColor(theme.palette.boneShadow, theme.palette.bg, 0.2), 1);
-      body.fillRoundedRect(x - 120, y - 110, 240, 45, 16);
+      body.strokeRoundedRect(x - 125, y - 420, 250, 64, 14);
+
+      // Porthole recess, aligned with the configured door anchor. The
+      // delivered final body sits lower than the Phase-1 placeholder guess.
+      const portholeRadius = 112;
+      const porthole = hub.machine.doorAnchor;
+      body.fillStyle(
+        mixColor(theme.palette.boneShadow, theme.palette.bg, 0.25),
+        1,
+      );
+      body.fillCircle(porthole.x, porthole.y, portholeRadius);
+      body.lineStyle(5, ink, 0.7);
+      body.strokeCircle(porthole.x, porthole.y, portholeRadius);
+
+      // Plinth where the machine meets the floor.
+      body.fillStyle(
+        mixColor(theme.palette.boneShadow, theme.palette.bg, 0.2),
+        1,
+      );
+      body.fillRoundedRect(x - 160, y - 52, 320, 46, 12);
       body.lineStyle(3, ink, 0.6);
-      body.strokeRoundedRect(x - 120, y - 110, 240, 45, 16);
+      body.strokeRoundedRect(x - 160, y - 52, 320, 46, 12);
     }
 
-    const doorRadius = 108 * scale;
-    if (isFinalAsset(doorAsset)) {
+    // The placeholder body is drawn at display size, so the porthole radius is
+    // a fixed display value. Final-art door/drum images use machine.scale.
+    const doorRadius = 88;
+    if (this.isUsableAsset(doorAsset)) {
       this.door = this.add
         .image(hub.machine.doorAnchor.x, hub.machine.doorAnchor.y, textureKey(doorAsset.id))
         .setDepth(4)
@@ -475,7 +664,7 @@ export class HubScene extends Phaser.Scene {
         .setDepth(4);
     }
 
-    if (isFinalAsset(drumAsset)) {
+    if (this.isUsableAsset(drumAsset)) {
       this.drum = this.add
         .image(hub.machine.drumAnchor.x, hub.machine.drumAnchor.y, textureKey(drumAsset.id))
         .setDepth(3)
@@ -520,70 +709,96 @@ export class HubScene extends Phaser.Scene {
       this.drum = drum;
     }
 
+    // The procedural body keeps the Phase-1 control housing; the final body
+    // uses the delivered screen rect from hub.json.
+    const screen = hasFinalBody
+      ? hub.machine.screen
+      : { x: x - 125, y: y - 420, width: 250, height: 64 };
+
     this.screenGlow = this.add
       .rectangle(
-        hub.machine.screen.x + hub.machine.screen.width / 2,
-        hub.machine.screen.y + hub.machine.screen.height / 2,
-        hub.machine.screen.width,
-        hub.machine.screen.height,
+        screen.x + screen.width / 2,
+        screen.y + screen.height / 2,
+        screen.width,
+        screen.height,
         colorNumber(theme.palette.joint),
-        0.16,
+        hasFinalBody ? 0.12 : 0.16,
       )
       .setStrokeStyle(3, colorNumber(theme.palette.joint), 0.5)
       .setDepth(3);
 
     this.screenLabel = this.add
       .text(
-        hub.machine.screen.x + 14,
-        hub.machine.screen.y + hub.machine.screen.height / 2,
+        screen.x + (hasFinalBody ? 8 : 14),
+        screen.y + screen.height / 2,
         "LOAD A CYCLE",
         {
           fontFamily: theme.fonts.ui,
-          fontSize: "12px",
+          fontSize: hasFinalBody ? "10px" : "12px",
           color: theme.palette.joint,
           fontStyle: "bold",
-          letterSpacing: 1,
+          letterSpacing: hasFinalBody ? 0 : 1,
         },
       )
       .setOrigin(0, 0.5)
       .setDepth(6);
 
-    this.add
-      .text(x, y - 430, "SHRINK-O-MATIC", {
-        fontFamily: theme.fonts.display,
-        fontSize: "22px",
-        color: theme.palette.bone,
-        fontStyle: "bold",
-        letterSpacing: 2,
-      })
-      .setOrigin(0.5)
-      .setDepth(6);
+    if (hasFinalBody && hub.machine.nameplate) {
+      const plate = hub.machine.nameplate;
+      this.add
+        .text(plate.x + plate.width / 2, plate.y + plate.height / 2, "SHRINK-O-MATIC", {
+          fontFamily: theme.fonts.ui,
+          fontSize: "8px",
+          color: theme.palette.applianceShadow ?? theme.palette.bg,
+          fontStyle: "bold",
+          letterSpacing: 0,
+        })
+        .setOrigin(0.5)
+        .setDepth(6);
+    } else if (!hasFinalBody) {
+      this.add
+        .text(x, y - 448, "SHRINK-O-MATIC", {
+          fontFamily: theme.fonts.display,
+          fontSize: "22px",
+          color: theme.palette.bone,
+          fontStyle: "bold",
+          letterSpacing: 2,
+        })
+        .setOrigin(0.5)
+        .setDepth(6);
+    }
 
-    // Start button beside the cycle display, plus a small vent.
-    this.add
-      .circle(x + 115, y - 350, 22, colorNumber(theme.palette.muscle))
-      .setStrokeStyle(5, ink)
-      .setDepth(5);
-    this.add
-      .circle(x + 115, y - 350, 12, colorNumber(theme.palette.nerve))
-      .setDepth(5);
-    this.add
-      .rectangle(x + 85, y - 300, 60, 18, colorNumber(theme.palette.boneShadow))
-      .setStrokeStyle(3, ink)
-      .setDepth(5);
+    if (!hasFinalBody) {
+      // Start button beside the cycle display, plus a small vent.
+      this.add
+        .circle(x + 140, y - 400, 20, colorNumber(theme.palette.muscle))
+        .setStrokeStyle(5, ink)
+        .setDepth(5);
+      this.add
+        .circle(x + 140, y - 400, 11, colorNumber(theme.palette.nerve))
+        .setDepth(5);
+      this.add
+        .rectangle(x + 140, y - 340, 60, 16, colorNumber(theme.palette.boneShadow))
+        .setStrokeStyle(3, ink)
+        .setDepth(5);
 
-    // Pipework gives the machine a silhouette even when the panel covers it.
-    const pipes = this.add.graphics().setDepth(1);
-    pipes.lineStyle(12, mixColor(theme.palette.boneShadow, theme.palette.bg, 0.4), 1);
-    pipes.lineBetween(x + 175, y - 350, x + 230, y - 350);
-    pipes.lineBetween(x + 230, y - 350, x + 230, y - 70);
+      // Pipework gives the machine a silhouette against the quiet wall.
+      const pipes = this.add.graphics().setDepth(1);
+      pipes.lineStyle(
+        12,
+        mixColor(theme.palette.boneShadow, theme.palette.bg, 0.4),
+        1,
+      );
+      pipes.lineBetween(x + 180, y - 300, x + 232, y - 300);
+      pipes.lineBetween(x + 232, y - 300, x + 232, y - 80);
+    }
   }
 
   private createPlayer(): void {
     const { hub, theme, assets } = this.config;
     const asset = assets.sprite(hub.player.civilian);
     const idle = hub.player.idle;
-    if (isFinalAsset(asset)) {
+    if (this.isUsableAsset(asset)) {
       const image = this.add
         .image(idle.x, idle.y, textureKey(asset.id))
         .setOrigin(0.5, 1)
@@ -648,7 +863,7 @@ export class HubScene extends Phaser.Scene {
     const { hub, theme, assets } = this.config;
     const asset = assets.sprite(hub.player.astronaut);
     const exit = hub.player.exit;
-    if (isFinalAsset(asset)) {
+    if (this.isUsableAsset(asset)) {
       this.tinyAstronaut = this.add
         .image(exit.x, exit.y, textureKey(asset.id))
         .setOrigin(0.5, 1)
@@ -661,7 +876,7 @@ export class HubScene extends Phaser.Scene {
 
     const container = this.add
       .container(exit.x, exit.y)
-      .setScale(hub.player.tinyScale)
+      .setScale(0.35)
       .setAlpha(0)
       .setVisible(false)
       .setDepth(9);
@@ -706,8 +921,8 @@ export class HubScene extends Phaser.Scene {
     for (let index = 0; index < 9; index += 1) {
       const bubble = this.add
         .circle(
-          Phaser.Math.Between(760, 1180),
-          Phaser.Math.Between(500, 680),
+          Phaser.Math.Between(180, 620),
+          Phaser.Math.Between(480, 660),
           Phaser.Math.Between(3, 8),
           colorNumber(theme.palette.joint),
           0.18,
@@ -732,6 +947,10 @@ export class HubScene extends Phaser.Scene {
     this.drum = null;
     this.screenGlow = null;
     this.screenLabel = null;
+    this.cartridgeImages = null;
+    this.cartridgeGlow = null;
+    this.failedTextures.clear();
+    this.hasFinalBackground = false;
   }
 }
 

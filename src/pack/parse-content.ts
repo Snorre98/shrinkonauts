@@ -1,5 +1,6 @@
 import { isLearningEventType } from "../core/learning-events";
 import { err, ok, type Result } from "../core/result";
+import { parsePackPresentation } from "./parse-presentation";
 import {
   isRecord,
   isSchemaVersionSupported,
@@ -185,6 +186,9 @@ export function parsePack(value: unknown): Result<PackDocument> {
     return err(`${PACK_CODE}: metadata must be an object`);
   }
 
+  const presentation = parsePackPresentation(value.presentation, PACK_CODE);
+  if (!presentation.ok) return err(presentation.error);
+
   return ok({
     schemaVersion: value.schemaVersion,
     id: id.value,
@@ -207,6 +211,7 @@ export function parsePack(value: unknown): Result<PackDocument> {
     ...(ageRating.value ? { ageRating: ageRating.value } : {}),
     ...(description.value ? { description: description.value } : {}),
     ...(isRecord(value.metadata) ? { metadata: { ...value.metadata } } : {}),
+    ...(presentation.value ? { presentation: presentation.value } : {}),
   });
 }
 

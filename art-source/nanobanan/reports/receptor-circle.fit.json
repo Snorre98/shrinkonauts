@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.receptor.circle",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. Circular socket and membrane rim; hand-clean remains required.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/receptor-circle.png",
+    "width": 1885,
+    "height": 1884,
+    "edgeContact": {
+      "top": 248,
+      "bottom": 248,
+      "left": 247,
+      "right": 134
+    }
+  },
+  "output": {
+    "path": "public/packs/anatomy-reflex/shared/sprites/receptor-circle.png",
+    "runtime": true,
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 6766
+  },
+  "cell": {
+    "width": 64,
+    "height": 64
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 31.417,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1885,
+    "height": 1884
+  },
+  "fit": {
+    "width": 60,
+    "height": 60,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.03183,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 2,
+    "width": 60,
+    "height": 60
+  },
+  "margins": {
+    "top": 2,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 2864,
+    "maxDistance": 89.196,
+    "offPalettePixels": 2864,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 2864
+  },
+  "rampHistogram": {
+    "teal": 895,
+    "ink": 458,
+    "boneShadow": 646,
+    "sage": 259,
+    "bone": 375,
+    "muscle": 132,
+    "joint": 54,
+    "nerve": 45
+  },
+  "warnings": [
+    "source content touches the image border (t 248, b 248, l 247, r 134); the concept plate may be clipped",
+    "source-to-fit scale 31.4:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 89.2 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/receptor-circle-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/receptor-circle-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/receptor-circle-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/receptor-circle-tint-2x.png"
+  }
+}

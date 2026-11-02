@@ -32,8 +32,9 @@ export function createGame(
       height: viewport.height,
     },
     render: {
-      antialias: true,
-      pixelArt: false,
+      antialias: false,
+      pixelArt: true,
+      roundPixels: true,
     },
   });
 }

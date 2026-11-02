@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.gate.ferry",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. The bone frame, teal curtain and nerve-yellow seam read; hand-clean remains required.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/gate-ferry.png",
+    "width": 1926,
+    "height": 1905,
+    "edgeContact": {
+      "top": 265,
+      "bottom": 512,
+      "left": 245,
+      "right": 245
+    }
+  },
+  "output": {
+    "path": "public/packs/anatomy-reflex/shared/sprites/gate-ferry.png",
+    "runtime": true,
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 4610
+  },
+  "cell": {
+    "width": 64,
+    "height": 64
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 32.288,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1926,
+    "height": 1905
+  },
+  "fit": {
+    "width": 60,
+    "height": 59,
+    "offsetX": 2,
+    "offsetY": 3,
+    "scale": 0.031153,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 3,
+    "width": 60,
+    "height": 59
+  },
+  "margins": {
+    "top": 3,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 2830,
+    "maxDistance": 82.426,
+    "offPalettePixels": 2830,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 2830
+  },
+  "rampHistogram": {
+    "teal": 280,
+    "ink": 628,
+    "boneShadow": 382,
+    "bone": 310,
+    "sage": 149,
+    "muscle": 55,
+    "nerve": 31,
+    "joint": 995
+  },
+  "warnings": [
+    "source content touches the image border (t 265, b 512, l 245, r 245); the concept plate may be clipped",
+    "source-to-fit scale 32.3:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 82.4 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/gate-ferry-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/gate-ferry-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/gate-ferry-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/gate-ferry-tint-2x.png"
+  }
+}

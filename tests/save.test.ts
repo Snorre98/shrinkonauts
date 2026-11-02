@@ -16,13 +16,15 @@ function body(x: number, y: number) {
 }
 
 describe("save", () => {
-  it("persists versioned audio and accessibility settings", () => {
+  it("persists versioned audio, accessibility, and feedback settings", () => {
     const storage = new MemorySaveStorage();
     const save = createSave({ storage });
 
     expect(save.settings).toEqual(defaultSettings());
+    expect(save.settings.feedback.showShared).toBe(true);
     save.updateAudio({ muted: true, volume: 0.4 });
     save.updateAccessibility({ textScale: 1.3, reducedMotion: true });
+    save.updateFeedback({ showShared: false });
 
     const reloaded = createSave({ storage });
     expect(reloaded.settings.audio).toEqual({ muted: true, volume: 0.4 });
@@ -30,7 +32,40 @@ describe("save", () => {
       textScale: 1.3,
       reducedMotion: true,
     });
+    expect(reloaded.settings.feedback).toEqual({ showShared: false });
     expect(reloaded.settings.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+  });
+
+  it("defaults shared feedback on for old or malformed settings", () => {
+    const oldSettings = new MemorySaveStorage({
+      [SETTINGS_STORAGE_KEY]: JSON.stringify({
+        schemaVersion: "2.0",
+        audio: { muted: true, volume: 0.4 },
+        accessibility: { textScale: 1.2, reducedMotion: false },
+      }),
+    });
+    expect(createSave({ storage: oldSettings }).settings.feedback).toEqual({
+      showShared: true,
+    });
+
+    const malformedFeedback = new MemorySaveStorage({
+      [SETTINGS_STORAGE_KEY]: JSON.stringify({
+        schemaVersion: "2.0",
+        audio: { muted: false, volume: 0.7 },
+        accessibility: { textScale: 1, reducedMotion: false },
+        feedback: { showShared: "no" },
+      }),
+    });
+    expect(
+      createSave({ storage: malformedFeedback }).settings.feedback,
+    ).toEqual({ showShared: true });
+
+    const malformedJson = new MemorySaveStorage({
+      [SETTINGS_STORAGE_KEY]: "{not json",
+    });
+    expect(createSave({ storage: malformedJson }).settings.feedback).toEqual({
+      showShared: true,
+    });
   });
 
   it("exposes an audio adapter that writes through to settings", () => {

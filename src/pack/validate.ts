@@ -12,10 +12,12 @@ import {
   ASSET_TYPES,
   createAssets,
   inferCategory,
+  PLAYER_ANIMATION_ASSET_IDS,
   PLAYER_ASSET_IDS,
   supportsVisualCategory,
   type AssetId,
   type AssetManifest,
+  type AssetsModule,
   type ManifestAssetEntry,
 } from "../assets";
 import { silentLogger } from "../core/logger";
@@ -37,6 +39,7 @@ import {
   validatePuzzleDocument,
   type PuzzleDocument,
 } from "../puzzle";
+import { TETHER_LENGTHS } from "../puzzle/tether";
 import {
   collectMaterialAssetIds,
   collectRoomAssetIds,
@@ -44,11 +47,24 @@ import {
   collectThemeAssetIds,
 } from "./load";
 import { buildMapping, mappingDrift } from "./mapping";
+import {
+  inferEntityRole,
+  presentationSizeToDisplay,
+  resolveEntityDisplay,
+} from "./entity-presentation";
+import {
+  PRESENTATION_CANVAS,
+  autoZoomFor,
+  derivePlayBand,
+  mergeCameraSettings,
+  zoomFitsPlayBand,
+} from "./presentation";
 import type {
   DialogueDocument,
   LevelDocument,
   LevelFeedbackTileTarget,
   PackContent,
+  PresentationConfig,
   RoomDocument,
   ThemeDocument,
 } from "./types";
@@ -89,6 +105,7 @@ export type PackIssueCode =
   | "FEEDBACK_TILE_INVALID"
   | "FEEDBACK_LAYOUT_INVALID"
   | "FEEDBACK_VOCABULARY_MISSING"
+  | "INFO_AREA_INVALID"
   | "MATERIALS_SCHEMA_INVALID"
   | "MATERIAL_REFERENCE_MISSING"
   | "MATERIAL_PALETTE_INVALID"
@@ -97,7 +114,8 @@ export type PackIssueCode =
   | "MATERIAL_DEFERRED"
   | "TILE_MATERIAL_INVALID"
   | "BACKGROUND_MATERIAL_INVALID"
-  | "UI_MATERIAL_INVALID";
+  | "UI_MATERIAL_INVALID"
+  | "PRESENTATION_INVALID";
 
 export interface PackIssue {
   code: PackIssueCode;
@@ -170,6 +188,45 @@ type AddIssue = (
   id?: AssetId,
 ) => void;
 type AddWarning = (message: string) => void;
+
+function checkEntityAnimations(
+  rooms: readonly RoomDocument[],
+  assets: ReturnType<typeof createAssets>,
+  addIssue: AddIssue,
+  addWarning: AddWarning,
+): void {
+  for (const room of rooms) {
+    for (const entity of room.entities ?? []) {
+      if (!entity.idleAnimation) continue;
+      const asset = assets.resolveById(entity.idleAnimation);
+      if (!asset) {
+        addIssue(
+          "ASSET_ID_MISSING",
+          `entity "${entity.id}" references missing idle animation "${entity.idleAnimation}"`,
+          entity.idleAnimation,
+        );
+        continue;
+      }
+      if (asset.placeholder === true) {
+        addWarning(
+          `entity "${entity.id}" idle animation "${entity.idleAnimation}" is a placeholder; the runtime stays static`,
+        );
+        continue;
+      }
+      if (
+        asset.type !== "sheet" ||
+        asset.frames === undefined ||
+        asset.fps === undefined
+      ) {
+        addIssue(
+          "ASSET_MANIFEST_INVALID",
+          `entity "${entity.id}" idle animation "${entity.idleAnimation}" must be a sheet with frames and fps`,
+          entity.idleAnimation,
+        );
+      }
+    }
+  }
+}
 
 function checkManifest(
   manifest: AssetManifest | null | undefined,
@@ -394,6 +451,262 @@ function checkBackground(
         `room "${room.id}" entity "${entity.id}" sprite "${entity.sprite}" must use a sprite/image prefix`,
         entity.sprite,
       );
+    }
+  }
+}
+
+function maxTetherLengthForRoom(
+  content: PackContent | undefined,
+  roomId: string,
+): number {
+  if (!content) {
+    return TETHER_LENGTHS.normal;
+  }
+  const level = content.levels.find((entry) => entry.roomId === roomId);
+  let max = 0;
+  for (const puzzleId of level?.puzzleIds ?? []) {
+    const tether = content.puzzles[puzzleId]?.tether;
+    if (tether === "normal" || tether === "stretch") {
+      max = Math.max(max, TETHER_LENGTHS[tether]);
+    }
+  }
+  return max;
+}
+
+function checkPresentation(
+  room: RoomDocument,
+  packPresentation: PresentationConfig | undefined,
+  maxTetherLength: number,
+  addIssue: AddIssue,
+): void {
+  if (
+    !packPresentation?.stage &&
+    !packPresentation?.camera &&
+    !room.presentation
+  ) {
+    return;
+  }
+
+  const stage = packPresentation?.stage ?? {
+    x: 0,
+    y: 0,
+    width: PRESENTATION_CANVAS.width,
+    height: PRESENTATION_CANVAS.height,
+  };
+  if (
+    stage.x < 0 ||
+    stage.y < 0 ||
+    stage.width <= 0 ||
+    stage.height <= 0 ||
+    stage.x + stage.width > PRESENTATION_CANVAS.width ||
+    stage.y + stage.height > PRESENTATION_CANVAS.height
+  ) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation.stage must be a positive rect inside ${PRESENTATION_CANVAS.width}×${PRESENTATION_CANVAS.height}`,
+    );
+  }
+
+  const camera = mergeCameraSettings(
+    packPresentation?.camera,
+    room.presentation?.camera,
+  );
+  if (!Number.isInteger(camera.maxZoom) || camera.maxZoom < 1) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation.camera.maxZoom must be an integer >= 1`,
+    );
+  }
+  if (!Number.isFinite(camera.padding) || camera.padding < 0) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation.camera.padding must be >= 0`,
+    );
+  }
+
+  const autoZoom =
+    camera.zoom === "auto" ||
+    (camera.zoom === undefined && camera.framing === "fit-play-band");
+  if (
+    camera.zoom !== undefined &&
+    camera.zoom !== "auto" &&
+    (!Number.isInteger(camera.zoom) || camera.zoom < 1)
+  ) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation.camera.zoom must be an integer >= 1 or "auto"`,
+    );
+  }
+
+  const playBand = room.presentation?.playBand ?? derivePlayBand(room);
+  if (playBand) {
+    if (
+      playBand.x < 0 ||
+      playBand.y < 0 ||
+      playBand.width <= 0 ||
+      playBand.height <= 0 ||
+      playBand.x + playBand.width > room.width ||
+      playBand.y + playBand.height > room.height
+    ) {
+      addIssue(
+        "PRESENTATION_INVALID",
+        `room "${room.id}" presentation.playBand must be a positive tile rect inside the ${room.width}×${room.height} room`,
+      );
+    }
+  } else if (
+    camera.framing === "fit-play-band" ||
+    camera.zoom === "auto"
+  ) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" presentation uses fit-play-band but has no playBand and no solid tiles`,
+    );
+    return;
+  }
+
+  let resolvedZoom = 1;
+  if (autoZoom) {
+    if (!playBand) return;
+    const result = autoZoomFor({
+      stage,
+      playBand,
+      tileSize: room.tileSize,
+      padding: camera.padding,
+      maxZoom: camera.maxZoom,
+      maxTetherLength,
+    });
+    if (!result.ok) {
+      addIssue(
+        "PRESENTATION_INVALID",
+        result.error === "PLAY_BAND_TOO_TALL"
+          ? `room "${room.id}" presentation.playBand does not fit the stage at zoom 1`
+          : `room "${room.id}" presentation stage is narrower than the ${maxTetherLength}px tether span`,
+      );
+      return;
+    }
+    resolvedZoom = result.zoom;
+  } else if (typeof camera.zoom === "number") {
+    if (!playBand) return;
+    if (
+      !zoomFitsPlayBand(
+        stage,
+        playBand,
+        room.tileSize,
+        camera.padding,
+        camera.zoom,
+      )
+    ) {
+      addIssue(
+        "PRESENTATION_INVALID",
+        `room "${room.id}" presentation.playBand does not fit the stage at zoom ${camera.zoom}`,
+      );
+      return;
+    }
+    resolvedZoom = camera.zoom;
+  }
+
+  const viewWidth = stage.width / resolvedZoom;
+  const viewHeight = stage.height / resolvedZoom;
+  if (
+    room.width * room.tileSize < viewWidth ||
+    room.height * room.tileSize < viewHeight
+  ) {
+    addIssue(
+      "PRESENTATION_INVALID",
+      `room "${room.id}" is smaller than the ${viewWidth}×${viewHeight} camera view at zoom ${resolvedZoom}`,
+    );
+  }
+}
+
+function checkEntityPresentation(
+  room: RoomDocument,
+  packPresentation: PresentationConfig | undefined,
+  assets: AssetsModule,
+  addIssue: AddIssue,
+  addWarning: AddWarning,
+): void {
+  for (const entity of room.entities ?? []) {
+    if (!entity.sprite) continue;
+    const asset = assets.resolveById(entity.sprite);
+    const resolved = resolveEntityDisplay({
+      entity,
+      ...(asset ? { asset } : {}),
+      presentation: packPresentation,
+    });
+
+    if (resolved.width <= 0 || resolved.height <= 0) {
+      addIssue(
+        "PRESENTATION_INVALID",
+        `room "${room.id}" entity "${entity.id}" resolves to a non-positive display size`,
+      );
+    }
+
+    const role =
+      entity.presentation?.role ??
+      (packPresentation?.roles || packPresentation?.defaultRoles
+        ? inferEntityRole(entity.type, packPresentation?.defaultRoles)
+        : null);
+    const roleConfig = role ? packPresentation?.roles?.[role] : undefined;
+    const roleDisplay = presentationSizeToDisplay(roleConfig?.display);
+    if (
+      roleDisplay &&
+      asset?.display &&
+      (roleDisplay.width !== asset.display.width ||
+        roleDisplay.height !== asset.display.height)
+    ) {
+      addWarning(
+        `PRESENTATION_DISPLAY_MISMATCH: room "${room.id}" entity "${entity.id}" role "${role}" expects ${roleDisplay.width}×${roleDisplay.height} but asset "${entity.sprite}" declares ${asset.display.width}×${asset.display.height}`,
+      );
+    }
+
+    if (
+      roleConfig?.fidelity &&
+      asset?.fidelity &&
+      roleConfig.fidelity !== asset.fidelity
+    ) {
+      addWarning(
+        `PRESENTATION_FIDELITY_MISMATCH: room "${room.id}" entity "${entity.id}" role "${role}" uses ${roleConfig.fidelity} but asset "${entity.sprite}" declares ${asset.fidelity}`,
+      );
+    }
+
+    const sheetCell =
+      asset?.type === "sheet" &&
+      asset.frameWidth !== undefined &&
+      asset.frameHeight !== undefined
+        ? { width: asset.frameWidth, height: asset.frameHeight }
+        : null;
+    if (sheetCell) {
+      const scale =
+        asset?.fidelity === "hero-1x"
+          ? 1
+          : asset?.fidelity === "world-2x"
+            ? 2
+            : null;
+      if (
+        scale !== null &&
+        (resolved.width !== sheetCell.width * scale ||
+          resolved.height !== sheetCell.height * scale)
+      ) {
+        addWarning(
+          `PRESENTATION_CELL_MISMATCH: room "${room.id}" entity "${entity.id}" displays at ${resolved.width}×${resolved.height} but "${entity.sprite}" frames are ${sheetCell.width}×${sheetCell.height} at ${scale}×`,
+        );
+      }
+    }
+
+    for (const [name, point] of Object.entries(
+      entity.components?.anchors ?? {},
+    )) {
+      if (
+        point.x < 0 ||
+        point.y < 0 ||
+        point.x > resolved.width ||
+        point.y > resolved.height
+      ) {
+        addIssue(
+          "PRESENTATION_INVALID",
+          `room "${room.id}" entity "${entity.id}" anchor "${name}" lies outside the ${resolved.width}×${resolved.height} display bounds`,
+        );
+      }
     }
   }
 }
@@ -1360,6 +1673,33 @@ function checkContent(
       if (trigger.dialogueId) scenarioDialogues.add(trigger.dialogueId);
       if (trigger.gateId) referencedGates.add(trigger.gateId);
     }
+    const infoAreaIds = new Set<string>();
+    for (const area of room.infoAreas ?? []) {
+      if (infoAreaIds.has(area.id)) {
+        addIssue(
+          "INFO_AREA_INVALID",
+          `room "${room.id}" has duplicate info area id "${area.id}"`,
+        );
+      }
+      infoAreaIds.add(area.id);
+      if (area.width <= 0 || area.height <= 0) {
+        addIssue(
+          "INFO_AREA_INVALID",
+          `room "${room.id}" info area "${area.id}" must have positive width and height`,
+        );
+      }
+      if (
+        area.x < 0 ||
+        area.y < 0 ||
+        area.x + area.width > room.width ||
+        area.y + area.height > room.height
+      ) {
+        addIssue(
+          "INFO_AREA_INVALID",
+          `room "${room.id}" info area "${area.id}" lies outside the ${room.width}×${room.height} room bounds`,
+        );
+      }
+    }
     for (const entity of room.entities ?? []) {
       if (entity.dialogueId) scenarioDialogues.add(entity.dialogueId);
       if (entity.gateId) referencedGates.add(entity.gateId);
@@ -1391,6 +1731,15 @@ function checkContent(
         "LEVEL_REFERENCE_MISSING",
         `level "${level.id}" references missing room "${level.roomId}"`,
       );
+    } else {
+      for (const area of room.infoAreas ?? []) {
+        if (area.puzzleId && !(level.puzzleIds ?? []).includes(area.puzzleId)) {
+          addIssue(
+            "INFO_AREA_INVALID",
+            `level "${level.id}" info area "${area.id}" references puzzle "${area.puzzleId}" which is not authored by the level`,
+          );
+        }
+      }
     }
 
     if (level.syllabusObjectiveIds.length === 0) {
@@ -1462,7 +1811,7 @@ function checkContent(
 
       if (puzzle.hints.length === 0) {
         addWarning(
-          `puzzle "${puzzle.id}" has no hints; the stuck affordance cannot offer one`,
+          `puzzle "${puzzle.id}" has no hints; the help affordance cannot offer one`,
         );
       }
 
@@ -1764,6 +2113,9 @@ export function validatePack(
       ...collectThemeAssetIds(theme),
       ...collectMaterialAssetIds(materials),
       ...Object.values(PLAYER_ASSET_IDS),
+      ...Object.values(PLAYER_ANIMATION_ASSET_IDS)
+        .flatMap((clips) => Object.values(clips))
+        .filter((id) => finalManifest?.assets[id] !== undefined),
       ...(content
         ? Object.values(content.rooms).flatMap(collectRoomAssetIds)
         : []),
@@ -1795,7 +2147,21 @@ export function validatePack(
 
   checkManifest(finalManifest, "final", true, fileExists, addIssue);
   checkManifest(packManifest, "pack", false, fileExists, addIssue);
+  checkEntityAnimations(materialRooms, assets, addIssue, addWarning);
   checkBackground(room, assets, addIssue);
+  checkPresentation(
+    room,
+    content?.pack.presentation,
+    maxTetherLengthForRoom(content, room.id),
+    addIssue,
+  );
+  checkEntityPresentation(
+    room,
+    content?.pack.presentation,
+    assets,
+    addIssue,
+    addWarning,
+  );
   checkUiAssets(theme, assets, addIssue);
   checkAudioAssets(room, theme, assets, addIssue);
   checkMaterials({
@@ -1817,6 +2183,19 @@ export function validatePack(
     for (const contentRoom of Object.values(content.rooms)) {
       if (contentRoom.id !== room.id) {
         checkBackground(contentRoom, assets, addIssue);
+        checkPresentation(
+          contentRoom,
+          content.pack.presentation,
+          maxTetherLengthForRoom(content, contentRoom.id),
+          addIssue,
+        );
+        checkEntityPresentation(
+          contentRoom,
+          content.pack.presentation,
+          assets,
+          addIssue,
+          addWarning,
+        );
         checkAudioAssets(contentRoom, theme, assets, addIssue);
       }
     }

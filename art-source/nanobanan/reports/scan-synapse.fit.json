@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.scan.synapse",
+  "class": "ui-1x",
+  "status": "fit-preview",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "notes": "Two cells and the cleft read at 36×36. The cyan rim is partial because the source plate clips the postsynaptic wall at the canvas edge.",
+  "config": "fit.new.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/sprite-scan-synapse.png",
+    "width": 1766,
+    "height": 1724,
+    "edgeContact": {
+      "top": 572,
+      "bottom": 616,
+      "left": 2,
+      "right": 1637
+    }
+  },
+  "output": {
+    "path": "public/packs/anatomy-reflex/shared/sprites/scan-synapse.png",
+    "runtime": true,
+    "written": false,
+    "width": 36,
+    "height": 36,
+    "bytes": 1670
+  },
+  "cell": {
+    "width": 36,
+    "height": 36
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 55.613,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1766,
+    "height": 1724
+  },
+  "fit": {
+    "width": 32,
+    "height": 31,
+    "offsetX": 2,
+    "offsetY": 3,
+    "scale": 0.01812,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 3,
+    "width": 32,
+    "height": 31
+  },
+  "margins": {
+    "top": 3,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 776,
+    "maxDistance": 78.23,
+    "offPalettePixels": 776,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 776
+  },
+  "rampHistogram": {
+    "joint": 29,
+    "boneShadow": 147,
+    "ink": 75,
+    "muscle": 183,
+    "sage": 150,
+    "bone": 170,
+    "teal": 16,
+    "nerve": 6
+  },
+  "warnings": [
+    "source content touches the image border (t 572, b 616, l 2, r 1637); the concept plate may be clipped",
+    "source-to-fit scale 55.6:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 78.2 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/scan-synapse-1x.png",
+    "scale2x": "art-source/previews/nanobanan/entities/scan-synapse-2x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/scan-synapse-4x.png",
+    "tint2x": "art-source/previews/nanobanan/entities/scan-synapse-tint-2x.png"
+  }
+}

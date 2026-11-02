@@ -1,4 +1,5 @@
 import type { HubCallbacks, HubMode, HubView } from "./hub-model";
+import { snapTextScale, TEXT_SCALES } from "./text-scale";
 
 export interface HubUiOptions {
   callbacks: HubCallbacks;
@@ -12,7 +13,6 @@ export interface HubUi {
   readonly element: HTMLElement;
 }
 
-const TEXT_SCALES = [0.9, 1, 1.1, 1.3, 1.5] as const;
 const MODE_LABELS: Record<HubMode, string> = {
   solo: "Solo",
   local: "Local co-op",
@@ -267,9 +267,20 @@ export function mountHubUi(
       });
       const body = el("span", "hub-card__body");
       const titleRow = el("span", "hub-card__title-row");
+      if (pack.iconSrc) {
+        const icon = el("img", "hub-card__icon");
+        icon.src = pack.iconSrc;
+        icon.alt = "";
+        icon.width = 32;
+        icon.height = 32;
+        icon.decoding = "async";
+        titleRow.append(icon);
+      }
+      const titleGroup = el("span", "hub-card__title-group");
       const cardTitle = el("span", "hub-card__title", pack.title);
       const badge = el("span", "hub-card__status", statusLabel(pack.status));
-      titleRow.append(cardTitle, badge);
+      titleGroup.append(cardTitle, badge);
+      titleRow.append(titleGroup);
       const cardSubtitle = el(
         "span",
         "hub-card__subtitle",
@@ -343,9 +354,9 @@ export function mountHubUi(
       "aria-pressed",
       String(next.settings.accessibility.reducedMotion),
     );
+    const activeScale = snapTextScale(next.settings.accessibility.textScale);
     for (const control of scaleButtons) {
-      const active =
-        Math.abs(control.scale - next.settings.accessibility.textScale) < 0.01;
+      const active = Math.abs(control.scale - activeScale) < 0.01;
       control.node.dataset.active = String(active);
       control.node.setAttribute("aria-pressed", String(active));
     }
