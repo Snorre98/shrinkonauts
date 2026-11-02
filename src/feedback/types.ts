@@ -610,6 +610,11 @@ export interface FeedbackDirectorOptions {
   /** TTL applied to transient cues when a recipe does not specify one. */
   defaultCueTtlTicks?: number;
   /**
+   * Store transient cues in per-player inboxes instead of spawning them.
+   * `requestLatest` reveals the newest pending cue for a player.
+   */
+  deferCues?: boolean;
+  /**
    * Optional liveness predicate for logical anchors. The game injects this so
    * feedback can cancel `onTargetGone` effects without importing world state.
    */
@@ -620,6 +625,11 @@ export interface FeedbackDirector {
   /** Queues a fact for the next `tick`. */
   ingest(fact: FeedbackFact): void;
   ingestAll(facts: readonly FeedbackFact[]): void;
+  /**
+   * Processes a fact immediately. Used by the runtime for action outcomes that
+   * may be requested in the same input frame.
+   */
+  ingestNow(fact: FeedbackFact): void;
   /** Queues a persistent projection for the next `tick`. */
   projectSticky(input: FeedbackProjection): void;
   /**
@@ -630,6 +640,11 @@ export interface FeedbackDirector {
   putSurface(spec: FeedbackSurfaceSpec & { id: string }): void;
   /** Remove a runtime-owned surface. */
   removeSurface(surfaceId: SurfaceId): void;
+  /**
+   * Reveal the newest pending cue for a player. Shared cues are copied to both
+   * players' inboxes; revealing one consumes the copies.
+   */
+  requestLatest(playerId: PlayerId): boolean;
   /** Runs the Phase 3 tick systems in deterministic order. */
   tick(dt: number): void;
   /** Returns the current ordered view without creating a frame. */

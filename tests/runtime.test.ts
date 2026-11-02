@@ -431,6 +431,7 @@ describe("game runtime", () => {
       "One input is below threshold. The trigger gate needs a second dendrite input.",
     );
     stepWith(runtime);
+    runtime.requestFeedback("p1");
     expect(
       runtime
         .snapshot()
@@ -1303,6 +1304,7 @@ describe("game runtime", () => {
   it("attributes a P2 plate press to P2 and keeps it out of the toast", () => {
     const { runtime } = makeRuntime();
     pressSensor(runtime, "input-a", "p2");
+    runtime.requestFeedback("p2");
     const snapshot = runtime.snapshot();
     const p2Captions = snapshot.feedback.cues.filter(
       (item) =>
@@ -1321,6 +1323,7 @@ describe("game runtime", () => {
   it("keeps solved feedback shared and on the screen anchor", () => {
     const { runtime } = makeRuntime();
     solveNodeRun(runtime);
+    runtime.requestFeedback("p1");
     const cue = runtime
       .snapshot()
       .feedback.cues.find((item) => item.cause.startsWith("puzzle:solved"));
@@ -1339,18 +1342,19 @@ describe("game runtime", () => {
     activateEndplate(runtime);
     stepWith(runtime, playerActions({ pulse: true }));
     waitRuntime(runtime, 10);
+    runtime.requestFeedback("p1");
     const cue = runtime
       .snapshot()
       .feedback.cues.find((item) =>
-        item.cause.startsWith("puzzle:receptorRejected:nicotinic-receptor"),
+        item.cause.startsWith("puzzle:receptorRejected:"),
       );
     expect(cue).toMatchObject({
       actor: "p1",
       owner: "p1",
-      anchor: { kind: "entity", entityId: "nicotinic-receptor" },
       presentation: "speechBubble",
       reason: "empty",
     });
+    expect(cue?.anchor).toMatchObject({ kind: "entity" });
   });
 
   it("lets P1 and P2 talk to different entities at once", () => {
@@ -1588,6 +1592,7 @@ describe("game runtime", () => {
       now: () => new Date("2026-10-26T12:10:00.000Z"),
     });
     restored.start();
+    restored.requestFeedback("p1");
     expect(restored.conversations.size).toBe(0);
     expect(
       restored

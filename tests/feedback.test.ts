@@ -332,6 +332,105 @@ describe("feedback facts and cues", () => {
     expect(frame.tick).toBe(2);
   });
 
+  it("defers transient cues until a player requests the latest one", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingestAll([
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "pickup",
+        result: "accepted",
+        text: "Old P1 message",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "drop",
+        result: "accepted",
+        text: "Newest P1 message",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p2",
+        action: "pickup",
+        result: "accepted",
+        text: "P2 message",
+      },
+    ]);
+    director.tick(1 / 60);
+    expect(director.frame().cues).toEqual([]);
+
+    expect(director.requestLatest("p1")).toBe(true);
+    const p1Cue = director.frame().cues[0];
+    expect(p1Cue).toMatchObject({
+      actor: "p1",
+      presentation: "playerCaption",
+    });
+    expect(p1Cue?.content.text).toContain("Newest P1 message");
+    expect(director.requestLatest("p1")).toBe(false);
+
+    expect(director.requestLatest("p2")).toBe(true);
+    expect(
+      director
+        .frame()
+        .cues.find((cue) => cue.actor === "p2")?.content.text,
+    ).toContain("P2 message");
+  });
+
+  it("copies shared deferred cues to both players and consumes both copies", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingest({
+      kind: "system.outcome",
+      outcome: "gate.open",
+      source: { kind: "system", id: "gate" },
+      text: "The gate is open",
+    });
+    director.tick(1 / 60);
+    expect(director.frame().cues).toEqual([]);
+
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.frame().cues[0]).toMatchObject({
+      actor: null,
+      owner: "shared",
+      content: { text: "The gate is open" },
+    });
+    expect(director.requestLatest("p2")).toBe(false);
+  });
+
+  it("does not leak player-specific deferred cues to the other player", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingest({
+      kind: "action.outcome",
+      actor: "p1",
+      action: "pulse",
+      result: "rejected",
+      reason: "cooldown",
+      text: "Still recharging",
+    });
+    director.tick(1 / 60);
+
+    expect(director.requestLatest("p2")).toBe(false);
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.frame().cues).toHaveLength(1);
+  });
+
+  it("processes ingestNow immediately for same-frame requests", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingestNow({
+      kind: "action.outcome",
+      actor: "p1",
+      action: "scan",
+      result: "rejected",
+      reason: "out-of-range",
+      text: "Nothing to scan here",
+    });
+
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.frame().cues[0]?.content.text).toBe(
+      "P1: Nothing to scan here",
+    );
+  });
+
   it("keeps one player-attached cue per player and shows the newest", () => {
     const director = createFeedbackDirector();
     director.ingestAll([
@@ -368,9 +467,9 @@ describe("feedback facts and cues", () => {
     );
 
     expect(p1).toHaveLength(1);
-    expect(p1[0]?.content.text).toBe("Newest P1 cue");
+    expect(p1[0]?.content.text).toBe("P1: Newest P1 cue");
     expect(p2).toHaveLength(1);
-    expect(p2[0]?.content.text).toBe("P2 cue");
+    expect(p2[0]?.content.text).toBe("P2: P2 cue");
   });
 
   it("does not apply the player slot to entity speech bubbles", () => {

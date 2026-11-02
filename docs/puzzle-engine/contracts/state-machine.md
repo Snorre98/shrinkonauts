@@ -2,7 +2,7 @@
 
 Explicit states for gates, props, feedback surfaces/cues, effects, conversations,
 and the deferred travel/conditional-link targets. Source ADRs: ADR-0002–0013,
-ADR-0018–0019.
+ADR-0018–0020.
 
 Status labels:
 
@@ -103,6 +103,7 @@ Invariants:
 | State | Kind | Meaning |
 |---|---|---|
 | queued | transient | fact ingested in the current tick |
+| pending | transient | stored in a player's deferred inbox; not rendered or announced |
 | announced | transient | visible and eligible for the live region |
 | coalesced | transient | same cause replaced by the newest/highest-priority cue |
 | evicted | transient | replaced by a newer cue in the same player-attached slot |
@@ -110,10 +111,12 @@ Invariants:
 
 | From | To | Trigger | Notes |
 |---|---|---|---|
-| (none) | queued | `ingest`/`ingestAll` | cause key assigned |
-| queued | announced | `IngestFacts`/`tick` | seq increments |
-| queued | coalesced | same cause | highest priority/newest sequence wins |
-| queued | evicted | newer player-attached cue | never announced |
+| (none) | queued | `ingest`/`ingestAll`/`ingestNow` | cause key assigned |
+| queued | announced | `IngestFacts` in immediate mode | seq increments |
+| queued | pending | `IngestFacts` in deferred mode | latest per player wins |
+| pending | pending | newer cue for the same player | older pending cue is replaced |
+| pending | announced | `requestLatest` | cue TTL starts at reveal |
+| pending | removed | `reset` or level transition | pending inbox cleared |
 | announced | coalesced | same cause | highest priority/newest sequence wins |
 | announced | evicted | newer player-attached cue | newest wins; effects cancelled |
 | announced | expired | `LifetimeTick` | TTL in fixed ticks |
@@ -124,6 +127,11 @@ Invariants:
 - Cue sequence is monotonic within a runtime.
 - A cue is deduplicated by cause, not by text.
 - At most one player-anchored transient cue exists per player.
+- At most one pending cue exists per player; newer cues replace older ones.
+- A shared pending cue is copied to both players; revealing it consumes both
+  copies.
+- Pending cues are absent from the frame, the live region, and save state.
+- Cosmetic effects on a deferred cue start immediately and are not deferred.
 - Cues with a player actor carry actor attribution in text and accessibility.
 - Cues expire; persistent state does not.
 

@@ -1,7 +1,7 @@
 # Data model contract
 
 Precise spec for the durable and content formats changed by the engine upgrade.
-Source ADRs: ADR-0002–0019. The implementation status table in
+Source ADRs: ADR-0002–0020. The implementation status table in
 [`architecture.md`](../architecture.md) is authoritative where an accepted ADR
 target is deferred.
 
@@ -316,6 +316,7 @@ syllabus-derived `prompt-obj-2`/`EV-7` teach-back. The proposed per-level
 - `puzzle` remains the only owner of logical puzzle state.
 - The save is a projection of runtime state, never a second puzzle graph.
 - Feedback surfaces, cues, effects, and ECS entities are ephemeral.
+- Deferred cue inboxes are ephemeral; pending cues are never serialized.
 - Player-anchored transient cues occupy one slot per player; entity bubbles and
   HUD surfaces may still coexist.
 - Info areas are relevance zones only; they add no collision, puzzle, or save

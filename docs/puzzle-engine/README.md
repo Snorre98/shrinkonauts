@@ -3,7 +3,7 @@
 **Status:** accepted design; M1.75 implementation complete, playtest pending
 **Scope:** the engine capabilities required by the intended M2 nervous-system
 puzzle design (`03`–`05`, Silicon, optional `01`/`02`)
-**Authority:** accepted ADR-0001–0019 in [`adr/`](adr/)
+**Authority:** accepted ADR-0001–0020 in [`adr/`](adr/)
 **Implementation:** the status table in [`architecture.md`](architecture.md);
 feedback plan in [`feedback-implementation-plan.md`](feedback-implementation-plan.md),
 earlier puzzle-engine plan in [`implementation-plan.md`](implementation-plan.md)

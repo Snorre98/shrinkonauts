@@ -218,11 +218,12 @@ restoreRun()
 
 `step(dt, input)` advances the simulation, routes soft-surface input, drains
 one-shot actions, checks checkpoints/triggers/exits, and ticks the feedback
-director. It returns gameplay cues (`jump`, `land`, `dash`). Scan requests inside
-an authored info area open the shared hint/reset affordance for a short TTL;
-there is no automatic stuck popup. Actions are latched by the input source, so
-an `E` tap is consumed exactly once by the next fixed step even when several
-render frames occur first.
+director. It returns gameplay cues (`jump`, `land`, `dash`). Transient feedback
+cues are deferred into per-player inboxes and only appear when a player presses
+scan; cosmetic effects still run immediately. The scan button also opens the
+shared hint/reset affordance inside an authored info area. Actions are latched by
+the input source, so an `E` tap is consumed exactly once by the next fixed step
+even when several render frames occur first.
 
 ### State machine
 

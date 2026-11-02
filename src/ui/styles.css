@@ -1198,22 +1198,20 @@ kbd {
 }
 
 .feedback-surface--playerCaption {
-  display: flex;
-  align-items: baseline;
-  gap: 0.3rem;
-  max-width: min(16rem, 60vw);
+  display: block;
+  max-width: min(14rem, 55vw);
   border-radius: 0;
-  padding: 0.2rem 0.45rem;
+  padding: 0.15rem 0.4rem;
+  line-height: 1.35;
+  box-shadow: none;
 }
 
 .feedback-surface--playerCaption .feedback-surface__header {
-  flex: none;
-  margin-bottom: 0;
+  display: none;
 }
 
 .feedback-surface--playerCaption .feedback-surface__text {
-  flex: 1 1 auto;
-  min-width: 0;
+  margin: 0;
 }
 
 .feedback-surface--speechBubble {
@@ -1262,12 +1260,13 @@ kbd {
 .feedback-surface--socketFill,
 .feedback-surface--outline,
 .feedback-surface--pathGlow {
-  padding: 0.3rem 0.5rem;
-  max-width: min(18rem, 70vw);
+  padding: 0.2rem 0.4rem;
+  max-width: min(16rem, 65vw);
 }
 
 .feedback-surface--speechBubble {
-  max-width: min(20rem, 72vw);
+  max-width: min(18rem, 68vw);
+  padding: 0.25rem 0.45rem;
 }
 
 .feedback-surface--speechBubble .feedback-surface__header {

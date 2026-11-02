@@ -1,7 +1,7 @@
 # Interface contract
 
 Public operations introduced or changed by the puzzle-engine, M1.75 feedback, and
-M1.8 material/pattern work. Source ADRs: ADR-0001–0019. Existing operations keep
+M1.8 material/pattern work. Source ADRs: ADR-0001–0020. Existing operations keep
 their current signatures.
 
 ## Implementation status
@@ -14,6 +14,7 @@ their current signatures.
 | Entity conversations and per-player surface routing | Implemented |
 | Player-attached caption slot and surface TTL | Implemented |
 | Request-gated shared help and room info areas | Implemented |
+| Deferred transient cues and on-demand reveal | Implemented |
 | Level `feedback` content block | Implemented |
 | Feedback validation vocabulary injection | Implemented |
 | Material/pattern catalog, tile grids, autotiling, variants | Implemented; `wang` deferred |
@@ -272,25 +273,43 @@ Player-anchored transient cues occupy one slot per player. A newer cue evicts
 the current player caption; entity speech bubbles and HUD cues are not affected.
 Runtime-owned non-sticky surfaces expire after their `ttlTicks`.
 
+When deferred cues are enabled, ingested cues are stored per player instead of
+appearing in the frame. Shared cues are copied to both players. Only the latest
+pending cue per player is kept. `requestLatest` consumes and reveals it, starting
+the cue TTL. Pending cues are never rendered, announced, or saved.
+
 ### 3.3 Director
 
 ```ts
 interface FeedbackDirector {
   ingest(fact: FeedbackFact): void;
   ingestAll(facts: readonly FeedbackFact[]): void;
+  ingestNow(fact: FeedbackFact): void;
   projectSticky(input: FeedbackProjection): void;
   putSurface(spec: FeedbackSurfaceSpec & { id: string }): void;
   removeSurface(surfaceId: string): void;
+  requestLatest(playerId: PlayerId): boolean;
   tick(dt: number): void;
   view(): FeedbackView;
   frame(): FeedbackFrame;
   reset(): void;
 }
 
+interface FeedbackDirectorOptions {
+  defaultCueTtlTicks?: number;
+  /** Store cues per player instead of spawning them immediately. */
+  deferCues?: boolean;
+  isAnchorAlive?: (anchor: AnchorRef) => boolean;
+}
+
 function createFeedbackDirector(
   options?: FeedbackDirectorOptions,
 ): FeedbackDirector;
 ```
+
+`GameRuntime` enables `deferCues` and uses `ingestNow` for action outcomes so a
+scan request can reveal the result in the same input frame. Cosmetic effect
+plans on deferred cues still start immediately from a hidden effect host.
 
 The runtime ticks the director once per fixed step and calls `frame()` to obtain
 the snapshot-safe view.

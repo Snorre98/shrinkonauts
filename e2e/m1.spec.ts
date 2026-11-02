@@ -161,6 +161,7 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // terminal. The threshold counter and terminal relay open the exit gate.
   await teleport(page, "pad-input-a", "pad-input-b");
   await teleport(page, "pad-terminal");
+  await page.keyboard.press("q");
   await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
     "Signal restored",
   );
@@ -219,6 +220,7 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // P1 pulses the terminal; the Ca gate + receptor relay opens the muscle gate.
   await teleport(page, "motor-terminal");
   await page.keyboard.press("f");
+  await page.keyboard.press("q");
   await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
     "Signal restored",
   );
@@ -317,6 +319,7 @@ test("reduced motion keeps feedback surfaces and text", async ({ page }) => {
   await expect(page.locator(".overlay--pause")).toHaveCount(0);
 
   await teleport(page, "pad-input-a", { x: 120, y: 640 });
+  await page.keyboard.press("q");
   const caption = page.locator('.feedback-surface--playerCaption[data-owner="p1"]');
   await expect(caption).toHaveCount(1);
   await expect(caption).toBeVisible();

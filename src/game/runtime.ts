@@ -370,6 +370,7 @@ export class GameRuntime implements WorldRuntime {
     this.onLevelChange = options.onLevelChange;
     this.feedback = createFeedbackDirector({
       defaultCueTtlTicks: FEEDBACK_CUE_TTL_TICKS,
+      deferCues: true,
       isAnchorAlive: (anchor) => this.anchorIsAlive(anchor),
     });
 
@@ -1265,12 +1266,23 @@ export class GameRuntime implements WorldRuntime {
     for (const [id, puzzle] of this.puzzles) {
       if (!this.activatedPuzzles.has(id)) continue;
       const result = puzzle.tickResult(snapshot);
-      if (result.events.length > 0) {
-        this.handlePuzzleEvents(puzzle.document, result.events);
+      const solvedEvents = result.events.filter(
+        (event) => event.type === "solved",
+      );
+      const otherEvents = result.events.filter(
+        (event) => event.type !== "solved",
+      );
+      if (otherEvents.length > 0) {
+        this.handlePuzzleEvents(puzzle.document, otherEvents);
         this.world.props = this.world.physics.propStates();
       }
       if (result.solvedNow) {
         this.onPuzzleSolved(id, result.rewards);
+      }
+      // Ingest the solved cue last so it remains the newest deferred message
+      // after the reward notifications produced by onPuzzleSolved.
+      if (solvedEvents.length > 0) {
+        this.handlePuzzleEvents(puzzle.document, solvedEvents);
       }
     }
     this.projectFeedback();
@@ -1385,9 +1397,29 @@ export class GameRuntime implements WorldRuntime {
     this.emit();
   }
 
+  /**
+   * Reveals the newest deferred cue for a player. Shared cues are copied to
+   * both players' inboxes when they are ingested.
+   */
+  requestFeedback(actor?: PlayerId): boolean {
+    if (this.machine.state !== "level") return false;
+    const id = actor ?? (this.world.players.p1.active ? "p1" : "p2");
+    const shown = this.feedback.requestLatest(id);
+    if (shown) this.emit();
+    return shown;
+  }
+
   scan(actor?: PlayerId): void {
     if (this.machine.state !== "level") return;
     const id = actor ?? (this.world.players.p1.active ? "p1" : "p2");
+
+    // The scan button is also the feedback request button. Read the newest
+    // pending message before performing a new scan or opening help.
+    if (this.requestFeedback(id)) {
+      this.playCue("scan");
+      return;
+    }
+
     const target = this.nearestEntity(["scanTarget"], SCAN_RANGE, id);
     if (!target || !target.entity.conceptId) {
       if (this.requestSharedHelp(id)) {
@@ -1399,6 +1431,8 @@ export class GameRuntime implements WorldRuntime {
         reason: "out-of-range",
         text: "Nothing to scan here",
       });
+      this.requestFeedback(id);
+      this.playCue("scan");
       this.emit();
       return;
     }
@@ -1414,6 +1448,8 @@ export class GameRuntime implements WorldRuntime {
         target: { kind: "entity", id: target.entity.id },
         text: "Already in your concept log",
       });
+      this.requestFeedback(id);
+      this.playCue("scan");
       this.emit();
       return;
     }
@@ -1432,6 +1468,7 @@ export class GameRuntime implements WorldRuntime {
         : conceptId,
     });
     this.dismissHelpSurface();
+    this.requestFeedback(id);
     this.playCue("scan");
     this.emit();
   }
@@ -2557,7 +2594,7 @@ export class GameRuntime implements WorldRuntime {
       text?: string;
     } = {},
   ): void {
-    this.feedback.ingest({
+    this.feedback.ingestNow({
       kind: "action.outcome",
       actor,
       action,

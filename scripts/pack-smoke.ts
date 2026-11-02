@@ -888,14 +888,14 @@ function solveInterruptLoop(
     snapshot.puzzle?.solved === true,
     "[silicon] the 60-tick timer did not open the actuator gate",
   );
-  const causes = snapshot.feedback.cues.map((cue) => cue.cause);
   assert(
-    causes.some((cause) => cause.startsWith("puzzle:timerElapsed:cpu-timer")),
-    "[silicon] the CPU timer did not elapse",
+    runtime.requestFeedback("p1"),
+    "[silicon] no deferred feedback was available after solving",
   );
+  const causes = runtime.snapshot().feedback.cues.map((cue) => cue.cause);
   assert(
-    causes.some((cause) => cause.startsWith("puzzle:gateOpen:gate-actuator")),
-    "[silicon] gateOpen gate-actuator did not fire",
+    causes.some((cause) => cause.startsWith("puzzle:solved")),
+    "[silicon] the solved cue was not revealed on request",
   );
 }
 

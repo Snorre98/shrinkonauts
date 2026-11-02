@@ -60,10 +60,16 @@ import type {
   FeedbackSurfaceSpec,
   FeedbackView,
   NodeFeedbackDescriptor,
+  PlayerId,
 } from "./types";
 
 interface FeedbackTickPayload {
   facts?: readonly FeedbackFact[];
+}
+
+interface PendingCue {
+  spec: FeedbackCueSpec;
+  seq: number;
 }
 
 const DEFAULT_CUE_TTL_TICKS = 180;
@@ -186,10 +192,12 @@ export function orderAndDedupe(
 class FeedbackDirectorImpl implements FeedbackDirector {
   private readonly world: EcsWorld;
   private readonly defaultCueTtlTicks: number;
+  private readonly deferCues: boolean;
   private readonly isAnchorAlive?: (anchor: AnchorRef) => boolean;
 
   private pendingFacts: FeedbackFact[] = [];
   private readonly pendingProjections = new Map<string, FeedbackProjection>();
+  private readonly pendingCueByPlayer = new Map<PlayerId, PendingCue>();
 
   private readonly stickyIds = new Set<string>();
   private readonly cueEntityByCause = new Map<string, EntityId>();
@@ -208,6 +216,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   constructor(options: FeedbackDirectorOptions = {}) {
     this.defaultCueTtlTicks =
       options.defaultCueTtlTicks ?? DEFAULT_CUE_TTL_TICKS;
+    this.deferCues = options.deferCues ?? false;
     this.isAnchorAlive = options.isAnchorAlive;
     this.world = createEcsWorld();
     this.registerSystems();
@@ -219,6 +228,10 @@ class FeedbackDirectorImpl implements FeedbackDirector {
 
   ingestAll(facts: readonly FeedbackFact[]): void {
     this.pendingFacts.push(...facts);
+  }
+
+  ingestNow(fact: FeedbackFact): void {
+    this.ingestFacts([fact]);
   }
 
   projectSticky(input: FeedbackProjection): void {
@@ -240,6 +253,23 @@ class FeedbackDirectorImpl implements FeedbackDirector {
 
   removeSurface(surfaceId: string): void {
     this.despawnSurface(createEntityId(surfaceId));
+  }
+
+  requestLatest(playerId: PlayerId): boolean {
+    const pending = this.pendingCueByPlayer.get(playerId);
+    if (!pending) return false;
+
+    this.pendingCueByPlayer.delete(playerId);
+    const owner = pending.spec.owner ?? pending.spec.actor ?? "shared";
+    if (owner === "shared") {
+      const other: PlayerId = playerId === "p1" ? "p2" : "p1";
+      if (this.pendingCueByPlayer.get(other)?.seq === pending.seq) {
+        this.pendingCueByPlayer.delete(other);
+      }
+    }
+
+    this.addCue(pending.spec);
+    return true;
   }
 
   tick(dt: number): void {
@@ -265,6 +295,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     }
     this.pendingFacts = [];
     this.pendingProjections.clear();
+    this.pendingCueByPlayer.clear();
     this.stickyIds.clear();
     this.cueEntityByCause.clear();
     this.cueEntityByPlayerSlot.clear();
@@ -349,9 +380,51 @@ class FeedbackDirectorImpl implements FeedbackDirector {
         defaultTtlTicks: this.defaultCueTtlTicks,
       });
       if (spec) {
-        this.addCue(spec);
+        if (this.deferCues) {
+          this.deferCue(spec);
+        } else {
+          this.addCue(spec);
+        }
       }
     }
+  }
+
+  private deferCue(spec: FeedbackCueSpec): void {
+    const seq = this.nextCueSeq;
+    this.nextCueSeq += 1;
+    const { effects, ...cueSpec } = spec;
+    const owner = spec.owner ?? spec.actor ?? "shared";
+    const players: readonly PlayerId[] =
+      owner === "shared" ? ["p1", "p2"] : [owner];
+    for (const playerId of players) {
+      this.pendingCueByPlayer.set(playerId, { spec: cueSpec, seq });
+    }
+    if (effects && effects.length > 0) {
+      this.spawnEffectHost(effects, seq);
+    }
+  }
+
+  /**
+   * Deferred text must not defer cosmetic effects. Effects run immediately from
+   * a hidden host entity that expires after the longest effect stage.
+   */
+  private spawnEffectHost(
+    effects: readonly EffectPlan[],
+    seq: number,
+  ): void {
+    const ends = effects.map((effect) => effectEndTicks(effect.stages));
+    const end = ends.some((value) => !Number.isFinite(value))
+      ? Number.POSITIVE_INFINITY
+      : Math.max(0, ...ends);
+    const ttlTicks = Number.isFinite(end) ? Math.max(1, end + 2) : 600;
+    const entity = createEntityId(`fb:fx:${seq}`);
+    this.world.spawn(entity);
+    this.world.add(entity, Effects, effects);
+    this.world.add(entity, State, "active");
+    this.world.add(entity, SurfaceTtl, {
+      ttlTicks,
+      remainingTicks: ttlTicks,
+    });
   }
 
   private documentForFact(fact: FeedbackFact): PuzzleDocument | undefined {
