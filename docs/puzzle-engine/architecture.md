@@ -64,7 +64,7 @@ current branch.
 | Q11 | Material language without gameplay authority | Given a room mixes materials, patterns, variants, or UI slots, when it is validated and rendered, then its visual language is data-driven and deterministic, while `layers.tiles` alone decides collision and materials add no save fields. | ADR-0014–0017; `material-patterns.feature` |
 | Q12 | Deliberate information request | Given a player is inside an authored info area, when they press scan and no unrevealed scan target is in range, then the shared help surface appears temporarily; it never appears from an idle or proximity timer, and choosing a hint or reset follows the existing hint/reset behavior. | ADR-0019; `requested-hints.feature` |
 | Q13 | On-demand transient feedback | Given a player action or puzzle event produces transient feedback, when the player has not pressed scan, then no feedback box appears and the live region stays quiet; pressing scan reveals and consumes the newest pending message for that player, while persistent state and cosmetic effects remain immediate. | ADR-0020; `on-demand-feedback.feature` |
-| Q14 | Shared feedback visibility | Given shared feedback is turned off, when shared cues are produced or the player asks for help, then no shared box or help surface appears, pending shared copies are cleared, and the setting persists; player cues, persistent state, beats, and cosmetic effects keep working. | ADR-0021; `shared-feedback-toggle.feature` |
+| Q14 | Shared feedback visibility | Given shared feedback is turned off, when shared cues are produced, shared state is projected, or the player asks for help, then shared state boxes, cues, help, and the beat tracker are hidden, pending shared copies are cleared, and the setting persists; player cues and cosmetic effects keep working. | ADR-0021, ADR-0022; `shared-feedback-toggle.feature` |
 
 ### 1.3 Stakeholders
 
@@ -270,8 +270,9 @@ orchestrator applies world changes, feedback projects the resulting facts and
 state, and the scene renders the frame. Feedback and effects never write puzzle,
 physics, or collision state. A persisted `feedback.showShared` preference can
 suppress shared transient cues and the requested help surface without affecting
-player cues, persistent surfaces, or effects. Conditional links and physical
-gate bodies remain deferred.
+player cues or effects. Persistent shared state surfaces and beat progress are
+filtered from the snapshot, while the director keeps their effects running.
+Conditional links and physical gate bodies remain deferred.
 
 ### 6.2 Prop lifecycle
 
@@ -436,7 +437,7 @@ unchanged and do not require the Worker. See
 | Module sealing / public APIs | ADR-0001; [`contracts/module-boundaries.md`](contracts/module-boundaries.md) |
 | Gate and prop state ownership | Puzzle graph owns logical state; world owns bodies; `GameRuntime` is the single synchronizer |
 | Schema evolution | Optional fields + minor versions; old content/saves default off (ADR-0008) |
-| Feedback | State-projected persistent surfaces plus on-demand transient cues; capability descriptors; co-op attribution; entity conversations; cosmetic effect plans; player caption slots; request-gated shared help; persisted shared-feedback visibility (ADR-0009–0013, ADR-0018–0021) |
+| Feedback | State-projected persistent surfaces plus on-demand transient cues; capability descriptors; co-op attribution; entity conversations; cosmetic effect plans; player caption slots; request-gated shared help; persisted shared-feedback visibility (ADR-0009–0013, ADR-0018–0022) |
 | No-fail recovery | Reset, checkpoint, and save/restore restore valid state; blocked actions never consume evidence. Side return is deferred. |
 | Presentation as projection | Puzzle state drives sticky feedback surfaces; `RoomSimulation` prop state, `WorldEffectPlan`, material grids, and pattern bindings drive `RoomScene`; `world` imports no feedback. |
 | Material and pattern layer | `materials` resolves visual roles, autotile masks, variants, and cached pattern resources; `layers.tiles` remains the sole collision authority; atlases stay storage-agnostic behind `AtlasFrameRef`. |
@@ -464,6 +465,7 @@ unchanged and do not require the Worker. See
 | [0019](adr/0019-request-gated-shared-help.md) | Request-gated shared help surfaces and authored info areas | Accepted |
 | [0020](adr/0020-on-demand-transient-feedback.md) | On-demand transient feedback via scan and compact captions | Accepted |
 | [0021](adr/0021-shared-feedback-visibility-toggle.md) | Persisted global visibility for shared transient feedback | Accepted |
+| [0022](adr/0022-hide-shared-state-and-beats.md) | Hide shared state surfaces and beat progress with shared feedback | Accepted |
 
 Material and pattern architecture:
 
@@ -481,8 +483,10 @@ field. ADR-0018 amends ADR-0010's player-caption stacking rule. ADR-0019 amends
 ADR-0009's automatic stuck-affordance trigger. ADR-0020 amends ADR-0009's
 immediate transient-cue presentation and ADR-0018's caption chrome. ADR-0021
 amends ADR-0019's unconditional help request and ADR-0020's shared transient-cue
-scope with a persisted visibility toggle. Acceptance is not implementation: see
-the status table above for the deferred M1.5 capabilities.
+scope with a persisted visibility toggle. ADR-0022 extends that toggle to
+persistent shared state surfaces and the beat tracker while keeping effects
+immediate. Acceptance is not implementation: see the status table above for the
+deferred M1.5 capabilities.
 
 Implementation: [`feedback-implementation-plan.md`](feedback-implementation-plan.md)
 and the [M1.75 milestone](../m1.75/README.md).
@@ -548,7 +552,7 @@ flowchart TD
 | Q11 | Material/pattern changes are visual and deterministic; collision, puzzle, and save state stay owned by their existing modules | `material-patterns.feature` |
 | Q12 | Shared help is request-only, info-area gated, and temporary | `requested-hints.feature` |
 | Q13 | Transient cues are deferred, latest-wins, and revealed by scan; effects stay immediate | `on-demand-feedback.feature` |
-| Q14 | Shared transient cues and help can be globally hidden while player cues, persistent state, beats, and effects keep working | `shared-feedback-toggle.feature` |
+| Q14 | Shared state boxes, transient cues, help, and beats can be globally hidden while player cues and effects keep working | `shared-feedback-toggle.feature` |
 
 ### 10.2b Functional behavior contracts
 
@@ -557,7 +561,7 @@ flowchart TD
 | `behaviors/feedback-surfaces.feature` | Persistent state, transient cues, ownership, anchors, input, player caption slot | 0009, 0010, 0012, 0018 | Implemented |
 | `behaviors/requested-hints.feature` | Request-only shared help, info areas, temporary surface | 0019 | Implemented |
 | `behaviors/on-demand-feedback.feature` | Deferred cues, latest-wins inbox, scan reveal, immediate effects | 0020 | Implemented |
-| `behaviors/shared-feedback-toggle.feature` | Persisted shared-feedback visibility, cue/inbox/help clearing, player-cue preservation | 0021 | Implemented |
+| `behaviors/shared-feedback-toggle.feature` | Persisted shared-feedback visibility, shared state/beats filtering, cue/inbox/help clearing, player-cue preservation | 0021, 0022 | Implemented |
 | `behaviors/entity-conversations.feature` | Concurrent conversations, save/restore, recovery | 0011 | Implemented |
 | `behaviors/capability-coverage.feature` | Descriptor coverage, rejection reasons, event coverage | 0012 | Implemented |
 | `behaviors/cosmetic-effects.feature` | Direction/path/follow/cancel, tile visuals, reduced motion | 0013 | Implemented |

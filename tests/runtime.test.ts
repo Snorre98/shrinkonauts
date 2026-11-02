@@ -1030,7 +1030,14 @@ describe("game runtime", () => {
     createSave({ storage }).updateFeedback({ showShared: false });
 
     const { runtime } = makeRuntime(storage);
-    expect(runtime.snapshot().settings.feedback.showShared).toBe(false);
+    const snapshot = runtime.snapshot();
+    expect(snapshot.settings.feedback.showShared).toBe(false);
+    expect(
+      snapshot.feedback.surfaces.some(
+        (surface) => surface.owner === "shared",
+      ),
+    ).toBe(false);
+    expect(snapshot.feedback.beats).toEqual([]);
 
     runtime.placePlayer("p1", 960, 640);
     stepWith(runtime, playerActions({ scan: true }));
@@ -1534,7 +1541,7 @@ describe("game runtime", () => {
     ).toBe(true);
   });
 
-  it("removes visible shared cues but keeps persistent state when disabled", () => {
+  it("hides shared cues, state surfaces, and beats when disabled", () => {
     const { runtime } = makeRuntime();
     solveNodeRun(runtime);
     expect(runtime.requestFeedback("p1")).toBe(true);
@@ -1544,17 +1551,37 @@ describe("game runtime", () => {
         .feedback.cues.some((cue) => cue.owner === "shared"),
     ).toBe(true);
 
-    const surfacesBefore = runtime.snapshot().feedback.surfaces.length;
-    const beatsBefore = runtime.snapshot().feedback.beats.length;
-
     runtime.toggleSharedFeedback();
     const snapshot = runtime.snapshot();
     expect(snapshot.feedback.cues.some((cue) => cue.owner === "shared")).toBe(
       false,
     );
-    expect(snapshot.feedback.surfaces).toHaveLength(surfacesBefore);
-    expect(snapshot.feedback.beats).toHaveLength(beatsBefore);
+    expect(
+      snapshot.feedback.surfaces.some(
+        (surface) => surface.owner === "shared",
+      ),
+    ).toBe(false);
+    expect(snapshot.feedback.beats).toEqual([]);
     expect(snapshot.settings.feedback.showShared).toBe(false);
+    expect(runtime.drainEffects().length).toBeGreaterThan(0);
+  });
+
+  it("restores shared state surfaces and beats when re-enabled", () => {
+    const { runtime } = makeRuntime();
+    const before = runtime.snapshot().feedback;
+    const surfaceIds = before.surfaces.map((surface) => surface.id);
+    const beatLabels = before.beats.map((beat) => beat.label);
+    expect(surfaceIds.length).toBeGreaterThan(0);
+    expect(beatLabels.length).toBeGreaterThan(0);
+
+    runtime.toggleSharedFeedback();
+    expect(runtime.snapshot().feedback.surfaces).toEqual([]);
+    expect(runtime.snapshot().feedback.beats).toEqual([]);
+
+    runtime.toggleSharedFeedback();
+    const after = runtime.snapshot().feedback;
+    expect(after.surfaces.map((surface) => surface.id)).toEqual(surfaceIds);
+    expect(after.beats.map((beat) => beat.label)).toEqual(beatLabels);
   });
 
   it("keeps player feedback and skips shared help while disabled", () => {
@@ -1567,6 +1594,12 @@ describe("game runtime", () => {
     expect(
       snapshot.feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
     ).toBe(false);
+    expect(
+      snapshot.feedback.surfaces.some(
+        (surface) => surface.owner === "shared",
+      ),
+    ).toBe(false);
+    expect(snapshot.feedback.beats).toEqual([]);
     expect(snapshot.puzzle?.counters.helpRequests ?? 0).toBe(0);
     expect(
       snapshot.feedback.cues.find((cue) => cue.actor === "p1"),

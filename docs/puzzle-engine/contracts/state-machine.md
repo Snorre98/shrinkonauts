@@ -2,7 +2,7 @@
 
 Explicit states for gates, props, feedback surfaces/cues, effects, conversations,
 and the deferred travel/conditional-link targets. Source ADRs: ADR-0002–0013,
-ADR-0018–0021.
+ADR-0018–0022.
 
 Status labels:
 
@@ -135,11 +135,13 @@ Invariants:
 - A shared pending cue is copied to both players; revealing it consumes both
   copies.
 - Pending cues are absent from the frame, the live region, and save state.
-- While shared feedback is off, no shared-owned cue exists in a pending inbox,
-  the rendered frame, or the live region.
+- While shared feedback is off, no shared-owned cue or persistent surface exists
+  in the runtime feedback snapshot, and the beat tracker is empty.
 - Player-owned cues are never removed or suppressed by the shared-feedback
   setting.
-- Re-enabling shared feedback does not restore dropped or cleared cues.
+- Cosmetic effects attached to hidden shared surfaces keep running.
+- Re-enabling shared feedback restores current persistent state surfaces and
+  beats, but does not restore dropped or cleared transient cues.
 - Cosmetic effects on a deferred cue start immediately and are not deferred.
 - Cues with a player actor carry actor attribution in text and accessibility.
 - Cues expire; persistent state does not.
@@ -148,16 +150,17 @@ Invariants:
 
 | State | Meaning |
 |---|---|
-| enabled | shared cues may be buffered or spawned, and shared help may be requested |
-| disabled | shared cues are dropped, pending shared copies are cleared, visible shared cues and help are removed |
+| enabled | shared cues may be buffered or spawned, shared help may be requested, and shared state surfaces/beats are visible |
+| disabled | shared cues are dropped, pending shared copies and visible shared cues are cleared, shared state surfaces and beats are filtered from the snapshot, and shared help is removed |
 
 | From | To | Trigger | Notes |
 |---|---|---|---|
-| enabled | disabled | pause toggle or persisted setting at boot | clear pending/visible shared state immediately |
-| disabled | enabled | pause toggle | future shared cues use the normal path |
+| enabled | disabled | pause toggle or persisted setting at boot | clear pending/visible shared cues immediately; snapshot filters state and beats |
+| disabled | enabled | pause toggle | current shared state surfaces and beats reappear; dropped cues stay dropped |
 
-The setting is global and persisted. It never changes persistent surfaces,
-beats, player cues, puzzle state, or effect timing.
+The setting is global and persisted. It never changes player cues, puzzle state,
+or effect timing. Hidden shared persistent surfaces remain in the director so
+their cosmetic effects keep running.
 
 ## 5. Effect lifetime
 

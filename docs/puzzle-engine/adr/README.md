@@ -4,7 +4,7 @@ Accepted decisions for the `puzzle-engine` upgrade. Each record is immutable;
 supersede with a new ADR rather than editing an accepted one.
 
 **Implementation status is separate from decision status.** ADR-0009–0013 and
-ADR-0018–0021 and the M1.75 feedback layer are implemented. ADR-0002–0007 are
+ADR-0018–0022 and the M1.75 feedback layer are implemented. ADR-0002–0007 are
 only partially implemented in this branch: physical gate bodies,
 `locked`/`unlock`, `requires`/`message`/`linkBlocked`, per-level debrief
 overrides, and side-level travel are deferred. See the status table in
@@ -35,6 +35,7 @@ as runtime behavior.
 | [0019](0019-request-gated-shared-help.md) | Request-gated shared help surfaces and authored info areas | Accepted |
 | [0020](0020-on-demand-transient-feedback.md) | On-demand transient feedback via scan and compact captions | Accepted |
 | [0021](0021-shared-feedback-visibility-toggle.md) | Persisted global visibility for shared transient feedback | Accepted |
+| [0022](0022-hide-shared-state-and-beats.md) | Hide shared state surfaces and beat progress with shared feedback | Accepted |
 
 ## Material and pattern architecture
 
@@ -56,9 +57,11 @@ as runtime behavior.
   ADR-0018's player-caption chrome.
 - ADR-0021 amends ADR-0019's unconditional shared-help request and ADR-0020's
   shared transient-cue scope with a persisted visibility toggle.
+- ADR-0022 amends ADR-0021's exclusion of persistent shared state surfaces and
+  beat progress from that toggle while preserving cosmetic effects.
 
 The amended records stay immutable; these amendment notes are the index entry,
-not edits to ADR-0003, ADR-0005, ADR-0019, or ADR-0020.
+not edits to ADR-0003, ADR-0005, ADR-0019, ADR-0020, or ADR-0021.
 
 ADR-0014–0017 were amended before acceptance:
 

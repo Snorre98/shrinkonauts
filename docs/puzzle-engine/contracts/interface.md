@@ -1,7 +1,7 @@
 # Interface contract
 
 Public operations introduced or changed by the puzzle-engine, M1.75 feedback, and
-M1.8 material/pattern work. Source ADRs: ADR-0001–0021. Existing operations keep
+M1.8 material/pattern work. Source ADRs: ADR-0001–0022. Existing operations keep
 their current signatures.
 
 ## Implementation status
@@ -15,7 +15,7 @@ their current signatures.
 | Player-attached caption slot and surface TTL | Implemented |
 | Request-gated shared help and room info areas | Implemented |
 | Deferred transient cues and on-demand reveal | Implemented |
-| Persisted shared-feedback visibility and help suppression | Implemented |
+| Persisted shared-feedback visibility, shared state/beat filtering, and help suppression | Implemented |
 | Level `feedback` content block | Implemented |
 | Feedback validation vocabulary injection | Implemented |
 | Material/pattern catalog, tile grids, autotiling, variants | Implemented; `wang` deferred |
@@ -315,9 +315,13 @@ plans on deferred cues still start immediately from a hidden effect host.
 
 `setSharedFeedbackEnabled(false)` drops shared-owned cue specs before they enter
 either inbox, clears pending shared copies, and despawns visible shared cues.
-Player-owned cues, persistent surfaces, and beats are unaffected. Effects keep
-their immediate lifecycle. The runtime also refuses the requested help surface
-while the setting is off. Re-enabling affects only future shared cues.
+Player-owned cues are unaffected. Effects keep their immediate lifecycle.
+
+`GameRuntime` additionally filters shared-owned persistent surfaces and beats
+from `RuntimeSnapshot.feedback` while the setting is off. The director still
+projects them so `drainEffects()` keeps the world effects running. Re-enabling
+restores the current shared state surfaces and beats; dropped transient cues are
+not replayed. The runtime also refuses the requested help surface while off.
 
 The runtime ticks the director once per fixed step and calls `frame()` to obtain
 the snapshot-safe view.
@@ -447,8 +451,10 @@ function routeSurfaceInput(
 function toWorldEffectPlan(instance: EffectInstance): WorldEffectPlan;
 ```
 
-`RuntimeSnapshot` exposes `feedback: FeedbackFrame`; the old `dialogue` view is
-not present. Soft conversations do not enter a blocking state. Hard overlays
+`RuntimeSnapshot` exposes `feedback: FeedbackFrame`; while shared feedback is
+off, the snapshot omits shared-owned surfaces and beats but keeps `effects`. The
+old `dialogue` view is not present. Soft conversations do not enter a blocking
+state. Hard overlays
 (gate, pause, map, concept log, debrief, complete) remain explicit.
 
 Deferred: `travelToSideLevel(levelId)` and the `returnTo` snapshot.

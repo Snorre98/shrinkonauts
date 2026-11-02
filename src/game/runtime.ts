@@ -14,6 +14,7 @@ import {
   type FeedbackAnchor,
   type FeedbackDirector,
   type FeedbackFrame,
+  type FeedbackSurface,
   type FeedbackSurfaceSpec,
   type SourceRefValue,
   type SurfaceId,
@@ -664,7 +665,9 @@ export class GameRuntime implements WorldRuntime {
     }
 
     const routed = new Set<PlayerId>();
-    const surfaces = this.feedback.view().surfaces;
+    const surfaces = this.presentedFeedbackSurfaces(
+      this.feedback.view().surfaces,
+    );
     const router = new SurfaceInputRouter({
       hard: false,
       surfaces,
@@ -2620,8 +2623,26 @@ export class GameRuntime implements WorldRuntime {
     });
   }
 
+  /**
+   * Shared state surfaces and beats are presentation-only. Hiding them must not
+   * remove their effects: `drainEffects` keeps consuming the unfiltered effect
+   * list from the director frame.
+   */
+  private presentedFeedbackSurfaces(
+    surfaces: readonly FeedbackSurface[],
+  ): readonly FeedbackSurface[] {
+    if (this.save.settings.feedback.showShared) return surfaces;
+    return surfaces.filter((surface) => surface.owner !== "shared");
+  }
+
   private feedbackFrame(): FeedbackFrame {
-    return this.feedback.frame();
+    const frame = this.feedback.frame();
+    if (this.save.settings.feedback.showShared) return frame;
+    return {
+      ...frame,
+      surfaces: this.presentedFeedbackSurfaces(frame.surfaces),
+      beats: [],
+    };
   }
 
   private presentationInput(level: LevelDocument) {

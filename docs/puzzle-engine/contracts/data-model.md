@@ -1,7 +1,7 @@
 # Data model contract
 
 Precise spec for the durable and content formats changed by the engine upgrade.
-Source ADRs: ADR-0002–0021. The implementation status table in
+Source ADRs: ADR-0002–0022. The implementation status table in
 [`architecture.md`](../architecture.md) is authoritative where an accepted ADR
 target is deferred.
 
@@ -305,10 +305,13 @@ interface GameSettings {
 }
 ```
 
-`feedback.showShared` controls shared-owned transient cues and the requested
-shared help surface. It does not enter the run snapshot's feedback state and is
-never serialized with cues. Settings updates preserve the other settings groups;
-an old settings document without `feedback` loads with `showShared: true`.
+`feedback.showShared` controls shared-owned transient cues, shared persistent
+state surfaces, the beat tracker, and the requested shared help surface. It does
+not enter the run snapshot's feedback state and is never serialized with cues.
+The runtime filters shared surfaces and beats from `RuntimeSnapshot.feedback`
+while the setting is off, but keeps the director's effects running. Settings
+updates preserve the other settings groups; an old settings document without
+`feedback` loads with `showShared: true`.
 
 ## 5. Syllabus evidence
 
@@ -339,7 +342,9 @@ syllabus-derived `prompt-obj-2`/`EV-7` teach-back. The proposed per-level
 - Feedback surfaces, cues, effects, and ECS entities are ephemeral.
 - Deferred cue inboxes are ephemeral; pending cues are never serialized.
 - Shared feedback visibility is a global persisted setting, not per-player cue
-  state; turning it off does not add or remove run-save fields.
+  state; turning it off does not add or remove run-save fields. Shared surfaces
+  and beats are filtered only from the runtime snapshot, not from persistent
+  puzzle/world state.
 - Player-anchored transient cues occupy one slot per player; entity bubbles and
   HUD surfaces may still coexist.
 - Info areas are relevance zones only; they add no collision, puzzle, or save

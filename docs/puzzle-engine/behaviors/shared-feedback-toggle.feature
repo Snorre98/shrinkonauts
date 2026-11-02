@@ -1,8 +1,9 @@
 # language: en
-# Source: ADR-0021
+# Source: ADR-0021, ADR-0022
 Feature: Shared feedback visibility
-  Shared-owned transient feedback can be turned off globally. Persistent state,
-  player-specific feedback, and cosmetic effects keep working.
+  Shared-owned feedback boxes, the shared help surface, and beat progress can be
+  turned off globally. Player-specific feedback and cosmetic effects keep
+  working.
 
   Scenario: Shared feedback is on by default
     Given a player has no saved shared-feedback preference
@@ -27,7 +28,13 @@ Feature: Shared feedback visibility
     Given a shared cue is visible
     When shared feedback is turned off
     Then the shared cue is removed immediately
-    And persistent state surfaces and beats remain visible
+
+  Scenario: Turning shared feedback off hides shared state and beats
+    Given shared persistent state surfaces and the beat tracker are visible
+    When shared feedback is turned off
+    Then the shared state surfaces are removed from the snapshot
+    And the beat tracker is hidden
+    And player-owned cues remain available
 
   Scenario: Turning shared feedback off removes shared help
     Given the requested shared help surface is visible
@@ -48,11 +55,12 @@ Feature: Shared feedback visibility
     Then the cue is buffered for that player
     And scan reveals it with its P1 or P2 attribution
 
-  Scenario: Re-enabling affects only future shared cues
+  Scenario: Re-enabling restores state but not dropped cues
     Given shared feedback was turned off
     And shared cues were dropped or cleared
     When shared feedback is turned back on
     Then those cues do not reappear
+    And the current shared state surfaces and beats reappear
     And the next shared cue is buffered normally
 
   Scenario: The preference persists
@@ -60,7 +68,8 @@ Feature: Shared feedback visibility
     When the game is reloaded
     Then shared feedback is still off
 
-  Scenario: Persistent state and effects keep working while off
+  Scenario: Cosmetic effects keep working while shared text and beats are off
     Given shared feedback is off
-    Then gate state, timers, socket occupancy, and beats remain visible
-    And existing cosmetic effects keep running
+    Then existing cosmetic effects keep running
+    And player-owned cues remain available
+    And the pause-menu hint/reset fallback remains available

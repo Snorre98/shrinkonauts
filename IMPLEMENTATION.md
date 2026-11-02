@@ -222,10 +222,11 @@ director. It returns gameplay cues (`jump`, `land`, `dash`). Transient feedback
 cues are deferred into per-player inboxes and only appear when a player presses
 scan; cosmetic effects still run immediately. The scan button also opens the
 shared hint/reset affordance inside an authored info area. A persisted global
-“Shared feedback” pause setting can suppress shared-owned transient cues and the
-requested help surface without affecting player cues, persistent state, beats, or
-effects. Actions are latched by the input source, so an `E` tap is consumed
-exactly once by the next fixed step even when several render frames occur first.
+“Shared feedback” pause setting hides shared-owned transient cues, persistent
+state surfaces, the beat tracker, and the requested help surface without
+affecting player cues; cosmetic effects keep running. Actions are latched by the
+input source, so an `E` tap is consumed exactly once by the next fixed step even
+when several render frames occur first.
 
 ### State machine
 
@@ -291,8 +292,10 @@ relevant entity/player, and cues carry P1/P2 attribution.
 - `beats.ts` derives authored or win-graph beat progress.
 
 `GameRuntime` ingests facts and projects sticky surfaces once per fixed step.
-`RuntimeSnapshot.feedback` contains surfaces, cues, beats, and effect instances.
-The scene consumes only `WorldEffectPlan`/tile ports through `drainEffects()`.
+`RuntimeSnapshot.feedback` contains surfaces, cues, beats, and effect instances;
+while shared feedback is off, it omits shared-owned surfaces and beats. The scene
+consumes only `WorldEffectPlan`/tile ports through `drainEffects()`, which still
+receives the unfiltered effect list.
 
 ### Accessibility contract
 
@@ -473,9 +476,9 @@ The accessibility baseline is:
 - Reduced motion: sets `data-reduced-motion="true"`, disables CSS animation, and
   simplifies movement effects while keeping surfaces/text.
 - Mute toggle (`M`) from gameplay and from every overlay, with HUD status.
-- Persisted global “Shared feedback” toggle in the pause settings; it suppresses
-  shared transient cues and shared help while keeping player cues, persistent
-  state, beats, and effects.
+- Persisted global “Shared feedback” toggle in the pause settings; it hides
+  shared transient cues, shared persistent state surfaces, beats, and shared
+  help while keeping player cues and cosmetic effects.
 - Focus management: overlays are `role="dialog"`, `aria-modal`, labelled,
   autofocus the first meaningful control, trap `Tab`/`Shift+Tab`, and restore
   focus to the previous element on close.
@@ -599,7 +602,7 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/catalog.test.ts` | Pack catalog ordering, statuses, paths, duplicates |
 | `tests/app-state.test.ts` | Hub phases, cycle/mode selection, start eligibility, error recovery |
 | `tests/hub.test.ts` | Bathroom document parsing, IDs, manifests, validation |
-| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, shared-feedback setting, solo start, overlays |
+| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, shared-feedback state/beat filtering, solo start, overlays |
 | `tests/puzzle.test.ts`, `puzzle-dispatch.test.ts`, `endplate-ferry.test.ts` | Puzzle schema/dataflow, dispatch, timers, gate recovery |
 | `tests/recoverability.test.ts` | Exhaustive stable-state reachability |
 | `tests/ecs.test.ts` | Spawn/despawn/query/system order/determinism |
@@ -618,7 +621,7 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, materials purity, module graph |
 | `e2e/hub.spec.ts` | Browser: bathroom, cycle selection, launch skip, solo start, return |
 | `e2e/m1.spec.ts` | Browser: 03 → 04, conversations, attribution, reduced motion, live region, export |
-| `e2e/shared-feedback.spec.ts` | Browser: shared-feedback pause toggle, persistence, shared-help suppression and removal |
+| `e2e/shared-feedback.spec.ts` | Browser: shared-feedback pause toggle, persistence, shared state/beat/help suppression and restoration |
 
 `npm run smoke` runs the room-boot and boundary suites. `pack:smoke` adds a
 headless full-loop runtime run plus the M0 placeholder/fixture simulation

@@ -2,7 +2,7 @@
 
 How the implemented system behaves when a puzzle action, feedback reference,
 effect asset, conversation target, or save path is invalid. Source ADRs:
-ADR-0004–0013, ADR-0018–0021. Deferred M1.5 features are labelled explicitly.
+ADR-0004–0013, ADR-0018–0022. Deferred M1.5 features are labelled explicitly.
 
 ## 1. Retry policy and backoff
 
@@ -22,6 +22,7 @@ actions after feedback; there is no automatic background retry.
 | Player caption slot occupied | Newest player-anchored cue replaces the older one | None needed | Implemented |
 | Deferred cue not requested | No box is rendered or announced | Press scan; latest pending cue is revealed | Implemented |
 | Shared feedback off and shared cue produced | Cue is dropped; no pending copy, render, or announcement; effects still run | Re-enable shared feedback; only future cues appear | Implemented |
+| Shared feedback off and shared state projected | Shared persistent surfaces and beats are omitted from the snapshot; effects keep running | Re-enable shared feedback to restore current state | Implemented |
 | Shared help requested while shared feedback is off | Help surface is refused; scan falls through to a target or fallback | Use the pause-menu hint/reset fallback | Implemented |
 | Missing or malformed shared-feedback setting | Defaults to on | None needed | Implemented |
 | Pending cue replaced by a newer cue | Older message is discarded | None; only the latest is available | Implemented |
@@ -50,9 +51,10 @@ Feedback is presentation, never gameplay authority.
   persistent surface, text, or state distinction.
 - Effect failure, asset failure, or audio failure is non-blocking and never
   changes puzzle, world, or collision state.
-- Shared feedback visibility only changes presentation. Turning it off never
-  removes persistent state, beats, player cues, or puzzle authority; cosmetic
-  effects keep their normal immediate lifecycle.
+- Shared feedback visibility only changes presentation. Turning it off hides
+  shared state surfaces and beats from the snapshot but never removes player
+  cues, puzzle authority, or persistent state truth; cosmetic effects keep their
+  normal immediate lifecycle.
 
 ## 3. Feedback vocabulary failure
 

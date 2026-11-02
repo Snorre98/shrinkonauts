@@ -65,14 +65,23 @@ test("pause settings toggle shared feedback and persist it", async ({ page }) =>
   );
 });
 
-test("shared feedback suppresses help while player feedback still works", async ({
+test("shared feedback hides state, beats, and help while player feedback works", async ({
   page,
 }) => {
   await boot(page);
 
+  const stateBox = page.locator(".feedback-surface", {
+    hasText: "Dendrite input A is ready.",
+  });
+  await expect(stateBox).toBeVisible();
+  await expect(page.locator(".feedback-beats__item").first()).toBeVisible();
+
   await page.keyboard.press("Escape");
   await sharedFeedbackToggle(page).click();
   await page.getByRole("button", { name: "Resume" }).click();
+
+  await expect(stateBox).toHaveCount(0);
+  await expect(page.locator(".feedback-beats__item")).toHaveCount(0);
 
   await teleportToInfoArea(page);
   await page.keyboard.press("q");
@@ -86,6 +95,9 @@ test("shared feedback suppresses help while player feedback still works", async 
   await page.keyboard.press("Escape");
   await sharedFeedbackToggle(page).click();
   await page.getByRole("button", { name: "Resume" }).click();
+  await expect(stateBox).toBeVisible();
+  await expect(page.locator(".feedback-beats__item").first()).toBeVisible();
+
   await page.keyboard.press("q");
   const help = page.locator(".feedback-surface", { hasText: "Need a nudge?" });
   await expect(help).toBeVisible();
