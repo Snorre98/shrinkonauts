@@ -81,6 +81,9 @@ const PALETTE_RAMP_KEYS: readonly (keyof ThemePalette)[] = [
   "orange",
   "orangeDark",
   "orangeLight",
+  "appliance",
+  "applianceShadow",
+  "applianceHighlight",
 ];
 
 const FIT_MODES: readonly BackgroundFit[] = [

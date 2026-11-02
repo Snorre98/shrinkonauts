@@ -56,6 +56,22 @@ test("shows the gated Silicon cycle from a deep link without starting it", async
   await expect(page.locator(".hub__status")).toContainText("M2 content pass");
 });
 
+test("boots final art by default and keeps the procedural placeholder path", async ({
+  page,
+}) => {
+  const consoleErrors = await bootHub(page);
+  await expect(page.locator(".hub__asset-mode")).toHaveText("Final assets");
+
+  await page.goto("/?assets=placeholder");
+  await page.waitForFunction(() => {
+    const app = (window as ShrinkonautsWindow).__shrinkonauts;
+    return app?.phase === "hub";
+  });
+  await expect(page.locator(".hub__title")).toHaveText("The bathroom");
+  await expect(page.locator(".hub__asset-mode")).toHaveText("Placeholder assets");
+  expect(consoleErrors).toEqual([]);
+});
+
 test("starts with reduced motion enabled without the spin animation", async ({
   page,
 }) => {

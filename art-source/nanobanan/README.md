@@ -38,6 +38,77 @@ the runtime WebPs are not shipped and the layers are not wired. Do not wire the
 material swatches. `sprite.exit`, `sprite.gate.nerve`, and `sprite.checkpoint`
 also remain placeholders.
 
+## M3.5 bathroom hub batch (2026-11-02)
+
+Source folder: `art-source/nanobanan/new-main-menu/` (14 JPEGs, 2752×1536,
+flat magenta except the opaque scene plate). The raw batch is ignored and is
+not committed; only the processed runtime exports, previews, reports, and this
+note are tracked.
+
+**Wired final art:** `bg.bathroom.wall`, `sprite.prop.washer`,
+`sprite.prop.washer.door`, `sprite.prop.washer.drum`,
+`sprite.player.civilian`, `sprite.prop.poster`,
+`sprite.prop.cartridge.anatomy`, `sprite.prop.cartridge.silicon`,
+`ui.icon.cycle.anatomy`, `ui.icon.cycle.silicon`,
+`sprite.prop.plush.neuron`, `sprite.prop.laundry.basket`, and the reused P1
+tiny astronaut (`sprite.player.p1`). The separate
+`sprite.prop.detergent.bottles` asset is processed and declared but is
+manifest-only: the scene already bakes detergent bottles on the shelf.
+
+**Composition decisions:** the scene plate is cropped 296 source px on the
+left and padded 296 px on the right with `#1b2b2c` before a Lanczos
+downscale to 640×360. This moves the baked alcove under the locked machine
+position and moves the baked poster out from under the DOM panel. The scene is
+**not** palette-quantised: this is the recorded scene-plate exception, matching
+the M3 sky precedent, because the warm lamp and wall grime survive better at
+2×. Sprites are quantised to `palette.hub.json` (the shared ramps plus the
+hub-only appliance ramp).
+
+The delivered machine body is 0.814 aspect and fits the 180×240 cell as
+180×221 content, so its visible body is 360×442. The machine keeps x=340,
+y=720 and scale=2; the door/drum anchors move to `(340,503)` and the screen /
+nameplate rects in `hub.json` describe the delivered body. The separate poster
+is rendered at the baked poster footprint (`627,312`, scale 3.1) so the scene
+does not show two posters. The logo plate has a washing machine baked behind
+the wordmark; it is not shipped as alpha art and the Silkscreen wordmark
+fallback remains.
+
+**Deferred / missing:** no civilian walk sheet (single-frame idle only), no
+toy astronaut, and no audio. The towel was cleaned with a pink-removal pass
+plus a silhouette polygon mask, but the remaining 11×32 source collapses to a
+narrow strip that does not read as a towel at 2×; the processed asset is
+manifest-only and is not wired. The detergent bottles are also manifest-only
+for the reason above.
+
+**Commands:**
+
+```bash
+# Key a magenta plate; repeat per source. Full-size keyed files are ignored.
+npm run art:key -- \
+  --in art-source/nanobanan/new-main-menu/sprite-prop-washer.jpeg \
+  --out art-source/nanobanan/keyed/hub-washer.png \
+  --key "#ff00ff" --tolerance 0.18 --softness 0.08 --despill --trim \
+  --preview art-source/previews/nanobanan/hub/hub-washer-key.png \
+  --preview-width 512 --background "#101a20"
+
+# Fit, mask, quantise and export every runtime asset plus the scene WebP.
+npm run art:hub
+
+# Review a single asset without writing the runtime file.
+npm run art:hub -- --asset sprite.prop.washer --no-write
+```
+
+The fit/mask/quantisation reports are in `reports/hub/`; 2× and 4× previews are
+in `previews/nanobanan/hub/`. Runtime files live under
+`public/hub/bathroom/shared/`. The final contact sheets are
+`screenshots/m3.5-hub-final.png`, `screenshots/m3.5-hub-final-720p.png`, and
+`screenshots/m3.5-hub-placeholder.png`.
+
+**Licence:** all new hub runtime assets use
+`Nano Banana / Google Gemini (plan TBD)`. The reused P1 tiny astronaut retains
+`Ludo.ai source (POC; plan TBD)`. The source batch has no seed/prompt/licence
+log; this note is the provenance record until that log exists.
+
 ## Background removal
 
 `npm run art:key` decodes the JPEG through ffmpeg, keys the flat magenta by RGB

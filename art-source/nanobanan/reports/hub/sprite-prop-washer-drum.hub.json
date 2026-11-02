@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.washer.drum",
+  "source": {
+    "path": "art-source/nanobanan/keyed/hub-washer-drum.png",
+    "width": 1515,
+    "height": 1526
+  },
+  "crop": null,
+  "masks": [],
+  "cell": {
+    "width": 80,
+    "height": 80
+  },
+  "margin": 2,
+  "align": "center",
+  "anchor": null,
+  "fit": {
+    "sourceBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 1515,
+      "height": 1526
+    },
+    "fit": {
+      "width": 75,
+      "height": 76,
+      "offsetX": 2,
+      "offsetY": 2
+    },
+    "margins": {
+      "top": 2,
+      "right": 3,
+      "bottom": 2,
+      "left": 2
+    }
+  },
+  "quantized": true,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink",
+    "appliance"
+  ],
+  "palette": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 4483
+  },
+  "bytes": 9799,
+  "maxBytes": 16384,
+  "output": "public/hub/bathroom/shared/sprites/washer-drum.png",
+  "note": null
+}

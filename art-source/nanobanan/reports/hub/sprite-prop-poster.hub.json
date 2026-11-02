@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.poster",
+  "source": {
+    "path": "art-source/nanobanan/keyed/hub-poster.png",
+    "width": 976,
+    "height": 1367
+  },
+  "crop": null,
+  "masks": [],
+  "cell": {
+    "width": 48,
+    "height": 64
+  },
+  "margin": 0,
+  "align": "center",
+  "anchor": null,
+  "fit": {
+    "sourceBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 976,
+      "height": 1367
+    },
+    "fit": {
+      "width": 46,
+      "height": 64,
+      "offsetX": 1,
+      "offsetY": 0
+    },
+    "margins": {
+      "top": 0,
+      "right": 1,
+      "bottom": 0,
+      "left": 1
+    }
+  },
+  "quantized": true,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink",
+    "appliance"
+  ],
+  "palette": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 2939
+  },
+  "bytes": 3906,
+  "maxBytes": 8192,
+  "output": "public/hub/bathroom/shared/sprites/poster.png",
+  "note": null
+}

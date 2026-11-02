@@ -21,6 +21,7 @@
     "art:slice": "tsx scripts/art-slice.ts",
     "art:key": "tsx scripts/art-key.ts",
     "art:fit": "tsx scripts/art-fit.ts",
+    "art:hub": "tsx scripts/art-hub.ts",
     "art:build-player": "tsx scripts/art-build-player.ts",
     "smoke:e2e": "playwright test",
     "art:normalize": "tsx scripts/art-normalize.ts",

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.plush.neuron",
+  "source": {
+    "path": "art-source/nanobanan/keyed/hub-plush-neuron.png",
+    "width": 1239,
+    "height": 1430
+  },
+  "crop": null,
+  "masks": [],
+  "cell": {
+    "width": 24,
+    "height": 24
+  },
+  "margin": 0,
+  "align": "bottom-center",
+  "anchor": null,
+  "fit": {
+    "sourceBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 1239,
+      "height": 1430
+    },
+    "fit": {
+      "width": 21,
+      "height": 24,
+      "offsetX": 1,
+      "offsetY": 0
+    },
+    "margins": {
+      "top": 0,
+      "right": 2,
+      "bottom": 0,
+      "left": 1
+    }
+  },
+  "quantized": true,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink",
+    "appliance"
+  ],
+  "palette": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 275
+  },
+  "bytes": 1339,
+  "maxBytes": 8192,
+  "output": "public/hub/bathroom/shared/sprites/plush-neuron.png",
+  "note": null
+}

@@ -14,6 +14,17 @@ export function parseAssetMode(search: string): AssetMode {
   return "placeholder";
 }
 
+/**
+ * The delivered hub uses final art for a plain `/` boot. An explicit
+ * `?assets=placeholder` still wins so the procedural fallback stays
+ * reviewable; unknown values keep the parser's safe placeholder behaviour.
+ */
+export function resolveAssetMode(search: string): AssetMode {
+  return new URLSearchParams(search).has("assets")
+    ? parseAssetMode(search)
+    : "final";
+}
+
 export function isFixtureMode(mode: AssetMode): boolean {
   return mode === "fixture";
 }

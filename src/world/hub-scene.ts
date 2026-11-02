@@ -6,7 +6,12 @@ import {
   type ResolvedAsset,
 } from "../assets";
 import type { ThemeDocument } from "../pack";
-import type { HubDocument, HubRect } from "../hub";
+import type {
+  HubDocument,
+  HubDressingEntry,
+  HubOrigin,
+  HubRect,
+} from "../hub";
 import { LayeredBackground } from "./background";
 
 export interface HubSceneConfig {
@@ -56,6 +61,23 @@ function isFinalAsset(asset: ResolvedAsset): boolean {
   return asset.source !== "placeholder" && typeof asset.src === "string" && asset.src.length > 0;
 }
 
+function originValue(
+  origin: HubOrigin | undefined,
+): [number, number] {
+  switch (origin) {
+    case "top-left":
+      return [0, 0];
+    case "top-center":
+      return [0.5, 0];
+    case "bottom-left":
+      return [0, 1];
+    case "bottom-center":
+      return [0.5, 1];
+    default:
+      return [0.5, 0.5];
+  }
+}
+
 export class HubScene extends Phaser.Scene {
   private player: Phaser.GameObjects.Container | Phaser.GameObjects.Image | null = null;
   private tinyAstronaut: Phaser.GameObjects.Container | Phaser.GameObjects.Image | null = null;
@@ -63,6 +85,10 @@ export class HubScene extends Phaser.Scene {
   private drum: Phaser.GameObjects.Container | Phaser.GameObjects.Image | null = null;
   private screenGlow: Phaser.GameObjects.Rectangle | null = null;
   private screenLabel: Phaser.GameObjects.Text | null = null;
+  private cartridgeImages: Map<string, Phaser.GameObjects.Image> | null = null;
+  private cartridgeGlow: Phaser.GameObjects.Rectangle | null = null;
+  private readonly failedTextures = new Set<string>();
+  private hasFinalBackground = false;
   private launchSkip: (() => void) | null = null;
   private launchSkipped = false;
 
@@ -74,6 +100,7 @@ export class HubScene extends Phaser.Scene {
     this.load.on(
       Phaser.Loader.Events.FILE_LOAD_ERROR,
       (file: Phaser.Loader.File) => {
+        this.failedTextures.add(file.key);
         const message = `Failed to load ${file.src}; falling back to placeholder`;
         console.warn(`[shrinkonauts] ${message}`);
         this.config.onWarning?.(message);
@@ -88,6 +115,14 @@ export class HubScene extends Phaser.Scene {
     }
   }
 
+  private isUsableAsset(asset: ResolvedAsset): boolean {
+    return (
+      isFinalAsset(asset) &&
+      !this.failedTextures.has(textureKey(asset.id)) &&
+      this.textures.exists(textureKey(asset.id))
+    );
+  }
+
   create(): void {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
     try {
@@ -95,10 +130,10 @@ export class HubScene extends Phaser.Scene {
       this.cameras.main.setBackgroundColor(colorNumber(theme.palette.bg));
       this.cameras.main.setBounds(0, 0, hub.width, hub.height);
 
-      const hasFinalBackground = hub.background.layers.some((layer) =>
-        isFinalAsset(this.config.assets.image(layer.assetId)),
+      this.hasFinalBackground = hub.background.layers.some((layer) =>
+        this.isUsableAsset(this.config.assets.image(layer.assetId)),
       );
-      if (hasFinalBackground) {
+      if (this.hasFinalBackground) {
         new LayeredBackground(
           this,
           hub.background.layers,
@@ -111,10 +146,13 @@ export class HubScene extends Phaser.Scene {
         this.drawBathroomPlaceholder();
       }
 
-      this.drawTemporaryLogo();
+      this.drawLogo();
       this.drawMachine();
       this.createPlayer();
       this.createTinyAstronaut();
+      this.drawDressing();
+      this.createCartridges();
+      this.drawPoster();
       this.createAmbientMotion();
       this.config.onReady?.();
     } catch (error) {
@@ -157,6 +195,15 @@ export class HubScene extends Phaser.Scene {
       );
       this.screenLabel.setColor(accent);
     }
+    if (this.cartridgeImages) {
+      const selectedId = anatomy
+        ? this.config.hub.dressing?.cartridge?.anatomy
+        : this.config.hub.dressing?.cartridge?.silicon;
+      for (const [id, image] of this.cartridgeImages) {
+        image.setVisible(id === selectedId);
+      }
+    }
+    this.cartridgeGlow?.setFillStyle(colorNumber(accent), 0.2);
   }
 
   skipLaunch(): void {
@@ -215,8 +262,6 @@ export class HubScene extends Phaser.Scene {
         await tween({
           targets: this.door,
           alpha: 0.15,
-          scaleX: 1.08,
-          scaleY: 1.08,
           duration: 420,
           ease: "Sine.easeOut",
         });
@@ -238,8 +283,6 @@ export class HubScene extends Phaser.Scene {
         await tween({
           targets: this.player,
           alpha: 0,
-          scaleX: 0.65,
-          scaleY: 0.65,
           duration: 360,
           ease: "Sine.easeIn",
         });
@@ -307,10 +350,11 @@ export class HubScene extends Phaser.Scene {
   }
 
   private tinyScale(): number {
-    const tiny = this.config.hub.player.tinyScale;
+    // The procedural container is authored at a larger internal size; its
+    // Phase-1 scale is 0.35. The final P1 image uses hub.player.tinyScale.
     return this.tinyAstronaut instanceof Phaser.GameObjects.Image
-      ? tiny
-      : 1;
+      ? this.config.hub.player.tinyScale
+      : 0.35;
   }
 
   private drawBathroomPlaceholder(): void {
@@ -426,22 +470,107 @@ export class HubScene extends Phaser.Scene {
       .setAngle(-3);
   }
 
-  /**
-   * Phase-1 logo stand-in used to validate the top-left safe zone.
-   * TODO(m3.5): replace with ui.logo.shrinkonauts when the wordmark asset lands.
-   */
-  private drawTemporaryLogo(): void {
-    const { theme } = this.config;
+  private drawLogo(): void {
+    const { theme, hub, assets } = this.config;
+    const entry = hub.dressing?.logo;
+    const x = entry?.x ?? 48;
+    const y = entry?.y ?? 40;
+    const asset = entry ? assets.image(entry.assetId) : null;
+    if (entry && asset && this.isUsableAsset(asset)) {
+      const [originX, originY] = originValue(entry.origin);
+      this.add
+        .image(x, y, textureKey(asset.id))
+        .setOrigin(originX, originY)
+        .setScale(entry.scale ?? 1)
+        .setDepth(entry.depth ?? 7);
+      return;
+    }
+
+    // The delivered logo plate has a washing machine baked behind the
+    // wordmark, so it is not usable as a clean alpha asset. Keep the
+    // Silkscreen fallback; the dark stroke protects it against the pipes.
     this.add
-      .text(48, 40, "SHRINKONAUTS", {
+      .text(x, y, "SHRINKONAUTS", {
         fontFamily: theme.fonts.display,
         fontSize: "32px",
         color: theme.palette.bone,
         fontStyle: "bold",
         letterSpacing: 2,
       })
+      .setStroke(theme.palette.bg, 5)
       .setOrigin(0, 0)
-      .setDepth(7);
+      .setDepth(entry?.depth ?? 7);
+  }
+
+  private drawDressingEntry(entry: HubDressingEntry): Phaser.GameObjects.Image | null {
+    const asset = this.config.assets.sprite(entry.assetId);
+    if (!this.isUsableAsset(asset)) return null;
+    const [originX, originY] = originValue(entry.origin);
+    return this.add
+      .image(entry.x, entry.y, textureKey(asset.id))
+      .setOrigin(originX, originY)
+      .setScale(entry.scale ?? 1)
+      .setDepth(entry.depth ?? 5);
+  }
+
+  private drawDressing(): void {
+    for (const entry of this.config.hub.dressing?.props ?? []) {
+      this.drawDressingEntry(entry);
+    }
+  }
+
+  private createCartridges(): void {
+    const slot = this.config.hub.dressing?.cartridge;
+    if (!slot) return;
+    const [originX, originY] = originValue(slot.origin);
+    const scale = slot.scale ?? 1;
+    const depth = slot.depth ?? 6;
+    const images = new Map<string, Phaser.GameObjects.Image>();
+    for (const id of [slot.anatomy, slot.silicon]) {
+      const asset = this.config.assets.sprite(id);
+      if (!this.isUsableAsset(asset)) continue;
+      images.set(
+        id,
+        this.add
+          .image(slot.x, slot.y, textureKey(asset.id))
+          .setOrigin(originX, originY)
+          .setScale(scale)
+          .setDepth(depth)
+          .setVisible(false),
+      );
+    }
+    if (images.size === 0) return;
+    this.cartridgeImages = images;
+    this.cartridgeGlow = this.add
+      .rectangle(slot.x, slot.y + 8 * scale, 56, 40, 0x7bdff2, 0.2)
+      .setDepth(depth - 1);
+  }
+
+  private drawPoster(): void {
+    const entry = this.config.hub.dressing?.poster;
+    if (!entry || !this.hasFinalBackground) return;
+    const asset = this.config.assets.sprite(entry.assetId);
+    if (!this.isUsableAsset(asset)) return;
+    const [originX, originY] = originValue(entry.origin);
+    const depth = entry.depth ?? 1;
+    const image = this.add
+      .image(entry.x, entry.y, textureKey(asset.id))
+      .setOrigin(originX, originY)
+      .setScale(entry.scale ?? 1)
+      .setDepth(depth);
+    const bounds = image.getBounds();
+    const { theme } = this.config;
+    this.add
+      .text(bounds.centerX, bounds.y + bounds.height * 0.135, "STAY SMALL", {
+        fontFamily: theme.fonts.display,
+        fontSize: "10px",
+        color: theme.palette.bg,
+        align: "center",
+        fontStyle: "bold",
+        letterSpacing: 0,
+      })
+      .setOrigin(0.5)
+      .setDepth(depth + 1);
   }
 
   private drawMachine(): void {
@@ -454,7 +583,7 @@ export class HubScene extends Phaser.Scene {
     const drumAsset = assets.sprite(hub.machine.drum);
     const ink = colorNumber(theme.palette.bg);
     const metal = mixColor(theme.palette.bone, theme.palette.bg, 0.3);
-    const hasFinalBody = isFinalAsset(bodyAsset);
+    const hasFinalBody = this.isUsableAsset(bodyAsset);
 
     if (hasFinalBody) {
       this.add
@@ -492,15 +621,17 @@ export class HubScene extends Phaser.Scene {
       body.lineStyle(4, ink, 0.7);
       body.strokeRoundedRect(x - 125, y - 420, 250, 64, 14);
 
-      // Porthole recess, sized for the 360x480 display body.
+      // Porthole recess, aligned with the configured door anchor. The
+      // delivered final body sits lower than the Phase-1 placeholder guess.
       const portholeRadius = 112;
+      const porthole = hub.machine.doorAnchor;
       body.fillStyle(
         mixColor(theme.palette.boneShadow, theme.palette.bg, 0.25),
         1,
       );
-      body.fillCircle(x, y - 180, portholeRadius);
+      body.fillCircle(porthole.x, porthole.y, portholeRadius);
       body.lineStyle(5, ink, 0.7);
-      body.strokeCircle(x, y - 180, portholeRadius);
+      body.strokeCircle(porthole.x, porthole.y, portholeRadius);
 
       // Plinth where the machine meets the floor.
       body.fillStyle(
@@ -515,7 +646,7 @@ export class HubScene extends Phaser.Scene {
     // The placeholder body is drawn at display size, so the porthole radius is
     // a fixed display value. Final-art door/drum images use machine.scale.
     const doorRadius = 88;
-    if (isFinalAsset(doorAsset)) {
+    if (this.isUsableAsset(doorAsset)) {
       this.door = this.add
         .image(hub.machine.doorAnchor.x, hub.machine.doorAnchor.y, textureKey(doorAsset.id))
         .setDepth(4)
@@ -533,7 +664,7 @@ export class HubScene extends Phaser.Scene {
         .setDepth(4);
     }
 
-    if (isFinalAsset(drumAsset)) {
+    if (this.isUsableAsset(drumAsset)) {
       this.drum = this.add
         .image(hub.machine.drumAnchor.x, hub.machine.drumAnchor.y, textureKey(drumAsset.id))
         .setDepth(3)
@@ -578,44 +709,64 @@ export class HubScene extends Phaser.Scene {
       this.drum = drum;
     }
 
+    // The procedural body keeps the Phase-1 control housing; the final body
+    // uses the delivered screen rect from hub.json.
+    const screen = hasFinalBody
+      ? hub.machine.screen
+      : { x: x - 125, y: y - 420, width: 250, height: 64 };
+
     this.screenGlow = this.add
       .rectangle(
-        hub.machine.screen.x + hub.machine.screen.width / 2,
-        hub.machine.screen.y + hub.machine.screen.height / 2,
-        hub.machine.screen.width,
-        hub.machine.screen.height,
+        screen.x + screen.width / 2,
+        screen.y + screen.height / 2,
+        screen.width,
+        screen.height,
         colorNumber(theme.palette.joint),
-        0.16,
+        hasFinalBody ? 0.12 : 0.16,
       )
       .setStrokeStyle(3, colorNumber(theme.palette.joint), 0.5)
       .setDepth(3);
 
     this.screenLabel = this.add
       .text(
-        hub.machine.screen.x + 14,
-        hub.machine.screen.y + hub.machine.screen.height / 2,
+        screen.x + (hasFinalBody ? 8 : 14),
+        screen.y + screen.height / 2,
         "LOAD A CYCLE",
         {
           fontFamily: theme.fonts.ui,
-          fontSize: "12px",
+          fontSize: hasFinalBody ? "10px" : "12px",
           color: theme.palette.joint,
           fontStyle: "bold",
-          letterSpacing: 1,
+          letterSpacing: hasFinalBody ? 0 : 1,
         },
       )
       .setOrigin(0, 0.5)
       .setDepth(6);
 
-    this.add
-      .text(x, y - 448, "SHRINK-O-MATIC", {
-        fontFamily: theme.fonts.display,
-        fontSize: "22px",
-        color: theme.palette.bone,
-        fontStyle: "bold",
-        letterSpacing: 2,
-      })
-      .setOrigin(0.5)
-      .setDepth(6);
+    if (hasFinalBody && hub.machine.nameplate) {
+      const plate = hub.machine.nameplate;
+      this.add
+        .text(plate.x + plate.width / 2, plate.y + plate.height / 2, "SHRINK-O-MATIC", {
+          fontFamily: theme.fonts.ui,
+          fontSize: "8px",
+          color: theme.palette.applianceShadow ?? theme.palette.bg,
+          fontStyle: "bold",
+          letterSpacing: 0,
+        })
+        .setOrigin(0.5)
+        .setDepth(6);
+    } else if (!hasFinalBody) {
+      this.add
+        .text(x, y - 448, "SHRINK-O-MATIC", {
+          fontFamily: theme.fonts.display,
+          fontSize: "22px",
+          color: theme.palette.bone,
+          fontStyle: "bold",
+          letterSpacing: 2,
+        })
+        .setOrigin(0.5)
+        .setDepth(6);
+    }
 
     if (!hasFinalBody) {
       // Start button beside the cycle display, plus a small vent.
@@ -647,7 +798,7 @@ export class HubScene extends Phaser.Scene {
     const { hub, theme, assets } = this.config;
     const asset = assets.sprite(hub.player.civilian);
     const idle = hub.player.idle;
-    if (isFinalAsset(asset)) {
+    if (this.isUsableAsset(asset)) {
       const image = this.add
         .image(idle.x, idle.y, textureKey(asset.id))
         .setOrigin(0.5, 1)
@@ -712,7 +863,7 @@ export class HubScene extends Phaser.Scene {
     const { hub, theme, assets } = this.config;
     const asset = assets.sprite(hub.player.astronaut);
     const exit = hub.player.exit;
-    if (isFinalAsset(asset)) {
+    if (this.isUsableAsset(asset)) {
       this.tinyAstronaut = this.add
         .image(exit.x, exit.y, textureKey(asset.id))
         .setOrigin(0.5, 1)
@@ -725,7 +876,7 @@ export class HubScene extends Phaser.Scene {
 
     const container = this.add
       .container(exit.x, exit.y)
-      .setScale(hub.player.tinyScale)
+      .setScale(0.35)
       .setAlpha(0)
       .setVisible(false)
       .setDepth(9);
@@ -796,6 +947,10 @@ export class HubScene extends Phaser.Scene {
     this.drum = null;
     this.screenGlow = null;
     this.screenLabel = null;
+    this.cartridgeImages = null;
+    this.cartridgeGlow = null;
+    this.failedTextures.clear();
+    this.hasFinalBackground = false;
   }
 }
 

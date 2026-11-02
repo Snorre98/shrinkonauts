@@ -77,3 +77,6 @@ art-source/nanobanan/keyed/
 *.seed
 /tmp/
 /temp/
+
+# Raw M3.5 hub delivery batch; processed exports live under shared/.
+art-source/nanobanan/new-main-menu/

@@ -47,3 +47,22 @@ runtime.
 Run **Batch 0 — the bathroom scene style anchor** and judge it at 1280×720 with
 the DOM panel over the right third. If that gate passes, the rest of the pack
 should stay coherent.
+
+## Integration status (2026-11-02)
+
+The delivered `new-main-menu` batch is wired into the bathroom hub. The scene
+plate is shifted 138 display px left (296 source px crop plus a matching
+right-side dark pad) to align the baked alcove with the locked machine; the
+scene keeps the single Phase-1 background layer and is exempt from palette
+quantisation. The machine, door, drum, civilian idle, poster, cartridges,
+cycle-card icons, basket, plush, and P1 tiny astronaut are wired. The logo
+remains a Silkscreen fallback because the delivered plate has a washer baked
+behind the wordmark.
+
+Deferred or manifest-only: civilian walk sheet (not delivered), toy astronaut
+(not delivered), audio (not delivered), detergent bottles (baked shelf bottles
+already exist), and the towel (the cleaned 11×32 source does not read at 2×).
+See [`../../art-source/nanobanan/README.md`](../../art-source/nanobanan/README.md)
+for the processing commands, composition deviations, and licence note, and
+[`../../screenshots/m3.5-hub-final.png`](../../screenshots/m3.5-hub-final.png)
+for the 1280×720 contact sheet.

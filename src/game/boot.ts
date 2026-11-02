@@ -62,7 +62,11 @@ import {
   selectedPack,
   type AppState,
 } from "./app-state";
-import { parseAssetMode, modeLabel, type AssetMode } from "./asset-mode";
+import {
+  modeLabel,
+  resolveAssetMode,
+  type AssetMode,
+} from "./asset-mode";
 import { GameRuntime, type AudioPort } from "./runtime";
 
 export interface BootOptions {
@@ -249,7 +253,7 @@ export class AppController {
   }
 
   async boot(): Promise<void> {
-    this.mode = parseAssetMode(this.search);
+    this.mode = resolveAssetMode(this.search);
     this.saveData = createSave();
 
     const catalog = await loadPackCatalog(
@@ -270,8 +274,10 @@ export class AppController {
     clearUiMaterialStyles();
     document.title = "Shrinkonauts — The Bathroom";
 
+    const hubFinalManifest =
+      this.mode === "placeholder" ? null : this.hubContent.finalManifest;
     this.hubAssets = createAssets({
-      finalManifest: this.hubContent.finalManifest,
+      finalManifest: hubFinalManifest,
       packManifest: this.hubContent.placeholderManifest,
       placeholder: new PlaceholderProvider({
         palette: this.hubContent.theme.palette,
@@ -294,7 +300,7 @@ export class AppController {
     }
     for (const issue of this.hubAssets.validate(
       hubIds,
-      this.hubContent.finalManifest ?? undefined,
+      hubFinalManifest ?? undefined,
     ).issues) {
       this.warnings.push(`${issue.code}: ${issue.message}`);
     }
@@ -396,16 +402,23 @@ export class AppController {
     const entry = selectedPack(this.state);
     const hasSave = entry ? this.saveData.hasRun(entry.id) : false;
     const start = canStart(this.state, hasSave);
-    const packs = this.catalogData.packs.map((pack) => ({
-      id: pack.id,
-      title: pack.title,
-      subtitle: pack.subtitle ?? null,
-      description: pack.description ?? null,
-      status: pack.status,
-      online: pack.online,
-      selected: pack.id === this.state?.selectedPackId,
-      hasSave: this.saveData.hasRun(pack.id),
-    }));
+    const packs = this.catalogData.packs.map((pack) => {
+      const iconId = this.hubContent.theme.ui.assets[pack.id];
+      const icon = iconId ? this.hubAssets.image(iconId) : undefined;
+      return {
+        id: pack.id,
+        title: pack.title,
+        subtitle: pack.subtitle ?? null,
+        description: pack.description ?? null,
+        status: pack.status,
+        online: pack.online,
+        selected: pack.id === this.state?.selectedPackId,
+        hasSave: this.saveData.hasRun(pack.id),
+        ...(icon && icon.source !== "placeholder" && icon.src
+          ? { iconSrc: icon.src }
+          : {}),
+      };
+    });
     const view: HubView = {
       phase:
         this.state.phase === "boot"

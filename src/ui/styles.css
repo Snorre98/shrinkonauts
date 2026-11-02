@@ -1557,6 +1557,23 @@ kbd {
 
 .hub-card__title-row {
   display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.hub-card__icon {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid color-mix(in srgb, var(--color-bone) 24%, transparent);
+  background: var(--color-bg);
+  image-rendering: pixelated;
+}
+
+.hub-card__title-group {
+  display: flex;
+  flex: 1;
+  min-width: 0;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.35rem;
@@ -1846,6 +1863,13 @@ kbd {
   letter-spacing: 0.12em;
   text-align: center;
   pointer-events: none;
+}
+
+@media (max-width: 1100px) {
+  /* Keep the card titles readable when the two-column panel narrows. */
+  .hub-card__icon {
+    display: none;
+  }
 }
 
 @media (max-width: 900px) {

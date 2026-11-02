@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.laundry.basket",
+  "source": {
+    "path": "art-source/nanobanan/keyed/hub-laundry-basket.png",
+    "width": 1870,
+    "height": 1412
+  },
+  "crop": null,
+  "masks": [],
+  "cell": {
+    "width": 32,
+    "height": 24
+  },
+  "margin": 0,
+  "align": "bottom-center",
+  "anchor": null,
+  "fit": {
+    "sourceBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 1870,
+      "height": 1412
+    },
+    "fit": {
+      "width": 32,
+      "height": 24,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "margins": {
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    }
+  },
+  "quantized": true,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink",
+    "appliance"
+  ],
+  "palette": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 565
+  },
+  "bytes": 1628,
+  "maxBytes": 8192,
+  "output": "public/hub/bathroom/shared/sprites/laundry-basket.png",
+  "note": null
+}

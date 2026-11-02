@@ -4,7 +4,7 @@ import { parseManifest } from "../src/assets/manifest";
 import { createAssets } from "../src/assets/assets";
 import type { AssetManifest } from "../src/assets";
 import { silentLogger } from "../src/core/logger";
-import { parseAssetMode } from "../src/game/asset-mode";
+import { parseAssetMode, resolveAssetMode } from "../src/game/asset-mode";
 import {
   collectRoomAssetIds,
   collectThemeAssetIds,
@@ -162,6 +162,10 @@ describe("dev room content", () => {
     expect(parseAssetMode("?assets=placeholder")).toBe("placeholder");
     expect(parseAssetMode("?assets=unknown")).toBe("placeholder");
     expect(parseAssetMode("")).toBe("placeholder");
+    expect(resolveAssetMode("")).toBe("final");
+    expect(resolveAssetMode("?assets=final")).toBe("final");
+    expect(resolveAssetMode("?assets=placeholder")).toBe("placeholder");
+    expect(resolveAssetMode("?assets=unknown")).toBe("placeholder");
   });
 });
 

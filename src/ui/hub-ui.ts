@@ -267,9 +267,20 @@ export function mountHubUi(
       });
       const body = el("span", "hub-card__body");
       const titleRow = el("span", "hub-card__title-row");
+      if (pack.iconSrc) {
+        const icon = el("img", "hub-card__icon");
+        icon.src = pack.iconSrc;
+        icon.alt = "";
+        icon.width = 32;
+        icon.height = 32;
+        icon.decoding = "async";
+        titleRow.append(icon);
+      }
+      const titleGroup = el("span", "hub-card__title-group");
       const cardTitle = el("span", "hub-card__title", pack.title);
       const badge = el("span", "hub-card__status", statusLabel(pack.status));
-      titleRow.append(cardTitle, badge);
+      titleGroup.append(cardTitle, badge);
+      titleRow.append(titleGroup);
       const cardSubtitle = el(
         "span",
         "hub-card__subtitle",

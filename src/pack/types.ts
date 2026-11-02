@@ -204,6 +204,10 @@ export interface ThemePalette {
   orange?: string;
   orangeDark?: string;
   orangeLight?: string;
+  /** Hub-only cool appliance ramp. Do not use in M3 gameplay assets. */
+  appliance?: string;
+  applianceShadow?: string;
+  applianceHighlight?: string;
 }
 
 export interface ThemeFonts {
