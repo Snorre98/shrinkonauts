@@ -1198,9 +1198,22 @@ kbd {
 }
 
 .feedback-surface--playerCaption {
-  max-width: min(20rem, 66vw);
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  max-width: min(16rem, 60vw);
   border-radius: 0;
-  padding: 0.35rem 0.65rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.feedback-surface--playerCaption .feedback-surface__header {
+  flex: none;
+  margin-bottom: 0;
+}
+
+.feedback-surface--playerCaption .feedback-surface__text {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .feedback-surface--speechBubble {
@@ -1239,6 +1252,26 @@ kbd {
   padding: 0.3rem 0.5rem;
   border-radius: 0;
   opacity: 0.94;
+}
+
+/* Compact world-space chrome. Body text keeps its normal size; only the
+   padding, width, and header spacing shrink. HUD/modal surfaces are untouched. */
+.feedback-surface--speechBubble,
+.feedback-surface--prompt,
+.feedback-surface--stateSwap,
+.feedback-surface--socketFill,
+.feedback-surface--outline,
+.feedback-surface--pathGlow {
+  padding: 0.3rem 0.5rem;
+  max-width: min(18rem, 70vw);
+}
+
+.feedback-surface--speechBubble {
+  max-width: min(20rem, 72vw);
+}
+
+.feedback-surface--speechBubble .feedback-surface__header {
+  margin-bottom: 0.1rem;
 }
 
 .feedback-surface__header {

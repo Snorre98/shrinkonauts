@@ -43,7 +43,7 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Concept scan and concept log | Working |
 | Node Run and Endplate Ferry puzzles | Working |
 | Capability feedback surfaces and attributed cues | Working |
-| Beat progress and stuck hint/reset affordance | Working |
+| Beat progress and requested hint/reset affordance | Working |
 | Composable cosmetic effects and tile visuals | Working |
 | Material/pattern catalog, tile grids, autotiling, variants | Working |
 | Atlas assets, named regions, frame refs, placeholder atlas | Working |
@@ -217,10 +217,12 @@ restoreRun()
 ```
 
 `step(dt, input)` advances the simulation, routes soft-surface input, drains
-one-shot actions, checks checkpoints/triggers/exits, ticks the feedback director,
-updates the stuck affordance, and returns gameplay cues (`jump`, `land`, `dash`).
-Actions are latched by the input source, so an `E` tap is consumed exactly once
-by the next fixed step even when several render frames occur first.
+one-shot actions, checks checkpoints/triggers/exits, and ticks the feedback
+director. It returns gameplay cues (`jump`, `land`, `dash`). Scan requests inside
+an authored info area open the shared hint/reset affordance for a short TTL;
+there is no automatic stuck popup. Actions are latched by the input source, so
+an `E` tap is consumed exactly once by the next fixed step even when several
+render frames occur first.
 
 ### State machine
 
@@ -376,7 +378,7 @@ talk, scan, open a gate, or cross the exit. The tether keeps the pair within
 560 px; when they separate further, P2 is pulled toward P1 so the shared camera
 cannot lose a player. `P` only changes P2 at a checkpoint, and rejoining places
 P2 beside P1 at that checkpoint. Soft-surface routing is owner-aware: hard
-overlays consume all input; conversation/stuck surfaces consume only their
+overlays consume all input; conversation/help surfaces consume only their
 owner's (or shared) UI actions.
 
 ## Save format

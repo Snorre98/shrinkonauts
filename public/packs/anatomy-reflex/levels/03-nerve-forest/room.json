@@ -231,5 +231,15 @@
       "puzzleId": "puzzle-node-run"
     }
   ],
-  "triggers": []
+  "triggers": [],
+  "infoAreas": [
+    {
+      "id": "info-nerve-forest",
+      "x": 6,
+      "y": 17,
+      "width": 32,
+      "height": 4,
+      "puzzleId": "puzzle-node-run"
+    }
+  ]
 }

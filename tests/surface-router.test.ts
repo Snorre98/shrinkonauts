@@ -73,7 +73,7 @@ describe("surface input router", () => {
   });
 
   it("lets either player drive a shared surface", () => {
-    const shared = surface("fb:stuck", "shared");
+    const shared = surface("fb:help", "shared");
     for (const player of ["p1", "p2"] as const) {
       expect(
         routeSurfaceInput(context([shared]), player, {

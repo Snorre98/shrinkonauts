@@ -47,6 +47,8 @@ Playwright's `channel: "chrome"`. It never downloads a bundled browser.
 
 Live build: <https://snorre98.github.io/shrinkonauts/>
 
+GDD asset gallery: <https://snorre98.github.io/shrinkonauts/gdd/>
+
 The Vite `base` is `./` and the runtime resolves content from
 `import.meta.env.BASE_URL`, so the same build works from the project subpath
 without a `/shrinkonauts/` base override.

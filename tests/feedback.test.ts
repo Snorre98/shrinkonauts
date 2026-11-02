@@ -332,6 +332,72 @@ describe("feedback facts and cues", () => {
     expect(frame.tick).toBe(2);
   });
 
+  it("keeps one player-attached cue per player and shows the newest", () => {
+    const director = createFeedbackDirector();
+    director.ingestAll([
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "pickup",
+        result: "rejected",
+        reason: "out-of-range",
+        text: "First P1 cue",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "drop",
+        result: "accepted",
+        text: "Newest P1 cue",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p2",
+        action: "pickup",
+        result: "accepted",
+        text: "P2 cue",
+      },
+    ]);
+    director.tick(1 / 60);
+    const frame = director.frame();
+    const p1 = frame.cues.filter(
+      (cue) => cue.anchor.kind === "player" && cue.anchor.playerId === "p1",
+    );
+    const p2 = frame.cues.filter(
+      (cue) => cue.anchor.kind === "player" && cue.anchor.playerId === "p2",
+    );
+
+    expect(p1).toHaveLength(1);
+    expect(p1[0]?.content.text).toBe("Newest P1 cue");
+    expect(p2).toHaveLength(1);
+    expect(p2[0]?.content.text).toBe("P2 cue");
+  });
+
+  it("does not apply the player slot to entity speech bubbles", () => {
+    const director = createFeedbackDirector();
+    director.ingestAll([
+      {
+        kind: "conversation.start",
+        actor: "p1",
+        entityId: "agent-muscle",
+        dialogueId: "dialogue-muscle",
+      },
+      {
+        kind: "conversation.start",
+        actor: "p2",
+        entityId: "agent-muscle",
+        dialogueId: "dialogue-muscle",
+      },
+    ]);
+    director.tick(1 / 60);
+    const bubbles = director
+      .frame()
+      .cues.filter((cue) => cue.presentation === "speechBubble");
+
+    expect(bubbles).toHaveLength(2);
+    expect(bubbles.map((cue) => cue.owner).sort()).toEqual(["p1", "p2"]);
+  });
+
   it("creates player captions and target bubbles for action outcomes", () => {
     const document = readPuzzle("04-muscle-effector");
     const director = createFeedbackDirector();
@@ -400,6 +466,55 @@ describe("feedback facts and cues", () => {
     director.removeSurface(spec.id);
     director.tick(1 / 60);
     expect(director.frame().surfaces).toEqual([]);
+  });
+
+  it("expires non-sticky runtime-owned surfaces and refreshes on upsert", () => {
+    const director = createFeedbackDirector();
+    const spec = {
+      id: "fb:help:test",
+      capability: "affordance" as const,
+      source: { kind: "node" as const, id: "puzzle" },
+      actor: null,
+      owner: "shared" as const,
+      audience: "both" as const,
+      anchor: { kind: "hud" as const, slot: "bottom" as const },
+      presentation: "hudStatus" as const,
+      content: { text: "Need a nudge?" },
+      state: "blocked" as const,
+      lifetime: { sticky: false, ttlTicks: 3 },
+    };
+    director.putSurface(spec);
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
+
+    director.tick(1 / 60);
+    director.putSurface(spec);
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
+
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
+    director.tick(1 / 60);
+    expect(director.frame().surfaces).toEqual([]);
+  });
+
+  it("keeps sticky runtime-owned surfaces", () => {
+    const director = createFeedbackDirector();
+    director.putSurface({
+      id: "fb:sticky:test",
+      capability: "affordance",
+      source: { kind: "node", id: "puzzle" },
+      actor: null,
+      owner: "shared",
+      audience: "both",
+      anchor: { kind: "hud", slot: "bottom" },
+      presentation: "hudStatus",
+      content: { text: "Sticky" },
+      state: "active",
+      lifetime: { sticky: true },
+    });
+    for (let index = 0; index < 10; index += 1) director.tick(1 / 60);
+    expect(director.frame().surfaces).toHaveLength(1);
   });
 
   it("keeps sticky projections from multiple puzzles", () => {

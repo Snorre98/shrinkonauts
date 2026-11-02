@@ -1,7 +1,7 @@
 # Interface contract
 
 Public operations introduced or changed by the puzzle-engine, M1.75 feedback, and
-M1.8 material/pattern work. Source ADRs: ADR-0001–0017. Existing operations keep
+M1.8 material/pattern work. Source ADRs: ADR-0001–0019. Existing operations keep
 their current signatures.
 
 ## Implementation status
@@ -12,6 +12,8 @@ their current signatures.
 | Feedback director, surfaces, cues, descriptors, effects | Implemented |
 | World effect/tile visual ports | Implemented |
 | Entity conversations and per-player surface routing | Implemented |
+| Player-attached caption slot and surface TTL | Implemented |
+| Request-gated shared help and room info areas | Implemented |
 | Level `feedback` content block | Implemented |
 | Feedback validation vocabulary injection | Implemented |
 | Material/pattern catalog, tile grids, autotiling, variants | Implemented; `wang` deferred |
@@ -71,6 +73,29 @@ type LevelTileTarget =
 
 All feedback fields are optional. A level without `feedback` parses and runs
 with capability defaults.
+
+Rooms may declare shared-help relevance zones:
+
+```ts
+interface RoomInfoArea {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  puzzleId?: string;
+  ttlTicks?: number;
+}
+
+interface RoomDocument {
+  // existing fields
+  infoAreas?: RoomInfoArea[];
+}
+```
+
+`scan` is the deliberate information request. It scans an unrevealed target
+first; otherwise, if the player is inside an info area, it opens the shared help
+surface. The surface is transient and never appears from an idle timer.
 
 ```ts
 interface FeedbackValidationVocabulary {
@@ -242,6 +267,10 @@ interface FeedbackSurface {
 `FeedbackCue` adds `seq`, `cause`, `ttlTicks`, and `remainingTicks`. A persistent
 surface answers “what is true now?”; a cue answers “what just happened?” and is
 deduplicated by cause.
+
+Player-anchored transient cues occupy one slot per player. A newer cue evicts
+the current player caption; entity speech bubbles and HUD cues are not affected.
+Runtime-owned non-sticky surfaces expire after their `ttlTicks`.
 
 ### 3.3 Director
 

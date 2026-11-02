@@ -411,6 +411,9 @@ The exact interface is in `src/pack/types.ts`. Key rules:
 - `background.layers` ordered sky → far → mid → near.
 - `spawns.player1` and `spawns.player2`.
 - `checkpoints`, `exits`, `entities`, `triggers`.
+- `infoAreas` are optional tile-coordinate help zones. A player inside one can
+  press scan to request the shared hint/reset affordance; it never appears
+  automatically.
 - Entity types are a closed registry; read `RoomEntityType`.
 - `components` are `body`, `prop`, `receptor`, `pulseSource`, `gate`,
   `anchors`, `material`.

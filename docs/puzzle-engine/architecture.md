@@ -62,6 +62,7 @@ current branch.
 | Q4 | Backward compatibility | Given an existing 1.0 puzzle, 1.0 level, or 2.0 save, when it is loaded by the upgraded runtime, then its old behavior is preserved and optional feedback/conversation fields default off. | ADR-0008, ADR-0011; `schema-compatibility.feature`, `entity-conversations.feature` |
 | Q5 | Testability and observability | Given a surface, cue, effect, conversation, or tile visual change, when it is produced, then the pure feedback frame and simulation state expose it without Phaser/Matter, and the browser test can verify the rendered room, live region, and evidence export. | ADR-0001, ADR-0009–0017; all behavior contracts |
 | Q11 | Material language without gameplay authority | Given a room mixes materials, patterns, variants, or UI slots, when it is validated and rendered, then its visual language is data-driven and deterministic, while `layers.tiles` alone decides collision and materials add no save fields. | ADR-0014–0017; `material-patterns.feature` |
+| Q12 | Deliberate information request | Given a player is inside an authored info area, when they press scan and no unrevealed scan target is in range, then the shared help surface appears temporarily; it never appears from an idle or proximity timer, and choosing a hint or reset follows the existing hint/reset behavior. | ADR-0019; `requested-hints.feature` |
 
 ### 1.3 Stakeholders
 
@@ -431,7 +432,7 @@ unchanged and do not require the Worker. See
 | Module sealing / public APIs | ADR-0001; [`contracts/module-boundaries.md`](contracts/module-boundaries.md) |
 | Gate and prop state ownership | Puzzle graph owns logical state; world owns bodies; `GameRuntime` is the single synchronizer |
 | Schema evolution | Optional fields + minor versions; old content/saves default off (ADR-0008) |
-| Feedback | State-projected persistent surfaces plus sequenced, deduplicated transient cues; capability descriptors; co-op attribution; entity conversations; cosmetic effect plans (ADR-0009–0013) |
+| Feedback | State-projected persistent surfaces plus sequenced, deduplicated transient cues; capability descriptors; co-op attribution; entity conversations; cosmetic effect plans; player caption slots; request-gated shared help (ADR-0009–0013, ADR-0018–0019) |
 | No-fail recovery | Reset, checkpoint, and save/restore restore valid state; blocked actions never consume evidence. Side return is deferred. |
 | Presentation as projection | Puzzle state drives sticky feedback surfaces; `RoomSimulation` prop state, `WorldEffectPlan`, material grids, and pattern bindings drive `RoomScene`; `world` imports no feedback. |
 | Material and pattern layer | `materials` resolves visual roles, autotile masks, variants, and cached pattern resources; `layers.tiles` remains the sole collision authority; atlases stay storage-agnostic behind `AtlasFrameRef`. |
@@ -455,6 +456,8 @@ unchanged and do not require the Worker. See
 | [0011](adr/0011-entity-conversations.md) | Entity conversations replace the global dialogue overlay | Accepted |
 | [0012](adr/0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Accepted |
 | [0013](adr/0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects, composable effect plans, and accessibility | Accepted |
+| [0018](adr/0018-player-attached-feedback-slot.md) | One player-attached caption slot per player and compact world surfaces | Accepted |
+| [0019](adr/0019-request-gated-shared-help.md) | Request-gated shared help surfaces and authored info areas | Accepted |
 
 Material and pattern architecture:
 
@@ -468,8 +471,9 @@ Material and pattern architecture:
 ADR-0009 and ADR-0010 supersede the old "feedback is a toast / no new UI
 surface" constraints in §2, §4 (strategy item 4), and §8. ADR-0013 amends
 ADR-0003's no-animation constraint; ADR-0011 adds the optional conversation save
-field. Acceptance is not implementation: see the status table above for the
-deferred M1.5 capabilities.
+field. ADR-0018 amends ADR-0010's player-caption stacking rule. ADR-0019 amends
+ADR-0009's automatic stuck-affordance trigger. Acceptance is not implementation:
+see the status table above for the deferred M1.5 capabilities.
 
 Implementation: [`feedback-implementation-plan.md`](feedback-implementation-plan.md)
 and the [M1.75 milestone](../m1.75/README.md).
@@ -533,12 +537,14 @@ flowchart TD
 | Q9 | A new node type requires one descriptor; every event is cued or explicitly silent | `capability-coverage.feature` |
 | Q10 | Effects never mutate state or collision; reduced motion preserves text and state | `cosmetic-effects.feature` |
 | Q11 | Material/pattern changes are visual and deterministic; collision, puzzle, and save state stay owned by their existing modules | `material-patterns.feature` |
+| Q12 | Shared help is request-only, info-area gated, and temporary | `requested-hints.feature` |
 
 ### 10.2b Functional behavior contracts
 
 | Feature file | Concern | Source ADRs | Status |
 |---|---|---|---|
-| `behaviors/feedback-surfaces.feature` | Persistent state, transient cues, ownership, anchors, input | 0009, 0010, 0012 | Implemented |
+| `behaviors/feedback-surfaces.feature` | Persistent state, transient cues, ownership, anchors, input, player caption slot | 0009, 0010, 0012, 0018 | Implemented |
+| `behaviors/requested-hints.feature` | Request-only shared help, info areas, temporary surface | 0019 | Implemented |
 | `behaviors/entity-conversations.feature` | Concurrent conversations, save/restore, recovery | 0011 | Implemented |
 | `behaviors/capability-coverage.feature` | Descriptor coverage, rejection reasons, event coverage | 0012 | Implemented |
 | `behaviors/cosmetic-effects.feature` | Direction/path/follow/cancel, tile visuals, reduced motion | 0013 | Implemented |
@@ -583,6 +589,7 @@ The documentation set is complete when:
 |---|---|
 | Feedback surface | A persistent, state-projected UI element owned by a player or shared; rebuilt from puzzle/world state. |
 | Feedback cue | A transient, sequenced response to a fact; deduplicated by cause and expired by TTL. |
+| Player caption slot | The single player-anchored transient cue allowed for one player at a time; newest wins. Entity bubbles are not affected. |
 | Capability descriptor | The code table mapping a puzzle node/link type to feedback capabilities, projection, cues, and default effects. |
 | Effect plan | A cosmetic composition of closed visual operators, paths, timing, binding, and cancellation; never gameplay state. |
 | Conversation surface | A `speechBubble` surface owned by the interacting player and anchored to an entity. |

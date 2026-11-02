@@ -624,8 +624,8 @@ export interface FeedbackDirector {
   projectSticky(input: FeedbackProjection): void;
   /**
    * Create or replace a runtime-owned persistent surface (for example a
-   * conversation or the stuck hint affordance). This writes immediately so a
-   * direct interaction can be observed before the next fixed tick.
+   * conversation or the requested-help affordance). This writes immediately so
+   * a direct interaction can be observed before the next fixed tick.
    */
   putSurface(spec: FeedbackSurfaceSpec & { id: string }): void;
   /** Remove a runtime-owned surface. */

@@ -23,6 +23,7 @@ import {
   Reason,
   SourceRef,
   State,
+  SurfaceTtl,
   Visual,
 } from "./components";
 import { deriveBeats } from "./beats";
@@ -45,6 +46,7 @@ import type {
   Direction,
   EffectInstance,
   EffectPlan,
+  FeedbackAnchor,
   FeedbackBeat,
   FeedbackCue,
   FeedbackCueSpec,
@@ -73,6 +75,14 @@ function compareText(left: string, right: string): number {
 
 function compareEffects(left: EffectInstance, right: EffectInstance): number {
   return compareText(left.id, right.id);
+}
+
+/**
+ * Player-anchored captions share one slot per player. Entity-anchored bubbles
+ * are deliberately excluded: two players may talk to the same entity at once.
+ */
+function playerCaptionSlot(anchor: FeedbackAnchor): string | null {
+  return anchor.kind === "player" ? `player:${anchor.playerId}` : null;
 }
 
 function collectAnchors(instance: EffectInstance): AnchorRef[] {
@@ -183,6 +193,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
 
   private readonly stickyIds = new Set<string>();
   private readonly cueEntityByCause = new Map<string, EntityId>();
+  private readonly cueEntityByPlayerSlot = new Map<string, EntityId>();
   private readonly effectSignatures = new Map<string, string>();
   private beats: FeedbackBeat[] = [];
   private readonly documents = new Map<string, PuzzleDocument>();
@@ -228,10 +239,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   }
 
   removeSurface(surfaceId: string): void {
-    this.world.despawn(createEntityId(surfaceId));
-    this.stickyIds.delete(surfaceId);
-    this.effectSignatures.delete(surfaceId);
-    this.cancelEffectsForOwner(surfaceId);
+    this.despawnSurface(createEntityId(surfaceId));
   }
 
   tick(dt: number): void {
@@ -259,6 +267,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     this.pendingProjections.clear();
     this.stickyIds.clear();
     this.cueEntityByCause.clear();
+    this.cueEntityByPlayerSlot.clear();
     this.effectSignatures.clear();
     this.beats = [];
     this.documents.clear();
@@ -498,6 +507,19 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     this.world.add(entity, Accessibility, surface.a11y);
     this.world.add(entity, State, surface.state);
 
+    const ttlTicks =
+      surface.lifetime.sticky === false
+        ? surface.lifetime.ttlTicks
+        : undefined;
+    if (ttlTicks !== undefined && ttlTicks > 0) {
+      this.world.add(entity, SurfaceTtl, {
+        ttlTicks,
+        remainingTicks: ttlTicks,
+      });
+    } else {
+      this.world.remove(entity, SurfaceTtl);
+    }
+
     if (surface.reason) {
       this.world.add(entity, Reason, surface.reason);
     } else {
@@ -559,10 +581,15 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   private addCue(spec: FeedbackCueSpec): void {
     const existing = this.cueEntityByCause.get(spec.cause);
     if (existing) {
-      this.world.despawn(existing);
-      this.cueEntityByCause.delete(spec.cause);
-      this.effectSignatures.delete(existing);
-      this.cancelEffectsForOwner(existing);
+      this.despawnCue(existing);
+    }
+
+    const playerSlot = playerCaptionSlot(spec.anchor);
+    if (playerSlot) {
+      const occupant = this.cueEntityByPlayerSlot.get(playerSlot);
+      if (occupant) {
+        this.despawnCue(occupant);
+      }
     }
 
     const seq = this.nextCueSeq;
@@ -632,19 +659,32 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     });
 
     this.cueEntityByCause.set(cue.cause, entity);
+    if (playerSlot) {
+      this.cueEntityByPlayerSlot.set(playerSlot, entity);
+    }
   }
 
   private lifetimeTick(): void {
+    for (const entity of this.world.query(SurfaceTtl)) {
+      const ttl = this.world.get(entity, SurfaceTtl);
+      if (!ttl) continue;
+
+      const remainingTicks = ttl.remainingTicks - 1;
+      if (remainingTicks <= 0) {
+        this.despawnSurface(entity);
+        continue;
+      }
+
+      this.world.add(entity, SurfaceTtl, { ...ttl, remainingTicks });
+    }
+
     for (const entity of this.world.query(CueStateComponent)) {
       const cueState = this.world.get(entity, CueStateComponent);
       if (!cueState) continue;
 
       const remainingTicks = cueState.remainingTicks - 1;
       if (remainingTicks <= 0) {
-        this.world.despawn(entity);
-        this.cueEntityByCause.delete(cueState.cause);
-        this.effectSignatures.delete(entity);
-        this.cancelEffectsForOwner(entity);
+        this.despawnCue(entity);
         continue;
       }
 
@@ -781,6 +821,35 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     }
 
     return false;
+  }
+
+  private despawnCue(entity: EntityId): void {
+    const cueState = this.world.get(entity, CueStateComponent);
+    const anchor = this.world.get(entity, Anchor);
+    this.world.despawn(entity);
+
+    if (
+      cueState &&
+      this.cueEntityByCause.get(cueState.cause) === entity
+    ) {
+      this.cueEntityByCause.delete(cueState.cause);
+    }
+    if (anchor) {
+      const slot = playerCaptionSlot(anchor);
+      if (slot && this.cueEntityByPlayerSlot.get(slot) === entity) {
+        this.cueEntityByPlayerSlot.delete(slot);
+      }
+    }
+
+    this.effectSignatures.delete(entity);
+    this.cancelEffectsForOwner(entity);
+  }
+
+  private despawnSurface(entity: EntityId): void {
+    this.world.despawn(entity);
+    this.stickyIds.delete(entity);
+    this.effectSignatures.delete(entity);
+    this.cancelEffectsForOwner(entity);
   }
 
   private cancelEffectsForOwner(ownerId: string): void {

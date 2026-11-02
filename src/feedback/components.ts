@@ -47,3 +47,9 @@ export const Effects = defineComponent<readonly EffectPlanData[]>(
 
 /** Internal transient-cue metadata. */
 export const CueState = defineComponent<CueStateData>("feedback.cue");
+
+/** Internal TTL bookkeeping for runtime-owned, non-sticky surfaces. */
+export const SurfaceTtl = defineComponent<{
+  ttlTicks: number;
+  remainingTicks: number;
+}>("feedback.surfaceTtl");

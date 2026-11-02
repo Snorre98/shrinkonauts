@@ -326,5 +326,15 @@
       "puzzleId": "puzzle-endplate-ferry"
     }
   ],
-  "triggers": []
+  "triggers": [],
+  "infoAreas": [
+    {
+      "id": "info-endplate-ferry",
+      "x": 10,
+      "y": 17,
+      "width": 18,
+      "height": 4,
+      "puzzleId": "puzzle-endplate-ferry"
+    }
+  ]
 }

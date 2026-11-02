@@ -3,11 +3,11 @@
 Accepted decisions for the `puzzle-engine` upgrade. Each record is immutable;
 supersede with a new ADR rather than editing an accepted one.
 
-**Implementation status is separate from decision status.** ADR-0009–0013 and
-the M1.75 feedback layer are implemented. ADR-0002–0007 are only partially
-implemented in this branch: physical gate bodies, `locked`/`unlock`,
-`requires`/`message`/`linkBlocked`, per-level debrief overrides, and side-level
-travel are deferred. See the status table in
+**Implementation status is separate from decision status.** ADR-0009–0013,
+ADR-0018–0019 and the M1.75 feedback layer are implemented. ADR-0002–0007 are
+only partially implemented in this branch: physical gate bodies,
+`locked`/`unlock`, `requires`/`message`/`linkBlocked`, per-level debrief
+overrides, and side-level travel are deferred. See the status table in
 [`../architecture.md`](../architecture.md) before treating an accepted decision
 as runtime behavior.
 
@@ -31,6 +31,8 @@ as runtime behavior.
 | [0011](0011-entity-conversations.md) | Entity conversations replace the global dialogue overlay | Accepted |
 | [0012](0012-capability-feedback-coverage.md) | Capability-based feedback defaults and coverage | Accepted |
 | [0013](0013-cosmetic-feedback-effects-accessibility.md) | Cosmetic feedback effects, composable effect plans, and accessibility | Accepted |
+| [0018](0018-player-attached-feedback-slot.md) | One player-attached caption slot per player and compact world surfaces | Accepted |
+| [0019](0019-request-gated-shared-help.md) | Request-gated shared help surfaces and authored info areas | Accepted |
 
 ## Material and pattern architecture
 
@@ -46,6 +48,8 @@ as runtime behavior.
 - ADR-0009 amends ADR-0005's "no new UI surface" constraint.
 - ADR-0013 amends ADR-0003's "no animation timelines" and "immediate state
   swaps only" constraints.
+- ADR-0018 amends ADR-0010's stacking rule for player-attached captions.
+- ADR-0019 amends ADR-0009's automatic stuck-affordance trigger.
 
 The amended records stay immutable; these amendment notes are the index entry,
 not edits to ADR-0003 or ADR-0005.

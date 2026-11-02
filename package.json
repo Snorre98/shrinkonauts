@@ -11,6 +11,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:site": "npm run gdd:site && npm run build",
+    "gdd:site": "tsx scripts/gdd-site.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -38,6 +40,7 @@
     "@types/matter-js": "^0.20.2",
     "@types/node": "^24.19.2",
     "@types/pngjs": "^6.0.5",
+    "marked": "^18.1.2",
     "pngjs": "^7.0.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",

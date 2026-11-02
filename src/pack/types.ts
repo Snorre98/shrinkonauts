@@ -218,6 +218,22 @@ export interface RoomTrigger {
   event?: string;
 }
 
+/**
+ * Authored relevance zone for shared help requests. Coordinates are in tiles,
+ * matching room triggers and entities.
+ */
+export interface RoomInfoArea {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Puzzle whose hint is requested; defaults to the active puzzle. */
+  puzzleId?: string;
+  /** Optional display duration for the requested help surface. */
+  ttlTicks?: number;
+}
+
 export interface RoomDocument {
   schemaVersion: string;
   id: string;
@@ -246,6 +262,7 @@ export interface RoomDocument {
   exits?: RoomExit[];
   entities?: RoomEntity[];
   triggers?: RoomTrigger[];
+  infoAreas?: RoomInfoArea[];
   music?: AssetId;
   ambience?: AssetId;
   presentation?: RoomPresentationConfig;

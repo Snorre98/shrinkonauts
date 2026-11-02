@@ -600,3 +600,51 @@ describe("puzzle gate recovery warnings", () => {
     expect(legacy.issues).toEqual([]);
   });
 });
+
+describe("info area validation", () => {
+  const content = loadContent(packDirectory("anatomy-reflex"));
+  const final = packManifest(
+    content.pack.assetManifests.final ?? "assets.final.json",
+  );
+  const placeholder = packManifest(
+    content.pack.assetManifests.placeholder ?? "assets.placeholder.json",
+  );
+
+  function validate(mutate: (copy: PackContent) => void) {
+    const copy = structuredClone(content);
+    mutate(copy);
+    return validatePack({
+      room: primaryRoom(copy),
+      theme: copy.theme,
+      finalManifest: final,
+      packManifest: placeholder,
+      fileExists,
+      content: copy,
+      feedbackVocabulary,
+    });
+  }
+
+  it("rejects info areas outside the room bounds", () => {
+    const result = validate((copy) => {
+      const info = primaryRoom(copy).infoAreas?.[0];
+      if (!info) throw new Error("info area missing");
+      info.x = primaryRoom(copy).width;
+    });
+    expect(result.ok).toBe(false);
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "INFO_AREA_INVALID",
+    );
+  });
+
+  it("rejects info areas that reference a puzzle outside the level", () => {
+    const result = validate((copy) => {
+      const info = primaryRoom(copy).infoAreas?.[0];
+      if (!info) throw new Error("info area missing");
+      info.puzzleId = "puzzle-missing";
+    });
+    expect(result.ok).toBe(false);
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      "INFO_AREA_INVALID",
+    );
+  });
+});

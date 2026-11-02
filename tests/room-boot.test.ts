@@ -102,6 +102,51 @@ describe("dev room content", () => {
     }
   });
 
+  it("parses authored info areas and rejects invalid TTL values", () => {
+    const raw = structuredClone(readJson("room.json")) as Record<string, unknown>;
+    raw.infoAreas = [
+      {
+        id: "info-test",
+        x: 2,
+        y: 25,
+        width: 10,
+        height: 3,
+        ttlTicks: 120,
+      },
+    ];
+    const parsed = parseRoom(raw);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value.infoAreas).toEqual([
+        {
+          id: "info-test",
+          x: 2,
+          y: 25,
+          width: 10,
+          height: 3,
+          ttlTicks: 120,
+        },
+      ]);
+    }
+
+    const invalid = structuredClone(raw);
+    invalid.infoAreas = [
+      {
+        id: "info-test",
+        x: 2,
+        y: 25,
+        width: 10,
+        height: 3,
+        ttlTicks: 0,
+      },
+    ];
+    const rejected = parseRoom(invalid);
+    expect(rejected.ok).toBe(false);
+    if (!rejected.ok) {
+      expect(rejected.error).toContain("ttlTicks must be positive");
+    }
+  });
+
   it("declares every content and player asset ID in the final manifest", () => {
     const declared = new Set(Object.keys(finalManifest.assets));
     for (const id of allIds) {

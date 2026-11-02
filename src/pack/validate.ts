@@ -105,6 +105,7 @@ export type PackIssueCode =
   | "FEEDBACK_TILE_INVALID"
   | "FEEDBACK_LAYOUT_INVALID"
   | "FEEDBACK_VOCABULARY_MISSING"
+  | "INFO_AREA_INVALID"
   | "MATERIALS_SCHEMA_INVALID"
   | "MATERIAL_REFERENCE_MISSING"
   | "MATERIAL_PALETTE_INVALID"
@@ -1672,6 +1673,33 @@ function checkContent(
       if (trigger.dialogueId) scenarioDialogues.add(trigger.dialogueId);
       if (trigger.gateId) referencedGates.add(trigger.gateId);
     }
+    const infoAreaIds = new Set<string>();
+    for (const area of room.infoAreas ?? []) {
+      if (infoAreaIds.has(area.id)) {
+        addIssue(
+          "INFO_AREA_INVALID",
+          `room "${room.id}" has duplicate info area id "${area.id}"`,
+        );
+      }
+      infoAreaIds.add(area.id);
+      if (area.width <= 0 || area.height <= 0) {
+        addIssue(
+          "INFO_AREA_INVALID",
+          `room "${room.id}" info area "${area.id}" must have positive width and height`,
+        );
+      }
+      if (
+        area.x < 0 ||
+        area.y < 0 ||
+        area.x + area.width > room.width ||
+        area.y + area.height > room.height
+      ) {
+        addIssue(
+          "INFO_AREA_INVALID",
+          `room "${room.id}" info area "${area.id}" lies outside the ${room.width}×${room.height} room bounds`,
+        );
+      }
+    }
     for (const entity of room.entities ?? []) {
       if (entity.dialogueId) scenarioDialogues.add(entity.dialogueId);
       if (entity.gateId) referencedGates.add(entity.gateId);
@@ -1703,6 +1731,15 @@ function checkContent(
         "LEVEL_REFERENCE_MISSING",
         `level "${level.id}" references missing room "${level.roomId}"`,
       );
+    } else {
+      for (const area of room.infoAreas ?? []) {
+        if (area.puzzleId && !(level.puzzleIds ?? []).includes(area.puzzleId)) {
+          addIssue(
+            "INFO_AREA_INVALID",
+            `level "${level.id}" info area "${area.id}" references puzzle "${area.puzzleId}" which is not authored by the level`,
+          );
+        }
+      }
     }
 
     if (level.syllabusObjectiveIds.length === 0) {
@@ -1774,7 +1811,7 @@ function checkContent(
 
       if (puzzle.hints.length === 0) {
         addWarning(
-          `puzzle "${puzzle.id}" has no hints; the stuck affordance cannot offer one`,
+          `puzzle "${puzzle.id}" has no hints; the help affordance cannot offer one`,
         );
       }
 

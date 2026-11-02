@@ -1,7 +1,8 @@
 # State machine contract
 
 Explicit states for gates, props, feedback surfaces/cues, effects, conversations,
-and the deferred travel/conditional-link targets. Source ADRs: ADR-0002–0013.
+and the deferred travel/conditional-link targets. Source ADRs: ADR-0002–0013,
+ADR-0018–0019.
 
 Status labels:
 
@@ -72,7 +73,8 @@ Invariants:
 | State | Kind | Meaning |
 |---|---|---|
 | projected | phase | sticky surface rebuilt from puzzle state |
-| runtime-owned | phase | conversation or stuck affordance inserted directly |
+| runtime-owned | phase | conversation or requested-help surface inserted directly |
+| expired | terminal | non-sticky runtime-owned surface reached its TTL |
 | removed | terminal | source state no longer projects the surface |
 
 | From | To | Trigger | Notes |
@@ -80,8 +82,9 @@ Invariants:
 | (none) | projected | `ProjectSticky` | stable ID `fb:<capability>:<sourceId>` |
 | projected | projected | state change | same entity ID is upserted |
 | projected | removed | source disappears/state no longer projects | effect instances cancelled |
-| (none) | runtime-owned | `putSurface` | conversation/stuck surface |
-| runtime-owned | removed | `removeSurface` or conversation close | effect instances cancelled |
+| (none) | runtime-owned | `putSurface` | conversation or requested-help surface |
+| runtime-owned | removed | `removeSurface`, conversation close, solve/reset | effect instances cancelled |
+| runtime-owned | expired | `ttlTicks` reached | non-sticky surfaces only |
 
 Invariants:
 
@@ -90,6 +93,10 @@ Invariants:
 - Sticky surfaces never rely on a toast.
 - Surface ordering is priority descending, then ID.
 - A surface never owns gameplay truth; it only projects state.
+- A non-sticky runtime-owned surface expires after its TTL and does not reappear
+  automatically.
+- Player-anchored transient cues occupy one slot per player; entity and HUD
+  cues may coexist.
 
 ## 4. Feedback cue lifecycle
 
@@ -98,13 +105,17 @@ Invariants:
 | queued | transient | fact ingested in the current tick |
 | announced | transient | visible and eligible for the live region |
 | coalesced | transient | same cause replaced by the newest/highest-priority cue |
+| evicted | transient | replaced by a newer cue in the same player-attached slot |
 | expired | terminal | TTL reached; entity despawned |
 
 | From | To | Trigger | Notes |
 |---|---|---|---|
 | (none) | queued | `ingest`/`ingestAll` | cause key assigned |
 | queued | announced | `IngestFacts`/`tick` | seq increments |
+| queued | coalesced | same cause | highest priority/newest sequence wins |
+| queued | evicted | newer player-attached cue | never announced |
 | announced | coalesced | same cause | highest priority/newest sequence wins |
+| announced | evicted | newer player-attached cue | newest wins; effects cancelled |
 | announced | expired | `LifetimeTick` | TTL in fixed ticks |
 | announced | removed | `reset` or level transition | all feedback state cleared |
 
@@ -112,6 +123,7 @@ Invariants:
 
 - Cue sequence is monotonic within a runtime.
 - A cue is deduplicated by cause, not by text.
+- At most one player-anchored transient cue exists per player.
 - Cues with a player actor carry actor attribution in text and accessibility.
 - Cues expire; persistent state does not.
 

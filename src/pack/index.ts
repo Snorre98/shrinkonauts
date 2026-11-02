@@ -158,6 +158,7 @@ export type {
   RoomEntityComponents,
   RoomEntityType,
   RoomExit,
+  RoomInfoArea,
   RoomPresentationConfig,
   RoomPropertyValue,
   RoomSpawn,

@@ -1,7 +1,7 @@
 # Data model contract
 
 Precise spec for the durable and content formats changed by the engine upgrade.
-Source ADRs: ADR-0002–0013. The implementation status table in
+Source ADRs: ADR-0002–0019. The implementation status table in
 [`architecture.md`](../architecture.md) is authoritative where an accepted ADR
 target is deferred.
 
@@ -133,7 +133,42 @@ the next authored level.
 If `body` is absent, the gate is visual-only. Logical gate state is implemented;
 physical gate bodies and sprite-swap presentation remain deferred.
 
-### 3.2 Room material fields
+### 3.2 Room info areas
+
+`room.json` may declare relevance zones for deliberate shared-help requests:
+
+```ts
+interface RoomInfoArea {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  puzzleId?: string;
+  ttlTicks?: number;
+}
+
+interface RoomDocument {
+  // existing fields
+  infoAreas?: RoomInfoArea[];
+}
+```
+
+Rules:
+
+- coordinates use tile units, matching room triggers and entities;
+- `puzzleId` defaults to the active puzzle;
+- `ttlTicks` overrides the default help-surface lifetime;
+- areas must have positive size and lie inside the room;
+- an authored `puzzleId` must be one of the level's `puzzleIds`;
+- info areas are relevance zones only: they add no collision, interaction,
+  feedback, or save state by themselves.
+
+The runtime uses an info area only when a player presses `scan`: an unrevealed
+scan target still wins, otherwise the request opens the shared help surface. The
+surface is transient and never appears from an idle or proximity timer.
+
+### 3.3 Room material fields
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
@@ -148,7 +183,7 @@ physical gate bodies and sprite-swap presentation remain deferred.
 `layers.tiles` remains the collision grid. A material character on an empty
 collision cell is decorative and passable. No material field adds a save field.
 
-### 3.3 Materials document 1.0
+### 3.4 Materials document 1.0
 
 `materials.json` is optional and declared by `pack.json`:
 
@@ -175,7 +210,7 @@ optional `atlas`, `frames` keyed by the rule mask space, and a required
 `fallback`. `wang` and pattern animation are accepted schema targets but are
 deferred in M1.8; authored use is reported as deferred.
 
-### 3.4 Atlas manifest metadata
+### 3.5 Atlas manifest metadata
 
 `assets` gains `type: "atlas"` and `ManifestAssetEntry.regions` plus optional
 intrinsic `width`/`height`. Regions are non-empty named rectangles with integer
@@ -190,7 +225,7 @@ type AtlasFrameRef =
   | { kind: "atlas"; assetId: AssetId; frame: string };
 ```
 
-### 3.5 Asset and content versions
+### 3.6 Asset and content versions
 
 The asset manifest schema is `1.1`; parsers accept all `1.x`. The materials
 document is `1.0`. Room `1.1` adds the optional material grid; theme `1.1` adds
@@ -266,7 +301,7 @@ syllabus-derived `prompt-obj-2`/`EV-7` teach-back. The proposed per-level
 |---|---|---|
 | Puzzle | 1.1 | 1.0 accepted; new fields absent |
 | Level | 1.1 | 1.0 accepted; feedback absent |
-| Room | 1.1 | 1.0 accepted; material fields absent |
+| Room | 1.1 | 1.0 accepted; material fields and `infoAreas` absent |
 | Theme | 1.1 | 1.0 accepted; UI material slots absent |
 | Pack | 1.1 | 1.0 accepted; materials path absent |
 | Materials | 1.0 | no older document |
@@ -281,6 +316,10 @@ syllabus-derived `prompt-obj-2`/`EV-7` teach-back. The proposed per-level
 - `puzzle` remains the only owner of logical puzzle state.
 - The save is a projection of runtime state, never a second puzzle graph.
 - Feedback surfaces, cues, effects, and ECS entities are ephemeral.
+- Player-anchored transient cues occupy one slot per player; entity bubbles and
+  HUD surfaces may still coexist.
+- Info areas are relevance zones only; they add no collision, puzzle, or save
+  authority.
 - Effects and tile visuals never carry collision authority.
 - Materials, patterns, variants, and atlases never carry collision, puzzle,
   interaction, or save authority.

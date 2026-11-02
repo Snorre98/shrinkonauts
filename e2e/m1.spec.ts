@@ -317,11 +317,8 @@ test("reduced motion keeps feedback surfaces and text", async ({ page }) => {
   await expect(page.locator(".overlay--pause")).toHaveCount(0);
 
   await teleport(page, "pad-input-a", { x: 120, y: 640 });
-  const caption = page
-    .locator(".feedback-surface--playerCaption", {
-      hasText: "Dendrite input A is active.",
-    })
-    .first();
+  const caption = page.locator('.feedback-surface--playerCaption[data-owner="p1"]');
+  await expect(caption).toHaveCount(1);
   await expect(caption).toBeVisible();
   await expect(caption).toContainText("P1:");
   await expect(page.locator(".feedback-live")).toContainText("P1:");
@@ -329,6 +326,32 @@ test("reduced motion keeps feedback surfaces and text", async ({ page }) => {
     page.locator(".feedback-beats__item", { hasText: "Press a dendrite input" }),
   ).toBeVisible();
 
+  expect(consoleErrors).toEqual([]);
+});
+
+test("shared help is request-only and dismisses after choosing a hint", async ({
+  page,
+}) => {
+  const consoleErrors = await boot(page);
+
+  await expect(
+    page.locator(".feedback-surface", { hasText: "Need a nudge?" }),
+  ).toHaveCount(0);
+
+  await teleport(page, { x: 960, y: 640 });
+  await page.keyboard.press("q");
+
+  const help = page.locator(".feedback-surface--hudStatus", {
+    hasText: "Need a nudge?",
+  });
+  await expect(help).toBeVisible();
+  await expect(
+    help.getByRole("button", { name: "Show hint" }),
+  ).toBeVisible();
+
+  await help.getByRole("button", { name: "Show hint" }).click();
+  await expect(help).toHaveCount(0);
+  await expect(page.locator(".hud__hint")).toContainText("Hint:");
   expect(consoleErrors).toEqual([]);
 });
 

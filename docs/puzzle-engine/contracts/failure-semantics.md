@@ -2,7 +2,7 @@
 
 How the implemented system behaves when a puzzle action, feedback reference,
 effect asset, conversation target, or save path is invalid. Source ADRs:
-ADR-0004–0013. Deferred M1.5 features are labelled explicitly.
+ADR-0004–0013, ADR-0018–0019. Deferred M1.5 features are labelled explicitly.
 
 ## 1. Retry policy and backoff
 
@@ -19,6 +19,9 @@ actions after feedback; there is no automatic background retry.
 | Invalid feedback reference/tile target | Pack validation error before boot | Fix JSON | Implemented |
 | Missing effect asset/cue | Placeholder/synth/silence; gameplay unchanged | None needed | Implemented |
 | Missing feedback vocabulary | Pack validation error before boot | Pass the injected vocabulary | Implemented |
+| Player caption slot occupied | Newest player-anchored cue replaces the older one | None needed | Implemented |
+| Requested help surface expires | Surface is removed; no automatic reappearance | Press scan inside the info area again | Implemented |
+| Info area outside room or unknown puzzle | Pack validation error before boot | Fix JSON | Implemented |
 | Conditional link (`requires`) | Accepted target | — | Deferred |
 | Locked prop | Accepted target | — | Deferred |
 | Invalid side travel | Accepted target | — | Deferred |

@@ -71,6 +71,12 @@ art-source/**/working/frames/
 art-source/**/working/tmp/
 art-source/nanobanan/keyed/
 
+# --- GDD asset pack ---
+# Local, generated copies of art/screenshots for the game design document.
+/gdd-assets/
+# Generated GH Pages gallery; built from tracked sources by `npm run gdd:site`.
+/public/gdd/
+
 # --- Misc ---
 ._*
 *.pid

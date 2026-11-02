@@ -1,5 +1,5 @@
 # language: en
-# Source: ADR-0009, ADR-0010, ADR-0012
+# Source: ADR-0009, ADR-0010, ADR-0012, ADR-0018
 Feature: Feedback surfaces and cues
   Feedback projects puzzle/world state into persistent surfaces and sequences
   transient cues. It never becomes a second puzzle engine.
@@ -24,6 +24,20 @@ Feature: Feedback surfaces and cues
     Then the newest/highest-priority cue replaces the older one
     And the cue expires after its TTL in fixed ticks
     And persistent surfaces remain
+
+  Scenario: Player-attached feedback occupies one slot
+    Given P1 triggers several player-attached feedback causes
+    When the director ticks
+    Then exactly one P1 player caption exists
+    And it carries the newest cause and copy
+    And P2 captions are unaffected
+    And entity speech bubbles are unaffected
+
+  Scenario: Non-sticky runtime surfaces expire
+    Given a runtime-owned help surface has a finite TTL
+    When the fixed ticks reach the TTL
+    Then the surface is removed
+    And it does not reappear without a new request
 
   Scenario: Soft surfaces only consume their owner's input
     Given P1 and P2 each own a choice conversation

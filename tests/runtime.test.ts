@@ -1304,10 +1304,12 @@ describe("game runtime", () => {
     const { runtime } = makeRuntime();
     pressSensor(runtime, "input-a", "p2");
     const snapshot = runtime.snapshot();
-    const cue = snapshot.feedback.cues.find((item) =>
-      item.cause.startsWith("puzzle:platePress:input-a"),
+    const p2Captions = snapshot.feedback.cues.filter(
+      (item) =>
+        item.actor === "p2" && item.presentation === "playerCaption",
     );
-    expect(cue).toMatchObject({
+    expect(p2Captions).toHaveLength(1);
+    expect(p2Captions[0]).toMatchObject({
       actor: "p2",
       owner: "p2",
       anchor: { kind: "player", playerId: "p2" },
@@ -1408,28 +1410,27 @@ describe("game runtime", () => {
     expect(runtime.conversations.size).toBe(1);
   });
 
-  it("shows the stuck affordance after a stable run and dismisses it on hint", () => {
-    const audio = new FakeAudio();
-    const save = createSave({ storage: new MemorySaveStorage() });
-    const runtime = new GameRuntime({
-      content,
-      save,
-      audio,
-      now: () => new Date("2026-10-26T12:00:00.000Z"),
-      stuckThresholdTicks: 3,
-    });
-    runtime.start();
-    for (let index = 0; index < 3; index += 1) stepWith(runtime);
+  it("shows the shared help affordance only after a scan request inside an info area", () => {
+    const { runtime } = makeRuntime();
+    runtime.placePlayer("p1", 960, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+
     const surface = runtime
       .snapshot()
-      .feedback.surfaces.find((item) => item.id.startsWith("fb:stuck:"));
+      .feedback.surfaces.find((item) => item.id.startsWith("fb:help:"));
     expect(surface).toBeDefined();
+    expect(surface).toMatchObject({
+      owner: "shared",
+      audience: "both",
+      presentation: "hudStatus",
+      lifetime: { sticky: false, ttlTicks: 300 },
+    });
     expect(surface?.content.choices?.map((choice) => choice.id)).toEqual([
       "hint",
       "reset",
     ]);
     expect(runtime.snapshot().puzzle?.hint).toBeNull();
-    expect(runtime.snapshot().puzzle?.counters.stuckWarnings).toBe(1);
+    expect(runtime.snapshot().puzzle?.counters.helpRequests).toBe(1);
 
     runtime.surfaceAction(surface!.id, {
       type: "choose",
@@ -1439,8 +1440,63 @@ describe("game runtime", () => {
     expect(
       runtime
         .snapshot()
-        .feedback.surfaces.some((item) => item.id.startsWith("fb:stuck:")),
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
     ).toBe(false);
+  });
+
+  it("does not show the help affordance outside an info area or when a scan target wins", () => {
+    const { runtime } = makeRuntime();
+
+    runtime.placePlayer("p1", 96, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
+
+    const pad = runtime.entityPixel("pad-input-a");
+    if (!pad) throw new Error("pad-input-a missing");
+    runtime.placePlayer("p1", pad.x, pad.y);
+    stepWith(runtime, playerActions({ scan: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
+    expect(
+      runtime.snapshot().feedback.cues.some((cue) =>
+        cue.cause.startsWith("action:p1:scan:completed"),
+      ),
+    ).toBe(true);
+  });
+
+  it("expires the requested help surface and allows P2 to refresh it", () => {
+    const copy = structuredClone(content);
+    const room = copy.rooms["room-nerve-forest"];
+    if (!room?.infoAreas?.[0]) throw new Error("info area missing");
+    room.infoAreas[0].ttlTicks = 3;
+    const { runtime } = makeRuntimeWithContent(copy);
+
+    runtime.placePlayer("p1", 960, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+    const helpId = "fb:help:puzzle-node-run";
+    expect(
+      runtime.snapshot().feedback.surfaces.some((item) => item.id === helpId),
+    ).toBe(true);
+
+    stepWith(runtime);
+    stepWith(runtime);
+    stepWith(runtime);
+    expect(
+      runtime.snapshot().feedback.surfaces.some((item) => item.id === helpId),
+    ).toBe(false);
+
+    runtime.placePlayer("p2", 960, 640);
+    stepWith(runtime, playerActions(), playerActions({ scan: true }));
+    expect(
+      runtime.snapshot().feedback.surfaces.some((item) => item.id === helpId),
+    ).toBe(true);
   });
 
   it("restores a saved conversation and migrates an old dialogue field", () => {

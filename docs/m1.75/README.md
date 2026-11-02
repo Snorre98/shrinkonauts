@@ -191,7 +191,8 @@ Manual checks still required:
 - off-screen entity bubble fallback;
 - reduced motion with effects enabled/disabled;
 - tile visual revert with collision unchanged;
-- stuck state shows hint/reset, not a dead run.
+- a scan request inside an info area shows hint/reset for a short time, not a
+  dead run.
 
 `authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until
 those checks are performed by a human.
