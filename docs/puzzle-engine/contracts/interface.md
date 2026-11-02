@@ -1,7 +1,7 @@
 # Interface contract
 
 Public operations introduced or changed by the puzzle-engine, M1.75 feedback, and
-M1.8 material/pattern work. Source ADRs: ADR-0001–0020. Existing operations keep
+M1.8 material/pattern work. Source ADRs: ADR-0001–0021. Existing operations keep
 their current signatures.
 
 ## Implementation status
@@ -15,6 +15,7 @@ their current signatures.
 | Player-attached caption slot and surface TTL | Implemented |
 | Request-gated shared help and room info areas | Implemented |
 | Deferred transient cues and on-demand reveal | Implemented |
+| Persisted shared-feedback visibility and help suppression | Implemented |
 | Level `feedback` content block | Implemented |
 | Feedback validation vocabulary injection | Implemented |
 | Material/pattern catalog, tile grids, autotiling, variants | Implemented; `wang` deferred |
@@ -289,6 +290,7 @@ interface FeedbackDirector {
   putSurface(spec: FeedbackSurfaceSpec & { id: string }): void;
   removeSurface(surfaceId: string): void;
   requestLatest(playerId: PlayerId): boolean;
+  setSharedFeedbackEnabled(enabled: boolean): void;
   tick(dt: number): void;
   view(): FeedbackView;
   frame(): FeedbackFrame;
@@ -310,6 +312,12 @@ function createFeedbackDirector(
 `GameRuntime` enables `deferCues` and uses `ingestNow` for action outcomes so a
 scan request can reveal the result in the same input frame. Cosmetic effect
 plans on deferred cues still start immediately from a hidden effect host.
+
+`setSharedFeedbackEnabled(false)` drops shared-owned cue specs before they enter
+either inbox, clears pending shared copies, and despawns visible shared cues.
+Player-owned cues, persistent surfaces, and beats are unaffected. Effects keep
+their immediate lifecycle. The runtime also refuses the requested help surface
+while the setting is off. Re-enabling affects only future shared cues.
 
 The runtime ticks the director once per fixed step and calls `frame()` to obtain
 the snapshot-safe view.
@@ -424,6 +432,7 @@ class GameRuntime {
   readonly conversations: Map<SurfaceId, ConversationState>;
   startConversation(dialogueId: string, owner: PlayerId, entityId: string): void;
   surfaceAction(surfaceId: string, action: SurfaceAction): void;
+  toggleSharedFeedback(): GameSettings;
   drainEffects(): readonly WorldEffectPlan[];
   debriefPromptList(): DebriefPrompt[];
   // existing snapshot/step/save/evidence methods
@@ -454,6 +463,7 @@ interface FeedbackSurfaceRenderer {
 
 interface GameUiCallbacks {
   onSurfaceAction(surfaceId: string, action: SurfaceAction): void;
+  onToggleSharedFeedback(): void;
   // existing modal callbacks for gate/debrief/pause/map/log
 }
 ```
@@ -481,6 +491,24 @@ interface RunSnapshot {
   dialogue?: { dialogueId: string; nodeId: string };
   // returnTo?: LevelRunSnapshot; — deferred
 }
+```
+
+Settings use a separate storage slot:
+
+```ts
+interface GameSettings {
+  schemaVersion: string; // 2.0
+  audio: { muted: boolean; volume: number };
+  accessibility: { textScale: number; reducedMotion: boolean };
+  feedback: {
+    /** Global; missing values default to true. */
+    showShared: boolean;
+  };
+}
+
+function updateFeedback(
+  patch: Partial<GameSettings["feedback"]>,
+): GameSettings;
 ```
 
 Feedback ECS state is ephemeral and never saved. Conversation sessions are run

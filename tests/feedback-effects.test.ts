@@ -327,6 +327,30 @@ describe("feedback effect lifecycle", () => {
     });
   });
 
+  it("keeps shared cosmetic effects when shared text is disabled", () => {
+    const document = readPuzzle("03-nerve-forest");
+    const director = createFeedbackDirector({ deferCues: true });
+    director.projectSticky({
+      document,
+      state: new PuzzleRuntime(document).snapshot(),
+    });
+    director.setSharedFeedbackEnabled(false);
+    director.ingest({
+      kind: "puzzle.event",
+      event: { type: "gateOpen", nodeId: "threshold-gate", actorId: "p1" },
+      actor: "p1",
+      source: { kind: "entity", id: "gate-threshold" },
+    });
+    director.tick(1 / 60);
+
+    expect(director.frame().cues).toEqual([]);
+    expect(
+      director
+        .frame()
+        .effects.some((effect) => effect.planId.startsWith("fx.gate.burst")),
+    ).toBe(true);
+  });
+
   it("cancels persistent effects when the source becomes inactive", () => {
     const director = createFeedbackDirector();
     director.putSurface(

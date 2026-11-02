@@ -36,6 +36,7 @@ export interface GameUiCallbacks {
   onMute(): void;
   onTextScale(scale: number): void;
   onToggleReducedMotion(): void;
+  onToggleSharedFeedback(): void;
   onDebriefAnswer(promptId: string, answer: string): void;
   onDebriefFinish(): void;
   onExport(): void;
@@ -722,7 +723,7 @@ export function mountGameUi(
   function renderPause(snapshot: RuntimeSnapshot): Overlay {
     const { root: node, body } = panel("overlay--pause", "Paused", "Paused");
     const settingsBlock = el("section", "settings");
-    settingsBlock.append(el("h3", "overlay__subheading", "Accessibility"));
+    settingsBlock.append(el("h3", "overlay__subheading", "Settings"));
 
     const scaleRow = el("div", "settings__row");
     scaleRow.append(el("span", "settings__label", "Text size"));
@@ -752,7 +753,16 @@ export function mountGameUi(
       callbacks.onMute(),
     );
     muteRow.append(muteToggle);
-    settingsBlock.append(scaleRow, motionRow, muteRow);
+
+    const sharedRow = el("div", "settings__row");
+    const sharedLabel = el("span", "settings__label", "Shared feedback");
+    sharedLabel.id = "settings-shared-feedback-label";
+    const sharedToggle = button("", "button button--small", () =>
+      callbacks.onToggleSharedFeedback(),
+    );
+    sharedToggle.setAttribute("aria-labelledby", sharedLabel.id);
+    sharedRow.append(sharedLabel, sharedToggle);
+    settingsBlock.append(scaleRow, motionRow, muteRow, sharedRow);
 
     const controls = el("section", "pause__controls");
     controls.append(el("h3", "overlay__subheading", "Controls"));
@@ -816,6 +826,9 @@ export function mountGameUi(
       motion.textContent = reduced ? "On" : "Off";
       motion.setAttribute("aria-pressed", String(reduced));
       muteToggle.textContent = next.muted ? "Unmute (M)" : "Mute (M)";
+      const shared = next.settings.feedback.showShared;
+      sharedToggle.textContent = shared ? "On" : "Off";
+      sharedToggle.setAttribute("aria-pressed", String(shared));
       hintText.textContent =
         next.puzzle?.hint ?? "No hint requested yet.";
       hintButton.disabled = !next.puzzle?.canHint;

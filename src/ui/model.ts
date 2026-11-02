@@ -116,6 +116,7 @@ export interface PuzzleView {
 export interface SettingsView {
   audio: { muted: boolean; volume: number };
   accessibility: { textScale: number; reducedMotion: boolean };
+  feedback: { showShared: boolean };
 }
 
 export interface WorldAnchorPoint {

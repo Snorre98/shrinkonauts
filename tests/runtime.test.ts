@@ -1011,6 +1011,37 @@ describe("game runtime", () => {
     expect(reloaded.settings.accessibility.textScale).toBe(1.3);
   });
 
+  it("defaults shared feedback on and persists the pause toggle", () => {
+    const { runtime, storage } = makeRuntime();
+
+    expect(runtime.snapshot().settings.feedback.showShared).toBe(true);
+    runtime.toggleSharedFeedback();
+    expect(runtime.snapshot().settings.feedback.showShared).toBe(false);
+
+    const reloaded = createSave({ storage });
+    expect(reloaded.settings.feedback.showShared).toBe(false);
+
+    runtime.toggleSharedFeedback();
+    expect(runtime.snapshot().settings.feedback.showShared).toBe(true);
+  });
+
+  it("applies a persisted shared feedback opt-out at boot", () => {
+    const storage = new MemorySaveStorage();
+    createSave({ storage }).updateFeedback({ showShared: false });
+
+    const { runtime } = makeRuntime(storage);
+    expect(runtime.snapshot().settings.feedback.showShared).toBe(false);
+
+    runtime.placePlayer("p1", 960, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
+    expect(runtime.snapshot().puzzle?.counters.helpRequests ?? 0).toBe(0);
+  });
+
   it("opens and closes map, concept log, and pause with shared keys", () => {
     const { runtime } = makeRuntime();
 
@@ -1501,6 +1532,67 @@ describe("game runtime", () => {
     expect(
       runtime.snapshot().feedback.surfaces.some((item) => item.id === helpId),
     ).toBe(true);
+  });
+
+  it("removes visible shared cues but keeps persistent state when disabled", () => {
+    const { runtime } = makeRuntime();
+    solveNodeRun(runtime);
+    expect(runtime.requestFeedback("p1")).toBe(true);
+    expect(
+      runtime
+        .snapshot()
+        .feedback.cues.some((cue) => cue.owner === "shared"),
+    ).toBe(true);
+
+    const surfacesBefore = runtime.snapshot().feedback.surfaces.length;
+    const beatsBefore = runtime.snapshot().feedback.beats.length;
+
+    runtime.toggleSharedFeedback();
+    const snapshot = runtime.snapshot();
+    expect(snapshot.feedback.cues.some((cue) => cue.owner === "shared")).toBe(
+      false,
+    );
+    expect(snapshot.feedback.surfaces).toHaveLength(surfacesBefore);
+    expect(snapshot.feedback.beats).toHaveLength(beatsBefore);
+    expect(snapshot.settings.feedback.showShared).toBe(false);
+  });
+
+  it("keeps player feedback and skips shared help while disabled", () => {
+    const { runtime } = makeRuntime();
+    runtime.toggleSharedFeedback();
+
+    runtime.placePlayer("p1", 960, 640);
+    stepWith(runtime, playerActions({ scan: true }));
+    let snapshot = runtime.snapshot();
+    expect(
+      snapshot.feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
+    expect(snapshot.puzzle?.counters.helpRequests ?? 0).toBe(0);
+    expect(
+      snapshot.feedback.cues.find((cue) => cue.actor === "p1"),
+    ).toMatchObject({
+      owner: "p1",
+      presentation: "playerCaption",
+    });
+    expect(
+      snapshot.feedback.cues.some((cue) =>
+        cue.content.text?.includes("Nothing to scan here"),
+      ),
+    ).toBe(true);
+
+    runtime.toggleSharedFeedback();
+    stepWith(runtime, playerActions({ scan: true }));
+    snapshot = runtime.snapshot();
+    expect(
+      snapshot.feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(true);
+
+    runtime.toggleSharedFeedback();
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
+    ).toBe(false);
   });
 
   it("restores a saved conversation and migrates an old dialogue field", () => {

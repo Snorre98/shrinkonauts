@@ -221,9 +221,11 @@ one-shot actions, checks checkpoints/triggers/exits, and ticks the feedback
 director. It returns gameplay cues (`jump`, `land`, `dash`). Transient feedback
 cues are deferred into per-player inboxes and only appear when a player presses
 scan; cosmetic effects still run immediately. The scan button also opens the
-shared hint/reset affordance inside an authored info area. Actions are latched by
-the input source, so an `E` tap is consumed exactly once by the next fixed step
-even when several render frames occur first.
+shared hint/reset affordance inside an authored info area. A persisted global
+“Shared feedback” pause setting can suppress shared-owned transient cues and the
+requested help surface without affecting player cues, persistent state, beats, or
+effects. Actions are latched by the input source, so an `E` tap is consumed
+exactly once by the next fixed step even when several render frames occur first.
 
 ### State machine
 
@@ -282,7 +284,8 @@ relevant entity/player, and cues carry P1/P2 attribution.
 - `descriptors.ts` defines exhaustive `NODE_FEEDBACK` and `LINK_FEEDBACK` tables,
   capability defaults, labels, and persistent state projection.
 - `director.ts` owns the ECS-backed sticky surfaces, transient cues, beats,
-  effect instances, ordering, dedupe, TTL, and cancellation.
+  effect instances, ordering, dedupe, TTL, cancellation, and shared-feedback
+  visibility.
 - `effect-presets.ts` defines named cosmetic recipes built from the closed
   operator/path vocabulary.
 - `beats.ts` derives authored or win-graph beat progress.
@@ -470,6 +473,9 @@ The accessibility baseline is:
 - Reduced motion: sets `data-reduced-motion="true"`, disables CSS animation, and
   simplifies movement effects while keeping surfaces/text.
 - Mute toggle (`M`) from gameplay and from every overlay, with HUD status.
+- Persisted global “Shared feedback” toggle in the pause settings; it suppresses
+  shared transient cues and shared help while keeping player cues, persistent
+  state, beats, and effects.
 - Focus management: overlays are `role="dialog"`, `aria-modal`, labelled,
   autofocus the first meaningful control, trap `Tab`/`Shift+Tab`, and restore
   focus to the previous element on close.
@@ -589,11 +595,11 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/progression.test.ts` | Abilities, gates, all three puzzles, map traversal |
 | `tests/narrative.test.ts` | Linear dialogue, choices, effects, unknown choice |
 | `tests/curriculum.test.ts` | Evidence matching, objective progress, debrief, export |
-| `tests/save.test.ts` | Settings/run persistence, per-pack slots, legacy migration, version/pack rejection, conversations |
+| `tests/save.test.ts` | Settings/run persistence, shared-feedback defaults, per-pack slots, legacy migration, version/pack rejection, conversations |
 | `tests/catalog.test.ts` | Pack catalog ordering, statuses, paths, duplicates |
 | `tests/app-state.test.ts` | Hub phases, cycle/mode selection, start eligibility, error recovery |
 | `tests/hub.test.ts` | Bathroom document parsing, IDs, manifests, validation |
-| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, solo start, overlays |
+| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, shared-feedback setting, solo start, overlays |
 | `tests/puzzle.test.ts`, `puzzle-dispatch.test.ts`, `endplate-ferry.test.ts` | Puzzle schema/dataflow, dispatch, timers, gate recovery |
 | `tests/recoverability.test.ts` | Exhaustive stable-state reachability |
 | `tests/ecs.test.ts` | Spawn/despawn/query/system order/determinism |
@@ -612,11 +618,12 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, materials purity, module graph |
 | `e2e/hub.spec.ts` | Browser: bathroom, cycle selection, launch skip, solo start, return |
 | `e2e/m1.spec.ts` | Browser: 03 → 04, conversations, attribution, reduced motion, live region, export |
+| `e2e/shared-feedback.spec.ts` | Browser: shared-feedback pause toggle, persistence, shared-help suppression and removal |
 
 `npm run smoke` runs the room-boot and boundary suites. `pack:smoke` adds a
 headless full-loop runtime run plus the M0 placeholder/fixture simulation
-regression. `smoke:e2e` runs four Playwright tests against the dev server using
-system Chrome.
+regression. `smoke:e2e` runs the Playwright smoke project against the dev server
+using system Chrome.
 
 ## Verification performed
 

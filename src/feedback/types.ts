@@ -645,6 +645,12 @@ export interface FeedbackDirector {
    * players' inboxes; revealing one consumes the copies.
    */
   requestLatest(playerId: PlayerId): boolean;
+  /**
+   * Enable or disable shared-owned transient cues. Disabling drops new shared
+   * cues, clears pending shared copies, and despawns visible shared cues.
+   * Persistent surfaces and player-owned cues are unaffected.
+   */
+  setSharedFeedbackEnabled(enabled: boolean): void;
   /** Runs the Phase 3 tick systems in deterministic order. */
   tick(dt: number): void;
   /** Returns the current ordered view without creating a frame. */

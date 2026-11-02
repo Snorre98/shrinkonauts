@@ -843,6 +843,7 @@ export class AppController {
         onMute: () => bundle.runtime.toggleMute(),
         onTextScale: (scale) => bundle.runtime.setTextScale(scale),
         onToggleReducedMotion: () => bundle.runtime.toggleReducedMotion(),
+        onToggleSharedFeedback: () => bundle.runtime.toggleSharedFeedback(),
         onDebriefAnswer: (promptId, answer) =>
           bundle.runtime.submitDebrief(promptId, answer),
         onDebriefFinish: () => bundle.runtime.finishDebrief(),

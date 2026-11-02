@@ -2,7 +2,7 @@
 
 Explicit states for gates, props, feedback surfaces/cues, effects, conversations,
 and the deferred travel/conditional-link targets. Source ADRs: ADR-0002–0013,
-ADR-0018–0020.
+ADR-0018–0021.
 
 Status labels:
 
@@ -103,6 +103,7 @@ Invariants:
 | State | Kind | Meaning |
 |---|---|---|
 | queued | transient | fact ingested in the current tick |
+| dropped | transient | shared cue discarded while shared feedback is off |
 | pending | transient | stored in a player's deferred inbox; not rendered or announced |
 | announced | transient | visible and eligible for the live region |
 | coalesced | transient | same cause replaced by the newest/highest-priority cue |
@@ -113,12 +114,15 @@ Invariants:
 |---|---|---|---|
 | (none) | queued | `ingest`/`ingestAll`/`ingestNow` | cause key assigned |
 | queued | announced | `IngestFacts` in immediate mode | seq increments |
+| queued | dropped | `IngestFacts` for a shared cue while shared feedback is off | never buffered, rendered, or announced; effects still start |
 | queued | pending | `IngestFacts` in deferred mode | latest per player wins |
 | pending | pending | newer cue for the same player | older pending cue is replaced |
 | pending | announced | `requestLatest` | cue TTL starts at reveal |
+| pending | removed | shared feedback turned off | shared copies cleared from both inboxes |
 | pending | removed | `reset` or level transition | pending inbox cleared |
 | announced | coalesced | same cause | highest priority/newest sequence wins |
 | announced | evicted | newer player-attached cue | newest wins; effects cancelled |
+| announced | removed | shared feedback turned off | shared-owned cue despawned; player cues remain |
 | announced | expired | `LifetimeTick` | TTL in fixed ticks |
 | announced | removed | `reset` or level transition | all feedback state cleared |
 
@@ -131,9 +135,29 @@ Invariants:
 - A shared pending cue is copied to both players; revealing it consumes both
   copies.
 - Pending cues are absent from the frame, the live region, and save state.
+- While shared feedback is off, no shared-owned cue exists in a pending inbox,
+  the rendered frame, or the live region.
+- Player-owned cues are never removed or suppressed by the shared-feedback
+  setting.
+- Re-enabling shared feedback does not restore dropped or cleared cues.
 - Cosmetic effects on a deferred cue start immediately and are not deferred.
 - Cues with a player actor carry actor attribution in text and accessibility.
 - Cues expire; persistent state does not.
+
+### 4.1 Shared feedback visibility
+
+| State | Meaning |
+|---|---|
+| enabled | shared cues may be buffered or spawned, and shared help may be requested |
+| disabled | shared cues are dropped, pending shared copies are cleared, visible shared cues and help are removed |
+
+| From | To | Trigger | Notes |
+|---|---|---|---|
+| enabled | disabled | pause toggle or persisted setting at boot | clear pending/visible shared state immediately |
+| disabled | enabled | pause toggle | future shared cues use the normal path |
+
+The setting is global and persisted. It never changes persistent surfaces,
+beats, player cues, puzzle state, or effect timing.
 
 ## 5. Effect lifetime
 

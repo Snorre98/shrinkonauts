@@ -54,6 +54,7 @@ import type {
   FeedbackDirectorOptions,
   FeedbackFact,
   FeedbackFrame,
+  FeedbackOwner,
   FeedbackProjection,
   FeedbackProjectionContext,
   FeedbackSurface,
@@ -77,6 +78,10 @@ const DEFAULT_CUE_PRIORITY = 50;
 
 function compareText(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function cueOwner(spec: FeedbackCueSpec): FeedbackOwner {
+  return spec.owner ?? spec.actor ?? "shared";
 }
 
 function compareEffects(left: EffectInstance, right: EffectInstance): number {
@@ -194,6 +199,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   private readonly defaultCueTtlTicks: number;
   private readonly deferCues: boolean;
   private readonly isAnchorAlive?: (anchor: AnchorRef) => boolean;
+  private sharedFeedbackEnabled = true;
 
   private pendingFacts: FeedbackFact[] = [];
   private readonly pendingProjections = new Map<string, FeedbackProjection>();
@@ -259,8 +265,13 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     const pending = this.pendingCueByPlayer.get(playerId);
     if (!pending) return false;
 
+    const owner = cueOwner(pending.spec);
+    if (owner === "shared" && !this.sharedFeedbackEnabled) {
+      this.clearPendingSharedCues();
+      return false;
+    }
+
     this.pendingCueByPlayer.delete(playerId);
-    const owner = pending.spec.owner ?? pending.spec.actor ?? "shared";
     if (owner === "shared") {
       const other: PlayerId = playerId === "p1" ? "p2" : "p1";
       if (this.pendingCueByPlayer.get(other)?.seq === pending.seq) {
@@ -270,6 +281,18 @@ class FeedbackDirectorImpl implements FeedbackDirector {
 
     this.addCue(pending.spec);
     return true;
+  }
+
+  setSharedFeedbackEnabled(enabled: boolean): void {
+    this.sharedFeedbackEnabled = enabled;
+    if (enabled) return;
+
+    this.clearPendingSharedCues();
+    for (const entity of this.world.query(CueStateComponent)) {
+      if (this.world.get(entity, Ownership)?.owner === "shared") {
+        this.despawnCue(entity);
+      }
+    }
   }
 
   tick(dt: number): void {
@@ -393,7 +416,16 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     const seq = this.nextCueSeq;
     this.nextCueSeq += 1;
     const { effects, ...cueSpec } = spec;
-    const owner = spec.owner ?? spec.actor ?? "shared";
+    const owner = cueOwner(spec);
+
+    if (owner === "shared" && !this.sharedFeedbackEnabled) {
+      // ADR-0020: effects are part of the world response, not text boxes.
+      if (effects && effects.length > 0) {
+        this.spawnEffectHost(effects, seq);
+      }
+      return;
+    }
+
     const players: readonly PlayerId[] =
       owner === "shared" ? ["p1", "p2"] : [owner];
     for (const playerId of players) {
@@ -652,6 +684,16 @@ class FeedbackDirectorImpl implements FeedbackDirector {
   }
 
   private addCue(spec: FeedbackCueSpec): void {
+    const owner = cueOwner(spec);
+    if (owner === "shared" && !this.sharedFeedbackEnabled) {
+      const seq = this.nextCueSeq;
+      this.nextCueSeq += 1;
+      if (spec.effects && spec.effects.length > 0) {
+        this.spawnEffectHost(spec.effects, seq);
+      }
+      return;
+    }
+
     const existing = this.cueEntityByCause.get(spec.cause);
     if (existing) {
       this.despawnCue(existing);
@@ -670,7 +712,6 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     const id = `fb:cue:${seq}`;
     const entity = createEntityId(id);
     const actor = spec.actor ?? null;
-    const owner = spec.owner ?? actor ?? "shared";
     const ttlTicks = spec.ttlTicks ?? this.defaultCueTtlTicks;
     const text = spec.content.text;
     const cue: FeedbackCue = {
@@ -894,6 +935,14 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     }
 
     return false;
+  }
+
+  private clearPendingSharedCues(): void {
+    for (const [playerId, pending] of this.pendingCueByPlayer) {
+      if (cueOwner(pending.spec) === "shared") {
+        this.pendingCueByPlayer.delete(playerId);
+      }
+    }
   }
 
   private despawnCue(entity: EntityId): void {

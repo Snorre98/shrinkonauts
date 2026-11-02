@@ -1,7 +1,7 @@
 # Data model contract
 
 Precise spec for the durable and content formats changed by the engine upgrade.
-Source ADRs: ADR-0002–0020. The implementation status table in
+Source ADRs: ADR-0002–0021. The implementation status table in
 [`architecture.md`](../architecture.md) is authoritative where an accepted ADR
 target is deferred.
 
@@ -289,6 +289,27 @@ Rules:
 are not present in the current parser or runtime. No side-excursion state is
 saved.
 
+### 4.3 Settings 2.0
+
+Settings use the separate `shrinkonauts.settings` storage key:
+
+```ts
+interface GameSettings {
+  schemaVersion: string; // 2.0
+  audio: { muted: boolean; volume: number };
+  accessibility: { textScale: number; reducedMotion: boolean };
+  feedback: {
+    /** Global; missing or malformed values default to true. */
+    showShared: boolean;
+  };
+}
+```
+
+`feedback.showShared` controls shared-owned transient cues and the requested
+shared help surface. It does not enter the run snapshot's feedback state and is
+never serialized with cues. Settings updates preserve the other settings groups;
+an old settings document without `feedback` loads with `showShared: true`.
+
 ## 5. Syllabus evidence
 
 The syllabus owns evidence rules and weight. The current `04` level uses the
@@ -307,7 +328,7 @@ syllabus-derived `prompt-obj-2`/`EV-7` teach-back. The proposed per-level
 | Materials | 1.0 | no older document |
 | Asset manifest | 1.1 | all 1.x accepted; `atlas` additive |
 | Run | 2.1 | 2.0 accepted; no conversations/legacy dialogue defaults |
-| Settings | 2.0 | separate storage slot |
+| Settings | 2.0 | separate storage slot; missing `feedback.showShared` defaults to true |
 
 ## 7. Invariants
 
@@ -317,6 +338,8 @@ syllabus-derived `prompt-obj-2`/`EV-7` teach-back. The proposed per-level
 - The save is a projection of runtime state, never a second puzzle graph.
 - Feedback surfaces, cues, effects, and ECS entities are ephemeral.
 - Deferred cue inboxes are ephemeral; pending cues are never serialized.
+- Shared feedback visibility is a global persisted setting, not per-player cue
+  state; turning it off does not add or remove run-save fields.
 - Player-anchored transient cues occupy one slot per player; entity bubbles and
   HUD surfaces may still coexist.
 - Info areas are relevance zones only; they add no collision, puzzle, or save

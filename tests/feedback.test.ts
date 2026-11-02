@@ -397,6 +397,89 @@ describe("feedback facts and cues", () => {
     expect(director.requestLatest("p2")).toBe(false);
   });
 
+  it("drops shared deferred cues while keeping player-specific cues", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.setSharedFeedbackEnabled(false);
+    director.ingestAll([
+      {
+        kind: "system.outcome",
+        outcome: "gate.open",
+        source: { kind: "system", id: "gate" },
+        text: "The gate is open",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "pickup",
+        result: "accepted",
+        text: "P1 message",
+      },
+    ]);
+    director.tick(1 / 60);
+
+    expect(director.requestLatest("p2")).toBe(false);
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.frame().cues).toHaveLength(1);
+    expect(director.frame().cues[0]).toMatchObject({
+      actor: "p1",
+      owner: "p1",
+      content: { text: "P1: P1 message" },
+    });
+  });
+
+  it("clears pending shared copies and does not restore them when re-enabled", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingest({
+      kind: "system.outcome",
+      outcome: "gate.open",
+      source: { kind: "system", id: "gate" },
+      text: "The gate is open",
+    });
+    director.tick(1 / 60);
+
+    director.setSharedFeedbackEnabled(false);
+    expect(director.requestLatest("p1")).toBe(false);
+    expect(director.requestLatest("p2")).toBe(false);
+
+    director.setSharedFeedbackEnabled(true);
+    expect(director.requestLatest("p1")).toBe(false);
+    expect(director.requestLatest("p2")).toBe(false);
+    expect(director.frame().cues).toEqual([]);
+  });
+
+  it("removes visible shared cues without touching player cues", () => {
+    const director = createFeedbackDirector({ deferCues: true });
+    director.ingestAll([
+      {
+        kind: "system.outcome",
+        outcome: "gate.open",
+        source: { kind: "system", id: "gate" },
+        text: "The gate is open",
+      },
+      {
+        kind: "action.outcome",
+        actor: "p1",
+        action: "pickup",
+        result: "accepted",
+        text: "P1 message",
+      },
+    ]);
+    director.tick(1 / 60);
+
+    expect(director.requestLatest("p1")).toBe(true);
+    expect(director.requestLatest("p2")).toBe(true);
+    expect(director.frame().cues).toHaveLength(2);
+
+    director.setSharedFeedbackEnabled(false);
+    const cues = director.frame().cues;
+    expect(cues).toHaveLength(1);
+    expect(cues[0]).toMatchObject({
+      actor: "p1",
+      owner: "p1",
+      content: { text: "P1: P1 message" },
+    });
+  });
+
   it("does not leak player-specific deferred cues to the other player", () => {
     const director = createFeedbackDirector({ deferCues: true });
     director.ingest({

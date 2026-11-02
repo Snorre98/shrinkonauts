@@ -169,6 +169,7 @@ export interface RuntimeSavePort {
   updateAccessibility(
     patch: Partial<GameSettings["accessibility"]>,
   ): GameSettings;
+  updateFeedback(patch: Partial<GameSettings["feedback"]>): GameSettings;
 }
 
 export interface RuntimeActionInput {
@@ -373,6 +374,9 @@ export class GameRuntime implements WorldRuntime {
       deferCues: true,
       isAnchorAlive: (anchor) => this.anchorIsAlive(anchor),
     });
+    this.feedback.setSharedFeedbackEnabled(
+      this.save.settings.feedback.showShared,
+    );
 
     const level = options.content.levels[0];
     if (!level) throw new Error("PACK_HAS_NO_LEVELS");
@@ -2145,6 +2149,16 @@ export class GameRuntime implements WorldRuntime {
     return settings;
   }
 
+  toggleSharedFeedback(): GameSettings {
+    const enabled = !this.save.settings.feedback.showShared;
+    const settings = this.save.updateFeedback({ showShared: enabled });
+    this.feedback.setSharedFeedbackEnabled(enabled);
+    if (!enabled) this.dismissHelpSurface();
+    this.onSettings?.(settings);
+    this.emit();
+    return settings;
+  }
+
   /* ---------------------------------------------------------------- */
   /* Helpers                                                          */
   /* ---------------------------------------------------------------- */
@@ -2495,6 +2509,7 @@ export class GameRuntime implements WorldRuntime {
    */
   private requestSharedHelp(id: PlayerId): boolean {
     if (this.machine.state !== "level") return false;
+    if (!this.save.settings.feedback.showShared) return false;
     const area = this.infoAreaFor(id);
     if (!area) return false;
 
