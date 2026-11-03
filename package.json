@@ -32,7 +32,8 @@
     "art:normalize": "tsx scripts/art-normalize.ts",
     "art:tile-clean": "node scripts/art-tile-clean.mjs",
     "art:variant": "tsx scripts/art-variant.ts",
-    "art:remaster": "tsx scripts/art-remaster.ts"
+    "art:remaster": "tsx scripts/art-remaster.ts",
+    "audio:adopt": "tsx scripts/cueforge-adopt.ts"
   },
   "dependencies": {
     "matter-js": "^0.20.0",
