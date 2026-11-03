@@ -152,7 +152,14 @@ export function planAdoption(options: AdoptOptions): AdoptionPlan {
     }
   }
 
-  const licenseRecord = buildLicenceRecord(manifestSrc, generated, receiptPath, receiptHash, receipt);
+  const licenseRecord = buildLicenceRecord(
+    manifestSrc,
+    generated,
+    receiptPath,
+    receiptHash,
+    receipt,
+    repoRoot,
+  );
   if (destination === "anatomy") {
     const siliconManifestPath = join(repoRoot, SILICON_DIR, "assets.final.json");
     if (!existsSync(siliconManifestPath)) throw new Error(`Silicon manifest not found: ${siliconManifestPath}`);
@@ -181,7 +188,7 @@ export function planAdoption(options: AdoptOptions): AdoptionPlan {
 
   const promptLogPath = join(repoRoot, PROMPT_LOG);
   const promptRows = generated.map((source) =>
-    promptRow(cueId, source, manifestSrc, receiptPath, receiptHash, receipt),
+    promptRow(cueId, source, manifestSrc, receiptPath, receiptHash, receipt, repoRoot),
   );
   files.push(
     planPromptLog(
@@ -209,6 +216,7 @@ export function applyAdoption(plan: AdoptionPlan): AdoptionReport {
   const undo: Array<{ path: string; previous: Buffer | null }> = [];
   const applied: string[] = [];
   const unchanged: string[] = [];
+  let promptRowsAdded = 0;
   try {
     for (const file of plan.files) {
       if (file.action === "unchanged") {
@@ -221,6 +229,13 @@ export function applyAdoption(plan: AdoptionPlan): AdoptionReport {
         file.kind === "audio"
           ? readFileSync(file.source as string)
           : (file.bytes as Buffer);
+      if (file.kind === "prompt-log") {
+        const existing = new Set((previous ?? Buffer.alloc(0)).toString("utf8").split(/\r?\n/));
+        promptRowsAdded += bytes
+          .toString("utf8")
+          .split(/\r?\n/)
+          .filter((line) => line.length > 0 && !existing.has(line)).length;
+      }
       atomicWrite(file.path, bytes);
       applied.push(file.path);
     }
@@ -246,7 +261,7 @@ export function applyAdoption(plan: AdoptionPlan): AdoptionReport {
     cueId: plan.cueId,
     applied,
     unchanged,
-    promptRowsAdded: plan.promptRows.length,
+    promptRowsAdded,
     warnings: plan.warnings,
   };
 }
@@ -356,6 +371,7 @@ function buildLicenceRecord(
   receiptPath: string,
   receiptHash: string,
   receipt: JsonObject,
+  repoRoot: string,
 ): JsonObject {
   const seeds = generated
     .map((source) => `${source.layer_id ?? "layer"}=${source.seed ?? "?"}`)
@@ -368,7 +384,7 @@ function buildLicenceRecord(
     author: "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
     license: LICENSE_NAME,
     url: LICENSE_URL,
-    modified: `${date}; seeds ${seeds}; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ${relativePath(receiptPath)} sha256 ${receiptHash}`,
+    modified: `${date}; seeds ${seeds}; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ${relativePath(receiptPath, repoRoot)} sha256 ${receiptHash}`,
     aiGenerated: true,
   };
 }
@@ -380,6 +396,7 @@ function promptRow(
   receiptPath: string,
   receiptHash: string,
   receipt: JsonObject,
+  repoRoot: string,
 ): string[] {
   const metadata = source.metadata ?? {};
   const requested =
@@ -393,7 +410,7 @@ function promptRow(
     String(requested),
     "1",
     manifestSrc,
-    `${date}; head/tail trim; 35 Hz HPF; cueforge QC; 48 kHz mono MP3 160 kbps; cueforge receipt ${relativePath(receiptPath)} sha256 ${receiptHash}; layer ${layer}`,
+    `${date}; head/tail trim; 35 Hz HPF; cueforge QC; 48 kHz mono MP3 160 kbps; cueforge receipt ${relativePath(receiptPath, repoRoot)} sha256 ${receiptHash}; layer ${layer}`,
     "accepted",
     LICENSE_NAME,
   ];
@@ -405,8 +422,8 @@ function csvLine(row: string[]): string {
     .join(",");
 }
 
-function relativePath(path: string): string {
-  return relative(DEFAULT_REPO_ROOT, path).replaceAll("\\", "/");
+function relativePath(path: string, repoRoot: string): string {
+  return relative(repoRoot, path).replaceAll("\\", "/");
 }
 
 function jsonBytes(value: unknown): Buffer {

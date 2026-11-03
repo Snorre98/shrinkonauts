@@ -183,6 +183,7 @@ describe("cueforge-adopt", () => {
 
     const report = applyAdoption(first);
     expect(report.applied.length).toBeGreaterThan(0);
+    expect(report.promptRowsAdded).toBe(2);
     expect(existsSync(join(value.root, "public/packs/anatomy-reflex/shared/audio/boot.mp3"))).toBe(true);
     expect(existsSync(join(value.root, "public/packs/silicon-reflex/shared/audio/boot.mp3"))).toBe(true);
     const anatomyManifest = JSON.parse(
@@ -208,6 +209,7 @@ describe("cueforge-adopt", () => {
     expect(second.files.every((file) => file.action === "unchanged")).toBe(true);
     const secondReport = applyAdoption(second);
     expect(secondReport.applied).toHaveLength(0);
+    expect(secondReport.promptRowsAdded).toBe(0);
     expect(readFileSync(join(value.root, "docs/audio/sfx-prompt-log.csv"), "utf8").trim().split("\n")).toHaveLength(3);
   });
 

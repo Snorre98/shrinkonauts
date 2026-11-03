@@ -1013,6 +1013,12 @@ Raw takes/previews live in `var/sfx/` (git-ignored); `adopt` installs the
 chosen take, sets `src`/`license` in the manifests, copies to Silicon
 (reuse rule §2.3), appends the licence records, and logs the prompt row.
 
+For cues rendered by cueforge, use the external adapter instead:
+[`cueforge-adapter.md`](cueforge-adapter.md) and
+`npm run audio:adopt -- --result <render-result.json>`. It consumes the render
+result/receipt, validates the cue ID, and performs the same manifest, licence,
+Silicon-copy, and prompt-log updates without re-generating audio.
+
 ### 10.2a Ludo.ai Audio Generator (fallback for a specific hero cue only)
 
 | Setting | Value |
