@@ -98,10 +98,16 @@ gdd-assets/
 - **Anatomy:** P1/P2 idle + walk/jump/fall/land sheets, Neuron Keeper static +
   36-frame idle, `scan.synapse`, `scan.muscle`, `pad.dendrite`,
   `pad.terminal`, `gate.ferry`, `prop.tracer`, `pulse.terminal`, both
-  receptors, and the pretty nerve-forest sky are runtime art. The
-  `tile.anatomy.atlas` is still a placeholder SVG.
+  receptors, the pretty nerve-forest sky, the interim 04 sky, the four material
+  atlases, and the interim 04 gate/exit placeholders are runtime art. Final
+  Nano Banana replacements are tracked in the additive M3 prompt pack.
 - **Silicon:** all listed sprites and the board sky are runtime art. The
   circuit atlas is still a placeholder SVG.
+- **Placeholders:** colored 48×48 squares with four-letter labels in the
+  captures are procedural placeholder sprites, not tiles. The current visible
+  ones are `sprite.scan.neuron` (yellow NEUR), `sprite.scan.pathway` (cyan
+  PATH), `sprite.scan.interrupt` (cyan INTE) and `sprite.exit.silicon` (yellow
+  SILI). See [`../assets/prompt-library-v01.md`](../assets/prompt-library-v01.md).
 - **Audio:** every cue is a placeholder; no audio files exist in this pack.
 - **UI:** the game HUD, dialogue, map, concept log, debrief and pause menu are
   CSS/DOM, not raster assets. They are visible in the action-shot walkthrough;

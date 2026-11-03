@@ -99,9 +99,13 @@ it publishes the `dist` artifact, which already contains the merged gallery.
   `level.json` has `"gateIds": []`; no 03 room entity opens it. The walkthrough
   captures the 03 threshold gate as a world object and the Silicon
   `gate-transfer` overlay as the concept-gate example.
-- **04 background:** `bg.muscle_endplate.sky` is declared without a source
-  file, so the room renders a procedural gradient behind the final sprites.
-  The 04 captions call this out.
+- **04 background:** the 2026-11-03 additive pass now wires an interim
+  1280×720 `bg.muscle_endplate.sky` placeholder; the final Nano Banana pretty
+  sky is pending. The 04 captions call this out.
+- **03 scan placeholders:** `sprite.scan.neuron` and `sprite.scan.pathway` are
+  colored placeholder boxes (yellow NEUR, cyan PATH); `scan-myelin` reuses the
+  neuron icon. Revised square prompts are in
+  [`../assets/prompt-library-v01.md`](../assets/prompt-library-v01.md).
 - No audio files exist; every cue is a placeholder.
 - The key-art shots are stills with the UI hidden, not separately authored
   marketing art.

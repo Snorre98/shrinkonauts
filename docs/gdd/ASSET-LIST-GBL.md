@@ -41,7 +41,8 @@ placeholders and derived review material.
 
 | Asset | What it is | Licence / note |
 |---|---|---|
-| `final/anatomy/tiles/anatomy-atlas.svg` | In-repo placeholder material atlas | CC0-1.0; replace with final 32×32 atlas |
+| `final/anatomy/tiles/bone-atlas.png`, `nerve-atlas.png`, `muscle-atlas.png`, `membrane-atlas.png` | In-repo procedural interim material atlases | CC0-1.0; replace with final Nano Banana swatches |
+| `final/anatomy/tiles/anatomy-atlas.svg` | In-repo placeholder atlas retained as a test fixture | CC0-1.0; no longer wired |
 | `final/silicon/tiles/circuit-atlas.svg` | In-repo placeholder circuit atlas | CC0-1.0; replace with final atlas |
 | `screenshots/current/*` | Project screenshots / contact sheets | Group work; contains AI-generated art |
 | `screenshots/placeholder-era/*` | Project screenshots of the placeholder build | Group work |

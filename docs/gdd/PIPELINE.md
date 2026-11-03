@@ -296,10 +296,13 @@ across the play band, so it is not ready to wire.
 
 ## 5. Atlases, UI and fonts
 
-- `tile.anatomy.atlas` and `tile.circuit.atlas` are **placeholder SVG** atlases
-  authored in-repo (CC0-1.0). The final target is a 256×192 bone `blob47` atlas
-  and a 128×128 nerve `edge` atlas, assembled from 32×32 frames in Aseprite.
-  The bone/nerve JPEGs in `concepts/` are material swatches, not frame atlases.
+- Anatomy uses four **procedural interim PNG atlases**: 256×192 bone `blob47`,
+  128×128 nerve `edge`, 128×128 muscle `edge`, and 128×128 membrane `edge`.
+  They are assembled from 32×32 frames by `npm run art:atlas` and tinted by the
+  material. `tile.anatomy.atlas` is no longer wired and is retained only as a
+  test fixture. `tile.circuit.atlas` remains a placeholder SVG. The bone/nerve
+  JPEGs in `concepts/` are material swatches, not frame atlases; replace the
+  neutral swatches with final Nano Banana sources before tint removal.
 - The UI is CSS/DOM, not raster art. The only UI image assets are the two hub
   cycle icons (final) and the badge (placeholder).
 - Fonts are Silkscreen and Pixelify Sans, both SIL OFL 1.1. The runtime loads

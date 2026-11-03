@@ -214,15 +214,16 @@ No third-party images or audio are included.
 ## 6. Remaining capture gaps
 
 The Playwright capture pass now produces the hub, 03, 04, Silicon, UI and
-accessibility set. Two content gaps remain visible in the captures:
+accessibility set. These content gaps remain visible in the captures:
 
 1. **03 concept gate** — `gate-nerve-01` is authored but `level.json` has
    `"gateIds": []`; no 03 room entity opens it. The walkthrough uses the 03
    threshold gate as the physical gate and Silicon's `gate-transfer` as the
    concept-gate overlay.
-2. **04 muscle background** — `bg.muscle_endplate.sky` is declared without a
-   source file, so the room renders a procedural gradient behind the final
-   sprites. The 04 captions say this.
+2. **04 muscle background** — the 2026-11-03 additive pass now wires an interim
+   1280×720 `bg.muscle_endplate.sky` placeholder; the final Nano Banana pretty
+   sky is still pending. The 04 captions say this. See
+   [`../m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md).
 
 Also still missing: online co-op (M4 placeholder), audio files, and final
 concept-gate art for 03 if the gate is wired later. The capture commands are in

@@ -193,13 +193,35 @@ room/boot tests, but the app does not boot it.
 | `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
 | `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, and the 03 pretty sky are final, while deferred entries remain placeholders |
 
-The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 31/51
+The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 34/56
 placeholders; the POC player sheets, Neuron Keeper static/idle, readable
-scan/entity sprites, and the pretty 03 sky are final. `bg.nerve_forest.far`,
-`.mid` and `.near` are declared placeholders/future layered work; the room
-wires only the sky. The dev fixture still resolves 10/10 placeholders, or 7/10
-with its fixture manifest selected by the scripts. Unknown `?assets=` values
-fall back to placeholder mode.
+scan/entity sprites, the pretty 03 sky, the interim 04 sky, the four material
+atlases, and the interim 04 gate/exit placeholders have sources. `bg.nerve_forest.far`,
+`.mid`, `.near`, and `bg.muscle_endplate.far`, `.mid`, `.near` remain declared
+placeholders/future layered work; both rooms wire only their sky. The new M3
+additive prompt pack is [`docs/m3/muscle-endplate-asset-requirements-v01.md`](docs/m3/muscle-endplate-asset-requirements-v01.md).
+The dev fixture still resolves 10/10 placeholders, or 7/10 with its fixture
+manifest selected by the scripts. Unknown `?assets=` values fall back to
+placeholder mode.
+
+### Placeholder legend
+
+Colored 48×48 squares with four-letter labels are procedural placeholder
+sprites, not tiles. `src/assets/placeholder-provider.ts` fills them
+deterministically: yellow is `palette.nerve`, cyan is `palette.accent`, and the
+label is the first four characters of the last asset-ID segment. In authored
+rooms the remaining placeholder-only sprites are:
+
+- `sprite.scan.neuron` — yellow **NEUR**, used by both `scan-neuron` and
+  `scan-myelin` in `03-nerve-forest`;
+- `sprite.scan.pathway` — cyan **PATH** in `03-nerve-forest`;
+- `sprite.scan.interrupt` — cyan **INTE** in `01-interrupt-loop`;
+- `sprite.exit.silicon` — yellow **SILI** in `01-interrupt-loop`.
+
+Some assets have `src` files but keep `placeholder: true` because they are
+interim procedural art, not final Nano Banana outputs. See
+[`docs/assets/prompt-library-v01.md`](docs/assets/prompt-library-v01.md) for the
+full inventory and the replacement order.
 
 ## Project layout
 
@@ -258,6 +280,13 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
   of done, and remaining playtest checks.
 - [`docs/m1.9/README.md`](docs/m1.9/README.md) — bathroom hub, pack catalog,
   per-pack saves, and launch transition.
+- [`docs/m3/muscle-endplate-asset-requirements-v01.md`](docs/m3/muscle-endplate-asset-requirements-v01.md)
+  — additive 04 sky, shared tile-atlas prompts, and the `art:atlas` workflow.
+- [`docs/assets/prompt-library-v01.md`](docs/assets/prompt-library-v01.md) —
+  cross-discipline inventory of graphics/audio placeholders, prompt routing,
+  and completion order.
+- [`docs/adr-assets/README.md`](docs/adr-assets/README.md) — ADR-0078 for the
+  asset prompt-library governance and placeholder completion.
 - [`docs/m1.9/remaining-work.md`](docs/m1.9/remaining-work.md) — what is
   deliberately missing and which milestone owns it.
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
@@ -274,8 +303,8 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (45 files / 423 tests), pack validation/smoke pass, and the browser
-smoke passes 7/7. The hub starts Anatomy in Solo or Local co-op, returns to the
+suite passes (53 files / 540 tests), pack validation/smoke pass, and the browser
+smoke passes 11/11. The hub starts Anatomy in Solo or Local co-op, returns to the
 bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
 M2 and M4.0b. Phone-controller same-screen co-op is planned as M4.0a; see
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).

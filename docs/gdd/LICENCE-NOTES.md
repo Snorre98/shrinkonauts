@@ -32,12 +32,16 @@ The exact per-file entries are in `manifest.json` and
 - `gate.ferry`, `prop.tracer`, `pulse.terminal`
 - both receptors
 - `bg.nerve_forest.sky`
-- `tile.anatomy.atlas` (CC0 placeholder)
+- `bg.muscle_endplate.sky` (procedural interim)
+- `tile.bone.atlas`, `tile.nerve.atlas`, `tile.muscle.atlas`,
+  `tile.membrane.atlas` (procedural interim, CC0-1.0)
+- `tile.anatomy.atlas` (CC0 test fixture; no longer wired)
+- `sprite.gate.nerve`, `sprite.exit` (procedural interim)
 
-It does **not** yet list every new entity (for example `sprite.exit`,
-`scan.neuron`, `scan.pathway`, `scan.reflex`, `gate.nerve`, the badge, the
-deferred UI panels or audio). Those are placeholders without final art, so the
-missing entries should be added before any of them becomes final.
+It does **not** yet list every new entity (for example `scan.neuron`,
+`scan.pathway`, `scan.reflex`, the badge, the deferred UI panels or audio).
+Those are placeholders without final art, so the missing entries should be added
+before any of them becomes final.
 
 ### Silicon
 

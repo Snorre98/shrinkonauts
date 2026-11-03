@@ -46,7 +46,7 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Beat progress and requested hint/reset affordance | Working |
 | Composable cosmetic effects and tile visuals | Working |
 | Material/pattern catalog, tile grids, autotiling, variants | Working |
-| Atlas assets, named regions, frame refs, placeholder atlas | Working |
+| Atlas assets, named regions, frame refs, four material atlases | Working |
 | World/object/background pattern projection | Working |
 | UI material/pattern slots and contrast-safe fallback | Working |
 | 03/04 fully materialized placeholder proof | Working |
@@ -501,12 +501,13 @@ logical IDs such as `sprite.agent.neuron`, `bg.nerve_forest.mid`, or
 final manifest → fixture/pack manifest → placeholder provider
 ```
 
-The anatomy pack declares 44 IDs and resolves all 44 to placeholders, including
-the player sprites, tileset, parallax layers, agent/gate/scene sprites,
-checkpoint, exit, and audio cues. `?assets=fixture` looks for an anatomy fixture
-manifest; because none is authored for this slice, it warns and keeps
-placeholders. The dev fixture still resolves 10/10 placeholders, or 7/10 with
-its fixture manifest selected by the scripts.
+The anatomy pack declares 56 IDs. Final-source entries include the player
+sprites, Neuron Keeper, readable entity sprites, the 03 pretty sky, the interim
+04 sky, four material atlases, and interim 04 gate/exit placeholders; the
+remaining entries resolve to procedural placeholders. `?assets=fixture` looks
+for an anatomy fixture manifest; because none is authored for this slice, it
+warns and keeps placeholders. The dev fixture still resolves 10/10 placeholders,
+or 7/10 with its fixture manifest selected by the scripts.
 
 The preload plan, validation, and boot fail loudly if an ID is unknown or a
 referenced file is missing. `applyTheme` maps pack palette/fonts to CSS
@@ -630,14 +631,14 @@ using system Chrome.
 
 ## Verification performed
 
-On 2026-11-01, after the P2 re-baseline and POC player animation:
+On 2026-11-03, after the additive 04/tile-atlas pass:
 
 ```text
-npm test             45 files, 423 tests passed
+npm test             53 files, 540 tests passed
 npm run build        tsc clean + Vite production build
 npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
-npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (45 IDs, 43 placeholders)
-npm run smoke:e2e     7/7 passed (system Chrome, port 4173)
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (48 IDs, 34 placeholders)
+npm run smoke:e2e     11/11 passed (system Chrome)
 ```
 
 ### Screenshots
