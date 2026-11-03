@@ -316,13 +316,42 @@ function walkPlayerTo(
   runtime.placePlayer(playerId, point.x, point.y);
 }
 
+function feetForEntity(runtime: GameRuntime, entityId: string): { x: number; y: number } {
+  const point = runtime.entityPixel(entityId);
+  assert(point, `room entity "${entityId}" is missing`);
+  return { x: point.x, y: point.y + 16 };
+}
+
+function placeAtExit(
+  content: ReturnType<typeof loadContent>,
+  roomId: string,
+  exitId: string,
+): { x: number; y: number } {
+  const room = content.rooms[roomId];
+  assert(room, `room "${roomId}" is missing`);
+  const exit = room.exits?.find((entry) => entry.id === exitId);
+  assert(exit, `exit "${exitId}" is missing`);
+  return {
+    x: (exit.x + 0.5) * room.tileSize,
+    y: (exit.y + 1) * room.tileSize,
+  };
+}
+
 function solveNodeRun(
   runtime: GameRuntime,
   content: ReturnType<typeof loadContent>,
 ): void {
+  const pads: Record<string, string> = {
+    "input-a": "pad-input-a",
+    "input-b": "pad-input-b",
+    "terminal-zone": "pad-terminal",
+  };
   for (const nodeId of ["input-a", "input-b", "terminal-zone"]) {
     const point = sensorCenter(content, "puzzle-node-run", nodeId);
-    runtime.placePlayer("p1", point.x, 20 * 32);
+    const pad = pads[nodeId];
+    assert(pad, `node "${nodeId}" has no visible pad`);
+    const standing = feetForEntity(runtime, pad);
+    runtime.placePlayer("p1", point.x, standing.y);
     runtime.step(1 / 60, frameInput());
   }
   runtime.step(1 / 60, frameInput());
@@ -341,9 +370,13 @@ function solveNodeRun(
   );
 }
 
-function finishNodeRunDebrief(runtime: GameRuntime): void {
-  runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
-  runtime.placePlayer("p2", 36.5 * 32, 20 * 32);
+function finishNodeRunDebrief(
+  runtime: GameRuntime,
+  content: ReturnType<typeof loadContent>,
+): void {
+  const exit = placeAtExit(content, "room-nerve-forest", "exit-to-muscle");
+  runtime.placePlayer("p1", exit.x, exit.y);
+  runtime.placePlayer("p2", exit.x - 32, exit.y);
   runtime.step(1 / 60, frameInput());
   assert(
     runtime.snapshot().state === "debrief",
@@ -387,7 +420,8 @@ function solveEndplateFerry(
   );
 
   const plate = sensorCenter(content, "puzzle-endplate-ferry", "terminal-plate");
-  runtime.placePlayer("p1", plate.x, 20 * 32);
+  const platePad = feetForEntity(runtime, "pad-terminal");
+  runtime.placePlayer("p1", plate.x, platePad.y);
   for (let frame = 0; frame < 90; frame += 1) {
     runtime.step(1 / 60, frameInput());
   }
@@ -424,8 +458,16 @@ function solveEndplateFerry(
   );
 }
 
-function finishEndplateDebrief(runtime: GameRuntime): void {
-  runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+function finishEndplateDebrief(
+  runtime: GameRuntime,
+  content: ReturnType<typeof loadContent>,
+): void {
+  const exit = placeAtExit(
+    content,
+    "room-muscle-effector",
+    "exit-to-reflex-core",
+  );
+  runtime.placePlayer("p1", exit.x, exit.y);
   runtime.step(1 / 60, frameInput());
   assert(
     runtime.snapshot().state === "debrief",
@@ -668,7 +710,7 @@ function runAnatomyRuntime(): RuntimeResult {
   );
 
   // Exit -> 03 debrief -> 04 transition.
-  finishNodeRunDebrief(runtime);
+  finishNodeRunDebrief(runtime, content);
 
   const transitioned = runtime.snapshot();
   assert(
@@ -691,7 +733,7 @@ function runAnatomyRuntime(): RuntimeResult {
 
   // 04 puzzle -> debrief -> complete -> evidence.
   solveEndplateFerry(runtime, content);
-  finishEndplateDebrief(runtime);
+  finishEndplateDebrief(runtime, content);
 
   const evidence = runtime.exportEvidence();
   assert(evidence.mode === "co-op", "[anatomy] evidence mode is wrong");
@@ -870,7 +912,8 @@ function solveInterruptLoop(
   );
 
   const plate = sensorCenter(content, "puzzle-interrupt-loop", "sensor-pad");
-  runtime.placePlayer("p1", plate.x, 20 * 32);
+  const pad = feetForEntity(runtime, "pad-sensor");
+  runtime.placePlayer("p1", plate.x, pad.y);
   for (let frame = 0; frame < 90; frame += 1) {
     runtime.step(1 / 60, frameInput());
   }
@@ -916,9 +959,17 @@ function solveInterruptLoop(
   );
 }
 
-function finishInterruptLoopDebrief(runtime: GameRuntime): void {
-  runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
-  runtime.placePlayer("p2", 36.5 * 32, 20 * 32);
+function finishInterruptLoopDebrief(
+  runtime: GameRuntime,
+  content: ReturnType<typeof loadContent>,
+): void {
+  const exit = placeAtExit(
+    content,
+    "room-interrupt-loop",
+    "exit-to-actuator",
+  );
+  runtime.placePlayer("p1", exit.x, exit.y);
+  runtime.placePlayer("p2", exit.x - 32, exit.y);
   runtime.step(1 / 60, frameInput());
   assert(
     runtime.snapshot().state === "debrief",
@@ -1085,7 +1136,7 @@ function runSiliconRuntime(): RuntimeResult {
   );
 
   // Exit, debrief, evidence.
-  finishInterruptLoopDebrief(runtime);
+  finishInterruptLoopDebrief(runtime, content);
 
   const evidence = runtime.exportEvidence();
   assert(evidence.mode === "co-op", "[silicon] evidence mode is wrong");

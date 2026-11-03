@@ -73,7 +73,7 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // Node Run: P1 and P2 press one dendrite input each, then P1 reaches the
   // terminal. The threshold counter and terminal relay open the exit gate.
   await teleport(page, "pad-input-a", "pad-input-b");
-  await teleport(page, "pad-terminal");
+  await teleport(page, "pad-terminal", "pad-input-b");
   await page.keyboard.press("q");
   await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
     "Signal restored",
@@ -90,8 +90,10 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
-    runtime.placePlayer("p1", 1200, 640);
-    runtime.placePlayer("p2", 1180, 640);
+    const exit = runtime.entityPixel("exit-nerve");
+    if (!exit) throw new Error("exit-nerve is missing");
+    runtime.placePlayer("p1", exit.x, exit.y + 48);
+    runtime.placePlayer("p2", exit.x - 32, exit.y + 48);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
 
@@ -133,11 +135,11 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // P1 pulses the terminal; the Ca gate + receptor relay opens the muscle gate.
   await teleport(page, "motor-terminal");
   await page.keyboard.press("f");
+  await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry ✓");
   await page.keyboard.press("q");
   await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
     "Signal restored",
   );
-  await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry ✓");
   await expect(
     page.locator('.feedback-surface[data-surface-id="fb:carrier:ach-packet"]'),
   ).toContainText("ACh packet cleared", { timeout: 6_000 });
@@ -145,7 +147,9 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
-    runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+    const exit = runtime.entityPixel("exit-muscle");
+    if (!exit) throw new Error("exit-muscle is missing");
+    runtime.placePlayer("p1", exit.x, exit.y + 48);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
   await expect(page.getByRole("dialog", { name: "Level complete" })).toHaveCount(0);

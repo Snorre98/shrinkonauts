@@ -36,11 +36,12 @@ spawn (checkpoint-muscle-entry)
   → agent-muscle         dlg-muscle-01 (cleft, Ca²⁺, ACh, nicotinic receptor, AChE)
       └─ correct choice reveals CON-4 and CON-6
   → motor-terminal       interact activation (puzzle starts)
+  → climb presynaptic tower to pad-terminal
   → pad-terminal         terminal plate starts the Ca²⁺ timer
   → ca-gate              opens when the timer elapses (non-latched)
-  → ach-packet           P2 carries the packet across the cleft
-  → nicotinic-receptor   place the packet in the matching socket
-  → motor-terminal       P1 pulses; the receptor binds
+  → ach-packet           P2 carries the packet across the elevated cleft bridge
+  → nicotinic-receptor   place the packet in the matching socket on the muscle side
+  → motor-terminal       P1 returns to the terminal and pulses; the receptor binds
   → muscle-gate          Ca²⁺ gate + receptor relay opens the latched gate
   → exit-to-reflex-core  debrief for OBJ-2 → next level or evidence export
 ```
@@ -96,15 +97,20 @@ trace do.
 | Background | `bg.muscle_endplate`; final 1280×720 sky wired, far/mid/near declared placeholders |
 | Spawns | P1 `(3, 20)`, P2 `(5, 20)` |
 | Checkpoint | `checkpoint-muscle-entry` at `(4, 20)` |
-| Agent | `agent-muscle` at `(6, 20)` |
-| Terminal | `motor-terminal` at `(9, 20)`; visible plate `pad-terminal` at `(11, 20)`; sensor rect x 336–400, y 600–648 |
-| Packet | `ach-packet` / `body-ach-packet` at `(13, 20)` |
-| Ca²⁺ gate | `ca-gate` at `(14, 20)` |
-| Cleft | visible scan label at `(16, 18)`; the floor is continuous |
-| Receptors | nicotinic at `(22, 20)` (snap 720, 620); wrong socket at `(26, 20)` (snap 848, 620) |
-| Muscle gate | `muscle-gate` at `(33, 20)`; lever decor `(35, 19)` |
-| Exit | `exit-to-reflex-core` at `(36, 19)`, locked by `puzzle-endplate-ferry` |
-| Tether | `off`; puzzle geometry spans about 768 × 40 px, inside 1280 × 720 |
+| Agent | `agent-muscle` at `(6, 20)` (ground guide) |
+| Presynaptic tower | motor terminal `(8, 18)`; terminal plate `(14, 14)`; sensor rect x 448–512, y 408–456 |
+| Packet | `ach-packet` / `body-ach-packet` at `(17, 12)` on the vesicle dock |
+| Ca²⁺ gate | `ca-gate` at `(20, 11)` at the presynaptic edge |
+| Cleft | elevated bridge `(20–22, row 11)` and `(24–29, row 10)`; visible scan label at `(27, 10)` |
+| Receptors | wrong socket at `(31, 9)` (snap 1008, 268); nicotinic at `(34, 9)` (snap 1104, 268) |
+| Muscle gate | `muscle-gate` at `(37, 9)` |
+| Exit | `exit-to-reflex-core` at `(37, 13)`, locked by `puzzle-endplate-ferry` |
+| Tether | `off`; puzzle geometry spans about 832 × 320 px, inside 1280 × 720 |
+
+The ground remains as a safe fallback, but the ferry route is now a presynaptic
+tower, an elevated cleft bridge, and a postsynaptic receptor platform. The
+terminal plate, ACh dock, Ca²⁺ gate, receptors, muscle gate and exit are all
+off the floor. The player must climb before any ferry step can advance.
 
 Visible pads and labels are `scanTarget` entities aligned with the puzzle
 sensors. The engine does not render plate/zone sensor rects, and puzzle gates
@@ -141,15 +147,15 @@ the caveat rather than adding a curriculum/schema change without an ADR.
 
 ## Co-op and solo
 
-- **Co-op:** P1 operates the terminal plate and pulse; P2 carries and places
-  the ACh packet. The roles are additive. Either player can activate the
-  puzzle and scan.
-- **Solo:** P1 uses the solo union. Step on the terminal plate, wait for the
-  Ca²⁺ window, pick up and carry the packet, place it on the nicotinic
-  receptor, then pulse the terminal. The plates and timer do not require a
-  second body.
+- **Co-op:** P1 climbs to the terminal plate, descends to the motor terminal,
+  and pulses; P2 climbs to the vesicle dock and carries the ACh packet across
+  the elevated cleft bridge. The roles are additive.
+- **Solo:** P1 uses the solo union. Climb to the terminal plate, descend to the
+  motor terminal, wait for the Ca²⁺ window, climb to the packet, carry it
+  across the bridge, place it on the nicotinic receptor, then return to the
+  motor terminal to pulse. The plates and timer do not require a second body.
 - **No co-op-only route:** solo completes the same sequence.
-- **Tether:** `off`; the room is one screen and the puzzle geometry fits the
+- **Tether:** `off`; the room is one screen and the platform geometry fits the
   1280 × 720 guard.
 
 ## Controls
@@ -203,10 +209,11 @@ pause/close, `M` mute.
 
 ## M1.8 material proof
 
-The room is fully materialized: muscle walls/floor use the final coloured
-`muscle-edge` atlas and the entrance strip uses the final coloured
-`membrane-edge` atlas. The `muscle-gate` carries a world-space `muscle-fibers`
-overlay that shares phase with the muscle floor. The material tints are removed
+The room is fully materialized: muscle walls/floor and the postsynaptic/exit
+platforms use the final coloured `muscle-edge` atlas, while the presynaptic
+tower, vesicle dock and cleft bridge use the final coloured `membrane-edge`
+atlas. The `muscle-gate` carries a world-space `muscle-fibers` overlay that
+shares phase with the muscle floor. The material tints are removed
 because the Nano Banana atlases are authored in colour. The final 04 sky
 replaces the procedural gradient; `bg.muscle_endplate.far`, `.mid` and `.near`
 remain declared placeholders. Materials are visual only; collision comes from

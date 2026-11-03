@@ -118,7 +118,7 @@ function contentWithHazard() {
     {
       id: "hazard-runtime-test",
       type: "hazard",
-      x: 6,
+      x: 10,
       y: 20,
       components: { body: { width: 32, height: 32 } },
     },
@@ -235,10 +235,54 @@ function sensorCenter(nodeId: string): { x: number; y: number } {
   };
 }
 
-function pressSensor(runtime: GameRuntime, nodeId: string, actor: "p1" | "p2" = "p1"): void {
+const SENSOR_PAD: Record<string, string> = {
+  "input-a": "pad-input-a",
+  "input-b": "pad-input-b",
+  "terminal-zone": "pad-terminal",
+};
+
+function sensorFeetY(nodeId: string): number {
+  const room = content.rooms["room-nerve-forest"];
+  const entityId = SENSOR_PAD[nodeId];
+  const entity = room?.entities?.find((entry) => entry.id === entityId);
+  if (!room || !entity) {
+    throw new Error(`missing sensor pad ${entityId ?? nodeId}`);
+  }
+  return entity.y * room.tileSize;
+}
+
+function placeAtSensor(
+  runtime: GameRuntime,
+  nodeId: string,
+  actor: "p1" | "p2" = "p1",
+): void {
   const point = sensorCenter(nodeId);
-  runtime.placePlayer(actor, point.x, 20 * 32);
+  runtime.placePlayer(actor, point.x, sensorFeetY(nodeId));
+}
+
+function pressSensor(runtime: GameRuntime, nodeId: string, actor: "p1" | "p2" = "p1"): void {
+  placeAtSensor(runtime, nodeId, actor);
   stepWith(runtime);
+}
+
+function exitFeet(roomId: string, exitId: string): { x: number; y: number } {
+  const room = content.rooms[roomId];
+  const exit = room?.exits?.find((entry) => entry.id === exitId);
+  if (!room || !exit) throw new Error(`missing exit ${exitId}`);
+  return {
+    x: (exit.x + 0.5) * room.tileSize,
+    y: (exit.y + 1) * room.tileSize,
+  };
+}
+
+function placeAtExit(
+  runtime: GameRuntime,
+  roomId: string,
+  exitId: string,
+  actor: "p1" | "p2" = "p1",
+): void {
+  const point = exitFeet(roomId, exitId);
+  runtime.placePlayer(actor, point.x, point.y);
 }
 
 function solveNodeRun(runtime: GameRuntime): void {
@@ -261,7 +305,7 @@ function walkPlayerTo(
 
 function finishNodeRun(runtime: GameRuntime): void {
   solveNodeRun(runtime);
-  runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
+  placeAtExit(runtime, "room-nerve-forest", "exit-to-muscle");
   stepWith(runtime);
   expect(runtime.state).toBe("debrief");
   runtime.submitDebrief(
@@ -340,7 +384,7 @@ function solveEndplateSolo(runtime: GameRuntime): void {
 }
 
 function exitEndplate(runtime: GameRuntime): void {
-  runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+  placeAtExit(runtime, "room-muscle-effector", "exit-to-reflex-core");
   stepWith(runtime);
   expect(runtime.state).toBe("debrief");
 }
@@ -467,7 +511,7 @@ describe("game runtime", () => {
 
     const agent = runtime.entityPixel("agent-neuron");
     if (!agent) throw new Error("agent-neuron missing");
-    runtime.placePlayer("p1", agent.x, 20 * 32);
+    runtime.placePlayer("p1", agent.x, agent.y + 16);
     expect(runtime.snapshot().interaction).toMatchObject({
       kind: "puzzle",
       label: "Start Node Run",
@@ -532,7 +576,7 @@ describe("game runtime", () => {
       x: runtime.simulation.players.p1.spawnX,
       y: runtime.simulation.players.p1.spawnY,
     };
-    runtime.placePlayer("p1", 6.5 * 32, 20 * 32);
+    runtime.placePlayer("p1", 10.5 * 32, 20 * 32);
     stepWith(runtime);
     expect(runtime.snapshot().toast).toBe("Back to the checkpoint");
     expect(runtime.simulation.players.p1.x).toBeCloseTo(spawn.x, 0);
@@ -719,7 +763,7 @@ describe("game runtime", () => {
         ?.visited,
     ).toBe(true);
 
-    runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
+    placeAtExit(runtime, "room-nerve-forest", "exit-to-muscle");
     stepWith(runtime);
     expect(runtime.state).toBe("debrief");
 
@@ -994,16 +1038,12 @@ describe("game runtime", () => {
 
   it("splits the two dendrite inputs across co-op players", () => {
     const { runtime } = makeRuntime();
-    const inputA = sensorCenter("input-a");
-    const inputB = sensorCenter("input-b");
-    const terminal = sensorCenter("terminal-zone");
-
-    runtime.placePlayer("p1", inputA.x, 20 * 32);
-    runtime.placePlayer("p2", inputB.x, 20 * 32);
+    placeAtSensor(runtime, "input-a", "p1");
+    placeAtSensor(runtime, "input-b", "p2");
     stepWith(runtime);
     expect(runtime.snapshot().puzzle?.solved).toBe(false);
 
-    runtime.placePlayer("p1", terminal.x, 20 * 32);
+    placeAtSensor(runtime, "terminal-zone", "p1");
     stepWith(runtime);
     expect(runtime.snapshot().puzzle?.solved).toBe(true);
     expect(runtime.snapshot().abilities).toContain("signal-dash");
@@ -1335,9 +1375,9 @@ describe("game runtime", () => {
         kind: "tileRegion",
         layer: "tiles",
         x1: 19,
-        y1: 20,
-        x2: 33,
-        y2: 20,
+        y1: 16,
+        x2: 38,
+        y2: 16,
       },
     });
     expect(tile?.stages[0]?.timing.stagger).toEqual({

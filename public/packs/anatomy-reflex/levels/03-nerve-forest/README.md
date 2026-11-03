@@ -31,15 +31,22 @@ exit still gates the 03 → 04 transition.
 
 ```text
 spawn (checkpoint-entry)
+  → climb dendrite branches
   → agent-neuron          dlg-neuron-01 (threshold, all-or-none, one-way, myelin)
       └─ correct choice reveals CON-3, CON-5 and map-nerve-forest
   → pad-input-a/b         one input is below threshold; two reach it
   → gate-threshold        opens and latches when the counter reaches 2
-  → axon-entry            the behind gate closes as a one-way cue
+  → axon-entry            the behind gate closes and the hillock drops into the axon
+  → myelin catwalk        jump the node gaps along the axon
   → pad-terminal          terminal zone reached
   → gate-exit             threshold + terminal relay opens the gate
   → exit-to-muscle        debrief for OBJ-2 → evidence export
 ```
+
+The room is now a vertical route rather than a flat floor. The ground remains as
+a safe fallback, but every puzzle station sits on a floating dendrite, soma,
+hillock, myelin-node, or terminal platform. The axon drop is four tiles high, so
+the one-way gate cue is also physically one-way without dash.
 
 ## Puzzle rules
 
@@ -88,12 +95,14 @@ bursts are presentation, not physical doors.
 | Background | `bg.nerve_forest`, sky plate only (POC); far/mid/near source-only/deferred |
 | Spawns | P1 `(3, 20)`, P2 `(5, 20)` |
 | Checkpoint | `checkpoint-entry` at `(4, 20)` |
-| Inputs | `input-a` at x 224–288, `input-b` at x 320–384, floor row 20 |
-| Axon entry | zone at x 544–672, y 552–656; the bridge is the axon |
-| Terminal | zone at x 1088–1184, floor row 20; `pad-terminal` at `(34, 20)` |
-| Gates | `gate-threshold` at `(14, 20)`, `gate-behind` at `(18, 18)`, `gate-exit` at `(36, 20)` |
-| Exit | `exit-to-muscle` at `(37, 19)`, locked by `puzzle-node-run` |
-| Tether | `off`; puzzle geometry fits inside the 1280 × 720 viewport |
+| Inputs | `input-a` on dendrite A, rect x 224–288, y 536–584; `input-b` on dendrite B, rect x 320–384, y 472–520 |
+| Soma | threshold platform at row 14; `gate-threshold` at `(15, 14)` |
+| Axon entry | hillock platform at row 12; zone x 512–608, y 296–400; four-tile drop to the axon |
+| Axon | myelin-node catwalk at row 16 from x 19–21, 23–25, 27–29, 31–33, then terminal x 35–37 |
+| Terminal | zone x 1120–1184, y 472–520; `pad-terminal` at `(35, 16)` |
+| Gates | `gate-threshold` at `(15, 14)`, `gate-behind` at `(18, 12)`, `gate-exit` at `(36, 16)` |
+| Exit | `exit-to-muscle` at `(37, 15)`, locked by `puzzle-node-run` |
+| Tether | `off`; the puzzle span is about 992 × 288 px, inside the 1280 × 720 viewport |
 
 Visible pads (`pad-input-a`, `pad-input-b`, `pad-terminal`) are `scanTarget`
 entities aligned with the plate/zone rects. The engine does not render puzzle
@@ -120,12 +129,12 @@ authored in this chunk.
 
 ## Co-op and solo
 
-- **Co-op:** P1 and P2 can each stand on one dendrite input; the two plate events
-  raise the counter. Either player can scan and run the axon.
-- **Solo:** P1 presses input A, steps to input B, then runs the axon. The plates
+- **Co-op:** P1 and P2 can climb the dendrite branches and each stand on one
+  input. Either player can then jump the myelin catwalk to the terminal.
+- **Solo:** P1 presses input A, climbs to input B, then runs the axon. The plates
   latch their events, so a second body is never required.
-- **Tether:** `off`; the room's puzzle geometry fits one screen. The room is
-  1280 × 736 px, but the `off` guard measures the puzzle geometry, not the room.
+- **Tether:** `off`; the room is one screen and the platform route keeps the
+  puzzle geometry inside the 1280 × 720 viewport.
 
 ## Controls
 
@@ -165,9 +174,9 @@ pause/close, `M` mute.
 ## M1.8 material proof
 
 The room is fully materialized: bone walls/floor use the `bone-blob47` atlas
-variant set, the central platform uses `edge` autotiling backed by the
-`nerve-edge` atlas variant set, and the tile material grid never changes
-collision. The checked-in atlases are the final coloured Nano Banana
+variant set, the dendrite, soma, hillock, myelin and terminal platforms use
+`edge` autotiling backed by the `nerve-edge` atlas variant set, and the tile
+material grid never changes collision. The checked-in atlases are the final coloured Nano Banana
 `bone-blob47` and `nerve-edge` atlases; the material tints are removed. See
 `materials.json` and `theme.json` for the shared world/UI definitions. Human
 visual review is pending.

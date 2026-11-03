@@ -4,13 +4,22 @@
   "title": "Nerve Forest",
   "order": 3,
   "status": "validated",
-  "syllabusObjectiveIds": ["OBJ-2"],
-  "conceptIds": ["CON-3", "CON-5"],
+  "syllabusObjectiveIds": [
+    "OBJ-2"
+  ],
+  "conceptIds": [
+    "CON-3",
+    "CON-5"
+  ],
   "roomId": "room-nerve-forest",
   "backgroundId": "bg.nerve_forest",
-  "dialogueIds": ["dlg-neuron-01"],
+  "dialogueIds": [
+    "dlg-neuron-01"
+  ],
   "gateIds": [],
-  "puzzleIds": ["puzzle-node-run"],
+  "puzzleIds": [
+    "puzzle-node-run"
+  ],
   "feedback": {
     "puzzles": {
       "puzzle-node-run": {
@@ -18,37 +27,63 @@
           {
             "id": "input",
             "label": "Press a dendrite input",
-            "nodes": ["input-a", "input-b"]
+            "nodes": [
+              "input-a",
+              "input-b"
+            ]
           },
           {
             "id": "threshold",
             "label": "Reach threshold",
-            "nodes": ["stimulus-counter", "threshold-gate"]
+            "nodes": [
+              "stimulus-counter",
+              "threshold-gate"
+            ]
           },
           {
             "id": "axon",
             "label": "Run the axon",
-            "nodes": ["axon-entry"]
+            "nodes": [
+              "axon-entry"
+            ]
           },
           {
             "id": "terminal",
             "label": "Reach the terminal",
-            "nodes": ["terminal-zone"]
+            "nodes": [
+              "terminal-zone"
+            ]
           },
           {
             "id": "exit",
             "label": "Open the exit",
-            "nodes": ["gate-exit"]
+            "nodes": [
+              "gate-exit"
+            ]
           }
         ],
         "nodes": {
-          "input-a": { "label": "Dendrite input A" },
-          "input-b": { "label": "Dendrite input B" },
-          "stimulus-counter": { "label": "Stimulus counter" },
-          "threshold-gate": { "label": "Threshold gate" },
-          "axon-entry": { "label": "Axon entry" },
-          "behind-gate": { "label": "One-way gate" },
-          "terminal-zone": { "label": "Axon terminal" },
+          "input-a": {
+            "label": "Dendrite input A"
+          },
+          "input-b": {
+            "label": "Dendrite input B"
+          },
+          "stimulus-counter": {
+            "label": "Stimulus counter"
+          },
+          "threshold-gate": {
+            "label": "Threshold gate"
+          },
+          "axon-entry": {
+            "label": "Axon entry"
+          },
+          "behind-gate": {
+            "label": "One-way gate"
+          },
+          "terminal-zone": {
+            "label": "Axon terminal"
+          },
           "spike-relay": {
             "label": "Axon relay",
             "effectPreset": "fx.tile.path",
@@ -56,12 +91,14 @@
               "kind": "tileRegion",
               "layer": "tiles",
               "x1": 19,
-              "y1": 20,
-              "x2": 33,
-              "y2": 20
+              "y1": 16,
+              "x2": 38,
+              "y2": 16
             }
           },
-          "gate-exit": { "label": "Exit gate" }
+          "gate-exit": {
+            "label": "Exit gate"
+          }
         }
       }
     }
@@ -72,26 +109,39 @@
     "x": 2,
     "y": 1,
     "edges": [
-      { "to": "map-joint-chamber", "type": "door" },
-      { "to": "map-muscle-effector", "type": "gate", "puzzleId": "puzzle-node-run" }
+      {
+        "to": "map-joint-chamber",
+        "type": "door"
+      },
+      {
+        "to": "map-muscle-effector",
+        "type": "gate",
+        "puzzleId": "puzzle-node-run"
+      }
     ]
   },
   "evidence": [
     {
       "objectiveId": "OBJ-2",
       "event": "puzzle_solved",
-      "filter": { "puzzleId": "puzzle-node-run" },
+      "filter": {
+        "puzzleId": "puzzle-node-run"
+      },
       "required": true
     },
     {
       "objectiveId": "OBJ-2",
       "event": "debrief_answered",
-      "filter": { "promptId": "prompt-obj-2" },
+      "filter": {
+        "promptId": "prompt-obj-2"
+      },
       "required": true
     }
   ],
   "unlocks": [],
-  "nextLevelIds": ["04-muscle-effector"],
+  "nextLevelIds": [
+    "04-muscle-effector"
+  ],
   "coop": {
     "supported": true,
     "notes": "P1 and P2 can each press one dendrite input; either player can scan and run the axon. Solo presses both inputs and runs the axon; the one-shot input triggers latch, so no second body is required."
@@ -100,6 +150,6 @@
     "levelSpec": "README.md",
     "playtestedSolo": false,
     "playtestedCoop": false,
-    "notes": "M2 Node Run: two dendrite inputs raise the stimulus counter to threshold, the threshold gate latches, and the terminal relay opens the exit. Automated unit, pack validation, smoke, and browser checks passed; human solo/co-op playtesting is pending. Uses prompt-obj-2 because per-level debrief prompts are not authored."
+    "notes": "M2 Node Run: two dendrite inputs raise the stimulus counter to threshold, the threshold gate latches, and the terminal relay opens the exit. Automated unit, pack validation, smoke, and browser checks passed; human solo/co-op playtesting is pending. Uses prompt-obj-2 because per-level debrief prompts are not authored. Geometry pass: all puzzle-critical stations are on floating platforms/catwalks above the ground; the ground remains a safe fallback."
   }
 }

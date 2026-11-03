@@ -8,59 +8,65 @@
   "tileset": "tileset.anatomy",
   "layers": {
     "tiles": [
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#               ###                    #",
+      "#                                      #",
+      "#           ####                       #",
+      "#                                      #",
+      "#        ###       ### ### ### ### ### #",
+      "#                                      #",
+      "#     ###                              #",
+      "#                                      #",
       "########################################",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                 ####                 #",
-      "#               ##    ##               #",
-      "##################    ##################",
-      "##################    ##################",
-      "##################    ##################"
+      "########################################",
+      "########################################"
     ]
   },
   "tileMaterials": [
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b               nnn                    b",
+    "b                                      b",
+    "b           nnnn                       b",
+    "b                                      b",
+    "b        nnn       nnn nnn nnn nnn nnn b",
+    "b                                      b",
+    "b     nnn                              b",
+    "b                                      b",
     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                                      b",
-    "b                 nnnn                 b",
-    "b               nn    nn               b",
-    "bbbbbbbbbbbbbbbbbb    bbbbbbbbbbbbbbbbbb",
-    "bbbbbbbbbbbbbbbbbb    bbbbbbbbbbbbbbbbbb",
-    "bbbbbbbbbbbbbbbbbb    bbbbbbbbbbbbbbbbbb"
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
   ],
   "tileMaterialLegend": {
-    "b": { "materialId": "bone", "autotile": "blob47" },
-    "n": { "materialId": "nerve", "autotile": "edge" }
+    "b": {
+      "materialId": "bone",
+      "autotile": "blob47"
+    },
+    "n": {
+      "materialId": "nerve",
+      "autotile": "edge"
+    }
   },
   "defaultMaterialId": "bone",
   "materialSeed": 42,
@@ -97,18 +103,20 @@
     {
       "id": "agent-neuron",
       "type": "agent",
-      "x": 30,
-      "y": 20,
+      "x": 13,
+      "y": 14,
       "sprite": "sprite.agent.neuron",
       "idleAnimation": "sprite.agent.neuron.idle",
       "dialogueId": "dlg-neuron-01",
       "label": "Neuron Keeper",
-      "presentation": { "role": "npc" }
+      "presentation": {
+        "role": "npc"
+      }
     },
     {
       "id": "scan-neuron",
       "type": "scanTarget",
-      "x": 11,
+      "x": 6,
       "y": 18,
       "sprite": "sprite.scan.neuron",
       "conceptId": "CON-3",
@@ -117,8 +125,8 @@
     {
       "id": "scan-myelin",
       "type": "scanTarget",
-      "x": 19,
-      "y": 18,
+      "x": 24,
+      "y": 16,
       "sprite": "sprite.scan.neuron",
       "conceptId": "CON-3",
       "label": "Myelin sheath"
@@ -126,8 +134,8 @@
     {
       "id": "scan-pathway",
       "type": "scanTarget",
-      "x": 25,
-      "y": 19,
+      "x": 32,
+      "y": 16,
       "sprite": "sprite.scan.pathway",
       "conceptId": "CON-5",
       "label": "One-way pathway"
@@ -136,37 +144,43 @@
       "id": "pad-input-a",
       "type": "scanTarget",
       "x": 7,
-      "y": 20,
+      "y": 18,
       "sprite": "sprite.pad.dendrite",
       "conceptId": "CON-3",
       "label": "Dendrite input A",
-      "presentation": { "role": "interactable" }
+      "presentation": {
+        "role": "interactable"
+      }
     },
     {
       "id": "pad-input-b",
       "type": "scanTarget",
       "x": 10,
-      "y": 20,
+      "y": 16,
       "sprite": "sprite.pad.dendrite",
       "conceptId": "CON-3",
       "label": "Dendrite input B",
-      "presentation": { "role": "interactable" }
+      "presentation": {
+        "role": "interactable"
+      }
     },
     {
       "id": "pad-terminal",
       "type": "scanTarget",
-      "x": 34,
-      "y": 20,
+      "x": 35,
+      "y": 16,
       "sprite": "sprite.pad.terminal",
       "conceptId": "CON-5",
       "label": "Axon terminal",
-      "presentation": { "role": "interactable" }
+      "presentation": {
+        "role": "interactable"
+      }
     },
     {
       "id": "gate-threshold",
       "type": "puzzleGate",
-      "x": 14,
-      "y": 20,
+      "x": 15,
+      "y": 14,
       "sprite": "sprite.gate.ferry",
       "label": "Threshold gate",
       "components": {
@@ -174,7 +188,10 @@
           "gateId": "gate-threshold"
         },
         "anchors": {
-          "center": { "x": 32, "y": 32 }
+          "center": {
+            "x": 32,
+            "y": 32
+          }
         }
       }
     },
@@ -182,7 +199,7 @@
       "id": "gate-behind",
       "type": "puzzleGate",
       "x": 18,
-      "y": 18,
+      "y": 12,
       "sprite": "sprite.gate.ferry",
       "label": "One-way gate",
       "components": {
@@ -190,7 +207,10 @@
           "gateId": "gate-behind"
         },
         "anchors": {
-          "center": { "x": 32, "y": 32 }
+          "center": {
+            "x": 32,
+            "y": 32
+          }
         }
       }
     },
@@ -198,7 +218,7 @@
       "id": "gate-exit",
       "type": "puzzleGate",
       "x": 36,
-      "y": 20,
+      "y": 16,
       "sprite": "sprite.gate.ferry",
       "label": "Axon exit gate",
       "components": {
@@ -206,7 +226,10 @@
           "gateId": "gate-exit"
         },
         "anchors": {
-          "center": { "x": 32, "y": 32 }
+          "center": {
+            "x": 32,
+            "y": 32
+          }
         }
       }
     },
@@ -214,17 +237,19 @@
       "id": "exit-nerve",
       "type": "decor",
       "x": 37,
-      "y": 19,
+      "y": 15,
       "sprite": "sprite.exit",
       "label": "Muscle Effector exit",
-      "presentation": { "role": "interactable" }
+      "presentation": {
+        "role": "interactable"
+      }
     }
   ],
   "exits": [
     {
       "id": "exit-to-muscle",
       "x": 37,
-      "y": 19,
+      "y": 15,
       "width": 1,
       "height": 1,
       "toLevelId": "04-muscle-effector",
@@ -235,10 +260,10 @@
   "infoAreas": [
     {
       "id": "info-nerve-forest",
-      "x": 6,
-      "y": 17,
-      "width": 32,
-      "height": 4,
+      "x": 4,
+      "y": 8,
+      "width": 34,
+      "height": 13,
       "puzzleId": "puzzle-node-run"
     }
   ],

@@ -2,16 +2,31 @@
   "schemaVersion": "1.1",
   "id": "puzzle-interrupt-loop",
   "title": "Interrupt Loop",
-  "objectiveIds": ["OBJ-5"],
-  "conceptIds": ["CON-7", "CON-8"],
-  "activation": { "mode": "interact", "entityId": "sensor-console" },
+  "objectiveIds": [
+    "OBJ-5"
+  ],
+  "conceptIds": [
+    "CON-7",
+    "CON-8"
+  ],
+  "activation": {
+    "mode": "interact",
+    "entityId": "sensor-console"
+  },
   "tether": "off",
   "nodes": [
     {
       "id": "sensor-pad",
       "type": "plate",
-      "rect": { "x": 448, "y": 600, "width": 64, "height": 48 },
-      "detects": ["player"],
+      "rect": {
+        "x": 320,
+        "y": 472,
+        "width": 64,
+        "height": 48
+      },
+      "detects": [
+        "player"
+      ],
       "minimum": 1,
       "countCarried": false
     },
@@ -24,23 +39,42 @@
       "id": "route-plug",
       "type": "prop",
       "entityId": "route-plug",
-      "tags": ["route"],
+      "tags": [
+        "route"
+      ],
       "shape": "plug",
-      "spawn": { "x": 512, "y": 620 }
+      "spawn": {
+        "x": 528,
+        "y": 374
+      }
     },
     {
       "id": "controller-socket",
       "type": "plate",
-      "rect": { "x": 704, "y": 600, "width": 64, "height": 48 },
-      "detects": ["prop"],
+      "rect": {
+        "x": 736,
+        "y": 216,
+        "width": 64,
+        "height": 48
+      },
+      "detects": [
+        "prop"
+      ],
       "minimum": 1,
       "countCarried": false
     },
     {
       "id": "cpu-socket",
       "type": "plate",
-      "rect": { "x": 864, "y": 600, "width": 64, "height": 48 },
-      "detects": ["prop"],
+      "rect": {
+        "x": 864,
+        "y": 216,
+        "width": 64,
+        "height": 48
+      },
+      "detects": [
+        "prop"
+      ],
       "minimum": 1,
       "countCarried": false
     },
@@ -64,15 +98,40 @@
     }
   ],
   "links": [
-    { "from": "sensor-pad", "to": "sensor-trigger", "type": "press" },
-    { "from": "sensor-trigger", "to": "controller-relay", "type": "activate" },
-    { "from": "controller-socket", "to": "controller-relay", "type": "activate" },
-    { "from": "controller-relay", "to": "cpu-timer", "type": "start" },
-    { "from": "cpu-timer", "to": "gate-actuator", "type": "elapsed" }
+    {
+      "from": "sensor-pad",
+      "to": "sensor-trigger",
+      "type": "press"
+    },
+    {
+      "from": "sensor-trigger",
+      "to": "controller-relay",
+      "type": "activate"
+    },
+    {
+      "from": "controller-socket",
+      "to": "controller-relay",
+      "type": "activate"
+    },
+    {
+      "from": "controller-relay",
+      "to": "cpu-timer",
+      "type": "start"
+    },
+    {
+      "from": "cpu-timer",
+      "to": "gate-actuator",
+      "type": "elapsed"
+    }
   ],
-  "win": { "type": "gateOpen", "gateId": "gate-actuator" },
+  "win": {
+    "type": "gateOpen",
+    "gateId": "gate-actuator"
+  },
   "reset": {
-    "props": ["route-plug"],
+    "props": [
+      "route-plug"
+    ],
     "nodes": [
       "sensor-pad",
       "sensor-trigger",
@@ -85,8 +144,14 @@
     ]
   },
   "evidence": {
-    "onSolve": ["puzzle_solved"],
-    "counters": ["pickups", "drops", "resets"]
+    "onSolve": [
+      "puzzle_solved"
+    ],
+    "counters": [
+      "pickups",
+      "drops",
+      "resets"
+    ]
   },
   "rewards": {
     "abilities": [],
@@ -94,13 +159,42 @@
     "mapNodes": []
   },
   "solution": [
-    { "action": "move", "actor": "p1", "x": 480, "y": 620 },
-    { "action": "wait", "ticks": 2 },
-    { "action": "move", "actor": "p1", "x": 512, "y": 620 },
-    { "action": "pickup", "actor": "p1", "target": "route-plug" },
-    { "action": "move", "actor": "p1", "x": 720, "y": 620 },
-    { "action": "drop", "actor": "p1", "target": "route-plug" },
-    { "action": "wait", "ticks": 80 }
+    {
+      "action": "move",
+      "actor": "p1",
+      "x": 352,
+      "y": 496
+    },
+    {
+      "action": "wait",
+      "ticks": 2
+    },
+    {
+      "action": "move",
+      "actor": "p1",
+      "x": 528,
+      "y": 374
+    },
+    {
+      "action": "pickup",
+      "actor": "p1",
+      "target": "route-plug"
+    },
+    {
+      "action": "move",
+      "actor": "p1",
+      "x": 768,
+      "y": 240
+    },
+    {
+      "action": "drop",
+      "actor": "p1",
+      "target": "route-plug"
+    },
+    {
+      "action": "wait",
+      "ticks": 80
+    }
   ],
   "hints": [
     "The sensor does not shout directly at the CPU. Route the interrupt line to the controller.",

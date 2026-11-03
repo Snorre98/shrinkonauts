@@ -43,9 +43,9 @@ describe("level feedback content", () => {
         kind: "tileRegion",
         layer: "tiles",
         x1: 19,
-        y1: 20,
-        x2: 33,
-        y2: 20,
+        y1: 16,
+        x2: 38,
+        y2: 16,
       },
     });
   });
