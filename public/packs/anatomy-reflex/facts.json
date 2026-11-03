@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "facts": [
+    {
+      "id": "NERV-01#1",
+      "cardId": "NERV-01",
+      "conceptId": "CON-3",
+      "title": "Neuron parts and signal direction",
+      "claim": "A neuron has dendrites, a soma, one axon, and axon terminals. Information flows dendrite → soma → axon → terminal.",
+      "depth": "core"
+    },
+    {
+      "id": "NERV-01#3",
+      "cardId": "NERV-01",
+      "conceptId": "CON-3",
+      "title": "Myelin sheath and nodes",
+      "claim": "Myelin is a lipid-rich sheath made by glial cells. Gaps in the sheath are nodes of Ranvier; myelin speeds conduction.",
+      "depth": "core"
+    },
+    {
+      "id": "NERV-01#5",
+      "cardId": "NERV-01",
+      "conceptId": "CON-3",
+      "title": "Threshold and the action potential",
+      "claim": "A stimulus must reach threshold before an action potential fires. At threshold, voltage-gated Na⁺ channels open; the spike peaks and then repolarises.",
+      "depth": "core"
+    },
+    {
+      "id": "NERV-01#6",
+      "cardId": "NERV-01",
+      "conceptId": "CON-3",
+      "title": "All-or-none and one-way conduction",
+      "claim": "Action potentials are all-or-none: stronger stimuli increase frequency, not amplitude. The refractory period keeps the signal one-way; myelinated axons use saltatory conduction.",
+      "depth": "core"
+    }
+  ]
+}

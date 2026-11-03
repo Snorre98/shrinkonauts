@@ -218,9 +218,11 @@ deterministically: yellow is `palette.nerve`, cyan is `palette.accent`, and the
 label is the first four characters of the last asset-ID segment. In authored
 rooms the remaining placeholder-only sprites are:
 
-- `sprite.scan.neuron` — yellow **NEUR**, used by both `scan-neuron` and
-  `scan-myelin` in `03-nerve-forest`;
-- `sprite.scan.pathway` — cyan **PATH** in `03-nerve-forest`;
+- `sprite.scan.neuron` — yellow **NEUR** for `scan-neuron` in
+  `03-nerve-forest`;
+- `sprite.scan.myelin` — cyan **MYEL** for `scan-myelin` in `03-nerve-forest`;
+- `sprite.scan.pathway` — cyan **PATH** for `scan-pathway` in
+  `03-nerve-forest`;
 - `sprite.scan.interrupt` — cyan **INTE** in `01-interrupt-loop`;
 - `sprite.exit.silicon` — yellow **SILI** in `01-interrupt-loop`.
 

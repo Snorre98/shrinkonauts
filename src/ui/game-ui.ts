@@ -567,6 +567,17 @@ export function mountGameUi(
       }
       card.append(list);
     }
+    const facts = concept.facts.filter((fact) => fact.discovered);
+    if (concept.discovered && facts.length > 0) {
+      const list = el("ul", "concept__facts");
+      for (const fact of facts) {
+        const item = el("li");
+        item.append(el("strong", undefined, fact.title));
+        item.append(document.createTextNode(` — ${fact.claim}`));
+        list.append(item);
+      }
+      card.append(el("h4", "concept__label", "Scanned details"), list);
+    }
     return card;
   }
 

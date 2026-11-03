@@ -14,6 +14,7 @@
   "theme": "theme.json",
   "mapping": "mapping.json",
   "licenses": "licenses.json",
+  "facts": "facts.json",
   "materials": "materials.json",
   "assetManifests": {
     "placeholder": "assets.placeholder.json",
@@ -39,6 +40,7 @@
       "sprite.scan.neuron",
       "sprite.scan.synapse",
       "sprite.scan.pathway",
+      "sprite.scan.myelin",
       "sprite.scan.muscle",
       "sprite.scan.reflex",
       "sprite.pad.dendrite",

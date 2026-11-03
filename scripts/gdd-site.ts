@@ -1009,6 +1009,7 @@ const DOC_SOURCES: DocSource[] = [
   { source: "docs/m3/muscle-endplate-asset-requirements-v01.md", section: "Art pipeline / source notes", slug: "m3-muscle-endplate-asset-requirements-v01" },
   { source: "docs/assets/remaining-work.md", section: "Art pipeline / source notes", slug: "asset-remaining-work" },
   { source: "docs/assets/prompt-library-v01.md", section: "Art pipeline / source notes", slug: "asset-prompt-library-v01" },
+  { source: "docs/assets/scan-prompts-v02.md", section: "Art pipeline / source notes", slug: "scan-prompts-v02" },
   { source: "docs/m3.5/hub-asset-prompts-v01.md", section: "Art pipeline / source notes", slug: "m3.5-hub-asset-prompts-v01" },
   { source: "docs/adr-art-pipeline/adr-0060-source-work-runtime-asset-layers.md", section: "Art pipeline / source notes", slug: "adr-0060-source-work-runtime-asset-layers" },
   { source: "docs/adr-art-pipeline/adr-0061-palette-lut-sprite-variants.md", section: "Art pipeline / source notes", slug: "adr-0061-palette-lut-sprite-variants" },

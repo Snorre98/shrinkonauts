@@ -88,12 +88,20 @@ export interface ConceptRelationshipView {
   targetTerm: string;
 }
 
+export interface ConceptFactView {
+  id: string;
+  title: string;
+  claim: string;
+  discovered: boolean;
+}
+
 export interface ConceptView {
   id: string;
   term: string;
   definition: string;
   relationships: ConceptRelationshipView[];
   misconceptions: string[];
+  facts: ConceptFactView[];
   discovered: boolean;
 }
 
@@ -174,6 +182,7 @@ export interface RuntimeSnapshot {
   feedback: FeedbackFrame;
   abilities: string[];
   knownConceptIds: string[];
+  knownFactIds: string[];
   interaction: InteractionView | null;
   checkpointId: string | null;
   activeP2: boolean;

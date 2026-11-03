@@ -119,6 +119,7 @@
       "x": 13,
       "y": 14,
       "sprite": "sprite.scan.neuron",
+      "factId": "NERV-01#1",
       "conceptId": "CON-3",
       "label": "Neuron"
     },
@@ -127,7 +128,8 @@
       "type": "scanTarget",
       "x": 24,
       "y": 16,
-      "sprite": "sprite.scan.neuron",
+      "sprite": "sprite.scan.myelin",
+      "factId": "NERV-01#3",
       "conceptId": "CON-3",
       "label": "Myelin sheath"
     },
@@ -137,16 +139,16 @@
       "x": 32,
       "y": 16,
       "sprite": "sprite.scan.pathway",
-      "conceptId": "CON-5",
-      "label": "One-way pathway"
+      "factId": "NERV-01#6",
+      "conceptId": "CON-3",
+      "label": "One-way conduction"
     },
     {
       "id": "pad-input-a",
-      "type": "scanTarget",
+      "type": "decor",
       "x": 5,
       "y": 17,
       "sprite": "sprite.pad.dendrite",
-      "conceptId": "CON-3",
       "label": "Dendrite input A",
       "presentation": {
         "role": "interactable"
@@ -154,11 +156,10 @@
     },
     {
       "id": "pad-input-b",
-      "type": "scanTarget",
+      "type": "decor",
       "x": 10,
       "y": 16,
       "sprite": "sprite.pad.dendrite",
-      "conceptId": "CON-3",
       "label": "Dendrite input B",
       "presentation": {
         "role": "interactable"
@@ -166,11 +167,10 @@
     },
     {
       "id": "pad-terminal",
-      "type": "scanTarget",
+      "type": "decor",
       "x": 35,
       "y": 16,
       "sprite": "sprite.pad.terminal",
-      "conceptId": "CON-5",
       "label": "Axon terminal",
       "presentation": {
         "role": "interactable"

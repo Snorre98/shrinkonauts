@@ -991,6 +991,7 @@ kbd {
 
 .concept__relationships,
 .concept__misconceptions,
+.concept__facts,
 .concept-locked__list {
   margin: 0;
   padding-left: 1rem;
@@ -1004,6 +1005,15 @@ kbd {
 
 .concept__misconceptions li {
   color: var(--color-nerve);
+}
+
+.concept__facts li {
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+}
+
+.concept__facts strong {
+  color: var(--color-bone);
 }
 
 .concept-locked {

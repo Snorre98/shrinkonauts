@@ -182,6 +182,8 @@ export interface RoomEntity {
   dialogueId?: string;
   gateId?: string;
   conceptId?: string;
+  /** Optional card fact revealed by a scan. See facts.json. */
+  factId?: string;
   label?: string;
   /** Optional visual role/size override. ADR-0074. */
   presentation?: EntityPresentationConfig;
@@ -339,6 +341,27 @@ export interface PackAssetManifests {
   final?: string;
 }
 
+export type FactDepth = "core" | "advanced";
+
+/**
+ * A card fact that a scan target can reveal. Facts are narrower than the
+ * concept cards in the syllabus: CON-3 owns several NERV-01 facts, and a scan
+ * target names the exact fact it delivers.
+ */
+export interface ScanFact {
+  id: string;
+  cardId?: string;
+  conceptId: string;
+  title: string;
+  claim: string;
+  depth?: FactDepth;
+}
+
+export interface FactsDocument {
+  schemaVersion: string;
+  facts: ScanFact[];
+}
+
 export interface PackDocument {
   schemaVersion: string;
   id: string;
@@ -352,6 +375,8 @@ export interface PackDocument {
   theme: string;
   mapping: string;
   licenses: string;
+  /** Optional pack-level card facts document path. */
+  facts?: string;
   /** Optional pack-level materials document path. */
   materials?: string;
   assetManifests: PackAssetManifests;
@@ -488,6 +513,7 @@ export interface RecordEvidenceEffect {
 export type DialogueEffect =
   | { type: "setFlag"; flagId: string; value: boolean }
   | { type: "revealConcept"; conceptId: string }
+  | { type: "revealFact"; factId: string }
   | { type: "unlockAbility"; id: string }
   | { type: "startGate"; gateId: string }
   | { type: "revealMap"; nodeId: string }
@@ -631,6 +657,7 @@ export interface PackContent {
   dialogues: Record<string, DialogueDocument>;
   gates: Record<string, GateDocument>;
   puzzles: Record<string, PuzzleDocument>;
+  facts?: ScanFact[];
   materials?: MaterialsDocument;
 }
 

@@ -44,6 +44,8 @@ import type {
   PackDocument,
   RecordEvidenceEffect,
   RoomPropertyValue,
+  FactsDocument,
+  ScanFact,
 } from "./types";
 
 const PACK_CODE = "PACK_SCHEMA_INVALID";
@@ -52,6 +54,7 @@ const DIALOGUE_CODE = "DIALOGUE_SCHEMA_INVALID";
 const GATE_CODE = "GATE_SCHEMA_INVALID";
 const MAPPING_CODE = "MAPPING_SCHEMA_INVALID";
 const LICENCE_CODE = "LICENCES_SCHEMA_INVALID";
+const FACT_CODE = "FACTS_SCHEMA_INVALID";
 
 const MAP_EDGE_TYPES: readonly MapEdgeType[] = [
   "door",
@@ -133,6 +136,8 @@ export function parsePack(value: unknown): Result<PackDocument> {
   if (!mapping.ok) return err(mapping.error);
   const licenses = readNonEmptyString(value, "licenses", PACK_CODE);
   if (!licenses.ok) return err(licenses.error);
+  const facts = readOptionalString(value, "facts", PACK_CODE);
+  if (!facts.ok) return err(facts.error);
   const materials = readOptionalString(value, "materials", PACK_CODE);
   if (!materials.ok) return err(materials.error);
 
@@ -202,6 +207,7 @@ export function parsePack(value: unknown): Result<PackDocument> {
     theme: theme.value,
     mapping: mapping.value,
     licenses: licenses.value,
+    ...(facts.value ? { facts: facts.value } : {}),
     ...(materials.value ? { materials: materials.value } : {}),
     assetManifests: {
       ...(placeholder.value ? { placeholder: placeholder.value } : {}),
@@ -726,6 +732,11 @@ function parseEffect(
       const conceptId = readNonEmptyString(value, "conceptId", code, `${label}.conceptId`);
       if (!conceptId.ok) return err(conceptId.error);
       return ok({ type: "revealConcept", conceptId: conceptId.value });
+    }
+    case "revealFact": {
+      const factId = readNonEmptyString(value, "factId", code, `${label}.factId`);
+      if (!factId.ok) return err(factId.error);
+      return ok({ type: "revealFact", factId: factId.value });
     }
     case "unlockAbility": {
       const id = readNonEmptyString(value, "id", code, `${label}.id`);
@@ -1274,6 +1285,87 @@ export function parseLicences(value: unknown): Result<LicenceDocument> {
 }
 
 /* ------------------------------------------------------------------ */
+/* Facts                                                               */
+/* ------------------------------------------------------------------ */
+
+function parseScanFact(value: unknown, index: number): Result<ScanFact> {
+  if (!isRecord(value)) {
+    return err(`${FACT_CODE}: facts[${index}] must be an object`);
+  }
+  const id = readNonEmptyString(value, "id", FACT_CODE, `facts[${index}].id`);
+  if (!id.ok) return err(id.error);
+  const conceptId = readNonEmptyString(
+    value,
+    "conceptId",
+    FACT_CODE,
+    `facts[${index}].conceptId`,
+  );
+  if (!conceptId.ok) return err(conceptId.error);
+  const title = readNonEmptyString(
+    value,
+    "title",
+    FACT_CODE,
+    `facts[${index}].title`,
+  );
+  if (!title.ok) return err(title.error);
+  const claim = readNonEmptyString(
+    value,
+    "claim",
+    FACT_CODE,
+    `facts[${index}].claim`,
+  );
+  if (!claim.ok) return err(claim.error);
+  const cardId = readOptionalString(
+    value,
+    "cardId",
+    FACT_CODE,
+    `facts[${index}].cardId`,
+  );
+  if (!cardId.ok) return err(cardId.error);
+  let depth: ScanFact["depth"];
+  if (value.depth !== undefined) {
+    if (value.depth !== "core" && value.depth !== "advanced") {
+      return err(`${FACT_CODE}: facts[${index}].depth must be core or advanced`);
+    }
+    depth = value.depth;
+  }
+  return ok({
+    id: id.value,
+    conceptId: conceptId.value,
+    title: title.value,
+    claim: claim.value,
+    ...(cardId.value ? { cardId: cardId.value } : {}),
+    ...(depth ? { depth } : {}),
+  });
+}
+
+export function parseFacts(value: unknown): Result<FactsDocument> {
+  if (!isRecord(value)) {
+    return err(`${FACT_CODE}: facts document must be an object`);
+  }
+  if (!isSchemaVersionSupported(value.schemaVersion)) {
+    return err(
+      `FACTS_SCHEMA_VERSION: expected 1.x, got ${String(value.schemaVersion)}`,
+    );
+  }
+  if (!Array.isArray(value.facts) || value.facts.length === 0) {
+    return err(`${FACT_CODE}: facts must be a non-empty array`);
+  }
+  const facts: ScanFact[] = [];
+  const seen = new Set<string>();
+  for (const [index, raw] of value.facts.entries()) {
+    const fact = parseScanFact(raw, index);
+    if (!fact.ok) return err(fact.error);
+    if (seen.has(fact.value.id)) {
+      return err(`${FACT_CODE}: duplicate fact id "${fact.value.id}"`);
+    }
+    seen.add(fact.value.id);
+    facts.push(fact.value);
+  }
+  return ok({ schemaVersion: value.schemaVersion, facts });
+}
+
+/* ------------------------------------------------------------------ */
 /* URL loaders                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -1329,6 +1421,15 @@ export async function loadLicences(
   const data = await parseJsonUrl(url, fetchImpl);
   if (!data.ok) return err(data.error);
   return parseLicences(data.value);
+}
+
+export async function loadFacts(
+  url: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Result<FactsDocument>> {
+  const data = await parseJsonUrl(url, fetchImpl);
+  if (!data.ok) return err(data.error);
+  return parseFacts(data.value);
 }
 
 /* ------------------------------------------------------------------ */

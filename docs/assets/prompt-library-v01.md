@@ -19,10 +19,10 @@
 |---|---|
 | Graphics prompt sources | M3, background, muscle-endplate, M3.5 hub, Silicon level packs |
 | Audio prompt sources | 18 SFX cues; four music themes |
-| Current graphics state | Final 04 batch, POC-integrated earlier art, and six deliberate placeholder/fallback assets coexist |
+| Current graphics state | Final 04 batch, POC-integrated earlier art, and the deliberate placeholder/fallback assets listed in §3.1 and §4.3 coexist |
 | Current 04 source batch | **7 source plates processed, wired and accepted** (`2026-11-03`) |
 | Current audio state | 3 of 18 SFX cues installed; 15 cues and four themes remain placeholders |
-| Visible placeholder-only sprites | `sprite.scan.neuron`, `sprite.scan.pathway`, `sprite.scan.interrupt`, `sprite.exit.silicon` |
+| Visible placeholder-only sprites | `sprite.scan.neuron`, `sprite.scan.myelin`, `sprite.scan.pathway`, `sprite.scan.interrupt`, `sprite.exit.silicon` |
 | Audio delivery | File-backed cue and theme playback implemented; three pilot SFX files exist, themes are silent |
 | Prompt versioning | Per-discipline document version plus the umbrella version above |
 | Canonical status | §4.0 completion matrix |
@@ -49,8 +49,11 @@ The branch now contains:
    - P1/P2 players, Neuron Keeper static + 36-frame idle.
    - Readable scans/entities, the 03 pretty sky and the hub M3.5 art.
 3. **Remaining placeholder decisions**:
-   - 03 scans, Silicon scan interrupt and Silicon exit remain placeholder-only;
-     the existing sources fail the 36×36 read and no new source exists.
+   - The three 03 scans (`scan.neuron`, `scan.myelin`, `scan.pathway`) remain
+     placeholder-only; the old neuron/pathway plates fail the 36×36 read and no
+     new source exists. The new fact-specific prompts are in
+     [`scan-prompts-v02.md`](scan-prompts-v02.md).
+   - Silicon scan interrupt and Silicon exit remain placeholder-only.
    - The hub logo uses the approved Silkscreen CSS fallback; the toy astronaut
      is cut; the HUD badge keeps its CSS fallback.
 4. **Audio partially delivered** (`278d687`):
@@ -108,6 +111,7 @@ procedural placeholder provider’s entity sprites:
   - otherwise → `palette.accent` (`#7bdff2`, cyan)
 - The label is the first four characters of the last asset-ID segment:
   - `sprite.scan.neuron` → **NEUR**
+  - `sprite.scan.myelin` → **MYEL**
   - `sprite.scan.pathway` → **PATH**
   - `sprite.scan.synapse` → **SYNA**
   - `sprite.scan.muscle` → **MUSC**
@@ -123,13 +127,16 @@ a colored box.
 
 | Asset | Color/label | Where | Why |
 |---|---|---|---|
-| `sprite.scan.neuron` | yellow **NEUR** | `03-nerve-forest`: `scan-neuron`, `scan-myelin` | Old plate fits 32×17; myelin/node detail and cyan rim lost at 36×36; shared icon for neuron and myelin |
-| `sprite.scan.pathway` | cyan **PATH** | `03-nerve-forest`: `scan-pathway` | Old plate fits 32×13; one-way reading and myelin gaps lost |
+| `sprite.scan.neuron` | yellow **NEUR** | `03-nerve-forest`: `scan-neuron` | Old plate fits 32×17; new compact-cell prompt is ready, no new source |
+| `sprite.scan.myelin` | cyan **MYEL** | `03-nerve-forest`: `scan-myelin` | New dedicated sleeve prompt; no source yet |
+| `sprite.scan.pathway` | cyan **PATH** | `03-nerve-forest`: `scan-pathway` | Old plate fits 32×13; new node-chain prompt is ready, no new source |
 | `sprite.scan.interrupt` | cyan **INTE** | `01-interrupt-loop`: `scan-interrupt` | Old plate fits 32×7, 220 opaque pixels; square scan read and rim lost |
 | `sprite.exit.silicon` | yellow **SILI** | `01-interrupt-loop`: `exit-silicon` | No Silicon source; reuse of the organic/warm anatomy exit rejected; placeholder retained |
 
-The two NEUR boxes in 03 are `scan-neuron` and `scan-myelin`; both reference
-`sprite.scan.neuron`. That is intentional reuse, not a duplicate entity bug.
+The three 03 scan targets now have separate assets and separate card facts:
+`scan-neuron` (NERV-01#1), `scan-myelin` (NERV-01#3), and `scan-pathway`
+(NERV-01#6). `scan-myelin` no longer reuses `sprite.scan.neuron`. The pads and
+terminal are interactable props, not scans.
 
 ---
 
@@ -191,8 +198,9 @@ outside this pass and is not a visible placeholder.
 
 | Asset | Scope | Prompt source | Decision / next action |
 |---|---|---|---|
-| `sprite.scan.neuron` | 03, two entities | §5.1 below + M3 §8 | Keep placeholder. Old plate fits 32×17 and fails; revised square prompt is ready, no new source. |
-| `sprite.scan.pathway` | 03 | §5.2 below + M3 §8 | Keep placeholder. Old plate fits 32×13 and fails; revised square prompt is ready, no new source. |
+| `sprite.scan.neuron` | 03, `scan-neuron` | [`scan-prompts-v02.md`](scan-prompts-v02.md) §1 | Keep placeholder. Old plate fits 32×17 and fails; new compact-cell prompt is ready, no new source. |
+| `sprite.scan.myelin` | 03, `scan-myelin` | [`scan-prompts-v02.md`](scan-prompts-v02.md) §2 | Keep placeholder. New dedicated sleeve prompt; shared neuron/myelin icon retired. |
+| `sprite.scan.pathway` | 03, `scan-pathway` | [`scan-prompts-v02.md`](scan-prompts-v02.md) §3 | Keep placeholder. Old plate fits 32×13 and fails; new node-chain prompt is ready, no new source. |
 | `sprite.scan.interrupt` | Silicon | `docs/prompts/levels/01-interrupt-loop-assets.md` §8.2 | Keep placeholder. Old plate fits 32×7/220 px and fails; needs a square recomposition. |
 | `sprite.exit.silicon` | Silicon | `docs/prompts/levels/01-interrupt-loop-assets.md` §12.2 | Keep placeholder. Reuse of the organic/warm anatomy exit is rejected for the Silicon tech style. |
 | `sprite.scan.reflex` | reserve, not referenced | M3 | Keep reserve; not rendered. |
@@ -213,60 +221,52 @@ are not used when the material grid resolves; they are not visible placeholders.
 
 ## 5. New graphics gap prompts
 
-The M3 prompts for `sprite.scan.neuron` and `sprite.scan.pathway` exist, but the
-generated plates were wide diagrams (32×17 and 32×13 at the 36×36 fit). These
-revised prompts target a **square 36×36 cell** and simplify the silhouette. Use
-`STYLE_SPRITE`, `PALETTE`, and `FRAME_ENTITY_CONCEPT` from
-`docs/m3/asset-requirements-v01.md` §8.2–§8.11. Do **not** paste the export-only
-`FRAME_ENTITY` block into a generator prompt.
+The 03 scan set is now three fact-specific icons, not two shared whole-cell
+diagrams. The full copy-paste prompts are in
+[`scan-prompts-v02.md`](scan-prompts-v02.md). Use `STYLE_SPRITE`, `PALETTE`, and
+`FRAME_ENTITY_SQUARE`; do **not** use the old `FRAME_ENTITY_CONCEPT` block for
+these icons.
 
-### 5.1 `sprite.scan.neuron` — compact neuron/myelin scan
+| Asset | Card fact | Silhouette | Status |
+|---|---|---|---|
+| `sprite.scan.neuron` | NERV-01#1 — neuron parts and direction | round cell, curled axon | prompt-ready, no new source |
+| `sprite.scan.myelin` | NERV-01#3 — sheath, nodes, speed | capsule with a pinched node | prompt-ready, no new source |
+| `sprite.scan.pathway` | NERV-01#6 — all-or-none, one-way, saltatory | three-bead chain + terminal fork | prompt-ready, no new source |
 
-**File:** `shared/sprites/scan-neuron.png` · **Display:** 36×36 · **Status:** placeholder-only · **Stage:** processed (rejected; old source)
+The reasons for the change:
 
-```text
-SUBJECT: A compact diagrammatic scan icon of one nerve cell, designed to read in a square 36×36 cell — not a character. A round bone-cream cell body on the left with five short branching dendrites; one bold cable-like axon runs to the right; three pale bead-like myelin sleeves with dark node gaps; a small forked terminal at the right. A nerve-yellow glow sits in the cell body; a thin joint-cyan rim traces the silhouette. The silhouette fills about 80% of the square, with clear dark gaps between shapes. Flat side view, left-to-right reading. No face, eyes, arms, lantern, labels, arrows, second axon, second cell body, or gore.
-```
+- The old neuron and pathway plates fit **32×17** and **32×13**; the new art
+  must fit at least **24×24** in the 36×36 cell.
+- The old pathway was the neuron icon plus a small pulse. At 36×36 the two
+  silhouettes were effectively identical (alpha IoU ~0.99). The new pathway
+  drops the soma and dendrites and becomes a node chain.
+- `scan-myelin` now has its own sprite. The shared neuron/myelin icon is retired.
+- The pads and terminal are interactable props, not scans. The Keeper dialogue
+  reveals CON-3, CON-5, and NERV-01#5; the three scans reveal NERV-01#1, #3,
+  and #6.
+- The old root JPEGs (`sprite-scan-neuron.jpeg`, `sprite-scan-pathway.jpeg`) are
+  old-prompt outputs. They are reference only; they are not sources for the new
+  concepts.
 
-**Negative:** `NEGATIVE_SPRITE` + `character, face, eyes, arms, lantern, humanoid, fur, hair, second axon, second cell body, long horizontal strip, wide diagram, tiny detail, labels, arrows.`
+### 5.1 `sprite.scan.neuron` — compact cell structure
 
-**Acceptance**
+See [`scan-prompts-v02.md`](scan-prompts-v02.md#1-spritescanneuron) for the full
+prompt. The icon is a round soma with a five-branch dendrite crown and a short
+curled axon ending in a fork. No myelin beads; no face, arms, or lantern.
 
-- At 36×36, the soma, dendrites, one axon, three myelin beads/nodes, forked terminal, and cyan rim read.
-- The silhouette is a compact square icon, not the old 32×17 strip.
-- Distinct from `sprite.agent.neuron`; no face, arms, or lantern.
-- No text, arrows, or gore.
+### 5.2 `sprite.scan.pathway` — one-way conduction chain
 
-### 5.2 `sprite.scan.pathway` — compact one-way pathway scan
+See [`scan-prompts-v02.md`](scan-prompts-v02.md#3-spritescanpathway) for the full
+prompt. The icon is a diagonal chain of three myelin beads with a dim-to-bright
+pulse in the node gaps and a forked terminal. No soma or dendrites; the pulse is
+in a node gap, not inside a sleeve.
 
-**File:** `shared/sprites/scan-pathway.png` · **Display:** 36×36 · **Status:** placeholder-only · **Stage:** processed (rejected; old source)
+### 5.3 `sprite.scan.myelin` — dedicated sheath icon
 
-```text
-SUBJECT: A compact diagrammatic scan icon of a one-way nerve path, designed to read in a square 36×36 cell — not a character. A small bone-cream soma sits at the far left with five short dendrites; one bold axon crosses the square to the right; three pale bead-like myelin sleeves with dark node gaps; a bright nerve-yellow pulse sits in one gap; the axon ends in a forked terminal pointing right. A thin joint-cyan rim traces the silhouette. The left-to-right taper and the pulse are the dominant shapes. No face, eyes, arms, lantern, labels, arrows, diagram lines, second axon, or gore.
-```
-
-**Negative:** `NEGATIVE_SPRITE` + `character, face, eyes, arms, lantern, humanoid, fur, hair, arrow, labels, second axon, wide diagram, long horizontal strip, tiny detail.`
-
-**Acceptance**
-
-- At 36×36, the soma, one axon, myelin beads/nodes, pulse in a gap, and forked rightward terminal read.
-- The one-way reading comes from the shape, not an arrow.
-- Visibly distinct from `scan.neuron` at 36×36; no face or labels.
-- No text, arrows, or gore.
-
-### 5.3 Optional `sprite.scan.myelin` — dedicated myelin icon
-
-**Status:** proposed, not in the manifest. Use only if playtest/review rejects
-the shared neuron/myelin icon.
-
-```text
-SUBJECT: A compact diagrammatic scan icon of one myelinated axon segment, designed to read in a square 36×36 cell. One dark teal cable runs horizontally; three pale bone-cream bead-like sleeves wrap it; two dark node gaps; a faint nerve-yellow pulse in one gap; a thin joint-cyan rim traces the silhouette. No cell body, no face, no labels, no arrows, no gore.
-```
-
-**Negative:** `NEGATIVE_SPRITE` + `character, face, cell body, dendrites, lantern, labels, arrows, second axon, wide diagram.`
-
-**Acceptance:** three sleeves, two nodes, one cable, one pulse, and cyan rim read
-at 36×36; distinct from `scan.neuron`; no text.
+See [`scan-prompts-v02.md`](scan-prompts-v02.md#2-spritescanmyelin) for the full
+prompt. The icon is a diagonal capsule with two pale sleeves and one dark node.
+No cell body, dendrites, terminal fork, or pulse. This is now required; it is no
+longer an optional future asset.
 
 ---
 
@@ -279,7 +279,7 @@ at 36×36; distinct from `scan.neuron`; no text.
 | 04 sky, four atlases, gate, exit | [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md) | Accepted 2026-11-03; evidence in §12 |
 | Hub scene/props/UI | [`docs/m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md) | Nano Banana first, Ludo fallback |
 | Silicon entities/theme | [`docs/prompts/silicon-theme.md`](../prompts/silicon-theme.md) and [`docs/prompts/levels/01-interrupt-loop-assets.md`](../prompts/levels/01-interrupt-loop-assets.md) | Final Silicon entities; interrupt/exit gaps |
-| 03 scan gaps | §5 above | Revised square 36×36 prompts |
+| 03 scan gaps | [`scan-prompts-v02.md`](scan-prompts-v02.md) | Three fact-specific square prompts |
 
 ---
 
@@ -343,10 +343,14 @@ Do not commit audio files before gate 1. A silent file hides the provider gap.
 
 ### P0 — remaining visible placeholders
 
-1. `sprite.scan.neuron` — revised square prompt §5.1; needs a new source.
-2. `sprite.scan.pathway` — revised square prompt §5.2; needs a new source.
-3. `sprite.scan.interrupt` — needs a square recomposition/new source.
-4. `sprite.exit.silicon` — needs a Silicon-specific source; anatomy reuse
+1. `sprite.scan.neuron` — compact-cell prompt in
+   [`scan-prompts-v02.md`](scan-prompts-v02.md) §1; needs a new source.
+2. `sprite.scan.myelin` — dedicated sheath prompt in
+   [`scan-prompts-v02.md`](scan-prompts-v02.md) §2; needs a new source.
+3. `sprite.scan.pathway` — one-way chain prompt in
+   [`scan-prompts-v02.md`](scan-prompts-v02.md) §3; needs a new source.
+4. `sprite.scan.interrupt` — needs a square recomposition/new source.
+5. `sprite.exit.silicon` — needs a Silicon-specific source; anatomy reuse
    rejected.
 
 ### P1 — 04 source processing ✅
@@ -372,7 +376,7 @@ The seven source plates are processed, wired and accepted:
 11. 03/04/Silicon far/mid/near layers.
 12. UI badge, portraits, panels.
 13. Hub logo fallback approved; toy astronaut cut; optional props deferred.
-14. Reserve `scan.reflex`, `checkpoint`, optional `scan.myelin`.
+14. Reserve `scan.reflex` and `checkpoint`.
 
 ---
 
@@ -437,8 +441,12 @@ Expected:
 
 ## 12. Open decisions
 
-- Dedicated `sprite.scan.myelin`: keep the shared `scan.neuron` placeholder for
-  now; revisit only if a square neuron source is generated and rejected.
+- Dedicated `sprite.scan.myelin`: **now required**. The facts model gives
+  `scan-myelin` its own NERV-01#3 card, so it no longer shares
+  `sprite.scan.neuron`. The shared icon is retired.
+- 03 scan content: **facts model**. The Keeper dialogue reveals CON-3, CON-5,
+  and NERV-01#5; the three scans reveal NERV-01#1, #3, and #6. The pads and
+  terminal are interactable props, not scans.
 - Reuse `sprite.exit` for Silicon: **rejected**. The organic/warm anatomy exit
   does not meet the Silicon tech style; keep the Silicon placeholder until a
   dedicated source exists.

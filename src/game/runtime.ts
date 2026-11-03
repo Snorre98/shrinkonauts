@@ -37,6 +37,7 @@ import type {
   RoomEntity,
   RoomExit,
   RoomInfoArea,
+  ScanFact,
 } from "../pack";
 import {
   advanceDialogue as advanceNarrative,
@@ -1446,7 +1447,7 @@ export class GameRuntime implements WorldRuntime {
     }
 
     const target = this.nearestEntity(["scanTarget"], SCAN_RANGE, id);
-    if (!target || !target.entity.conceptId) {
+    if (!target || (!target.entity.conceptId && !target.entity.factId)) {
       if (this.requestSharedHelp(id)) {
         this.playCue("scan");
         this.emit();
@@ -1461,8 +1462,31 @@ export class GameRuntime implements WorldRuntime {
       this.emit();
       return;
     }
-    const conceptId = target.entity.conceptId;
-    if (this.knownConceptIds().includes(conceptId)) {
+
+    const fact = target.entity.factId
+      ? this.factById(target.entity.factId)
+      : undefined;
+    if (target.entity.factId && !fact) {
+      this.setToast(`Fact missing: ${target.entity.factId}`);
+      this.emit();
+      return;
+    }
+    const conceptId = fact?.conceptId ?? target.entity.conceptId;
+    if (!conceptId) {
+      this.emitAction(id, "scan", "rejected", {
+        reason: "out-of-range",
+        text: "Nothing to scan here",
+      });
+      this.requestFeedback(id);
+      this.playCue("scan");
+      this.emit();
+      return;
+    }
+
+    const alreadyKnown = fact
+      ? this.knownFactIds().includes(fact.id)
+      : this.knownConceptIds().includes(conceptId);
+    if (alreadyKnown) {
       if (this.requestSharedHelp(id)) {
         this.playCue("scan");
         this.emit();
@@ -1471,26 +1495,44 @@ export class GameRuntime implements WorldRuntime {
       this.emitAction(id, "scan", "blocked", {
         reason: "condition-unmet",
         target: { kind: "entity", id: target.entity.id },
-        text: "Already in your concept log",
+        text: fact
+          ? "Already scanned"
+          : "Already in your concept log",
       });
       this.requestFeedback(id);
       this.playCue("scan");
       this.emit();
       return;
     }
-    this.record({
-      type: "concept_revealed",
-      conceptId,
-      source: "scan",
-    });
+
+    if (fact) {
+      this.record({
+        type: "fact_revealed",
+        factId: fact.id,
+        conceptId: fact.conceptId,
+        source: "scan",
+      });
+    }
+    if (!this.knownConceptIds().includes(conceptId)) {
+      this.record({
+        type: "concept_revealed",
+        conceptId,
+        source: "scan",
+      });
+    }
+
     const concept = this.content.syllabus.concepts.find(
       (item) => item.id === conceptId,
     );
+    const text = fact
+      ? `${fact.title}: ${fact.claim}`
+      : concept
+        ? `${concept.term}: ${concept.definition}`
+        : conceptId;
     this.emitAction(id, "scan", "completed", {
       target: { kind: "entity", id: target.entity.id },
-      text: concept
-        ? `${concept.term}: ${concept.definition}`
-        : conceptId,
+      ...(fact ? { factId: fact.id } : {}),
+      text,
     });
     this.dismissHelpSurface();
     this.requestFeedback(id);
@@ -2213,6 +2255,19 @@ export class GameRuntime implements WorldRuntime {
     );
   }
 
+  knownFactIds(): string[] {
+    return unique(
+      this.curriculum.events
+        .filter((event) => event.type === "fact_revealed")
+        .map((event) => String(event.factId ?? ""))
+        .filter((id) => id !== ""),
+    );
+  }
+
+  factById(factId: string): ScanFact | undefined {
+    return (this.content.facts ?? []).find((fact) => fact.id === factId);
+  }
+
   subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -2257,6 +2312,27 @@ export class GameRuntime implements WorldRuntime {
             source: "dialogue",
           });
           break;
+        case "revealFact": {
+          const fact = this.factById(effect.factId);
+          if (!fact) {
+            this.setToast(`Fact missing: ${effect.factId}`);
+            break;
+          }
+          this.record({
+            type: "fact_revealed",
+            factId: fact.id,
+            conceptId: fact.conceptId,
+            source: "dialogue",
+          });
+          if (!this.knownConceptIds().includes(fact.conceptId)) {
+            this.record({
+              type: "concept_revealed",
+              conceptId: fact.conceptId,
+              source: "dialogue",
+            });
+          }
+          break;
+        }
         case "unlockAbility":
           if (unlockAbility(this.progression, effect.id)) {
             this.record({
@@ -2959,6 +3035,8 @@ export class GameRuntime implements WorldRuntime {
 
   private conceptLogView(): ConceptView[] {
     const known = new Set(this.knownConceptIds());
+    const knownFacts = new Set(this.knownFactIds());
+    const allFacts = this.content.facts ?? [];
     return this.content.syllabus.concepts.map((concept) => ({
       id: concept.id,
       term: concept.term,
@@ -2972,6 +3050,14 @@ export class GameRuntime implements WorldRuntime {
           )?.term ?? relationship.target,
       })),
       misconceptions: concept.misconceptions,
+      facts: allFacts
+        .filter((fact) => fact.conceptId === concept.id)
+        .map((fact) => ({
+          id: fact.id,
+          title: fact.title,
+          claim: fact.claim,
+          discovered: knownFacts.has(fact.id),
+        })),
       discovered: known.has(concept.id),
     }));
   }
@@ -3051,6 +3137,7 @@ export class GameRuntime implements WorldRuntime {
 
   snapshot(): RuntimeSnapshot {
     const known = this.knownConceptIds();
+    const knownFacts = this.knownFactIds();
     const playerView = (id: PlayerId): PlayerView => {
       const player = this.world.players[id];
       return {
@@ -3085,6 +3172,7 @@ export class GameRuntime implements WorldRuntime {
       feedback: this.feedbackFrame(),
       abilities: [...this.progression.abilities],
       knownConceptIds: known,
+      knownFactIds: knownFacts,
       interaction: this.interactionView(),
       checkpointId: this.checkpointId,
       activeP2: this.activeP2,

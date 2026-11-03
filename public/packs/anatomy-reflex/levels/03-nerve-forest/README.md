@@ -4,7 +4,7 @@
 **Pack:** `anatomy-reflex`
 **Objective:** OBJ-2 — trace the signal from the sensory receptor through the pathway
 **Concepts:** CON-3 neuron structure, CON-5 sensory/motor pathways
-**Card facts:** NERV-01#1, #5, #6 (core); #3 in the optional myelin scan/debrief
+**Card facts:** NERV-01#1, #5, #6 (core); #3 in the optional myelin scan
 **Puzzle:** `puzzle-node-run`
 **Win:** `gateOpen gate-exit`
 
@@ -33,7 +33,10 @@ exit still gates the 03 → 04 transition.
 spawn (checkpoint-entry)
   → climb dendrite branches
   → agent-neuron          dlg-neuron-01 (threshold, all-or-none, one-way, myelin)
-      └─ correct choice reveals CON-3, CON-5 and map-nerve-forest
+      └─ correct choice reveals CON-3, CON-5, NERV-01#5 and map-nerve-forest
+  → scan-neuron           optional NERV-01#1 fact (neuron parts and direction)
+  → scan-myelin           optional NERV-01#3 fact (sheath, nodes, speed)
+  → scan-pathway          optional NERV-01#6 fact (all-or-none, one-way)
   → pad-input-a/b         one input is below threshold; two reach it
   → gate-threshold        opens and latches when the counter reaches 2
   → axon-entry            the behind gate closes and the hillock drops into the axon
@@ -106,18 +109,20 @@ bursts are presentation, not physical doors.
 | Exit | `exit-to-muscle` at `(37, 15)`, locked by `puzzle-node-run` |
 | Tether | `off`; the puzzle span is about 1056 × 288 px, inside the 1280 × 720 viewport |
 
-Visible pads (`pad-input-a`, `pad-input-b`, `pad-terminal`) are `scanTarget`
-entities aligned with the plate/zone rects. The engine does not render puzzle
-sensor rects, so these pads are the player-facing surface. They are also scans
-for CON-3/CON-5.
+Visible pads (`pad-input-a`, `pad-input-b`, `pad-terminal`) are interactable
+props aligned with the plate/zone rects. The engine does not render puzzle
+sensor rects, so these pads are the player-facing surface. They are not scans;
+the optional scans are the three 36×36 markers (`scan-neuron`, `scan-myelin`,
+`scan-pathway`).
 
 ## Evidence and debrief
 
 - `puzzle_solved` filtered by `puzzle-node-run`, required for OBJ-2.
 - `debrief_answered` filtered by `prompt-obj-2`, required for OBJ-2.
 - Solve counters: `resets`. Hint use is a separate `hint_used` learning event.
-- Optional scans: `scan-neuron` and `scan-myelin` (CON-3), `scan-pathway` and
-  `pad-terminal` (CON-5).
+- Optional scans: `scan-neuron` (NERV-01#1), `scan-myelin` (NERV-01#3), and
+  `scan-pathway` (NERV-01#6), all under CON-3. CON-5 is revealed by the Keeper
+  dialogue, not by a scan.
 
 Suggested debrief for the playtest: "Why does one input fail, and why does a
 third input not make a bigger spike?" Model answer: "The first input is below
@@ -203,12 +208,12 @@ visual review is pending.
   the whole anatomy pack. The command was run as specified.
 - The room spec uses `gate-exit`; the mechanics summary calls the same node
   `exit-gate`. The implementation follows the room spec's `gate-exit` name.
-- `sprite.scan.neuron` and `sprite.scan.pathway` remain procedural
-  placeholder-only assets. They are the yellow **NEUR** and cyan **PATH**
-  boxes. `scan-myelin` reuses `sprite.scan.neuron`, so it also shows NEUR. The
-  original wide Nanobanan plates lost their reading at 36×36; revised square
-  prompts are in
-  [`docs/assets/prompt-library-v01.md`](../../../../../docs/assets/prompt-library-v01.md).
+- `sprite.scan.neuron`, `sprite.scan.myelin`, and `sprite.scan.pathway` remain
+  procedural placeholder-only assets. They are the yellow **NEUR**, cyan
+  **MYEL**, and cyan **PATH** boxes. The shared neuron/myelin icon is retired.
+  The original wide Nanobanan plates lost their reading at 36×36; the new
+  fact-specific prompts are in
+  [`docs/assets/scan-prompts-v02.md`](../../../../../docs/assets/scan-prompts-v02.md).
   Replace them before treating the room's scan set as final.
 
 ## Verification
@@ -222,5 +227,6 @@ npm run build
 git diff --check
 ```
 
-`pack:validate` is expected to report 1/5 objectives and 2/8 concepts (CON-3 and
-CON-5), plus the 04/map forward references. Those are not failures.
+`pack:validate` is expected to report 1/5 objectives and 4/8 concepts (CON-3,
+CON-4, CON-5, and CON-6), plus the 04/map forward references. Those are not
+failures.

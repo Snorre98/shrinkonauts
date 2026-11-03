@@ -711,6 +711,42 @@ describe("game runtime", () => {
     expect(runtime.snapshot().toast).toContain("Save format updated");
   });
 
+  it("reveals one unique fact per scan target", () => {
+    expect(content.facts?.map((fact) => fact.id)).toEqual([
+      "NERV-01#1",
+      "NERV-01#3",
+      "NERV-01#5",
+      "NERV-01#6",
+    ]);
+    const { runtime } = makeRuntime();
+
+    walkTo(runtime, "scan-neuron");
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).toContain("NERV-01#1");
+    expect(runtime.snapshot().knownConceptIds).toContain("CON-3");
+    expect(
+      runtime
+        .snapshot()
+        .conceptLog.find((concept) => concept.id === "CON-3")
+        ?.facts.find((fact) => fact.id === "NERV-01#1")?.discovered,
+    ).toBe(true);
+
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).toEqual(["NERV-01#1"]);
+
+    walkTo(runtime, "scan-myelin");
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).toContain("NERV-01#3");
+
+    walkTo(runtime, "scan-pathway");
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).toContain("NERV-01#6");
+
+    walkTo(runtime, "pad-input-a");
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).not.toContain("NERV-01#5");
+  });
+
   it("runs conversation, scan, Node Run, exit, debrief, and transitions to Endplate Ferry", () => {
     const { runtime, audio, levelChanges } = makeRuntime();
 
@@ -747,7 +783,10 @@ describe("game runtime", () => {
       choiceId: "right",
     });
     expect(runtime.snapshot().knownConceptIds).toEqual(
-      expect.arrayContaining(["CON-3"]),
+      expect.arrayContaining(["CON-3", "CON-5"]),
+    );
+    expect(runtime.snapshot().knownFactIds).toEqual(
+      expect.arrayContaining(["NERV-01#5"]),
     );
     runtime.surfaceAction(neuronConversation!.surfaceId, { type: "confirm" });
     expect(runtime.conversations.size).toBe(0);
@@ -755,6 +794,7 @@ describe("game runtime", () => {
     walkTo(runtime, "scan-pathway");
     runtime.scan();
     expect(runtime.snapshot().knownConceptIds).toContain("CON-5");
+    expect(runtime.snapshot().knownFactIds).toContain("NERV-01#6");
     expect(audio.played.length).toBeGreaterThan(0);
 
     solveNodeRun(runtime);
@@ -1594,9 +1634,9 @@ describe("game runtime", () => {
         .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
     ).toBe(false);
 
-    const pad = runtime.entityPixel("pad-input-a");
-    if (!pad) throw new Error("pad-input-a missing");
-    runtime.placePlayer("p1", pad.x, pad.y);
+    const scan = runtime.entityPixel("scan-neuron");
+    if (!scan) throw new Error("scan-neuron missing");
+    runtime.placePlayer("p1", scan.x, scan.y);
     stepWith(runtime, playerActions({ scan: true }));
     expect(
       runtime

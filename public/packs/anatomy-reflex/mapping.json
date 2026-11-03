@@ -78,10 +78,9 @@
         "dlg-neuron-01"
       ],
       "scanTargets": [
-        "pad-input-a",
-        "pad-input-b",
         "scan-myelin",
-        "scan-neuron"
+        "scan-neuron",
+        "scan-pathway"
       ],
       "mapLabels": [
         "Nerve Forest"
@@ -110,10 +109,7 @@
       "dialogues": [
         "dlg-neuron-01"
       ],
-      "scanTargets": [
-        "pad-terminal",
-        "scan-pathway"
-      ],
+      "scanTargets": [],
       "mapLabels": [
         "Nerve Forest"
       ]

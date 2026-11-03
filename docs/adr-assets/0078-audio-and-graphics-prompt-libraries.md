@@ -116,6 +116,15 @@ labelled placeholder because it hides the runtime gap.
 
 ### 5. Revised prompts for the visible 03 scan placeholders
 
+> **Superseded 2026-11-04** by the facts model and
+> [`docs/assets/scan-prompts-v02.md`](../assets/scan-prompts-v02.md). The two
+> whole-cell prompts below were not enough: at 36×36 the neuron and pathway
+> silhouettes were effectively identical, and the shared neuron/myelin icon made
+> two scan targets award the same card. The new set is three fact-specific
+> icons: compact neuron cell (NERV-01#1), dedicated myelin sleeve (NERV-01#3),
+> and one-way node chain (NERV-01#6). The pads and terminal are interactable
+> props, not scans. CON-5 is revealed by the Keeper dialogue.
+
 The umbrella library contains new compact 36×36 prompts for:
 
 - `sprite.scan.neuron` — one cell body, dendrites, one myelinated axon, nodes,

@@ -61,7 +61,9 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // Wait for the scan cue before opening the log; otherwise both actions land
   // in the same frame and the log transition consumes the scan.
   await expect(
-    page.locator(".feedback-surface", { hasText: "Sensory and motor pathways" }),
+    page.locator(".feedback-surface", {
+      hasText: "All-or-none and one-way conduction",
+    }),
   ).toBeVisible();
   await page.keyboard.press("c");
   await expect(page.getByRole("dialog", { name: "Concept log" })).toBeVisible();

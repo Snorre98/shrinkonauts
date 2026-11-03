@@ -12,15 +12,15 @@ domains own.
 
 ## Numbering note
 
-The highest existing record is **ADR-0077** (`docs/adr-audio/`). This domain
-continues the global sequence at **ADR-0078**. It is a new record, not an
-amendment.
+The highest existing record before this domain was **ADR-0077**
+(`docs/adr-audio/`). This domain continues the global sequence at **ADR-0078**.
 
 ## Index
 
 | # | Decision | Status |
 |---|---|---|
 | [0078](0078-audio-and-graphics-prompt-libraries.md) | Audio and graphics prompt libraries and placeholder completion | Proposed |
+| [0079](0079-scan-facts.md) | Scan targets reveal card facts, not shared concepts | Accepted |
 
 ## Relationship to other decisions
 

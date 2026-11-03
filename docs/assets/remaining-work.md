@@ -59,8 +59,9 @@ The accepted command family was `art:key`, `art:normalize`, `art:tile-clean`,
 
 | Asset | Where | Runtime | Stage | Decision / what remains | Prompt source |
 |---|---|---|---|---|---|
-| `sprite.scan.neuron` | 03 (`scan-neuron`, `scan-myelin`) | `placeholder-only` | `processed (rejected)` | Keep placeholder. Old plate fits 32×17 and fails; revised square prompt ready, needs a new source. | [prompt-library §5.1](prompt-library-v01.md) |
-| `sprite.scan.pathway` | 03 | `placeholder-only` | `processed (rejected)` | Keep placeholder. Old plate fits 32×13 and fails; revised square prompt ready, needs a new source. | [prompt-library §5.2](prompt-library-v01.md) |
+| `sprite.scan.neuron` | 03 (`scan-neuron`) | `placeholder-only` | `processed (rejected)` | Keep placeholder. Old plate fits 32×17 and fails; compact-cell prompt ready, needs a new source. | [scan-prompts v02 §1](scan-prompts-v02.md) |
+| `sprite.scan.myelin` | 03 (`scan-myelin`) | `placeholder-only` | `prompt-ready` | Keep placeholder. Dedicated sheath prompt ready, needs a new source; shared neuron/myelin icon retired. | [scan-prompts v02 §2](scan-prompts-v02.md) |
+| `sprite.scan.pathway` | 03 (`scan-pathway`) | `placeholder-only` | `processed (rejected)` | Keep placeholder. Old plate fits 32×13 and fails; one-way chain prompt ready, needs a new source. | [scan-prompts v02 §3](scan-prompts-v02.md) |
 | `sprite.scan.interrupt` | Silicon | `placeholder-only` | `processed (rejected)` | Keep placeholder. Old plate fits 32×7/220 px and fails; needs a square recomposition. | [Silicon assets §8.2](../prompts/levels/01-interrupt-loop-assets.md) |
 | `sprite.exit.silicon` | Silicon | `placeholder-only` | `prompt-ready` | Keep placeholder. Reusing the anatomy exit is rejected: organic/warm art fails the Silicon tech style. Needs a Silicon-specific source. | [Silicon assets §12.2](../prompts/levels/01-interrupt-loop-assets.md) |
 | `ui.logo.shrinkonauts` | Hub | `placeholder-only` | `deferred` | **CSS Silkscreen fallback approved.** Delivered plate rejected because a washer is baked behind the letters. | [Hub §8.5](../m3.5/hub-asset-prompts-v01.md) |
@@ -100,7 +101,6 @@ Local SFX scratch and the prompt log are not runtime assets.
 | UI panels, portraits, scan/map/log icons | `deferred` | `prompt-ready` | Not rendered by the current UI; no need to generate until the UI consumes them |
 | `sprite.scan.reflex` | `reserve` | `prompt-ready` | Not referenced by 03/04; keep as reserve |
 | `sprite.checkpoint` | `reserve` | `deferred` | Declared but not referenced; the checkpoint data point is used instead |
-| `sprite.scan.myelin` | not declared | `prompt-ready` | Optional dedicated myelin icon; only add if the shared neuron icon is rejected |
 | Hub towel and detergent bottles | `deferred`/manifest-only | processed | Decide whether to wire or remove; the scene already has baked bottles and the towel does not read at 2× |
 | Final approval of POC art | `interim` | `source-accepted` | Players, Neuron Keeper, scans, entities, and the 03 sky are POC-integrated; final approval and prompt-log completion remain |
 | GDD/video captures | current | — | Refresh captures after visible art changes so the GDD does not show superseded placeholders |

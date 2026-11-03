@@ -118,7 +118,9 @@ test("03 Nerve Forest and 04 Muscle Effector", async ({ page }) => {
   await teleport(page, "scan-pathway");
   await page.keyboard.press("q");
   await expect(
-    page.locator(".feedback-surface", { hasText: "Sensory and motor pathways" }),
+    page.locator(".feedback-surface", {
+      hasText: "All-or-none and one-way conduction",
+    }),
   ).toBeVisible();
   await captureShot(page, "03-scan-feedback");
 
@@ -138,7 +140,9 @@ test("03 Nerve Forest and 04 Muscle Effector", async ({ page }) => {
   // The scan cue is still on screen for a few seconds. Let it expire so the
   // Node Run shots show the puzzle feedback, not the previous scan.
   await expect(
-    page.locator(".feedback-surface", { hasText: "Sensory and motor pathways" }),
+    page.locator(".feedback-surface", {
+      hasText: "All-or-none and one-way conduction",
+    }),
   ).toHaveCount(0, { timeout: 6_000 });
 
   // Physical threshold gate, then the two Node Run threshold states.

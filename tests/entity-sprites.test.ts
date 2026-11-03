@@ -15,6 +15,7 @@ const ENTITY_IDS = [
   "sprite.scan.neuron",
   "sprite.scan.synapse",
   "sprite.scan.pathway",
+  "sprite.scan.myelin",
   "sprite.scan.muscle",
   "sprite.gate.ferry",
   "sprite.prop.tracer",

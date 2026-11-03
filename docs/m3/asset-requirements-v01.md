@@ -479,9 +479,10 @@ Ludo does not reliably parse anatomical terms as visual nouns. “Soma”, “de
 | Asset ID | Entity role | Rendered in | Display / source | File path | Priority |
 |---|---|---|---:|---|---|
 | `sprite.agent.neuron` | Neuron Keeper; 04's Muscle Effector agent currently reuses this ID | 03, 04 | 96×96 / 96×96 PNG, `npc` | `shared/sprites/agent-neuron.png` | P0 |
-| `sprite.scan.neuron` | Neuron and myelin scan diagrams | 03 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-neuron.png` | P0 |
+| `sprite.scan.neuron` | Neuron structure scan | 03 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-neuron.png` | P0 |
+| `sprite.scan.myelin` | Myelin sheath scan | 03 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-myelin.png` | P0 |
 | `sprite.scan.synapse` | Terminal plate, synaptic cleft and receptor scans | 04 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-synapse.png` | P1 |
-| `sprite.scan.pathway` | One-way pathway and axon terminal | 03 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-pathway.png` | P1 |
+| `sprite.scan.pathway` | One-way conduction scan | 03 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-pathway.png` | P1 |
 | `sprite.scan.muscle` | Muscle effector scan | 04 | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-muscle.png` | P1 |
 | `sprite.scan.reflex` | Reflex-arc scan, reserve | — | 36×36 / 36×36 PNG, `scan` | `shared/sprites/scan-reflex.png` | P2 |
 | `sprite.pad.dendrite` | Dendrite input plates | 03 | 64×64 / 64×64 PNG, `interactable` | `shared/sprites/pad-dendrite.png` | P0 |
@@ -500,9 +501,10 @@ without `src` is a placeholder. This table records why.
 |---|---|---|
 | `sprite.agent.neuron` | POC integrated / final approval pending | Static frame 0 from the 36-frame Neuron Keeper sheet; shared by 03 and 04; nanobanan agent plate is an alternate review asset |
 | `sprite.agent.neuron.idle` | POC integrated / final approval pending | 36-frame 18×18 idle sheet; 12.5 fps, looping; static fallback when reduced motion is on |
-| `sprite.scan.neuron` | **Placeholder — unreadable at 36×36** | 1886×1004 plate fits to 32×17; myelin sleeves, nodes and forked terminals are lost; cyan rim largely lost |
+| `sprite.scan.neuron` | **Placeholder — new prompt ready** | Old 1886×1004 plate fits to 32×17; the new compact-cell prompt is in `scan-prompts-v02.md` §1 |
+| `sprite.scan.myelin` | **Placeholder — new prompt ready** | New dedicated sleeve prompt; shared neuron/myelin icon retired. See `scan-prompts-v02.md` §2 |
 | `sprite.scan.synapse` | POC integrated / final approval pending | Two cells and cleft read; cyan rim is partial because the source plate clips the postsynaptic wall |
-| `sprite.scan.pathway` | **Placeholder — unreadable at 36×36** | 1864×740 plate fits to 32×13; the one-way reading and myelin gaps are lost |
+| `sprite.scan.pathway` | **Placeholder — new prompt ready** | Old 1864×740 plate fits to 32×13; the new one-way chain prompt is in `scan-prompts-v02.md` §3 |
 | `sprite.scan.muscle` | POC integrated / final approval pending | Muscle bundle and nerve contact read; **no cyan scan rim survived** the fit |
 | `sprite.scan.reflex` | **Reserve / placeholder** | The two-cell loop reads, but roots/spindle do not; not referenced by 03/04 |
 | `sprite.gate.ferry` | POC integrated / final approval pending | Closed organic gate reads at 36×36; the yellow seam is subdued. Source file `sprite-scan-ferry-v2.jpeg` is the gate, not a scan icon |
@@ -1147,14 +1149,27 @@ P2 now uses the approved Ludo walk and jump sheets. For the POC they are used di
 
 **Common settings:** `SUBJECT` + `STYLE_SPRITE` + `PALETTE` + `FRAME_ENTITY_CONCEPT`; source **18×18 PNG**, display **36×36**; design for 36×36 readability with no fine detail. The export spec in `FRAME_ENTITY` is for Aseprite/Piskel, not Ludo. Filenames are in §5.3.
 
+> **Scan source size:** the POC scan fit path uses a **36×36 cell** (ADR-0075);
+> the 18×18 size above is the native pixel-art source target for a final
+> Aseprite pass. The two are different stages, not alternatives for one file.
+
 **Common acceptance:** reads at 36×36 on `#101a20`; silhouette distinct from every other entity; survives the warm interaction tint; hard pixel edges; palette-only colours; no text; alpha clean; ≤16 KB; the `SUBJECT` block is the first text in the prompt and the anatomy in plain shapes is accurate.
 
 **POC note:** the statics from the nanobanan plates are generated with `npm run art:fit`. The Neuron Keeper static is frame 0 of the 36-frame animated source sheet and is built with `npm run art:build-player -- --character neuron-agent --sampler downscale`; the idle sheet is not a single-image Ludo prompt. The 2026-11-01 batch wires the gate, tracer, pulse terminal, and triangle/circle receptors; `sprite.scan.reflex` stays a placeholder. `sprite.exit` stays a *runtime* placeholder, but a 2048×2048 magenta-key source is now generated in the additive 04 batch; it is not yet keyed or fitted. The plates that lost their reading at 36×36 stay placeholders (see §5.3).
+
+> **Scan prompts superseded (2026-11-04):** the whole-cell scan prompts below
+> for `sprite.scan.neuron` and `sprite.scan.pathway` are retained for anatomy
+> history only. Use [`docs/assets/scan-prompts-v02.md`](../../assets/scan-prompts-v02.md)
+> for the three fact-specific 03 scan prompts (neuron cell, myelin sleeve,
+> one-way chain). `sprite.scan.myelin` is now a required asset, not an optional
+> future one. The old whole-cell plates fit 32×17 and 32×13 and fail the
+> compactness gate.
 
 | Asset ID | Style / negative | Frame | Source | File |
 |---|---|---|---|---|
 | `sprite.agent.neuron` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/agent-neuron.png` |
 | `sprite.scan.neuron` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-neuron.png` |
+| `sprite.scan.myelin` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-myelin.png` |
 | `sprite.scan.synapse` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-synapse.png` |
 | `sprite.scan.pathway` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-pathway.png` |
 | `sprite.scan.muscle` | `STYLE_SPRITE` / `NEGATIVE_SPRITE` | `FRAME_ENTITY_CONCEPT` | 18×18 PNG | `shared/sprites/scan-muscle.png` |

@@ -817,6 +817,15 @@
       },
       "fidelity": "ui-1x"
     },
+    "sprite.scan.myelin": {
+      "type": "sprite",
+      "placeholder": true,
+      "display": {
+        "width": 36,
+        "height": 36
+      },
+      "fidelity": "ui-1x"
+    },
     "sprite.scan.synapse": {
       "type": "sprite",
       "src": "shared/sprites/scan-synapse.png",

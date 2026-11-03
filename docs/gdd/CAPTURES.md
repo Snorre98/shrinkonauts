@@ -103,10 +103,11 @@ it publishes the `dist` artifact, which already contains the merged gallery.
   `bg.muscle_endplate.sky`, four coloured material atlases, and the final
   `sprite.gate.nerve` / `sprite.exit`. Captures after this pass show the final
   04 art; far/mid/near remain declared placeholders.
-- **03 scan placeholders:** `sprite.scan.neuron` and `sprite.scan.pathway` are
-  colored placeholder boxes (yellow NEUR, cyan PATH); `scan-myelin` reuses the
-  neuron icon. Revised square prompts are in
-  [`../assets/prompt-library-v01.md`](../assets/prompt-library-v01.md).
+- **03 scan placeholders:** `sprite.scan.neuron`, `sprite.scan.myelin`, and
+  `sprite.scan.pathway` are separate colored placeholder boxes (yellow NEUR,
+  cyan MYEL, cyan PATH). The shared neuron/myelin icon is retired. The new
+  fact-specific prompts are in
+  [`../assets/scan-prompts-v02.md`](../assets/scan-prompts-v02.md).
 - Three pilot SFX (`scan`, `jump`, `land`) are installed; the other 15 cues and
   four themes remain placeholders.
 - The key-art shots are stills with the UI hidden, not separately authored
