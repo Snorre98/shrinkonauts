@@ -18,8 +18,8 @@
       "id": "input-a",
       "type": "plate",
       "rect": {
-        "x": 224,
-        "y": 536,
+        "x": 160,
+        "y": 504,
         "width": 64,
         "height": 48
       },
@@ -72,7 +72,7 @@
       "type": "zone",
       "rect": {
         "x": 512,
-        "y": 296,
+        "y": 264,
         "width": 96,
         "height": 104
       },
@@ -199,8 +199,8 @@
     {
       "action": "move",
       "actor": "p1",
-      "x": 256,
-      "y": 560
+      "x": 192,
+      "y": 528
     },
     {
       "action": "move",
@@ -212,7 +212,7 @@
       "action": "move",
       "actor": "p1",
       "x": 560,
-      "y": 348
+      "y": 316
     },
     {
       "action": "move",

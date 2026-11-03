@@ -319,7 +319,7 @@ function walkPlayerTo(
 function feetForEntity(runtime: GameRuntime, entityId: string): { x: number; y: number } {
   const point = runtime.entityPixel(entityId);
   assert(point, `room entity "${entityId}" is missing`);
-  return { x: point.x, y: point.y + 16 };
+  return point;
 }
 
 function placeAtExit(

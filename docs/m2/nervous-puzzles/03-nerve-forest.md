@@ -70,15 +70,18 @@ nodes, and the terminal gate. The room is one screen.
 |    [soma]                                                    |
 |     /    \                                                   |
 | [input a] [input b]                                          |
+|     ^                                                        |
+| [Keeper perch] -- [route step]                               |
 +--------------------------------------------------------------+
 ```
 
-The two input plates sit on separate dendrite branches. The branches converge
-on the soma/trigger zone where the threshold is checked. The hillock is the axon
-start; entering it drops the player four tiles onto the axon catwalk, which makes
-the one-way cue physical as well as cosmetic. The myelin nodes are the axon
-platforms the player jumps between; they are also optional scan/debrief content,
-not a required timing contest.
+The two input plates sit on separate dendrite branches. The left branch has an
+optional Neuron Keeper perch and a route step up from the input-A platform. The
+branches converge on the soma/trigger zone where the threshold is checked. The
+hillock is the axon start; entering it drops the player five tiles onto the axon
+catwalk, which makes the one-way cue physical as well as cosmetic. The myelin
+nodes are the axon platforms the player jumps between; they are also optional
+scan/debrief content, not a required timing contest.
 
 ## 5. Puzzle rules
 

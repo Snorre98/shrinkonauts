@@ -511,7 +511,7 @@ describe("game runtime", () => {
 
     const agent = runtime.entityPixel("agent-neuron");
     if (!agent) throw new Error("agent-neuron missing");
-    runtime.placePlayer("p1", agent.x, agent.y + 16);
+    runtime.placePlayer("p1", agent.x, agent.y);
     expect(runtime.snapshot().interaction).toMatchObject({
       kind: "puzzle",
       label: "Start Node Run",

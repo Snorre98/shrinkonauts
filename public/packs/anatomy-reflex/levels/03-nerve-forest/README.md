@@ -95,14 +95,16 @@ bursts are presentation, not physical doors.
 | Background | `bg.nerve_forest`, sky plate only (POC); far/mid/near source-only/deferred |
 | Spawns | P1 `(3, 20)`, P2 `(5, 20)` |
 | Checkpoint | `checkpoint-entry` at `(4, 20)` |
-| Inputs | `input-a` on dendrite A, rect x 224–288, y 536–584; `input-b` on dendrite B, rect x 320–384, y 472–520 |
+| Neuron Keeper | `agent-neuron` on the left perch at `(4, 13)`; perch platform `x 1–4`, row 13 |
+| Inputs | `input-a` on dendrite A, rect x 160–224, y 504–552; `input-b` on dendrite B, rect x 320–384, y 472–520 |
+| Route step | `x 7–8`, row 16 connects dendrite A to dendrite B and the Keeper perch |
 | Soma | threshold platform at row 14; `gate-threshold` at `(15, 14)` |
-| Axon entry | hillock platform at row 12; zone x 512–608, y 296–400; four-tile drop to the axon |
+| Axon entry | hillock platform at row 11; zone x 512–608, y 264–368; five-tile drop to the axon |
 | Axon | myelin-node catwalk at row 16 from x 19–21, 23–25, 27–29, 31–33, then terminal x 35–37 |
 | Terminal | zone x 1120–1184, y 472–520; `pad-terminal` at `(35, 16)` |
-| Gates | `gate-threshold` at `(15, 14)`, `gate-behind` at `(18, 12)`, `gate-exit` at `(36, 16)` |
+| Gates | `gate-threshold` at `(15, 14)`, `gate-behind` at `(18, 11)`, `gate-exit` at `(36, 16)` |
 | Exit | `exit-to-muscle` at `(37, 15)`, locked by `puzzle-node-run` |
-| Tether | `off`; the puzzle span is about 992 × 288 px, inside the 1280 × 720 viewport |
+| Tether | `off`; the puzzle span is about 1056 × 288 px, inside the 1280 × 720 viewport |
 
 Visible pads (`pad-input-a`, `pad-input-b`, `pad-terminal`) are `scanTarget`
 entities aligned with the plate/zone rects. The engine does not render puzzle
@@ -174,9 +176,9 @@ pause/close, `M` mute.
 ## M1.8 material proof
 
 The room is fully materialized: bone walls/floor use the `bone-blob47` atlas
-variant set, the dendrite, soma, hillock, myelin and terminal platforms use
-`edge` autotiling backed by the `nerve-edge` atlas variant set, and the tile
-material grid never changes collision. The checked-in atlases are the final coloured Nano Banana
+variant set, the Keeper perch, route step, dendrite, soma, hillock, myelin and
+terminal platforms use `edge` autotiling backed by the `nerve-edge` atlas
+variant set, and the tile material grid never changes collision. The checked-in atlases are the final coloured Nano Banana
 `bone-blob47` and `nerve-edge` atlases; the material tints are removed. See
 `materials.json` and `theme.json` for the shared world/UI definitions. Human
 visual review is pending.
