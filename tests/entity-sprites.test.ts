@@ -110,7 +110,7 @@ describe("integrated entity sprites", () => {
     });
   }
 
-  it("keeps the reserve and non-M3 entity placeholders", () => {
+  it("keeps the reserve and placeholder entities declared", () => {
     for (const id of [
       "sprite.scan.reflex",
       "sprite.gate.nerve",
@@ -118,6 +118,25 @@ describe("integrated entity sprites", () => {
       "sprite.exit",
     ]) {
       expect(manifest.assets[id]?.placeholder, id).toBe(true);
+    }
+  });
+
+  it("ships the interim 04 gate and exit placeholders at 64x64", () => {
+    for (const id of ["sprite.gate.nerve", "sprite.exit"]) {
+      const entry = manifest.assets[id];
+      expect(entry?.src, id).toBeDefined();
+      expect(entry?.display, id).toEqual({ width: 64, height: 64 });
+      if (!entry?.src) continue;
+      expect(existsSync(join(PACK_DIR, entry.src))).toBe(true);
+      const image = decode(entry.src);
+      expect(image.width).toBe(64);
+      expect(image.height).toBe(64);
+      expect(
+        licences.assets.some(
+          (licence) =>
+            licence.file === entry.src && licence.license === entry.license,
+        ),
+      ).toBe(true);
     }
   });
 });

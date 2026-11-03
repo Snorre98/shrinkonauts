@@ -58,7 +58,7 @@
   ],
   "tileMaterialLegend": {
     "m": { "materialId": "muscle", "autotile": "edge" },
-    "e": { "materialId": "membrane", "autotile": "corner" }
+    "e": { "materialId": "membrane", "autotile": "edge" }
   },
   "defaultMaterialId": "muscle",
   "materialSeed": 7,

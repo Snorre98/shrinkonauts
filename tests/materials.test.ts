@@ -31,7 +31,22 @@ describe("materials catalog", () => {
       "nerve",
     ]);
     expect(parsed.patterns?.["nerve-fibers"]?.source.kind).toBe("procedural");
+    expect(parsed.variantSets?.["bone-blob47"]?.rule).toBe("blob47");
     expect(parsed.variantSets?.["nerve-edge"]?.rule).toBe("edge");
+    expect(parsed.variantSets?.["muscle-edge"]?.rule).toBe("edge");
+    expect(parsed.variantSets?.["membrane-edge"]?.rule).toBe("edge");
+    expect(parsed.variantSets?.["bone-blob47"]?.atlas).toBe("tile.bone.atlas");
+    expect(parsed.variantSets?.["nerve-edge"]?.atlas).toBe("tile.nerve.atlas");
+    expect(parsed.variantSets?.["muscle-edge"]?.atlas).toBe(
+      "tile.muscle.atlas",
+    );
+    expect(parsed.variantSets?.["membrane-edge"]?.atlas).toBe(
+      "tile.membrane.atlas",
+    );
+    expect(parsed.materials.bone.variantSet).toBe("bone-blob47");
+    expect(parsed.materials.muscle.variantSet).toBe("muscle-edge");
+    expect(parsed.materials.membrane.variantSet).toBe("membrane-edge");
+    expect(parsed.materials.membrane.autotile).toBe("edge");
   });
 
   it("resolves material and pattern lookups", () => {
