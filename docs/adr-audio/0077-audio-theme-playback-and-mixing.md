@@ -3,7 +3,7 @@
 - **Status:** Proposed
 - **Date:** 2026-11-03
 - **Deciders:** Snorre
-- **Related:** ADR-0020, ADR-0029, ADR-0032, ADR-0076
+- **Related:** ADR-0020, ADR-0029, ADR-0032, ADR-0076, ADR-0078
 - **Extends:** ADR-0032 (audio cue abstraction)
 - **Depends on:** ADR-0076 (per-room and menu themes)
 

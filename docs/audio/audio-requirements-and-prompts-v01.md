@@ -7,7 +7,7 @@
 > **Primary tool:** Ludo.ai Audio Generator (Sound Effects mode)  
 > **Fallback tool:** Stability AI Stable Audio 3 Small SFX / Stable Audio 2.5
 
-> **Scope note (2026-11-03).** This document covers the **18 SFX cues** only. Room and menu music themes are a separate **proposed extension** in [`room-and-menu-themes-v01.md`](room-and-menu-themes-v01.md) and [ADR-0076](../adr-audio/0076-room-and-menu-audio-themes.md)/[ADR-0077](../adr-audio/0077-audio-theme-playback-and-mixing.md). They are not part of the current M3/M3.5 SFX scope.
+> **Scope note (2026-11-03).** This document covers the **18 SFX cues** only. Room and menu music themes are a separate **proposed extension** in [`room-and-menu-themes-v01.md`](room-and-menu-themes-v01.md) and [ADR-0076](../adr-audio/0076-room-and-menu-audio-themes.md)/[ADR-0077](../adr-audio/0077-audio-theme-playback-and-mixing.md). They are not part of the current M3/M3.5 SFX scope. The cross-discipline placeholder inventory and completion gates are in [`../assets/prompt-library-v01.md`](../assets/prompt-library-v01.md) under ADR-0078.
 
 **Sources of truth**
 

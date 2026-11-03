@@ -19,9 +19,10 @@ The repository currently has domain-local numbering collisions: M3 uses
 ADR-0047–0049, the online domain uses ADR-0047–0057, the hub domain uses
 ADR-0058–0059, the controller domain uses ADR-0066–0069, and the presentation
 domain uses ADR-0070–0074. This domain starts at **ADR-0060**. ADR-0075 is the
-next record in the global sequence and lives here because it is a pipeline
-decision. If the project later reconciles a single global sequence, renumber
-these records before acceptance; accepted records are immutable.
+last record in this domain; ADR-0076–0077 are audio records, and ADR-0078 is the
+cross-discipline asset prompt-library record in `docs/adr-assets/`. If the
+project later reconciles a single global sequence, renumber these records
+before acceptance; accepted records are immutable.
 
 ## Index
 
@@ -75,6 +76,9 @@ these records before acceptance; accepted records are immutable.
 - ADR-0075: hero-asset treatment profiles and per-class fit pipeline
   (proposed). Adds per-class cells, source-scale gates, and the `hero-1x`
   treatment.
+- ADR-0078: cross-discipline asset prompt-library governance and placeholder
+  completion. The umbrella inventory lives at
+  `docs/assets/prompt-library-v01.md`.
 - `docs/m3/asset-requirements-v01.md`: asset register, palette, source sizes,
   and acceptance criteria.
 

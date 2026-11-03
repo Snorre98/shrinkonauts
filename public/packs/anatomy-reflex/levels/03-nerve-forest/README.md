@@ -164,12 +164,13 @@ pause/close, `M` mute.
 
 ## M1.8 material proof
 
-The room is fully materialized for M1.8: bone walls/floor use `blob47`
-placeholder variants, the central platform uses `edge` autotiling backed by the
+The room is fully materialized: bone walls/floor use the `bone-blob47` atlas
+variant set, the central platform uses `edge` autotiling backed by the
 `nerve-edge` atlas variant set, and the tile material grid never changes
-collision. The sky uses a screen-space nerve pattern and the mid background
-layer uses a world-space bone pattern. See `materials.json` and `theme.json` for
-the shared world/UI definitions. Human visual review is pending.
+collision. The checked-in atlases are neutral procedural interim placeholders
+and are tinted by the material; the final Nano Banana atlases should be
+authored in colour and the tints removed. See `materials.json` and `theme.json`
+for the shared world/UI definitions. Human visual review is pending.
 
 ## Remaining implementation gaps (M2 chunk boundary)
 
@@ -191,6 +192,13 @@ the shared world/UI definitions. Human visual review is pending.
   the whole anatomy pack. The command was run as specified.
 - The room spec uses `gate-exit`; the mechanics summary calls the same node
   `exit-gate`. The implementation follows the room spec's `gate-exit` name.
+- `sprite.scan.neuron` and `sprite.scan.pathway` remain procedural
+  placeholder-only assets. They are the yellow **NEUR** and cyan **PATH**
+  boxes. `scan-myelin` reuses `sprite.scan.neuron`, so it also shows NEUR. The
+  original wide Nanobanan plates lost their reading at 36×36; revised square
+  prompts are in
+  [`docs/assets/prompt-library-v01.md`](../../../../../docs/assets/prompt-library-v01.md).
+  Replace them before treating the room's scan set as final.
 
 ## Verification
 

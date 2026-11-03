@@ -3,7 +3,7 @@
 - **Status:** Proposed
 - **Date:** 2026-11-03
 - **Deciders:** Snorre
-- **Related:** ADR-0020, ADR-0027, ADR-0029, ADR-0032, ADR-0033, ADR-0058, ADR-0059
+- **Related:** ADR-0020, ADR-0027, ADR-0029, ADR-0032, ADR-0033, ADR-0058, ADR-0059, ADR-0078
 - **Extends:** ADR-0027 (art/audio direction) and ADR-0032 (audio cue abstraction)
 - **Supersedes on acceptance:** the "music deferred" clauses in [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) §2.2 and [`docs/m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md) §0; the "prototype has no music" statement in [`docs/gdd/ASSET-LIST-GBL.md`](../gdd/ASSET-LIST-GBL.md) §5; the "no music or ambience" note in [`docs/gdd/GDD-MAP.md`](../gdd/GDD-MAP.md) §Sound & Music.
 

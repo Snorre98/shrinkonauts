@@ -93,7 +93,7 @@ trace do.
 | Property | Value |
 | --- | --- |
 | Room | `room-muscle-effector`, 40 × 22 tiles at 32 px (1280 × 704) |
-| Background | `bg.muscle_endplate`, four parallax placeholder layers |
+| Background | `bg.muscle_endplate`; interim 1280×720 sky wired, far/mid/near declared placeholders |
 | Spawns | P1 `(3, 20)`, P2 `(5, 20)` |
 | Checkpoint | `checkpoint-muscle-entry` at `(4, 20)` |
 | Agent | `agent-muscle` at `(6, 20)` |
@@ -207,11 +207,14 @@ pause/close, `M` mute.
 
 ## M1.8 material proof
 
-The room is fully materialized for M1.8: muscle walls/floor use `edge`
-autotiling and the entrance strip uses membrane `corner` autotiling. The
-`muscle-gate` carries a world-space `muscle-fibers` overlay that shares phase
-with the muscle floor. The near background layer uses the same pattern in
-world space. Materials are visual only; collision comes from `layers.tiles`.
+The room is fully materialized: muscle walls/floor use the `muscle-edge`
+atlas and the entrance strip uses the `membrane-edge` atlas. The `muscle-gate`
+carries a world-space `muscle-fibers` overlay that shares phase with the muscle
+floor. The checked-in atlases are neutral procedural interim placeholders and
+are tinted by the material; the final Nano Banana atlases should be authored in
+colour and the tints removed. The interim 04 sky replaces the procedural
+gradient; `bg.muscle_endplate.far`, `.mid` and `.near` remain declared
+placeholders. Materials are visual only; collision comes from `layers.tiles`.
 Human visual review is pending.
 
 ## Remaining implementation gaps (M2 chunk boundary)
@@ -226,6 +229,9 @@ Human visual review is pending.
 - Human playtesting and the optional advanced NERV-02#3 debrief are pending.
   The required dialogue includes the receptor-specificity line as optional
   reading; it is not a required assessment.
+- The 04 sky, gate, exit and four material atlases are interim procedural
+  placeholders. Final Nano Banana prompts and acceptance checks are in
+  [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../../../../../docs/m3/muscle-endplate-asset-requirements-v01.md).
 
 ## Verification
 

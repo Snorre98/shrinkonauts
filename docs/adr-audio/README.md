@@ -9,7 +9,7 @@ This domain is separate from the M3 pixel-art, hub, online, presentation, and ar
 
 ## Numbering note
 
-The highest existing record is **ADR-0075** (`docs/adr-art-pipeline/`). This domain continues the global sequence at **ADR-0076–0077**. They are new records, not amendments.
+This domain continues the global sequence at **ADR-0076–0077**. The following cross-discipline asset record is **ADR-0078** in `docs/adr-assets/`. They are new records, not amendments.
 
 ## Index
 
@@ -27,6 +27,7 @@ The highest existing record is **ADR-0075** (`docs/adr-art-pipeline/`). This dom
 - **ADR-0020** — accessibility baseline; music must never be the only carrier of information.
 - **ADR-0058–0059** — hub/app-shell and pack catalog; the menu theme belongs to the hub theme.
 - **ADR-0047–0075** — visual direction and presentation; audio must match the same room identities.
+- **ADR-0078** — cross-discipline asset prompt-library governance and placeholder completion.
 
 ## Scope boundary
 
