@@ -97,7 +97,9 @@ export class ManifestAudioProvider implements AudioProvider {
     this.logger = options.logger ?? consoleLogger;
     this.onWarning = options.onWarning;
     this.fallback = options.fallback ?? new SynthAudioProvider();
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    // Bind to the global receiver so Chrome's fetch does not throw
+    // "Illegal invocation" when called as an instance method.
+    this.fetchImpl = (options.fetchImpl ?? fetch).bind(globalThis);
   }
 
   play(

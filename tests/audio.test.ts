@@ -236,6 +236,38 @@ describe("audio providers", () => {
     expect(source?.connect).toHaveBeenCalledWith(fake.gains[1]);
   });
 
+  it("binds the injected fetch to the global receiver", async () => {
+    const fake = new FakeContext();
+    const warnings: string[] = [];
+    const receivers: unknown[] = [];
+    const fetchImpl = vi.fn(function (this: unknown) {
+      receivers.push(this);
+      if (this !== globalThis) {
+        throw new TypeError("Illegal invocation");
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      });
+    }) as unknown as typeof fetch;
+    const provider = new ManifestAudioProvider({
+      logger: silentLogger,
+      onWarning: (message) => warnings.push(message),
+      fallback: new SynthAudioProvider(),
+      fetchImpl,
+    });
+    const asset = descriptor({ src: "https://example.test/jump.mp3" });
+
+    provider.play(context(fake), asset, 0.5);
+    await pendingLoad(provider, asset.id);
+    provider.play(context(fake), asset, 0.5);
+
+    expect(receivers).toEqual([globalThis]);
+    expect(warnings).toHaveLength(0);
+    expect(fake.bufferSources).toHaveLength(1);
+  });
+
   it("warns once and keeps the placeholder when a file fails", async () => {
     const fake = new FakeContext();
     const warnings: string[] = [];
