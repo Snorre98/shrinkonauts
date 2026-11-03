@@ -64,6 +64,7 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Human hub visual/accessibility playtest | **Pending** |
 | Human solo/co-op playtest | **Pending** |
 | Final art/audio files | Deferred |
+| 04 Nano Banana source batch | 7 plates generated; processing/acceptance/wiring pending |
 | M3.5 bathroom hub art pass | Deferred |
 | Theme playback (menu/room music) | Working; silent placeholders until theme files land |
 | Levels 5+, capture mode, ambience loops | Deferred |
@@ -505,10 +506,14 @@ final manifest → fixture/pack manifest → placeholder provider
 The anatomy pack declares 56 IDs. Final-source entries include the player
 sprites, Neuron Keeper, readable entity sprites, the 03 pretty sky, the interim
 04 sky, four material atlases, and interim 04 gate/exit placeholders; the
-remaining entries resolve to procedural placeholders. `?assets=fixture` looks
-for an anatomy fixture manifest; because none is authored for this slice, it
-warns and keeps placeholders. The dev fixture still resolves 10/10 placeholders,
-or 7/10 with its fixture manifest selected by the scripts.
+remaining entries resolve to procedural placeholders. A seven-plate 04 Nano
+Banana source batch is generated but not processed or wired; see the
+[remaining-work checklist](docs/assets/remaining-work.md) and the
+[completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix).
+`?assets=fixture` looks for an anatomy fixture manifest; because none is
+authored for this slice, it warns and keeps placeholders. The dev fixture still
+resolves 10/10 placeholders, or 7/10 with its fixture manifest selected by the
+scripts.
 
 The preload plan, validation, and boot fail loudly if an ID is unknown or a
 referenced file is missing. `applyTheme` maps pack palette/fonts to CSS

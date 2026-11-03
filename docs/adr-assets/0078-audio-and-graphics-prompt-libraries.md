@@ -69,9 +69,13 @@ The umbrella library records at least:
 
 - asset ID and type;
 - pack/room or hub location;
-- current status (`final`, `interim`, `placeholder-only`, `reserve`, `deferred`);
+- runtime status (`final`, `interim`, `placeholder-only`, `reserve`, `deferred`);
+- pipeline stage (`prompt-ready`, `source-generated`, `source-accepted`,
+  `processed`, `wired`, `accepted`);
+- source path and evidence (when a raw plate or processed file exists);
 - visible/interactive consequence;
 - prompt source and section;
+- next action and blocker;
 - acceptance gate;
 - licence/provenance status.
 

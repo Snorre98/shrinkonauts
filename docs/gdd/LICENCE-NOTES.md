@@ -38,6 +38,11 @@ The exact per-file entries are in `manifest.json` and
 - `tile.anatomy.atlas` (CC0 test fixture; no longer wired)
 - `sprite.gate.nerve`, `sprite.exit` (procedural interim)
 
+It does **not** list the seven 2026-11-03 Nano Banana source plates in
+`art-source/nanobanan/new/muscle-endplate-2026-11-03/`. They are
+`source-generated` only, have no runtime `src`, and still need licence entries
+when processed and wired.
+
 It does **not** yet list every new entity (for example `scan.neuron`,
 `scan.pathway`, `scan.reflex`, the badge, the deferred UI panels or audio).
 Those are placeholders without final art, so the missing entries should be added
@@ -100,9 +105,12 @@ note if the font is redistributed.
 6. **Final approval.** POC-integrated sprites and the pretty sky are not final
    approved. The GDD/video should say “POC integrated; final approval pending”
    where that distinction matters.
-7. **Placeholders.** The badge, `scan.neuron`, `scan.pathway`, `scan.reflex`,
-   `sprite.exit`, `sprite.gate.nerve`, both atlases, the toy astronaut, the
-   logo, and all audio are placeholders. Do not present them as final.
+7. **Placeholders and source-generated art.** The badge, `scan.neuron`,
+   `scan.pathway`, `scan.reflex`, `sprite.exit`, `sprite.gate.nerve`, the four
+   atlases, the toy astronaut, the logo, and all audio are placeholders. The
+   2026-11-03 04 batch adds raw source plates for the sky, four swatches, gate,
+   and exit; these are **not** final runtime assets. Do not present either the
+   placeholders or the raw sources as final.
 
 ---
 

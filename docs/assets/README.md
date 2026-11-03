@@ -4,8 +4,17 @@
 **Owner:** Snorre  
 **Scope:** Graphics and audio asset inventory, prompt routing, placeholder status, and completion order
 
-This directory holds the cross-discipline asset index. The full prompt text
-remains in the discipline documents:
+This directory holds the cross-discipline asset index. The **single source of
+truth for completion status** is the
+[completion matrix in prompt-library-v01.md](prompt-library-v01.md#40-completion-matrix).
+Discipline documents own prompt text; update the matrix first when an asset moves
+through `source-generated → processed → wired → accepted`.
+
+Current state: the seven 2026-11-03 04 Nano Banana source plates are
+`source-generated` only. The runtime still loads interim procedural files for
+the 04 sky, four atlases, gate and exit.
+
+The full prompt text remains in the discipline documents:
 
 - Graphics: [`../m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md),
   [`../m3/background-asset-requirements-v01.md`](../m3/background-asset-requirements-v01.md),
@@ -19,6 +28,7 @@ remains in the discipline documents:
 
 | Document | Purpose |
 |---|---|
+| [`remaining-work.md`](remaining-work.md) | Single consolidated “what is left?” checklist across graphics, audio, and integration |
 | [`prompt-library-v01.md`](prompt-library-v01.md) | Placeholder inventory, prompt routing, gap prompts, generation order, and completion gates |
 | [`../adr-assets/0078-audio-and-graphics-prompt-libraries.md`](../adr-assets/0078-audio-and-graphics-prompt-libraries.md) | ADR for prompt-library governance and placeholder completion |
 

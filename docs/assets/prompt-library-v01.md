@@ -1,6 +1,7 @@
-# Asset Prompt Library — Audio and Graphics v0.1
+# Asset Prompt Library — Audio and Graphics v0.2
 
 - **Status:** Draft
+- **Last updated:** 2026-11-03
 - **Date:** 2026-11-03
 - **Owner:** Snorre
 - **Scope:** Cross-discipline inventory and prompt routing for graphics and audio assets across the authored packs and the bathroom hub
@@ -18,12 +19,14 @@
 |---|---|
 | Graphics prompt sources | M3, background, muscle-endplate, M3.5 hub, Silicon level packs |
 | Audio prompt sources | 18 SFX cues; four music themes |
-| Current graphics state | Final, interim, and placeholder assets coexist |
+| Current graphics state | Final, interim, placeholder-only, and one newly generated 04 source batch coexist |
+| Current 04 source batch | **7 source plates generated** (`2026-11-03`); none processed, accepted, or wired yet |
 | Current audio state | All 18 SFX cues are placeholders; four themes are proposed, no files |
 | Visible placeholder-only sprites | `sprite.scan.neuron`, `sprite.scan.pathway`, `sprite.scan.interrupt`, `sprite.exit.silicon` |
 | Audio delivery | File-backed cue and theme playback implemented; no audio files exist yet |
 | Prompt versioning | Per-discipline document version plus the umbrella version above |
-| Generation order | Visible placeholders → final 04 replacements → SFX → themes |
+| Canonical status | §4.0 completion matrix |
+| Generation order | Visible placeholders → 04 source processing → other final replacements → SFX → themes |
 
 **The one-line rule:** every visible placeholder must be in the inventory; every generated asset must have a prompt source, a source file, an acceptance result, and a licence.
 
@@ -44,13 +47,21 @@ The branch has two committed/documentation streams:
    - Four neutral procedural interim atlases.
    - Interim 04 sky, gate and exit files.
    - Manifest, materials, room, licence, test and README wiring.
+3. **04 Nano Banana source batch generated** (`2026-11-03`):
+   - Seven raw JPEGs in
+     `art-source/nanobanan/new/muscle-endplate-2026-11-03/`.
+   - Sky, four material swatches, gate, and exit.
+   - **Source-generated only.** No keying, fitting, atlas assembly, palette
+     validation, manifest `src`, licence, or acceptance has been completed.
 
 The branch does **not** yet have final audio files. File-backed cue playback and
 ADR-0077 theme playback are implemented; missing files resolve to the synth or
 silence. The graphics intermediates are playable but are not final Nano Banana
-outputs.
+outputs; the new 04 batch is raw source material, not runtime art.
 
 ### 2.1 Status vocabulary
+
+**Runtime status** describes what the game currently loads:
 
 | Status | Meaning |
 |---|---|
@@ -59,6 +70,29 @@ outputs.
 | `placeholder-only` | No runtime file; `PlaceholderProvider` or synth fallback renders |
 | `reserve` | Declared but not referenced by authored content |
 | `deferred` | Deliberately outside the current pass; prompt may exist or be future work |
+
+**Pipeline stage** describes how far an asset has moved through the art
+pipeline. Record the stage separately from the runtime status; a file can be
+`source-generated` while the game still loads an `interim` placeholder.
+
+| Stage | Evidence required |
+|---|---|
+| `prompt-ready` | Prompt exists in a discipline document |
+| `source-generated` | Raw generator plate exists under `art-source/` |
+| `source-accepted` | Source passes composition, background, silhouette and readability checks |
+| `processed` | Keyed/cropped/fitted/palette-checked/atlas-assembled, with previews and reports |
+| `wired` | Runtime file exists, manifest has `src`, licence exists, and relevant tests pass |
+| `accepted` | `placeholder` removed and every acceptance/prompt-log gate passes |
+
+**Rules**
+
+- Update this document’s [completion matrix](#40-completion-matrix) first, then
+  update the discipline document’s summary line.
+- A stage is checked only when its evidence exists. A prompt is not a source; a
+  source is not a processed asset; a processed file is not accepted until it is
+  wired and reviewed.
+- Never call a generated JPEG “final”. Raw source plates are not runtime assets.
+- A blocked asset keeps its current stage and records the blocker in the matrix.
 
 ---
 
@@ -101,6 +135,32 @@ The two NEUR boxes in 03 are `scan-neuron` and `scan-myelin`; both reference
 
 ## 4. Graphics inventory
 
+### 4.0 Completion matrix
+
+**Last updated:** 2026-11-03
+
+This is the single source of truth for graphics evidence and per-asset status.
+For the consolidated “what do I do next?” checklist across graphics, audio, and
+integration, see [`remaining-work.md`](remaining-work.md). “Runtime” uses the
+status vocabulary in §2.1; “Stage” uses the pipeline stages in §2.1.
+
+| Asset | Priority | Runtime | Stage | Source / evidence | Next action | Blocker / pending |
+|---|---|---|---|---|---|---|
+| `bg.muscle_endplate.sky` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg` (2752×1536) | Crop/resize to 1280×720; export lossless WebP; run §5 acceptance; add manifest `src` | — |
+| `tile.muscle.atlas` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.muscle.atlas.jpeg` (2048×2048) | Crop 512×512 swatch; check 3×3 tiling and 2×2 clusters; assemble 128×128 4×4 atlas; report; remove tint | Tileability/pixel-grid acceptance pending |
+| `tile.membrane.atlas` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.membrane.atlas.jpeg` (2048×2048) | Same as muscle; assemble 128×128 4×4 atlas | Tileability/pixel-grid acceptance pending |
+| `tile.bone.atlas` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.bone.atlas.jpeg` (2048×2048) | Crop 512×512 swatch; check tiling; assemble 256×192 8×6 `blob47` atlas; report; remove tint | Tileability/pixel-grid acceptance pending |
+| `tile.nerve.atlas` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.nerve.atlas.jpeg` (2048×2048) | Crop 512×512 swatch; check tiling; assemble 128×128 4×4 atlas; remove tint | Tileability/pixel-grid acceptance pending |
+| `sprite.gate.nerve` | P1 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.gate.nerve.jpeg` (2048×2048, flat `#FF00FF`) | Key with `npm run art:key`; fit 64×64; palette/alpha acceptance; add manifest `src`/licence | Magenta key and fit not run yet |
+| `sprite.exit` | P1 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.exit.jpeg` (2048×2048, flat `#FF00FF`) | Key with `npm run art:key`; fit 64×64; palette/alpha acceptance; add manifest `src`/licence | Magenta key and fit not run yet |
+
+The full source folder is
+`art-source/nanobanan/new/muscle-endplate-2026-11-03/`.
+
+**Current counts:** 7 source-generated; 0 source-accepted; 0 processed; 0 wired
+from this batch. The runtime still uses the interim procedural files listed in
+§4.2.
+
 ### 4.1 Final runtime graphics
 
 These are approved or POC-integrated and have `src` paths:
@@ -117,7 +177,8 @@ These are approved or POC-integrated and have `src` paths:
 
 ### 4.2 Interim graphics
 
-These have runtime files but keep `placeholder: true`:
+These have runtime files but keep `placeholder: true`. The 04 rows now have a
+generated source plate but are still **`source-generated`**, not processed:
 
 | Asset | File | Source document | Replace with |
 |---|---|---|---|
@@ -219,7 +280,7 @@ at 36×36; distinct from `scan.neuron`; no text.
 |---|---|---|
 | Shared sprites, scans, gates, props, receptors, badge | [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) | M3 style blocks, per-asset prompts, atlas maps, prompt log |
 | 03 background layers | [`docs/m3/background-asset-requirements-v01.md`](../m3/background-asset-requirements-v01.md) | Current 03 sky wired; far/mid/near future |
-| 04 sky, four atlases, gate, exit | [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md) | Interim files wired; final Nano Banana prompts |
+| 04 sky, four atlases, gate, exit | [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md) | Source plates generated; processing/acceptance pending |
 | Hub scene/props/UI | [`docs/m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md) | Nano Banana first, Ludo fallback |
 | Silicon entities/theme | [`docs/prompts/silicon-theme.md`](../prompts/silicon-theme.md) and [`docs/prompts/levels/01-interrupt-loop-assets.md`](../prompts/levels/01-interrupt-loop-assets.md) | Final Silicon entities; interrupt/exit gaps |
 | 03 scan gaps | §5 above | Revised square 36×36 prompts |
@@ -290,13 +351,16 @@ Do not commit audio files before gate 1. A silent file hides the provider gap.
 3. `sprite.scan.interrupt` and `sprite.exit.silicon` — Silicon prompt pack; decide
    whether to reuse `sprite.exit` before generating a new exit.
 
-### P1 — final 04 replacements
+### P1 — 04 source processing
 
-4. `bg.muscle_endplate.sky` — final pretty sky.
-5. Four atlas swatches — bone, nerve, muscle, membrane.
-6. `sprite.gate.nerve`, `sprite.exit` — final 64×64 sprites.
-7. Remove `placeholder: true` from the replaced entries; remove material tints
-   when coloured atlases land.
+The seven source plates are generated. Process them in this order:
+
+4. `bg.muscle_endplate.sky` — crop/resize, export, accept.
+5. Four atlas swatches — bone, nerve, muscle, membrane; tile/pixel checks, then
+   atlas assembly and tint removal.
+6. `sprite.gate.nerve`, `sprite.exit` — magenta key, 64×64 fit, palette/alpha
+   acceptance.
+7. Wire `src`/licence entries; remove `placeholder: true` only after acceptance.
 
 ### P2 — audio
 

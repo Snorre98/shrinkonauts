@@ -99,9 +99,11 @@ it publishes the `dist` artifact, which already contains the merged gallery.
   `level.json` has `"gateIds": []`; no 03 room entity opens it. The walkthrough
   captures the 03 threshold gate as a world object and the Silicon
   `gate-transfer` overlay as the concept-gate example.
-- **04 background:** the 2026-11-03 additive pass now wires an interim
-  1280×720 `bg.muscle_endplate.sky` placeholder; the final Nano Banana pretty
-  sky is pending. The 04 captions call this out.
+- **04 background:** the 2026-11-03 additive pass wires an interim 1280×720
+  `bg.muscle_endplate.sky` placeholder. A 2752×1536 Nano Banana source plate is
+  now generated, but it is `source-generated` only; crop/export/acceptance is
+  pending, so captures still show the interim plate. The 04 captions call this
+  out.
 - **03 scan placeholders:** `sprite.scan.neuron` and `sprite.scan.pathway` are
   colored placeholder boxes (yellow NEUR, cyan PATH); `scan-myelin` reuses the
   neuron icon. Revised square prompts are in

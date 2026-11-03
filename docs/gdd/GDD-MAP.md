@@ -142,14 +142,17 @@ JPEGs are failed references — do not use them.
 | Source → keyed → runtime | `contact-sheets/pipeline-comparison.jpg` |
 | All concept plates | `concepts/anatomy/`, `concepts/silicon/` |
 | Character source sheets | `characters/player-p1/source/`, `player-p2/source/`, `neuron-agent/source/` |
-| Style / prompt pack | `source/notes/m3-asset-requirements-v01.md`, `source/notes/m3.5-hub-asset-prompts-v01.md` |
+| Style / prompt pack | `source/notes/m3-asset-requirements-v01.md`, `source/notes/m3-muscle-endplate-asset-requirements-v01.md`, `source/notes/m3.5-hub-asset-prompts-v01.md` |
 
 ### Sound & Music
 
-No audio files exist — every cue is a placeholder. The cue vocabulary is in
+No audio files exist — every cue is a placeholder. Cue playback and the
+ADR-0077 music bus/theme player are implemented, but the four charted themes are
+proposed and no theme files exist, so music is silent. The cue vocabulary is in
 `final/anatomy/metadata/theme.json` and
 `final/hub/metadata/theme.json`. Use those lists to write the cue table, and
-state clearly that the prototype has no music or ambience.
+state clearly that the prototype has no shipped music or ambience; the theme
+player exists but resolves to silence until files land.
 
 ### Accessibility
 
@@ -220,10 +223,12 @@ accessibility set. These content gaps remain visible in the captures:
    `"gateIds": []`; no 03 room entity opens it. The walkthrough uses the 03
    threshold gate as the physical gate and Silicon's `gate-transfer` as the
    concept-gate overlay.
-2. **04 muscle background** — the 2026-11-03 additive pass now wires an interim
-   1280×720 `bg.muscle_endplate.sky` placeholder; the final Nano Banana pretty
-   sky is still pending. The 04 captions say this. See
-   [`../m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md).
+2. **04 muscle background** — the 2026-11-03 additive pass wires an interim
+   1280×720 `bg.muscle_endplate.sky` placeholder. A 2752×1536 Nano Banana source
+   plate is generated, but it is `source-generated` only; crop/export/acceptance
+   is pending. The 04 captions say this. See
+   [`../m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md)
+   and the [completion matrix](../assets/prompt-library-v01.md#40-completion-matrix).
 
 Also still missing: online co-op (M4 placeholder), audio files, and final
 concept-gate art for 03 if the gate is wired later. The capture commands are in

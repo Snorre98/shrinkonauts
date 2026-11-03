@@ -1,4 +1,4 @@
-# M3 — Muscle Endplate and Shared Tile Atlas Asset Prompts v0.1
+# M3 — Muscle Endplate and Shared Tile Atlas Asset Prompts v0.2
 
 - **Status:** Draft prompt pack · 3 November 2026
 - **Owner:** Snorre
@@ -11,6 +11,15 @@
 > **The rule:** AI generates raster art only. Manifest wiring, atlas frame assembly, material variant sets, tints and tests stay in code. A generated prompt plate is not a runtime asset until it is processed and wired.
 
 > **Additive-pass rule:** the original M3 document deliberately kept `04-muscle-effector` backgrounds, muscle/membrane tiles and `sprite.gate.nerve` as placeholders. This document is the deliberate expansion of that scope. Do not silently rewrite the M3 status tables; add a pointer to this document instead.
+
+> **Completion status (2026-11-03):** all seven Nano Banana source plates are
+> **generated** in
+> `art-source/nanobanan/new/muscle-endplate-2026-11-03/`. None are
+> source-accepted, processed, wired, or final. The runtime still uses the
+> interim procedural placeholders in §4.2. The canonical cross-discipline status
+> is the [completion matrix](../assets/prompt-library-v01.md#40-completion-matrix).
+> The gate and exit plates now use a flat `#FF00FF` background; the sky and
+> atlas plates still need crop/palette/atlas processing.
 
 ---
 
@@ -26,8 +35,9 @@
 | 04 sprites | `sprite.gate.nerve` and `sprite.exit` prompts plus a wiring plan |
 | Atlas assembly | `npm run art:atlas` deterministic assembler; no manual frame-by-frame atlas editing |
 | Old atlas | `tile.anatomy.atlas` is removed from the runtime manifest; the SVG stays as a test fixture |
-| Interim state | Neutral procedural atlases, a 04 sky stand-in, and 04 gate/exit placeholders are checked in so the pack validates and renders while final art is generated |
-| Generation order | 04 sky + muscle atlas first; then membrane, 03 atlases, sprites |
+| Interim state | Neutral procedural atlases, a 04 sky stand-in, and 04 gate/exit placeholders are checked in so the pack validates and renders while final art is processed |
+| Source state | **7 Nano Banana source JPEGs generated** in `art-source/nanobanan/new/muscle-endplate-2026-11-03/`; none processed or wired |
+| Generation order | Source generation complete. Process 04 sky + muscle atlas first; then membrane, 03 atlases, sprites |
 | Out of scope | 04 far/mid/near, 03 scan icons, audio, UI, levels 01/02/05, Silicon |
 
 ---
@@ -170,9 +180,30 @@ Paths are relative to `public/packs/anatomy-reflex/`.
 | `sprite.gate.nerve` | sprite | 64×64 | 64×64 at 1× | `shared/sprites/gate-nerve.png` | P1 |
 | `sprite.exit` | sprite | 64×64 | 64×64 at 1× | `shared/sprites/exit.png` | P1 |
 
-### 4.1 Interim placeholders
+### 4.1 Generated source batch (2026-11-03)
 
-The checked-in runtime files for the four atlases, the 04 sky, `sprite.gate.nerve` and `sprite.exit` are **procedural interim placeholders**, not final Nano Banana outputs:
+Source paths in this table are repository paths, not paths inside
+`public/packs/`. All rows are `source-generated` only. The shared style,
+palette, frame, and negative blocks above were already applied to the prompts
+in §5–§7.
+
+| Asset | Source file | Source size | Next action | Blocker |
+|---|---|---:|---|---|
+| `bg.muscle_endplate.sky` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg` | 2752×1536 | Crop/resize to 1280×720; lossless WebP; §5 acceptance; manifest `src` | — |
+| `tile.muscle.atlas` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.muscle.atlas.jpeg` | 2048×2048 | 512×512 swatch; 3×3 tiling + 2×2 cluster check; 128×128 4×4 atlas; remove tint | Tileability/pixel-grid acceptance pending |
+| `tile.membrane.atlas` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.membrane.atlas.jpeg` | 2048×2048 | 512×512 swatch; 3×3 tiling + 2×2 cluster check; 128×128 4×4 atlas; remove tint | Tileability/pixel-grid acceptance pending |
+| `tile.bone.atlas` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.bone.atlas.jpeg` | 2048×2048 | 512×512 swatch; 3×3 tiling + 2×2 cluster check; 256×192 8×6 `blob47` atlas; remove tint | Tileability/pixel-grid acceptance pending |
+| `tile.nerve.atlas` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.nerve.atlas.jpeg` | 2048×2048 | 512×512 swatch; 3×3 tiling + 2×2 cluster check; 128×128 4×4 atlas; remove tint | Tileability/pixel-grid acceptance pending |
+| `sprite.gate.nerve` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.gate.nerve.jpeg` | 2048×2048 | Magenta key; 64×64 fit; palette/alpha acceptance; manifest `src`/licence | Key/fit not run yet |
+| `sprite.exit` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.exit.jpeg` | 2048×2048 | Magenta key; 64×64 fit; palette/alpha acceptance; manifest `src`/licence | Key/fit not run yet |
+
+Both sprite sources have a flat `#FF00FF` background and can use the normal
+`npm run art:key` workflow. The atlases are source textures, not ready-made
+4×4/8×6 atlases.
+
+### 4.2 Interim runtime placeholders
+
+The checked-in runtime files for the four atlases, the 04 sky, `sprite.gate.nerve` and `sprite.exit` are **procedural interim placeholders**, not the final processed outputs. The seven Nano Banana source plates are generated; the runtime placeholders stay until processing and acceptance:
 
 - Atlas placeholders are neutral greyscale and rely on the existing material `tint` tokens.
 - The 04 sky is a 1280×720 opaque WebP built from the approved palette; it replaces the gradient, not the final pretty sky.
@@ -189,6 +220,8 @@ The checked-in runtime files for the four atlases, the 04 sky, `sprite.gate.nerv
 **Frame:** `FRAME_SKY_PRETTY`
 **Source/export:** 1280×720 PNG/WebP, opaque, 1× cover, lossless WebP.
 **File:** `shared/backgrounds/muscle-endplate-sky.webp`
+**Completion:** prompt ✅ · source ✅ `art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg` · source accepted ☐ · processed ☐ · wired ☐ · final ☐
+**Next:** crop/resize the 2752×1536 source to 1280×720, export lossless WebP, then run the acceptance checks below.
 
 ```text
 SUBJECT: A wide, opaque pixel-art background plate of the neuromuscular junction as a living landscape, seen from inside the muscle. A deep muscle-pink and warm-rust cavern; thick, taut, striated muscle-fibre pillars rise like tree trunks at the left and right edges; wet membrane folds drape from the top corners like heavy fabric; bone-cream tendon plates form a broken shelf in the middle distance; a distant motor-nerve terminal bulb hangs above the centre, with a small nerve-yellow ACh glow and a few hard-edged joint-cyan synaptic sparks. Floating dust and condensation, damp sheen, scuffed mineral grit. The centre and lower third stay readable and low-contrast behind the player; the upper corners stay dark and quiet for the HUD. No characters, no faces, no labels, no arrows, no text, no gore. Orthographic side view; atmospheric depth from layered values and dither, not a global gradient; no single directional light, no hard horizon line at player height. Use muscle pink, warm rust, bone, bone shadow, nerve yellow, joint cyan, sage and ink; no purple, magenta, orange or pure red.
@@ -239,6 +272,8 @@ The assembler uses deterministic 32×32 windows from the approved 512×512 swatc
 **File:** `shared/tiles/muscle-atlas.png`
 **Rule:** `edge`, variant set `muscle-edge`
 **Working swatch:** `art-source/nanobanan/working/tile-muscle-swatch-neutral-512.png` (interim) or the approved Nano Banana swatch.
+**Completion:** prompt ✅ · source ✅ `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.muscle.atlas.jpeg` · source accepted ☐ · processed ☐ · wired ☐ · final ☐
+**Next:** crop a 512×512 swatch, check 3×3 tiling and 2×2 clusters, assemble `128×128` 4×4 with `npm run art:atlas`, then remove the tint.
 
 ```text
 SUBJECT: A seamless pixel-art muscle-material texture swatch for a side-view platformer: wet, taut, striated muscle fibres, like bundles of long ropes. Muscle pink, warm rust and bone highlights; fine fibrous grain, subtle pores, damp sheen, broad soft mottling, a few darker striation bands. No large cracks, no embedded objects, no symbols, no labels, no grid, no border, no face, no gore. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
@@ -262,6 +297,8 @@ SUBJECT: A seamless pixel-art muscle-material texture swatch for a side-view pla
 **Rule:** `edge`, variant set `membrane-edge`
 **Change:** the 04 room legend changes from `corner` to `edge`.
 **Working swatch:** `art-source/nanobanan/working/tile-membrane-swatch-neutral-512.png` (interim).
+**Completion:** prompt ✅ · source ✅ `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.membrane.atlas.jpeg` · source accepted ☐ · processed ☐ · wired ☐ · final ☐
+**Next:** crop a 512×512 swatch, check 3×3 tiling and 2×2 clusters, assemble `128×128` 4×4 with `npm run art:atlas`, then remove the tint.
 
 ```text
 SUBJECT: A seamless pixel-art membrane-material texture swatch for a side-view platformer: a wet, translucent sheet of living membrane, like damp fabric stretched over cells. Sage, muted bone and cool teal; soft cellular pores, condensation, a faint sheen, broad mottling, a few darker fold lines. No large tears, no holes through the sheet, no embedded objects, no symbols, no labels, no grid, no border, no face, no gore. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
@@ -284,6 +321,8 @@ SUBJECT: A seamless pixel-art membrane-material texture swatch for a side-view p
 **File:** `shared/tiles/bone-atlas.png`
 **Rule:** `blob47`, variant set `bone-blob47`
 **Working swatch:** `art-source/nanobanan/working/tile-bone-swatch-neutral-512.png` (interim).
+**Completion:** prompt ✅ · source ✅ `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.bone.atlas.jpeg` · source accepted ☐ · processed ☐ · wired ☐ · final ☐
+**Next:** crop a 512×512 swatch, check 3×3 tiling and 2×2 clusters, assemble `256×192` 8×6 `blob47` with `npm run art:atlas`, then remove the tint.
 
 ```text
 SUBJECT: A seamless pixel-art bone-material texture swatch for a side-view platformer: the hard outer surface of bone, like wet chalky stone. Bone cream and bone shadow, deep teal in the pores, fine mineral grit, subtle pores and grime, broad soft mottling. No large cracks, no embedded objects, no symbols, no labels, no grid, no border. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
@@ -316,6 +355,8 @@ SUBJECT: A seamless pixel-art bone-material texture swatch for a side-view platf
 **File:** `shared/tiles/nerve-atlas.png`
 **Rule:** `edge`, variant set `nerve-edge`
 **Working swatch:** `art-source/nanobanan/working/tile-nerve-swatch-neutral-512.png` (interim).
+**Completion:** prompt ✅ · source ✅ `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.nerve.atlas.jpeg` · source accepted ☐ · processed ☐ · wired ☐ · final ☐
+**Next:** crop a 512×512 swatch, check 3×3 tiling and 2×2 clusters, assemble `128×128` 4×4 with `npm run art:atlas`, then remove the tint.
 
 ```text
 SUBJECT: A seamless pixel-art nerve-material texture swatch for a side-view platformer: bundles of pale wet nerve fibres, like bundled cables or wires. Nerve yellow and sage, joint-cyan edge sheen, fine fibrous grain, subtle pores and grime, broad soft mottling. No large cracks, no embedded objects, no symbols, no labels, no grid, no border. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
@@ -340,6 +381,8 @@ SUBJECT: A seamless pixel-art nerve-material texture swatch for a side-view plat
 
 **Fact anchor:** puzzle abstraction, not a literal ion channel. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
 **Source/export:** 64×64 PNG, alpha, 1:1. **File:** `shared/sprites/gate-nerve.png`.
+**Completion:** prompt ✅ · source ✅ `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.gate.nerve.jpeg` (flat `#FF00FF`) · source accepted ☐ · processed ☐ · wired ☐ · final ☐
+**Next:** run `npm run art:key` on the magenta plate, fit 64×64, validate palette/alpha, then update the manifest and licence.
 
 ```text
 SUBJECT: A closed organic Ca²⁺ channel gate, flat side view. A thick bone-and-muscle rim around a closed aperture; a taut curtain of wet muscle-membrane tissue stretches across the opening; one nerve-yellow seam runs down the centre; small joint-cyan calcium-channel clasps sit at the hinges; a few bone plates frame the base. Closed state only. No receptor sockets, no keyhole, no mechanical parts, no face, no label. Strong silhouette; base at the bottom.
@@ -358,6 +401,8 @@ SUBJECT: A closed organic Ca²⁺ channel gate, flat side view. A thick bone-and
 
 **Fact anchor:** level fiction; no anatomical claim. **Reference:** P1 for style/palette only. **Style:** `STYLE_SPRITE`. **Frame:** `FRAME_ENTITY`.
 **Source/export:** 64×64 PNG, alpha, 1:1. **File:** `shared/sprites/exit.png`.
+**Completion:** prompt ✅ · source ✅ `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.exit.jpeg` (flat `#FF00FF`) · source accepted ☐ · processed ☐ · wired ☐ · final ☐
+**Next:** run `npm run art:key` on the magenta plate, fit 64×64, validate palette/alpha, then update the manifest and licence.
 
 ```text
 SUBJECT: A membrane airlock, flat side view. A ring of bone and teal tissue forms a round opening; warm nerve-yellow light glows beyond; wet folds and a few bone struts frame the opening. The opening fills most of the canvas. No character, no face, no label, no gore. Strong silhouette; base at the bottom.
@@ -378,6 +423,8 @@ SUBJECT: A membrane airlock, flat side view. A ring of bone and teal tissue form
 ### 8.1 Purpose
 
 `scripts/art-atlas.ts` turns an approved seamless 32×32 or 512×512 swatch into a deterministic atlas. It is a local art tool, not a runtime dependency.
+
+The CLI examples below use the **interim neutral** swatches. For the 2026-11-03 batch, first crop and pixel-clean each `tile.*.atlas.jpeg` to a 512×512 working swatch, validate tiling and 2×2 clusters, then pass that processed swatch to `--in`. Do not feed the 2048×2048 raw JPEG directly to the assembler.
 
 ### 8.2 CLI
 
@@ -476,7 +523,7 @@ Add the 04 sky source:
 
 Keep `bg.muscle_endplate.far`, `.mid` and `.near` as declared placeholders with no `src`.
 
-When final Nano Banana art lands:
+When the processed source art lands:
 
 - Remove `"placeholder": true` from the four atlas entries and the 04 sky.
 - Replace the licence strings with the Nano Banana provenance.
@@ -519,7 +566,7 @@ Use `Procedural interim (CC0-1.0)` for the checked-in placeholders and replace w
 - Update `tests/tile-autotile.test.ts` to resolve `tile.nerve.atlas` or `tile.muscle.atlas` instead of `tile.anatomy.atlas`.
 - Add `tests/art-atlas.test.ts` for the assembler: 16/47 regions, region bounds, opaque cells, mask direction.
 - Extend `tests/background-assets.test.ts` with the 04 sky source and the three declared placeholders.
-- `sprite.gate.nerve` and `sprite.exit` are wired as 64×64 procedural placeholders; `tests/entity-sprites.test.ts` validates their files. Replace them with the final Nano Banana sprites and remove the `placeholder` flags when ready.
+- `sprite.gate.nerve` and `sprite.exit` are wired as 64×64 procedural placeholders; `tests/entity-sprites.test.ts` validates their files. Replace them with the processed Nano Banana sprites and remove the `placeholder` flags when ready.
 
 ### 9.6 Documentation updates
 
@@ -547,13 +594,18 @@ Expected results:
 - 04 shows the 04 sky plate instead of the procedural gradient.
 - `tile.bone.atlas`, `tile.nerve.atlas`, `tile.muscle.atlas` and `tile.membrane.atlas` resolve all variant frames used by the rooms.
 - `tile.anatomy.atlas` is absent from the final runtime manifest.
-- `sprite.gate.nerve` and `sprite.exit` render from interim 64×64 procedural placeholders; their final prompts are in §7.
+- `sprite.gate.nerve` and `sprite.exit` still render from interim 64×64 procedural placeholders until the generated magenta plates are keyed and fitted.
+- The seven source plates exist under
+  `art-source/nanobanan/new/muscle-endplate-2026-11-03/`; none are wired as
+  runtime files yet.
 - No duplicate tinting: interim neutral atlases are tinted once; final coloured atlases are not tinted.
 
 ---
 
 ## 11. Stop rules
 
+- A generated source plate is not a runtime asset. Do not mark any row `processed`, `wired`, or `final` without the matching report, file, manifest entry, licence, and test.
+- If a sprite source does not have a removable flat background, stop and regenerate; do not key a vignette or paint a mask by hand without recording the method.
 - If a swatch does not tile, reject it before assembling; do not hide a seam with a frame border.
 - If a generated atlas has a transparent cell, reject it; every cell is opaque.
 - If an atlas frame reads as a different mask than its key, reject the atlas.
@@ -567,6 +619,12 @@ Expected results:
 
 | Date | Prompt pack | Asset | Generator | Source | Chosen file | Runtime export | Status | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 2026-11-03 | muscle-endplate-2026-11-03.1 | | Nano Banana | | | | draft | |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `bg.muscle_endplate.sky` | Nano Banana | `art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg` | same | pending | source-generated | 2752×1536; crop/resize/export pending |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.muscle.atlas` | Nano Banana | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.muscle.atlas.jpeg` | same | pending | source-generated | 2048×2048; swatch/tile/atlas pending |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.membrane.atlas` | Nano Banana | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.membrane.atlas.jpeg` | same | pending | source-generated | 2048×2048; swatch/tile/atlas pending |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.bone.atlas` | Nano Banana | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.bone.atlas.jpeg` | same | pending | source-generated | 2048×2048; swatch/tile/atlas pending |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.nerve.atlas` | Nano Banana | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.nerve.atlas.jpeg` | same | pending | source-generated | 2048×2048; swatch/tile/atlas pending |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `sprite.gate.nerve` | Nano Banana | `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.gate.nerve.jpeg` | same | pending | source-generated | 2048×2048; flat `#FF00FF`; key/fit pending |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `sprite.exit` | Nano Banana | `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.exit.jpeg` | same | pending | source-generated | 2048×2048; flat `#FF00FF`; key/fit pending |
 
-Record the exact prompt version, source file, crop, palette, processing command and acceptance result for every generated asset.
+Record the exact prompt version, source file, crop, palette, processing command and acceptance result for every generated asset. Update `Status` to `processed` only when the runtime export and reports exist.

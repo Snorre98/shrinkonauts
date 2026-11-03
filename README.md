@@ -163,9 +163,12 @@ ephemeral and are rebuilt from puzzle/world state after restore.
   no separate ambience loop.
 - Full key rebinding is deferred.
 - Final art/audio, the bathroom hub art pass (M3.5), and human M1.8 visual
-  review are deferred. M1.8 `wang` transitions, pattern animation,
-  image/atlas-sourced UI patterns, final material atlases, and editor tooling are
-  deferred within the accepted architecture.
+  review are deferred. A seven-plate 04 Nano Banana source batch is generated
+  (`2026-11-03`) but is not processed, accepted, or wired; see the
+  [completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix).
+  M1.8 `wang` transitions, pattern animation, image/atlas-sourced UI patterns,
+  final material atlases, and editor tooling are deferred within the accepted
+  architecture.
 - Physical puzzle-gate bodies, `locked`/`unlock` props, conditional links,
   per-level debrief overrides, and side-level travel are accepted ADR targets but
   are **not implemented** in this branch. See
@@ -221,9 +224,13 @@ rooms the remaining placeholder-only sprites are:
 - `sprite.exit.silicon` — yellow **SILI** in `01-interrupt-loop`.
 
 Some assets have `src` files but keep `placeholder: true` because they are
-interim procedural art, not final Nano Banana outputs. See
-[`docs/assets/prompt-library-v01.md`](docs/assets/prompt-library-v01.md) for the
-full inventory and the replacement order.
+interim procedural art, not final processed outputs. The 2026-11-03 04
+Nano Banana batch adds raw source plates for the sky, four material swatches,
+gate and exit; those are `source-generated` only. See
+[`docs/assets/remaining-work.md`](docs/assets/remaining-work.md) for the single
+consolidated checklist, or the
+[completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix) for
+the detailed evidence and per-asset status.
 
 ## Project layout
 
@@ -321,6 +328,8 @@ M1.75 remains **implementation complete; manual solo/co-op playtest pending**.
 `authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until a
 human performs the checks in the M1.75 milestone document.
 
-Final art and audio, the Silicon fixture, levels 5+, capture mode, music/ambience
-loops, the M3.5 hub art pass, full key rebinding, and the deferred puzzle-engine
-ADR features remain out of scope for this branch.
+Final art and audio files, the Silicon fixture, levels 5+, capture mode, a
+separate ambience loop, the M3.5 hub art pass, full key rebinding, and the
+deferred puzzle-engine ADR features remain out of scope for this branch. The
+2026-11-03 04 source batch is generated but not processed or wired; theme
+playback is implemented but theme files are pending.

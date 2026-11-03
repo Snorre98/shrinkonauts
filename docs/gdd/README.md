@@ -83,9 +83,15 @@ gdd-assets/
 |---|---|
 | **runtime** | Shipped runtime art. Some assets are still labelled “POC integrated / final approval pending” in the source docs. |
 | **placeholder** | Declared in the manifest but no final art yet. The copy is a placeholder, an audit plate, or a placeholder atlas. |
+| **source-generated** | A raw Nano Banana/Ludo plate exists, but it is not processed, accepted, wired, or final. |
 | **manifest-only** | Processed and declared, but not wired into the current scene (e.g. towel, detergent bottles, cycle icons are manifest-only in the hub). |
 | **source-only / alternate / superseded** | Concept plates that are not runtime assets. Do not present them as final. |
 | **historical** | Old milestone screenshots, kept for the development/reflection story. |
+
+Cross-discipline completion status is tracked in the
+[prompt-library matrix](../assets/prompt-library-v01.md#40-completion-matrix)
+and the consolidated
+[remaining-work checklist](../assets/remaining-work.md).
 
 ---
 
@@ -99,8 +105,10 @@ gdd-assets/
   36-frame idle, `scan.synapse`, `scan.muscle`, `pad.dendrite`,
   `pad.terminal`, `gate.ferry`, `prop.tracer`, `pulse.terminal`, both
   receptors, the pretty nerve-forest sky, the interim 04 sky, the four material
-  atlases, and the interim 04 gate/exit placeholders are runtime art. Final
-  Nano Banana replacements are tracked in the additive M3 prompt pack.
+  atlases, and the interim 04 gate/exit placeholders are runtime art.
+- **04 source batch:** seven raw Nano Banana plates are generated in
+  `art-source/nanobanan/new/muscle-endplate-2026-11-03/`. They are
+  `source-generated` only; final runtime replacements are still pending.
 - **Silicon:** all listed sprites and the board sky are runtime art. The
   circuit atlas is still a placeholder SVG.
 - **Placeholders:** colored 48×48 squares with four-letter labels in the
@@ -108,7 +116,7 @@ gdd-assets/
   ones are `sprite.scan.neuron` (yellow NEUR), `sprite.scan.pathway` (cyan
   PATH), `sprite.scan.interrupt` (cyan INTE) and `sprite.exit.silicon` (yellow
   SILI). See [`../assets/prompt-library-v01.md`](../assets/prompt-library-v01.md).
-- **Audio:** every cue is a placeholder; no audio files exist in this pack.
+- **Audio:** cue and theme playback are implemented, but every cue is a placeholder and no audio or theme files exist in this pack.
 - **UI:** the game HUD, dialogue, map, concept log, debrief and pause menu are
   CSS/DOM, not raster assets. They are visible in the action-shot walkthrough;
   see [`CAPTURES.md`](CAPTURES.md).
@@ -240,15 +248,17 @@ Short version:
 
 1. The 03 concept gate `gate-nerve-01` is authored but not loaded; the
    walkthrough captures the 03 threshold gate and the Silicon transfer gate
-   instead. The 04 muscle background layer is also not wired, so its shots show
-   final sprites over a procedural gradient.
+   instead. The 04 room uses an interim background, so its shots still show the
+   interim plate rather than the generated final source.
 2. Ludo/Nano Banana plan, prompt, model, seed and final licence are TBD.
 3. Anatomy `licenses.json` does not cover every new entity; the hub has no
-   separate licences file.
+   separate licences file. The 04 source batch has no licence entries yet.
 4. The raw hub source batch is not in the repository.
-5. Audio is placeholder only.
+5. Audio playback is implemented, but audio files are still placeholders.
 6. The anatomy and Silicon atlases are placeholder SVGs, not final 32x32
-   material atlases.
-7. Some assets are declared but unused: `sprite.scan.reflex`, `sprite.exit`,
-   `sprite.gate.nerve`, `sprite.prop.toy.astronaut`, the towel and the
-   detergent bottles (the latter two are manifest-only).
+   material atlases. The 2026-11-03 Nano Banana atlas swatches are
+   source-generated only.
+7. Some assets are declared but unused: `sprite.scan.reflex`,
+   `sprite.prop.toy.astronaut`, the towel and the detergent bottles (the latter
+   two are manifest-only). `sprite.exit` and `sprite.gate.nerve` are used by 04
+   but remain runtime placeholders until their generated sources are processed.

@@ -455,7 +455,7 @@ Checks:
 - Update `contracts/module-boundaries.md`, `data-model.md`, `interface.md`
   for materials, patterns, atlases, tile grids, and UI slots.
 - Update `traceability.md`.
-- Update `docs/m3/asset-requirements.md`:
+- Update `docs/m3/asset-requirements-v01.md`:
   - remove the one-32×32-tile assumption;
   - add material/variant/atlas requirements;
   - re-baseline image counts.
@@ -625,4 +625,4 @@ editor tooling. See the M1.8 milestone and traceability matrix for evidence.
 - [`adr/0016-pattern-projection-surfaces.md`](adr/0016-pattern-projection-surfaces.md)
 - [`adr/0017-tile-variant-atlas-manifest.md`](adr/0017-tile-variant-atlas-manifest.md)
 - [`architecture.md`](architecture.md)
-- [`../m3/asset-requirements.md`](../m3/asset-requirements.md)
+- [`../m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md)

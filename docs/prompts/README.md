@@ -1,17 +1,23 @@
 # Prompt pack — new levels, rooms, puzzles, and assets
 
-**Status:** Draft v0.1 · 1 November 2026  
-**Owner:** Snorre  
-**Scope:** Copy-paste prompts for implementing one new level package and its asset kit.  
-**Concrete instance:** `01-interrupt-loop` in the separate `silicon-reflex` pack.  
-**Design source:** [`docs/m2/nervous-puzzles/silicon-fixture.md`](../m2/nervous-puzzles/silicon-fixture.md)  
-**Asset source:** [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) (shared style, palette, frame and export rules)  
-**Authoring contracts:** [`docs/shrinkonauts/base-game/level-authoring.md`](../shrinkonauts/base-game/level-authoring.md), [`docs/m1.5/authoring.md`](../m1.5/authoring.md), [`docs/shrinkonauts/base-game/contracts/pack-schema.md`](../shrinkonauts/base-game/contracts/pack-schema.md)  
+**Status:** Draft v0.2 · 3 November 2026
+**Owner:** Snorre
+**Scope:** Copy-paste prompts for implementing one new level package and its asset kit.
+**Concrete instance:** `01-interrupt-loop` in the separate `silicon-reflex` pack.
+**Design source:** [`docs/m2/nervous-puzzles/silicon-fixture.md`](../m2/nervous-puzzles/silicon-fixture.md)
+**Asset source:** [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) (shared style, palette, frame and export rules)
+**Authoring contracts:** [`docs/shrinkonauts/base-game/level-authoring.md`](../shrinkonauts/base-game/level-authoring.md), [`docs/m1.5/authoring.md`](../m1.5/authoring.md), [`docs/shrinkonauts/base-game/contracts/pack-schema.md`](../shrinkonauts/base-game/contracts/pack-schema.md)
 **Pack-boundary context:** [`docs/m1.9/README.md`](../m1.9/README.md)
 
 > **The rule:** the prompt implements content, not engine behaviour. If a new
 > node, link, entity, gate, verb, UI surface, or save field is needed, stop and
 > write an ADR proposal. A level hack is not an acceptable fallback.
+
+> **Completion status:** prompts produce source plates, not final runtime
+> assets. Track every asset through `prompt-ready → source-generated →
+> source-accepted → processed → wired → accepted` in the
+> [completion matrix](../assets/prompt-library-v01.md#40-completion-matrix).
+> The current 04 Nano Banana batch is source-generated only.
 
 ---
 

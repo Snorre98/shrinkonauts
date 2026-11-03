@@ -1,10 +1,10 @@
 # Silicon Interrupt Loop — asset prompt pack
 
-**Status:** Draft v0.1 · 1 November 2026  
-**Pack:** `silicon-reflex`  
-**Level:** `01-interrupt-loop`  
-**Theme:** [`docs/prompts/silicon-theme.md`](../silicon-theme.md)  
-**Template:** [`docs/prompts/asset-generation-template.md`](../asset-generation-template.md)  
+**Status:** Draft v0.2 · 3 November 2026
+**Pack:** `silicon-reflex`
+**Level:** `01-interrupt-loop`
+**Theme:** [`docs/prompts/silicon-theme.md`](../silicon-theme.md)
+**Template:** [`docs/prompts/asset-generation-template.md`](../asset-generation-template.md)
 **Design:** [`docs/m2/nervous-puzzles/silicon-fixture.md`](../../m2/nervous-puzzles/silicon-fixture.md)
 
 > **The requirement:** this is a graphite/cyan clean-room circuit board, not the
@@ -12,6 +12,14 @@
 > neuron characters, amber ambient glow, or damp teal fog. The shared elements
 > are the pixel grid, the nine ramps, the outline weight, the astronaut
 > players, the HUD, and the audio cue IDs.
+
+> **Completion status (2026-11-03):** the `[DONE]` markers below mean
+> “source generated, processed, and wired as POC”; they do **not** mean final
+> art approval. The Silicon pack still has no new batch in this pass.
+> `sprite.scan.interrupt` and `sprite.exit.silicon` remain placeholder-only.
+> Use the
+> [completion matrix](../../assets/prompt-library-v01.md#40-completion-matrix)
+> as the cross-discipline status source.
 
 ---
 
@@ -53,7 +61,7 @@ EXPORT SPEC    = FRAME_<CATEGORY> (for Aseprite/Piskel; do not paste into Ludo)
 - Do not paste the 18×18/36×36 export spec into the Ludo prompt.
 - Ludo produces a concept; the final asset is pixel-cleaned at source size.
 
-Prompt version: `silicon-2026-11-01.1`.  
+Prompt version: `silicon-2026-11-01.1`.
 Style version: `style-silicon-v1`.
 
 ---

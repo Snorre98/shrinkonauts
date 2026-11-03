@@ -18,6 +18,7 @@ where known; third-party work is **sourced** with its licence.
 |---|---:|---|
 | Runtime sprite/background/UI images | 62 manifest entries (some shared P1/P2 files repeated) | POC integrated / final approval pending |
 | Concept plates | 38 | Source/review only |
+| 04 Nano Banana source batch | 7 JPEGs | Source-generated only; not processed/wired |
 | Character source sheets | 3 characters, 5 sheets | Immutable source |
 | Screenshots | 17 | Mixed: current hub, placeholder-era gameplay, historical |
 | Contact sheets | 10 | Generated for this pack |
@@ -41,7 +42,8 @@ placeholders and derived review material.
 
 | Asset | What it is | Licence / note |
 |---|---|---|
-| `final/anatomy/tiles/bone-atlas.png`, `nerve-atlas.png`, `muscle-atlas.png`, `membrane-atlas.png` | In-repo procedural interim material atlases | CC0-1.0; replace with final Nano Banana swatches |
+| `final/anatomy/tiles/bone-atlas.png`, `nerve-atlas.png`, `muscle-atlas.png`, `membrane-atlas.png` | In-repo procedural interim material atlases | CC0-1.0; Nano Banana swatch sources generated, not processed |
+| `art-source/nanobanan/new/muscle-endplate-2026-11-03/*.jpeg` (repo, not the GDD pack) | 04 raw source batch: sky, four swatches, gate, exit | Nano Banana; prompt pack `muscle-endplate-2026-11-03.1`; `source-generated` only |
 | `final/anatomy/tiles/anatomy-atlas.svg` | In-repo placeholder atlas retained as a test fixture | CC0-1.0; no longer wired |
 | `final/silicon/tiles/circuit-atlas.svg` | In-repo placeholder circuit atlas | CC0-1.0; replace with final atlas |
 | `screenshots/current/*` | Project screenshots / contact sheets | Group work; contains AI-generated art |
@@ -78,6 +80,7 @@ The current licence labels are:
 | Hub props | washer, door, drum, civilian, poster, cartridges, plush, basket, towel, detergent, cycle icons | Nano Banana / Google Gemini | Nano Banana; plan TBD | Source batch absent; reports in `source/reports/hub/` |
 | Silicon sprites | CPU, consoles, sockets, gate, pad, plug, scans | Ludo/Nanobanan concept + local key/fit | Ludo.ai POC; plan TBD | `fit.silicon.config.json`; reports in `source/reports/silicon/` |
 | Silicon sky | `silicon-board-sky.webp` | Ludo/Nanobanan concept | Ludo.ai POC; plan TBD | Crop/dither/WebP; report in `source/reports/silicon/` |
+| 04 source batch | `bg.muscle_endplate.sky`, four `tile.*.atlas`, `sprite.gate.nerve`, `sprite.exit` sources | Nano Banana / Google Gemini | Nano Banana; plan TBD | 7 raw JPEGs in repo `art-source/nanobanan/new/muscle-endplate-2026-11-03/`; source-generated only, not runtime, not in the GDD pack |
 | Concept plates | 38 JPEGs in `concepts/` | Nanobanan / Ludo.ai | Same as the intended runtime asset | Review/source only; not runtime |
 
 **Log line template for the report:**
@@ -116,8 +119,10 @@ placeholder). The hub adds 6 cues. None have files.
 | Anatomy | `boot`, `dialogue`, `scan`, `dash`, `gate`, `map`, `debrief`, `checkpoint`, `unlock`, `wrong`, `jump`, `land` |
 | Hub | `click`, `door`, `spin`, `shrink`, `arrive`, `hum` |
 
-In the GDD Sound & Music page, state: **“Prototype has no music or ambience;
-the cue vocabulary is implemented as placeholders.”**
+In the GDD Sound & Music page, state: **“The cue vocabulary is implemented as
+placeholders. Cue/theme playback is implemented, but no audio or theme files
+ship; the menu and room themes are silent until files land, and there is no
+separate ambience loop.”**
 
 ---
 
@@ -135,7 +140,9 @@ the cue vocabulary is implemented as placeholders.”**
    documented but not fully reproducible.
 6. **Final art approval** is pending for POC-integrated sprites and the sky.
 7. **Placeholders** must not be described as final: badge, `scan.neuron`,
-   `scan.pathway`, `scan.reflex`, `sprite.exit`, `sprite.gate.nerve`, both
+   `scan.pathway`, `scan.reflex`, `sprite.exit`, `sprite.gate.nerve`, the four
    atlases, the toy astronaut, the logo, and all audio.
+8. **04 source batch** is generated but has no licence entries and is not
+   processed or wired; do not list the raw JPEGs as runtime assets.
 
 See `LICENCE-NOTES.md` for the exact labels and the files they apply to.

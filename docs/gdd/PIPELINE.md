@@ -9,6 +9,7 @@ records are in `source/notes/`:
 - `source/notes/art-source-README.md` — source/working/runtime layers.
 - `source/notes/nanobanan-README.md` — plate list, keying, fit and background commands.
 - `source/notes/m3-asset-requirements-v01.md` — full M3 prompt pack and acceptance criteria.
+- `source/notes/m3-muscle-endplate-asset-requirements-v01.md` — 04 sky, atlas and sprite prompt pack.
 - `source/notes/m3.5-hub-asset-prompts-v01.md` — bathroom hub prompt pack.
 - `source/notes/adr/` — ADR-0060, 0061, 0062, 0063 and 0075.
 
@@ -300,16 +301,17 @@ across the play band, so it is not ready to wire.
   128×128 nerve `edge`, 128×128 muscle `edge`, and 128×128 membrane `edge`.
   They are assembled from 32×32 frames by `npm run art:atlas` and tinted by the
   material. `tile.anatomy.atlas` is no longer wired and is retained only as a
-  test fixture. `tile.circuit.atlas` remains a placeholder SVG. The bone/nerve
-  JPEGs in `concepts/` are material swatches, not frame atlases; replace the
-  neutral swatches with final Nano Banana sources before tint removal.
+  test fixture. `tile.circuit.atlas` remains a placeholder SVG. The 2026-11-03
+  Nano Banana batch adds 2048×2048 material swatch sources; they are
+  `source-generated` only, not accepted or atlas-ready. Replace the neutral
+  swatches with processed final sources before tint removal.
 - The UI is CSS/DOM, not raster art. The only UI image assets are the two hub
   cycle icons (final) and the badge (placeholder).
 - Fonts are Silkscreen and Pixelify Sans, both SIL OFL 1.1. The runtime loads
   the WOFF2 files from `public/fonts/`; the OFL texts and `NOTICES.md` are
   copied into `final/shared/fonts/`.
-- Audio is not implemented: every cue is a placeholder in the manifests and
-  theme files. No audio files are included in this pack.
+- Audio playback is implemented for cues and themes, but every cue is still a
+  placeholder and no audio files or theme files are included in this pack.
 
 ---
 
