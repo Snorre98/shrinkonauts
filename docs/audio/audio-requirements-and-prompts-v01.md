@@ -202,7 +202,7 @@ The global negative is intentionally broad. For tonal cues (`boot`, `debrief`, `
 - A voice, whisper, vocal texture, or intelligible speech.
 - Gore, blood, screams, pain, or body horror.
 - A realistic gunshot, explosion, horror stinger, or cinematic boom.
-- An 8-bit chiptune replacement for any **SFX cue**. The SFX stay diegetic and tactile; the separate music themes use a gross-cute murk palette (wet organic foreground, low-passed chip low end). Do not apply the theme's chip timbres to the SFX.
+- An 8-bit chiptune replacement for any **SFX cue**. The SFX stay diegetic and tactile; the separate music themes use a biological cyberpunk dungeon palette (minor-key, 4/4, detuned piano/mallets, dirty bass, simple drums, synth/radio/relay textures, lo-fi). Do not apply the theme's chip timbres to the SFX.
 - Footsteps, hazard sounds, or `propReturned` sounds. Those cues are emitted by the simulation but are not mapped in the theme.
 - Per-level, per-player, or Silicon-specific variants.
 - A new cue ID.

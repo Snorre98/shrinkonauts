@@ -80,11 +80,11 @@ This resolves the open M3.5 question "is `hub.hum` ambience or one-shot?" in fav
 
 The four themes are siblings, not four unrelated tracks:
 
-- **Anatomy "signal" motif:** a three-note rise from the root to the minor 3rd to the perfect 4th, with a slide into the third; it ends open. `03` states it on muted marimba/kalimba; `04` states it slower on low mallet/pulse. `05`, when authored, resolves it.
-- **Silicon "relay" motif:** a muted two-note tick with a slight downward bend. It is a low-passed pulse figure, not a bright 8-bit bleep and not a variation of the anatomy motif. It must not use amber/warm anatomy instruments, water foley, or organic textures.
-- **Menu "home" motif:** a muted three-note rise ending on the 6th or 9th, with a slide. It can hint at the anatomy motif but is its own identity, because the hub is the real-world frame.
-- The motif is low/mid register, narrow and legato, stated two to four times per loop, and never mixed as a hook over the SFX cues.
-- The themes use a **gross-cute murk palette**: Dorian with minor 7ths/9ths/sus4; swampy half-time grooves with swung 16ths; a wet organic foreground over a low-passed chip low end; close, pressurized, low-passed production. Dark, wet, muddy, and biological, but not horror, not sad, and not sunny.
+- **Anatomy "signal" motif:** a short repeating three-note minor-key figure. `03` states it on muted marimba/kalimba; `04` states it slower and heavier. `05`, when authored, resolves it.
+- **Silicon "relay" motif:** a repeating two-note tick with a slight downward bend. It is a dry pulse figure, not a bright 8-bit bleep and not a variation of the anatomy motif. It must not use water foley or organic textures.
+- **Menu "home" motif:** a short repeating three-note minor-key figure, warm and unresolved. It can hint at the anatomy motif but is its own identity, because the hub is the real-world frame.
+- The motif is low/mid register, short and repeating, and never mixed as a lead over the SFX cues.
+- The themes use one **biological cyberpunk dungeon palette**: minor-key, 4/4, slightly detuned piano/organ/mallets, dirty bass, simple drums, short repeating motifs, and dirty lo-fi production, with detuned synth pulses, circuit hum, radio static, relay/servo ticks, and small glitch stutters. The menu and Silicon use a mid-tempo forward push; the anatomy rooms use plodding 4/4. Cyberpunk means biomechanical grime, not neon synthwave. Gross-cute, curious, and friendly; dark, but not horror.
 
 ### 5. Format and budget
 
