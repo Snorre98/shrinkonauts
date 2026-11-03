@@ -108,10 +108,9 @@
     "tile.bone.atlas": {
       "type": "atlas",
       "src": "shared/tiles/bone-atlas.png",
-      "placeholder": true,
       "width": 256,
       "height": 192,
-      "license": "Procedural interim (CC0-1.0)",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
       "regions": {
         "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
         "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
@@ -165,10 +164,9 @@
     "tile.nerve.atlas": {
       "type": "atlas",
       "src": "shared/tiles/nerve-atlas.png",
-      "placeholder": true,
       "width": 128,
       "height": 128,
-      "license": "Procedural interim (CC0-1.0)",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
       "regions": {
         "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
         "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
@@ -191,10 +189,9 @@
     "tile.muscle.atlas": {
       "type": "atlas",
       "src": "shared/tiles/muscle-atlas.png",
-      "placeholder": true,
       "width": 128,
       "height": 128,
-      "license": "Procedural interim (CC0-1.0)",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
       "regions": {
         "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
         "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
@@ -217,10 +214,9 @@
     "tile.membrane.atlas": {
       "type": "atlas",
       "src": "shared/tiles/membrane-atlas.png",
-      "placeholder": true,
       "width": 128,
       "height": 128,
-      "license": "Procedural interim (CC0-1.0)",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
       "regions": {
         "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
         "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
@@ -260,8 +256,7 @@
     "bg.muscle_endplate.sky": {
       "type": "background",
       "src": "shared/backgrounds/muscle-endplate-sky.webp",
-      "placeholder": true,
-      "license": "Procedural interim (CC0-1.0)"
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "bg.muscle_endplate.far": {
       "type": "background",
@@ -298,10 +293,9 @@
     "sprite.gate.nerve": {
       "type": "sprite",
       "src": "shared/sprites/gate-nerve.png",
-      "placeholder": true,
       "display": { "width": 64, "height": 64 },
       "fidelity": "hero-1x",
-      "license": "Procedural interim (CC0-1.0)"
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "sprite.scan.neuron": {
       "type": "sprite",
@@ -356,10 +350,9 @@
     "sprite.exit": {
       "type": "sprite",
       "src": "shared/sprites/exit.png",
-      "placeholder": true,
       "display": { "width": 64, "height": 64 },
       "fidelity": "hero-1x",
-      "license": "Procedural interim (CC0-1.0)"
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "ui.icon.badge": {
       "type": "image",

@@ -19,14 +19,14 @@
 |---|---|
 | Graphics prompt sources | M3, background, muscle-endplate, M3.5 hub, Silicon level packs |
 | Audio prompt sources | 18 SFX cues; four music themes |
-| Current graphics state | Final, interim, placeholder-only, and one newly generated 04 source batch coexist |
-| Current 04 source batch | **7 source plates generated** (`2026-11-03`); none processed, accepted, or wired yet |
-| Current audio state | All 18 SFX cues are placeholders; four themes are proposed, no files |
+| Current graphics state | Final 04 batch, POC-integrated earlier art, and six deliberate placeholder/fallback assets coexist |
+| Current 04 source batch | **7 source plates processed, wired and accepted** (`2026-11-03`) |
+| Current audio state | 3 of 18 SFX cues installed; 15 cues and four themes remain placeholders |
 | Visible placeholder-only sprites | `sprite.scan.neuron`, `sprite.scan.pathway`, `sprite.scan.interrupt`, `sprite.exit.silicon` |
-| Audio delivery | File-backed cue and theme playback implemented; no audio files exist yet |
+| Audio delivery | File-backed cue and theme playback implemented; three pilot SFX files exist, themes are silent |
 | Prompt versioning | Per-discipline document version plus the umbrella version above |
 | Canonical status | §4.0 completion matrix |
-| Generation order | Visible placeholders → 04 source processing → other final replacements → SFX → themes |
+| Generation order | 04 source processing ✅ → remaining visible placeholders (blocked on new sources) → SFX → themes |
 
 **The one-line rule:** every visible placeholder must be in the inventory; every generated asset must have a prompt source, a source file, an acceptance result, and a licence.
 
@@ -34,30 +34,29 @@
 
 ## 2. Current branch state
 
-The branch has two committed/documentation streams:
+The branch now contains:
 
-1. **Audio documentation committed** (`f36ac08`):
-   - `docs/audio/audio-requirements-and-prompts-v01.md` — 18 SFX prompts.
-   - `docs/audio/room-and-menu-themes-v01.md` — four theme prompts.
-   - `docs/adr-audio/0076-room-and-menu-audio-themes.md`.
-   - `docs/adr-audio/0077-audio-theme-playback-and-mixing.md`.
-2. **Graphics pass in the working tree:**
-   - `docs/m3/muscle-endplate-asset-requirements-v01.md` — 04 sky, four atlases, gate and exit prompts.
-   - `scripts/art-atlas.ts` and `npm run art:atlas`.
-   - Four neutral procedural interim atlases.
-   - Interim 04 sky, gate and exit files.
-   - Manifest, materials, room, licence, test and README wiring.
-3. **04 Nano Banana source batch generated** (`2026-11-03`):
-   - Seven raw JPEGs in
+1. **04 graphics batch accepted** (`2026-11-03`):
+   - Seven Nano Banana source plates under
      `art-source/nanobanan/new/muscle-endplate-2026-11-03/`.
-   - Sky, four material swatches, gate, and exit.
-   - **Source-generated only.** No keying, fitting, atlas assembly, palette
-     validation, manifest `src`, licence, or acceptance has been completed.
-
-The branch does **not** yet have final audio files. File-backed cue playback and
-ADR-0077 theme playback are implemented; missing files resolve to the synth or
-silence. The graphics intermediates are playable but are not final Nano Banana
-outputs; the new 04 batch is raw source material, not runtime art.
+   - Processed 04 sky, four coloured material atlases, `sprite.gate.nerve` and
+     `sprite.exit`; manifest `src`, licences, prompt log and tests complete.
+   - Material tints removed; `placeholder` removed from the seven entries.
+   - The atlas assembler has an explicit `--weld-edges` pass; `art:normalize`
+     accepts a `--ramps` subset for material swatches.
+2. **Earlier POC graphics integrated**:
+   - P1/P2 players, Neuron Keeper static + 36-frame idle.
+   - Readable scans/entities, the 03 pretty sky and the hub M3.5 art.
+3. **Remaining placeholder decisions**:
+   - 03 scans, Silicon scan interrupt and Silicon exit remain placeholder-only;
+     the existing sources fail the 36×36 read and no new source exists.
+   - The hub logo uses the approved Silkscreen CSS fallback; the toy astronaut
+     is cut; the HUD badge keeps its CSS fallback.
+4. **Audio partially delivered** (`278d687`):
+   - Three SFX cues (`scan`, `jump`, `land`) are installed in both packs.
+   - 15 cues and all four themes remain placeholders.
+   - File-backed cue playback and ADR-0077 theme playback are implemented;
+     missing files resolve to the synth or silence.
 
 ### 2.1 Status vocabulary
 
@@ -123,10 +122,10 @@ a colored box.
 
 | Asset | Color/label | Where | Why |
 |---|---|---|---|
-| `sprite.scan.neuron` | yellow **NEUR** | `03-nerve-forest`: `scan-neuron`, `scan-myelin` | Source plate lost myelin/node detail at 36×36; shared icon for neuron and myelin |
-| `sprite.scan.pathway` | cyan **PATH** | `03-nerve-forest`: `scan-pathway` | Source plate collapsed to a wide 16×6 strip; one-way reading lost |
-| `sprite.scan.interrupt` | cyan **INTE** | `01-interrupt-loop`: `scan-interrupt` | Silicon prompt packed as an all-ink 16×4 strip; not wired |
-| `sprite.exit.silicon` | yellow **SILI** | `01-interrupt-loop`: `exit-silicon` | Deferred; existing docs suggest reusing `sprite.exit` |
+| `sprite.scan.neuron` | yellow **NEUR** | `03-nerve-forest`: `scan-neuron`, `scan-myelin` | Old plate fits 32×17; myelin/node detail and cyan rim lost at 36×36; shared icon for neuron and myelin |
+| `sprite.scan.pathway` | cyan **PATH** | `03-nerve-forest`: `scan-pathway` | Old plate fits 32×13; one-way reading and myelin gaps lost |
+| `sprite.scan.interrupt` | cyan **INTE** | `01-interrupt-loop`: `scan-interrupt` | Old plate fits 32×7, 220 opaque pixels; square scan read and rim lost |
+| `sprite.exit.silicon` | yellow **SILI** | `01-interrupt-loop`: `exit-silicon` | No Silicon source; reuse of the organic/warm anatomy exit rejected; placeholder retained |
 
 The two NEUR boxes in 03 are `scan-neuron` and `scan-myelin`; both reference
 `sprite.scan.neuron`. That is intentional reuse, not a duplicate entity bug.
@@ -146,20 +145,22 @@ status vocabulary in §2.1; “Stage” uses the pipeline stages in §2.1.
 
 | Asset | Priority | Runtime | Stage | Source / evidence | Next action | Blocker / pending |
 |---|---|---|---|---|---|---|
-| `bg.muscle_endplate.sky` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg` (2752×1536) | Crop/resize to 1280×720; export lossless WebP; run §5 acceptance; add manifest `src` | — |
-| `tile.muscle.atlas` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.muscle.atlas.jpeg` (2048×2048) | Crop 512×512 swatch; check 3×3 tiling and 2×2 clusters; assemble 128×128 4×4 atlas; report; remove tint | Tileability/pixel-grid acceptance pending |
-| `tile.membrane.atlas` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.membrane.atlas.jpeg` (2048×2048) | Same as muscle; assemble 128×128 4×4 atlas | Tileability/pixel-grid acceptance pending |
-| `tile.bone.atlas` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.bone.atlas.jpeg` (2048×2048) | Crop 512×512 swatch; check tiling; assemble 256×192 8×6 `blob47` atlas; report; remove tint | Tileability/pixel-grid acceptance pending |
-| `tile.nerve.atlas` | P0 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.nerve.atlas.jpeg` (2048×2048) | Crop 512×512 swatch; check tiling; assemble 128×128 4×4 atlas; remove tint | Tileability/pixel-grid acceptance pending |
-| `sprite.gate.nerve` | P1 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.gate.nerve.jpeg` (2048×2048, flat `#FF00FF`) | Key with `npm run art:key`; fit 64×64; palette/alpha acceptance; add manifest `src`/licence | Magenta key and fit not run yet |
-| `sprite.exit` | P1 | `interim` | `source-generated` | `art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.exit.jpeg` (2048×2048, flat `#FF00FF`) | Key with `npm run art:key`; fit 64×64; palette/alpha acceptance; add manifest `src`/licence | Magenta key and fit not run yet |
+| `bg.muscle_endplate.sky` | P0 | `final` | `accepted` | `.../bg.muscle_endplate.sky.jpeg` (2752×1536) → 2720×1530 crop → 1280×720 lossless VP8L, 669,798 bytes | — | — |
+| `tile.muscle.atlas` | P0 | `final` | `accepted` | `.../tile.muscle.atlas.jpeg` → 512 swatch → 128×128 4×4 edge atlas; palette/2×2/edge checks | — | — |
+| `tile.membrane.atlas` | P0 | `final` | `accepted` | `.../tile.membrane.atlas.jpeg` → 512 swatch → 128×128 4×4 edge atlas | — | — |
+| `tile.bone.atlas` | P0 | `final` | `accepted` | `.../tile.bone.atlas.jpeg` → 512 swatch → 256×192 8×6 `blob47` | — | — |
+| `tile.nerve.atlas` | P0 | `final` | `accepted` | `.../tile.nerve.atlas.jpeg` → 512 swatch → 128×128 4×4 edge atlas | — | — |
+| `sprite.gate.nerve` | P1 | `final` | `accepted` | `.../sprite.gate.nerve.jpeg` → key/trim → 60×60 in 64×64; 5,444 bytes | — | — |
+| `sprite.exit` | P1 | `final` | `accepted` | `.../sprite.exit.jpeg` → key/trim → 59×60 in 64×64; 6,043 bytes | — | — |
 
 The full source folder is
-`art-source/nanobanan/new/muscle-endplate-2026-11-03/`.
+`art-source/nanobanan/new/muscle-endplate-2026-11-03/`. Evidence paths are in
+[muscle-endplate §12](../m3/muscle-endplate-asset-requirements-v01.md#12-prompt-log-template)
+and the licence entries.
 
-**Current counts:** 7 source-generated; 0 source-accepted; 0 processed; 0 wired
-from this batch. The runtime still uses the interim procedural files listed in
-§4.2.
+**Current counts:** 7 source-generated; 7 source-accepted; 7 processed; 7 wired;
+7 accepted. The interim procedural files and material tints are gone from the
+runtime.
 
 ### 4.1 Final runtime graphics
 
@@ -177,40 +178,32 @@ These are approved or POC-integrated and have `src` paths:
 
 ### 4.2 Interim graphics
 
-These have runtime files but keep `placeholder: true`. The 04 rows now have a
-generated source plate but are still **`source-generated`**, not processed:
+There are no `interim` graphics left in the authored packs. The 04 batch moved
+from `interim` to `final`/`accepted`; the neutral procedural atlases, 04 sky
+stand-in, gate and exit placeholders are retained only as historical working
+files and are not referenced by a manifest.
 
-| Asset | File | Source document | Replace with |
-|---|---|---|---|
-| `bg.muscle_endplate.sky` | `shared/backgrounds/muscle-endplate-sky.webp` | muscle-endplate §5 | Nano Banana pretty sky |
-| `tile.bone.atlas` | `shared/tiles/bone-atlas.png` | muscle-endplate §6.4 | Nano Banana bone swatch |
-| `tile.nerve.atlas` | `shared/tiles/nerve-atlas.png` | muscle-endplate §6.5 | Nano Banana nerve swatch |
-| `tile.muscle.atlas` | `shared/tiles/muscle-atlas.png` | muscle-endplate §6.2 | Nano Banana muscle swatch |
-| `tile.membrane.atlas` | `shared/tiles/membrane-atlas.png` | muscle-endplate §6.3 | Nano Banana membrane swatch |
-| `sprite.gate.nerve` | `shared/sprites/gate-nerve.png` | muscle-endplate §7.1 | Nano Banana gate |
-| `sprite.exit` | `shared/sprites/exit.png` | muscle-endplate §7.2 | Nano Banana airlock |
-
-The checked-in atlas files are neutral greyscale and rely on the material
-`tint` tokens. Final coloured atlases remove the tints and the `placeholder`
-flags.
+The Silicon `tile.circuit.atlas` remains a manifest-only placeholder SVG; it is
+outside this pass and is not a visible placeholder.
 
 ### 4.3 Placeholder-only graphics
 
-| Asset | Scope | Prompt source | Priority |
+| Asset | Scope | Prompt source | Decision / next action |
 |---|---|---|---|
-| `sprite.scan.neuron` | 03, two entities | §5.1 below + M3 §8 | P0 |
-| `sprite.scan.pathway` | 03 | §5.2 below + M3 §8 | P0 |
-| `sprite.scan.interrupt` | Silicon | `docs/prompts/levels/01-interrupt-loop-assets.md` §8.2 | P1 |
-| `sprite.exit.silicon` | Silicon | `docs/prompts/levels/01-interrupt-loop-assets.md` §12.2; decide reuse `sprite.exit` | P1 |
-| `sprite.scan.reflex` | reserve, not referenced | M3 | P2 |
-| `sprite.checkpoint` | reserve, not rendered | M3 | P2 |
-| `ui.icon.badge` | HUD | M3 §8.22 | P2 |
-| `ui.icon.scan/map/log` | UI | M3 | P2 |
-| `ui.portrait.neuron`, UI panels | UI | M3 | P2 |
-| `bg.nerve_forest.far/mid/near` | 03 deferred | background requirements | P3 |
-| `bg.muscle_endplate.far/mid/near` | 04 deferred | muscle-endplate / future | P3 |
-| `bg.silicon_board.far/mid/near` | Silicon deferred | Silicon prompt pack | P3 |
-| Hub logo, toy astronaut, optional props | Hub | M3.5 hub prompts | P3 |
+| `sprite.scan.neuron` | 03, two entities | §5.1 below + M3 §8 | Keep placeholder. Old plate fits 32×17 and fails; revised square prompt is ready, no new source. |
+| `sprite.scan.pathway` | 03 | §5.2 below + M3 §8 | Keep placeholder. Old plate fits 32×13 and fails; revised square prompt is ready, no new source. |
+| `sprite.scan.interrupt` | Silicon | `docs/prompts/levels/01-interrupt-loop-assets.md` §8.2 | Keep placeholder. Old plate fits 32×7/220 px and fails; needs a square recomposition. |
+| `sprite.exit.silicon` | Silicon | `docs/prompts/levels/01-interrupt-loop-assets.md` §12.2 | Keep placeholder. Reuse of the organic/warm anatomy exit is rejected for the Silicon tech style. |
+| `sprite.scan.reflex` | reserve, not referenced | M3 | Keep reserve; not rendered. |
+| `sprite.checkpoint` | reserve, not rendered | M3 | Keep reserve; data point is used instead. |
+| `ui.icon.badge` | HUD | M3 §8.22 | Keep the CSS fallback. 14×14 fit loses the helmet dome; dedicated 16×16 redraw deferred. |
+| `ui.icon.scan/map/log` | UI | M3 | Deferred; UI does not render them. |
+| `ui.portrait.neuron`, UI panels | UI | M3 | Deferred; UI does not render them. |
+| `bg.nerve_forest.far/mid/near` | 03 deferred | background requirements | Deferred layered pass. |
+| `bg.muscle_endplate.far/mid/near` | 04 deferred | muscle-endplate / future | Declared placeholders; not wired. |
+| `bg.silicon_board.far/mid/near` | Silicon deferred | Silicon prompt pack | Deferred. |
+| `ui.logo.shrinkonauts` | Hub | M3.5 hub prompts | CSS Silkscreen fallback approved; delivered plate rejected (washer baked behind letters). |
+| `sprite.prop.toy.astronaut` | Hub | M3.5 hub prompts | **Cut.** No source and not referenced by `hub.json`. |
 
 `tileset.anatomy` and `tileset.silicon` remain declared placeholder entries but
 are not used when the material grid resolves; they are not visible placeholders.
@@ -220,13 +213,15 @@ are not used when the material grid resolves; they are not visible placeholders.
 ## 5. New graphics gap prompts
 
 The M3 prompts for `sprite.scan.neuron` and `sprite.scan.pathway` exist, but the
-generated plates were wide diagrams. These revised prompts target a **square
-36×36 cell** and simplify the silhouette. Use `STYLE_SPRITE`, `PALETTE`, and
-`FRAME_ENTITY` from `docs/m3/asset-requirements-v01.md` §7–8.
+generated plates were wide diagrams (32×17 and 32×13 at the 36×36 fit). These
+revised prompts target a **square 36×36 cell** and simplify the silhouette. Use
+`STYLE_SPRITE`, `PALETTE`, and `FRAME_ENTITY_CONCEPT` from
+`docs/m3/asset-requirements-v01.md` §8.2–§8.11. Do **not** paste the export-only
+`FRAME_ENTITY` block into a generator prompt.
 
 ### 5.1 `sprite.scan.neuron` — compact neuron/myelin scan
 
-**File:** `shared/sprites/scan-neuron.png` · **Display:** 36×36 · **Status:** placeholder-only
+**File:** `shared/sprites/scan-neuron.png` · **Display:** 36×36 · **Status:** placeholder-only · **Stage:** processed (rejected; old source)
 
 ```text
 SUBJECT: A compact diagrammatic scan icon of one nerve cell, designed to read in a square 36×36 cell — not a character. A round bone-cream cell body on the left with five short branching dendrites; one bold cable-like axon runs to the right; three pale bead-like myelin sleeves with dark node gaps; a small forked terminal at the right. A nerve-yellow glow sits in the cell body; a thin joint-cyan rim traces the silhouette. The silhouette fills about 80% of the square, with clear dark gaps between shapes. Flat side view, left-to-right reading. No face, eyes, arms, lantern, labels, arrows, second axon, second cell body, or gore.
@@ -237,13 +232,13 @@ SUBJECT: A compact diagrammatic scan icon of one nerve cell, designed to read in
 **Acceptance**
 
 - At 36×36, the soma, dendrites, one axon, three myelin beads/nodes, forked terminal, and cyan rim read.
-- The silhouette is a compact square icon, not a wide 16×9 strip.
+- The silhouette is a compact square icon, not the old 32×17 strip.
 - Distinct from `sprite.agent.neuron`; no face, arms, or lantern.
 - No text, arrows, or gore.
 
 ### 5.2 `sprite.scan.pathway` — compact one-way pathway scan
 
-**File:** `shared/sprites/scan-pathway.png` · **Display:** 36×36 · **Status:** placeholder-only
+**File:** `shared/sprites/scan-pathway.png` · **Display:** 36×36 · **Status:** placeholder-only · **Stage:** processed (rejected; old source)
 
 ```text
 SUBJECT: A compact diagrammatic scan icon of a one-way nerve path, designed to read in a square 36×36 cell — not a character. A small bone-cream soma sits at the far left with five short dendrites; one bold axon crosses the square to the right; three pale bead-like myelin sleeves with dark node gaps; a bright nerve-yellow pulse sits in one gap; the axon ends in a forked terminal pointing right. A thin joint-cyan rim traces the silhouette. The left-to-right taper and the pulse are the dominant shapes. No face, eyes, arms, lantern, labels, arrows, diagram lines, second axon, or gore.
@@ -280,7 +275,7 @@ at 36×36; distinct from `scan.neuron`; no text.
 |---|---|---|
 | Shared sprites, scans, gates, props, receptors, badge | [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) | M3 style blocks, per-asset prompts, atlas maps, prompt log |
 | 03 background layers | [`docs/m3/background-asset-requirements-v01.md`](../m3/background-asset-requirements-v01.md) | Current 03 sky wired; far/mid/near future |
-| 04 sky, four atlases, gate, exit | [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md) | Source plates generated; processing/acceptance pending |
+| 04 sky, four atlases, gate, exit | [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md) | Accepted 2026-11-03; evidence in §12 |
 | Hub scene/props/UI | [`docs/m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md) | Nano Banana first, Ludo fallback |
 | Silicon entities/theme | [`docs/prompts/silicon-theme.md`](../prompts/silicon-theme.md) and [`docs/prompts/levels/01-interrupt-loop-assets.md`](../prompts/levels/01-interrupt-loop-assets.md) | Final Silicon entities; interrupt/exit gaps |
 | 03 scan gaps | §5 above | Revised square 36×36 prompts |
@@ -292,13 +287,14 @@ at 36×36; distinct from `scan.neuron`; no text.
 ### 7.1 Current state
 
 - **18 SFX cues** are declared across the anatomy, Silicon and hub manifests.
-- **All 18 are placeholders with no `src`.** No audio files exist.
+- **3 cues are installed** (`scan`, `jump`, `land`) from the 2026-11-03 pilot;
+  **15 remain placeholders with no `src`**.
 - **Four themes** are proposed in ADR-0076; no files exist.
 - `ManifestAudioProvider` is implemented: it fetches, decodes, caches and plays
   file-backed cues, keeping the synth fallback for missing or failed files.
-  ADR-0077 theme playback is also implemented. No audio files exist yet, so
-  cues still resolve to placeholders and themes resolve to silence.
-- No audio licence records exist.
+  ADR-0077 theme playback is also implemented; missing themes resolve to
+  silence.
+- Licence records exist for the three installed SFX; no theme licences exist.
 
 ### 7.2 SFX index
 
@@ -344,35 +340,37 @@ Do not commit audio files before gate 1. A silent file hides the provider gap.
 
 ## 8. Generation order
 
-### P0 — visible placeholders
+### P0 — remaining visible placeholders
 
-1. `sprite.scan.neuron` — revised square prompt §5.1.
-2. `sprite.scan.pathway` — revised square prompt §5.2.
-3. `sprite.scan.interrupt` and `sprite.exit.silicon` — Silicon prompt pack; decide
-   whether to reuse `sprite.exit` before generating a new exit.
+1. `sprite.scan.neuron` — revised square prompt §5.1; needs a new source.
+2. `sprite.scan.pathway` — revised square prompt §5.2; needs a new source.
+3. `sprite.scan.interrupt` — needs a square recomposition/new source.
+4. `sprite.exit.silicon` — needs a Silicon-specific source; anatomy reuse
+   rejected.
 
-### P1 — 04 source processing
+### P1 — 04 source processing ✅
 
-The seven source plates are generated. Process them in this order:
+The seven source plates are processed, wired and accepted:
 
-4. `bg.muscle_endplate.sky` — crop/resize, export, accept.
-5. Four atlas swatches — bone, nerve, muscle, membrane; tile/pixel checks, then
+5. `bg.muscle_endplate.sky` — crop/resize, export, accept.
+6. Four atlas swatches — bone, nerve, muscle, membrane; tile/pixel checks, then
    atlas assembly and tint removal.
-6. `sprite.gate.nerve`, `sprite.exit` — magenta key, 64×64 fit, palette/alpha
+7. `sprite.gate.nerve`, `sprite.exit` — magenta key, 64×64 fit, palette/alpha
    acceptance.
-7. Wire `src`/licence entries; remove `placeholder: true` only after acceptance.
+8. Manifest `src`/licence entries wired; `placeholder` and material tints
+   removed.
 
 ### P2 — audio
 
-8. ~~Implement `ManifestAudioProvider` and theme playback.~~ Done in this branch.
-9. Generate and wire the 18 SFX cues.
+8. ~~Implement `ManifestAudioProvider` and theme playback.~~ Done.
+9. Generate and wire the 18 SFX cues. **3/18 installed; 15 remain.**
 10. Generate and wire the four themes.
 
 ### P3 — deferred graphics
 
 11. 03/04/Silicon far/mid/near layers.
 12. UI badge, portraits, panels.
-13. Hub logo, toy astronaut, optional props.
+13. Hub logo fallback approved; toy astronaut cut; optional props deferred.
 14. Reserve `scan.reflex`, `checkpoint`, optional `scan.myelin`.
 
 ---
@@ -391,8 +389,8 @@ The seven source plates are generated. Process them in this order:
 - **Licensing:** every non-placeholder entry needs a licence record and prompt log.
 - **Placeholder flags:** remove `placeholder` only when the final asset passes
   acceptance. Interim files keep the flag.
-- **Tint:** neutral interim atlases keep material tints; final coloured atlases
-  remove them.
+- **Tint:** the 04 atlases are final coloured art; their material tints are
+  removed. A future neutral atlas must keep a tint, never both.
 
 ---
 
@@ -438,9 +436,12 @@ Expected:
 
 ## 12. Open decisions
 
-- Dedicated `sprite.scan.myelin`, or keep the shared `scan.neuron` icon?
-- Reuse `sprite.exit` for Silicon, or generate `sprite.exit.silicon`?
-- Implement `ManifestAudioProvider` before or alongside SFX generation?
-- Add the placeholder inventory warning to `pack:validate` now or as a follow-up?
-- Are 03/04/Silicon far/mid/near layers in scope for this milestone?
-- Are hub logo/toy astronaut final assets in scope or deferred?
+- Dedicated `sprite.scan.myelin`: keep the shared `scan.neuron` placeholder for
+  now; revisit only if a square neuron source is generated and rejected.
+- Reuse `sprite.exit` for Silicon: **rejected**. The organic/warm anatomy exit
+  does not meet the Silicon tech style; keep the Silicon placeholder until a
+  dedicated source exists.
+- `ManifestAudioProvider`: **done**; three pilot SFX are installed.
+- Placeholder inventory warning in `pack:validate`: still a follow-up.
+- 03/04/Silicon far/mid/near layers: deferred for this milestone.
+- Hub logo: **CSS Silkscreen fallback approved**. Toy astronaut: **cut**.

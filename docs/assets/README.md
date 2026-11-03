@@ -10,9 +10,10 @@ truth for completion status** is the
 Discipline documents own prompt text; update the matrix first when an asset moves
 through `source-generated → processed → wired → accepted`.
 
-Current state: the seven 2026-11-03 04 Nano Banana source plates are
-`source-generated` only. The runtime still loads interim procedural files for
-the 04 sky, four atlases, gate and exit.
+Current state: the seven 2026-11-03 04 Nano Banana plates are processed, wired
+and accepted. The runtime loads the final 04 sky, four coloured atlases, gate
+and exit. The remaining visible placeholders are the 03 scans, the Silicon
+interrupt/exit, and the HUD badge; the hub logo uses the approved CSS fallback.
 
 The full prompt text remains in the discipline documents:
 

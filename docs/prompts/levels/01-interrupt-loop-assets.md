@@ -15,9 +15,11 @@
 
 > **Completion status (2026-11-03):** the `[DONE]` markers below mean
 > “source generated, processed, and wired as POC”; they do **not** mean final
-> art approval. The Silicon pack still has no new batch in this pass.
-> `sprite.scan.interrupt` and `sprite.exit.silicon` remain placeholder-only.
-> Use the
+> art approval. The Silicon pack still has no new source batch in this pass.
+> `sprite.scan.interrupt` and `sprite.exit.silicon` remain placeholder-only:
+> the interrupt source fits 32×7 and fails the 36×36 read, and no Silicon exit
+> source exists. Reusing the organic/warm anatomy exit was considered and
+> rejected. Use the
 > [completion matrix](../../assets/prompt-library-v01.md#40-completion-matrix)
 > as the cross-discipline status source.
 
@@ -368,10 +370,12 @@ SUBJECT: A flat diagrammatic scan icon of an interrupt line: a bright cyan trace
 
 **File:** `shared/sprites/scan-interrupt.png`.
 
-**Runtime (2026-11-02):** placeholder retained. The 18×18 fit is 16×4 and
-quantises to 64 ink pixels; the cyan trace and scan rim vanish and the icon
-does not read at 36×36. Report:
-`art-source/nanobanan/reports/silicon/scan-interrupt.fit.json`.
+**Runtime (2026-11-03 audit):** placeholder retained. The 36×36 fit is 32×7
+with 220 opaque pixels (80 ink, 25 joint); the minimum dimension is below the
+24px readability policy, the source-to-fit scale is 46.9:1, and the icon does
+not read as a square scan target. Report:
+`art-source/nanobanan/reports/silicon/scan-interrupt.fit.json`. A new square
+composition is required; do not force the existing plate.
 
 ### 8.3 `sprite.scan.controller` [DONE]
 
@@ -535,8 +539,15 @@ SUBJECT: A Silicon exit port: a graphite ring with a cold cyan-lit interior, two
 
 **Negative:** `NEGATIVE_TECH` + `face, character, text, organic valve, gore`.
 
-**Acceptance:** Reads as a destination at 36×36; cold light is visible; distinct
-from the actuator gate; no character; no text; ≤16 KB.
+**Acceptance:** Reads as a destination at the runtime size; cold light is
+visible; distinct from the actuator gate; no character; no text; ≤16 KB.
+The current manifest uses ADR-0075 `hero-1x` 64×64 for interactables, not the
+older 18×18/36×36 table in §14.1.
+
+**Decision (2026-11-03):** no Silicon-specific source exists, and reusing
+`sprite.exit` is rejected because its organic bone/membrane ring and warm light
+break the Silicon tech style. Keep the placeholder and licence slot open until
+a dedicated source is generated.
 
 ---
 
@@ -566,6 +577,8 @@ text; optional, does not block the level.
 | Type | Source | Runtime | Format |
 |---|---|---|---|
 | Entity / scan / prop / socket / gate / exit | 18×18 | 36×36 at 2× | PNG with alpha |
+| **Superseded by ADR-0075:** hero interactables / gates / exit | — | **64×64 at 1×** | PNG with alpha |
+| **Superseded by ADR-0075:** agents | — | **96×96 at 1×** | PNG with alpha |
 | Background sky | 640×368 | 1280×736 cover at 2× | lossless WebP/PNG |
 | Parallax | 1024×512 | tile 1:1, 2×2 clusters | lossless WebP/PNG with alpha |
 | Atlas | 128×128 | 32×32 frames at 1:1 | PNG, opaque cells |
@@ -734,7 +747,9 @@ In order:
 1. Defer `ui.portrait.cpu` and `sprite.prop.work_token`.
 2. Defer the five scans and `sprite.pad.sensor`; keep the visible pads as
    placeholders.
-3. Defer `sprite.exit.silicon`; reuse `sprite.exit`.
+3. Defer `sprite.exit.silicon`; do **not** reuse the organic/warm anatomy
+   `sprite.exit`. Keep the Silicon placeholder until a dedicated tech-style
+   source exists.
 4. Keep the four backgrounds, the material atlas, the CPU agent, the route
    plug, the controller/CPU sockets, and the actuator gate. Those carry the
    puzzle’s meaning.
@@ -808,7 +823,7 @@ written.
 | `sprite.scan.actuator` | `sprite-scan-actuator.jpeg` | `reports/silicon/scan-actuator.key.json` | `reports/silicon/scan-actuator.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
 | `sprite.scan.controller` | `sprite-scan-controller.jpeg` | `reports/silicon/scan-controller.key.json` | `reports/silicon/scan-controller.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
 | `sprite.scan.cpu` | `sprite-scan-cpu.jpeg` | `reports/silicon/scan-cpu.key.json` | `reports/silicon/scan-cpu.fit.json` | integrated; palette-distance warning 76.8 | `Ludo.ai source (POC; plan TBD)` |
-| `sprite.scan.interrupt` | `sprite-scan-interrupt.jpeg` | `reports/silicon/scan-interrupt.key.json` | `reports/silicon/scan-interrupt.fit.json` | placeholder; 16×4 all-ink | POC label, not wired |
+| `sprite.scan.interrupt` | `sprite-scan-interrupt.jpeg` | `reports/silicon/scan-interrupt.key.json` | `reports/silicon/scan-interrupt.fit.json` | placeholder; 32×7, 220 opaque, 80 ink/25 joint | POC label, not wired |
 | `sprite.scan.sensor` | `sprite-scan-sensor.jpeg` | `reports/silicon/scan-sensor.key.json` | `reports/silicon/scan-sensor.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
 | `sprite.socket.controller` | `sprite-socket-controller.jpeg` | `reports/silicon/socket-controller.key.json` | `reports/silicon/socket-controller.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
 | `sprite.socket.cpu` | `sprite-socket-cpu.jpeg` | `reports/silicon/socket-cpu.key.json` | `reports/silicon/socket-cpu.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |

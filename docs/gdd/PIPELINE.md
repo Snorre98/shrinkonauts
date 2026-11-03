@@ -297,21 +297,23 @@ across the play band, so it is not ready to wire.
 
 ## 5. Atlases, UI and fonts
 
-- Anatomy uses four **procedural interim PNG atlases**: 256×192 bone `blob47`,
+- Anatomy uses four **final coloured PNG atlases**: 256×192 bone `blob47`,
   128×128 nerve `edge`, 128×128 muscle `edge`, and 128×128 membrane `edge`.
-  They are assembled from 32×32 frames by `npm run art:atlas` and tinted by the
-  material. `tile.anatomy.atlas` is no longer wired and is retained only as a
-  test fixture. `tile.circuit.atlas` remains a placeholder SVG. The 2026-11-03
-  Nano Banana batch adds 2048×2048 material swatch sources; they are
-  `source-generated` only, not accepted or atlas-ready. Replace the neutral
-  swatches with processed final sources before tint removal.
+  They are assembled from processed 512×512 swatches and 32×32 frames by
+  `npm run art:atlas -- --selection tileable --weld-edges`; the material
+  tints are removed.
+  `tile.anatomy.atlas` is no longer wired and is retained only as a test
+  fixture. `tile.circuit.atlas` remains a placeholder SVG. The 2026-11-03 Nano
+  Banana 2048×2048 swatches are nearest-downscaled, palette-quantised,
+  2×2-snapped and edge-welded before assembly.
 - The UI is CSS/DOM, not raster art. The only UI image assets are the two hub
   cycle icons (final) and the badge (placeholder).
 - Fonts are Silkscreen and Pixelify Sans, both SIL OFL 1.1. The runtime loads
   the WOFF2 files from `public/fonts/`; the OFL texts and `NOTICES.md` are
   copied into `final/shared/fonts/`.
-- Audio playback is implemented for cues and themes, but every cue is still a
-  placeholder and no audio files or theme files are included in this pack.
+- Audio playback is implemented for cues and themes. Three pilot SFX (`scan`,
+  `jump`, `land`) are included; the other 15 cues and all four themes remain
+  placeholders.
 
 ---
 

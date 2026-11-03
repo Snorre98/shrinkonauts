@@ -30,9 +30,9 @@ boundary.
 - Nano Banana first, with reference images; Ludo.ai fallback.
 - Locked game ramps plus a hub-only cool appliance-grey ramp.
 - Keep the current launch path; add a six-frame civilian walk cycle.
-- Separate poster, cartridges, toy astronaut, neuron plush, detergent bottles,
-  laundry basket, and towel.
-- Full AI wordmark, with a Silkscreen CSS fallback.
+- Separate poster, cartridges, neuron plush, detergent bottles, laundry basket,
+  and towel. The toy astronaut is cut.
+- Silkscreen CSS wordmark fallback approved; the AI plate is rejected.
 - Six hub audio cues; the menu theme is proposed in ADR-0076 but has no file.
 
 ## Scope boundary
@@ -59,10 +59,10 @@ cycle-card icons, basket, plush, and P1 tiny astronaut are wired. The logo
 remains a Silkscreen fallback because the delivered plate has a washer baked
 behind the wordmark.
 
-Deferred or manifest-only: civilian walk sheet (not delivered), toy astronaut
-(not delivered), audio files (not delivered; playback is implemented), detergent
-bottles (baked shelf bottles already exist), and the towel (the cleaned 11×32
-source does not read at 2×). The canonical completion status is the
+Deferred or manifest-only: civilian walk sheet (not delivered), audio files
+(not delivered; playback is implemented), detergent bottles (baked shelf bottles
+already exist), and the towel (the cleaned 11×32 source does not read at 2×).
+The toy astronaut is cut; the logo uses the approved CSS fallback. The canonical completion status is the
 [prompt-library matrix](../assets/prompt-library-v01.md#40-completion-matrix).
 See [`../../art-source/nanobanan/README.md`](../../art-source/nanobanan/README.md)
 for the processing commands, composition deviations, and licence note, and

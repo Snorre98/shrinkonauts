@@ -1,0 +1,19 @@
+{
+  "character": "atlas-swatch",
+  "cell": {
+    "width": 512,
+    "height": 512
+  },
+  "ramps": [
+    "bone",
+    "boneShadow",
+    "teal",
+    "ink",
+    "sage"
+  ],
+  "sourceOffPalettePixels": 262144,
+  "quantizedPixels": 262144,
+  "maxDistance": 74.23,
+  "alphaViolations": 0,
+  "offPalettePixelsAfter": 0
+}

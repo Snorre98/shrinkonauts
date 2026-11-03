@@ -8,8 +8,7 @@
       "edge": "hard",
       "patternId": "bone-cortex",
       "autotile": "blob47",
-      "variantSet": "bone-blob47",
-      "tint": "bone"
+      "variantSet": "bone-blob47"
     },
     "nerve": {
       "family": "organic",
@@ -18,8 +17,7 @@
       "patternId": "nerve-fibers",
       "direction": 0.35,
       "autotile": "edge",
-      "variantSet": "nerve-edge",
-      "tint": "nerve"
+      "variantSet": "nerve-edge"
     },
     "muscle": {
       "family": "organic",
@@ -28,8 +26,7 @@
       "patternId": "muscle-fibers",
       "direction": 0,
       "autotile": "edge",
-      "variantSet": "muscle-edge",
-      "tint": "muscle"
+      "variantSet": "muscle-edge"
     },
     "membrane": {
       "family": "organic",
@@ -37,8 +34,7 @@
       "edge": "soft",
       "patternId": "membrane-cells",
       "autotile": "edge",
-      "variantSet": "membrane-edge",
-      "tint": "muted"
+      "variantSet": "membrane-edge"
     }
   },
   "patterns": {

@@ -99,15 +99,15 @@ it publishes the `dist` artifact, which already contains the merged gallery.
   `level.json` has `"gateIds": []`; no 03 room entity opens it. The walkthrough
   captures the 03 threshold gate as a world object and the Silicon
   `gate-transfer` overlay as the concept-gate example.
-- **04 background:** the 2026-11-03 additive pass wires an interim 1280×720
-  `bg.muscle_endplate.sky` placeholder. A 2752×1536 Nano Banana source plate is
-  now generated, but it is `source-generated` only; crop/export/acceptance is
-  pending, so captures still show the interim plate. The 04 captions call this
-  out.
+- **04 background:** the 2026-11-03 batch wires the final 1280×720
+  `bg.muscle_endplate.sky`, four coloured material atlases, and the final
+  `sprite.gate.nerve` / `sprite.exit`. Captures after this pass show the final
+  04 art; far/mid/near remain declared placeholders.
 - **03 scan placeholders:** `sprite.scan.neuron` and `sprite.scan.pathway` are
   colored placeholder boxes (yellow NEUR, cyan PATH); `scan-myelin` reuses the
   neuron icon. Revised square prompts are in
   [`../assets/prompt-library-v01.md`](../assets/prompt-library-v01.md).
-- No audio files exist; every cue is a placeholder.
+- Three pilot SFX (`scan`, `jump`, `land`) are installed; the other 15 cues and
+  four themes remain placeholders.
 - The key-art shots are stills with the UI hidden, not separately authored
   marketing art.

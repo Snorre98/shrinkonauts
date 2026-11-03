@@ -32,38 +32,42 @@ A source plate is not a runtime asset. “Generated” never means “final”.
 
 ---
 
-## 2. Immediate queue — 04 source batch
+## 2. Completed — 04 source batch
 
-Seven Nano Banana source plates are in
-`art-source/nanobanan/new/muscle-endplate-2026-11-03/`.
-The runtime still loads the interim procedural files.
+All seven Nano Banana source plates in
+`art-source/nanobanan/new/muscle-endplate-2026-11-03/` are processed, wired and
+accepted. Material tints and `placeholder` flags are removed.
 
-| Asset | Where | Runtime | Stage | What remains | Gate |
-|---|---|---|---|---|---|
-| `bg.muscle_endplate.sky` | 04 | `interim` | `source-generated` | Crop/resize 2752×1536 → 1280×720; lossless WebP; replace interim `src`; licence; remove `placeholder` | 04 sky acceptance in [muscle-endplate §5](../m3/muscle-endplate-asset-requirements-v01.md) |
-| `tile.muscle.atlas` | 04 | `interim` | `source-generated` | Crop 512×512 swatch; check 3×3 tiling and 2×2 clusters; assemble 128×128 4×4; report; remove tint | [muscle-endplate §6.2](../m3/muscle-endplate-asset-requirements-v01.md) |
-| `tile.membrane.atlas` | 04 | `interim` | `source-generated` | Same as muscle; assemble 128×128 4×4; remove tint | [muscle-endplate §6.3](../m3/muscle-endplate-asset-requirements-v01.md) |
-| `tile.bone.atlas` | 03/04 | `interim` | `source-generated` | Crop 512×512 swatch; tiling/pixel check; assemble 256×192 8×6 `blob47`; report; remove tint | [muscle-endplate §6.4](../m3/muscle-endplate-asset-requirements-v01.md) |
-| `tile.nerve.atlas` | 03/04 | `interim` | `source-generated` | Crop 512×512 swatch; tiling/pixel check; assemble 128×128 4×4; remove tint | [muscle-endplate §6.5](../m3/muscle-endplate-asset-requirements-v01.md) |
-| `sprite.gate.nerve` | 04 | `interim` | `source-generated` | `art:key` the flat `#FF00FF` source; fit 64×64; palette/alpha acceptance; manifest `src`/licence; remove `placeholder` | [muscle-endplate §7.1](../m3/muscle-endplate-asset-requirements-v01.md) |
-| `sprite.exit` | 03/04 | `interim` | `source-generated` | `art:key` the flat `#FF00FF` source; fit 64×64; palette/alpha acceptance; manifest `src`/licence; remove `placeholder` | [muscle-endplate §7.2](../m3/muscle-endplate-asset-requirements-v01.md) |
+| Asset | Where | Runtime | Stage | Evidence |
+|---|---|---|---|---|
+| `bg.muscle_endplate.sky` | 04 | `final` | `accepted` | 2720×1530 crop → 1280×720 lossless VP8L, 669,798 bytes; [process report](../../art-source/nanobanan/reports/muscle-endplate-sky.process.json) |
+| `tile.muscle.atlas` | 04 | `final` | `accepted` | 512 swatch → 128×128 4×4 edge atlas; palette/2×2/edge checks |
+| `tile.membrane.atlas` | 04 | `final` | `accepted` | 512 swatch → 128×128 4×4 edge atlas |
+| `tile.bone.atlas` | 03/04 | `final` | `accepted` | 512 swatch → 256×192 8×6 `blob47` |
+| `tile.nerve.atlas` | 03/04 | `final` | `accepted` | 512 swatch → 128×128 4×4 edge atlas |
+| `sprite.gate.nerve` | 04 | `final` | `accepted` | key/trim; 60×60 in 64×64; 5,444 bytes |
+| `sprite.exit` | 03/04 | `final` | `accepted` | key/trim; 59×60 in 64×64; 6,043 bytes |
 
-**Next command family:** `npm run art:key`, `npm run art:fit`, `npm run art:atlas`,
-then `npm test`, `npm run pack:validate`, `npm run pack:smoke`, `npm run build`.
+Detailed evidence is in
+[muscle-endplate §12](../m3/muscle-endplate-asset-requirements-v01.md#12-prompt-log-template).
+The accepted command family was `art:key`, `art:normalize`, `art:tile-clean`,
+`art:fit`, `art:atlas`, then the test/pack/build gates.
 
 ---
 
-## 3. Immediate queue — visible placeholders outside 04
+## 3. Remaining placeholder decisions outside 04
 
-| Asset | Where | Runtime | Stage | What remains | Prompt source |
+| Asset | Where | Runtime | Stage | Decision / what remains | Prompt source |
 |---|---|---|---|---|---|
-| `sprite.scan.neuron` | 03 (`scan-neuron`, `scan-myelin`) | `placeholder-only` | `prompt-ready` | Assemble the revised 36×36 prompt with `STYLE_SPRITE` + `PALETTE` + `FRAME_ENTITY_CONCEPT`; generate; key/fit; wire; remove placeholder | [prompt-library §5.1](prompt-library-v01.md) |
-| `sprite.scan.pathway` | 03 | `placeholder-only` | `prompt-ready` | Same as neuron; keep the one-way read without an arrow | [prompt-library §5.2](prompt-library-v01.md) |
-| `sprite.scan.interrupt` | Silicon | `placeholder-only` | `prompt-ready` | Generate/process/wire the Silicon interrupt scan, or explicitly reuse another scan; no placeholder-only ID in a final pack | [Silicon assets §8.2](../prompts/levels/01-interrupt-loop-assets.md) |
-| `sprite.exit.silicon` | Silicon | `placeholder-only` | `prompt-ready` | Decide reuse `sprite.exit` or generate the Silicon-specific exit; wire and licence | [Silicon assets §12.2](../prompts/levels/01-interrupt-loop-assets.md) |
-| `ui.logo.shrinkonauts` | Hub | `placeholder-only` | `prompt-ready` | Generate the wordmark and accept it, or formally approve the Silkscreen CSS fallback; the delivered plate has a washer baked behind the letters | [Hub §8.5](../m3.5/hub-asset-prompts-v01.md) |
-| `sprite.prop.toy.astronaut` | Hub | `placeholder-only` | `prompt-ready` | Generate and wire, or cut the prop from the hub scene | [Hub §9.6](../m3.5/hub-asset-prompts-v01.md) |
-| `ui.icon.badge` | HUD | `placeholder-only` | `prompt-ready` | Dedicated 16×16 pixel pass that reads in the ~45×27 pill; the current audit loses the helmet dome | [M3 §8.22](../m3/asset-requirements-v01.md) |
+| `sprite.scan.neuron` | 03 (`scan-neuron`, `scan-myelin`) | `placeholder-only` | `processed (rejected)` | Keep placeholder. Old plate fits 32×17 and fails; revised square prompt ready, needs a new source. | [prompt-library §5.1](prompt-library-v01.md) |
+| `sprite.scan.pathway` | 03 | `placeholder-only` | `processed (rejected)` | Keep placeholder. Old plate fits 32×13 and fails; revised square prompt ready, needs a new source. | [prompt-library §5.2](prompt-library-v01.md) |
+| `sprite.scan.interrupt` | Silicon | `placeholder-only` | `processed (rejected)` | Keep placeholder. Old plate fits 32×7/220 px and fails; needs a square recomposition. | [Silicon assets §8.2](../prompts/levels/01-interrupt-loop-assets.md) |
+| `sprite.exit.silicon` | Silicon | `placeholder-only` | `prompt-ready` | Keep placeholder. Reusing the anatomy exit is rejected: organic/warm art fails the Silicon tech style. Needs a Silicon-specific source. | [Silicon assets §12.2](../prompts/levels/01-interrupt-loop-assets.md) |
+| `ui.logo.shrinkonauts` | Hub | `placeholder-only` | `deferred` | **CSS Silkscreen fallback approved.** Delivered plate rejected because a washer is baked behind the letters. | [Hub §8.5](../m3.5/hub-asset-prompts-v01.md) |
+| `ui.icon.badge` | HUD | `placeholder-only` | `processed (rejected)` | **CSS fallback retained.** 14×14 fit loses the helmet dome; dedicated 16×16 redraw deferred. | [M3 §8.22](../m3/asset-requirements-v01.md) |
+
+**Cut:** `sprite.prop.toy.astronaut` is removed from the hub manifest. It had no
+source and was not referenced by `hub.json`.
 
 ---
 
@@ -75,7 +79,7 @@ work is content and licensing, not engine wiring.
 
 | Group | Runtime | Stage | What remains |
 |---|---|---|---|
-| 18 SFX cues — anatomy 11 + `wrong` + hub 6 | `placeholder-only` | in progress (local scratch) | Select approved takes from the local `var/sfx/` scratch; install into `public/packs/anatomy-reflex/shared/audio/` and `public/hub/bathroom/shared/audio/`; add manifest `src`; remove placeholders; complete the prompt log and licence entries |
+| 18 SFX cues — anatomy 11 + `wrong` + hub 6 | 3 final / 15 `placeholder-only` | in progress | `scan`, `jump` and `land` are installed in the Anatomy and Silicon packs with licences and prompt-log rows. The remaining 15 cues (including all six hub cues) need approved takes, manifest `src`, licence and prompt-log rows. |
 | 4 music themes — menu, nerve forest, muscle effector, interrupt loop | `placeholder-only` | `prompt-ready` | Generate, loop-QA three consecutive plays, wire `room.music` / `theme.audio.music`, add licences and prompt-log rows; runtime IDs are already wired and currently resolve to silence |
 | Separate ambience loop | `deferred` | — | Not in v1; the room/menu theme owns the ambient texture |
 
@@ -123,11 +127,11 @@ Every final asset must satisfy all of these before its row is `accepted`:
 
 ## 7. Already done
 
-- Audio provider and ADR-0077 theme playback are implemented.
-- The 04 Nano Banana source batch is generated (7 plates).
+- Audio provider and ADR-0077 theme playback are implemented; three pilot SFX are installed.
+- The 04 Nano Banana batch is processed, wired and accepted (7 assets).
 - The hub scene, machine, civilian, poster, cartridges, cycle icons, and main props are integrated.
 - POC player animations, Neuron Keeper idle, readable scans, entities, and the pretty 03 sky are wired.
-- Four neutral procedural atlases and interim 04 gate/exit/sky files keep the pack playable while final art is processed.
+- The four coloured material atlases, final 04 sky, gate and exit replace the neutral/interim files; tints are removed.
 
 ---
 

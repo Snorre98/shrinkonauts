@@ -32,21 +32,22 @@ The exact per-file entries are in `manifest.json` and
 - `gate.ferry`, `prop.tracer`, `pulse.terminal`
 - both receptors
 - `bg.nerve_forest.sky`
-- `bg.muscle_endplate.sky` (procedural interim)
+- `bg.muscle_endplate.sky` (Nano Banana; final)
 - `tile.bone.atlas`, `tile.nerve.atlas`, `tile.muscle.atlas`,
-  `tile.membrane.atlas` (procedural interim, CC0-1.0)
+  `tile.membrane.atlas` (Nano Banana; final)
 - `tile.anatomy.atlas` (CC0 test fixture; no longer wired)
-- `sprite.gate.nerve`, `sprite.exit` (procedural interim)
+- `sprite.gate.nerve`, `sprite.exit` (Nano Banana; final)
 
-It does **not** list the seven 2026-11-03 Nano Banana source plates in
-`art-source/nanobanan/new/muscle-endplate-2026-11-03/`. They are
-`source-generated` only, have no runtime `src`, and still need licence entries
-when processed and wired.
+The seven 2026-11-03 Nano Banana source plates in
+`art-source/nanobanan/new/muscle-endplate-2026-11-03/` are processed and wired;
+their runtime files have licence entries with source/runtime hashes. The raw
+JPEGs remain source assets, not runtime assets.
 
-It does **not** yet list every new entity (for example `scan.neuron`,
-`scan.pathway`, `scan.reflex`, the badge, the deferred UI panels or audio).
-Those are placeholders without final art, so the missing entries should be added
-before any of them becomes final.
+The licence file does **not** yet list every remaining placeholder (for example
+`scan.neuron`, `scan.pathway`, `scan.reflex`, the Silicon interrupt/exit, the
+badge, the deferred UI panels or the remaining audio). Those are placeholders
+without final art, so the missing entries should be added before any of them
+becomes final.
 
 ### Silicon
 
@@ -62,8 +63,8 @@ embedded in `assets.final.json`:
 - `Nano Banana / Google Gemini (plan TBD)` for the scene, washer parts,
   civilian, poster, cartridges, cycle icons, plush, basket, towel and detergent.
 - `Ludo.ai source (POC; plan TBD)` for the reused P1 tiny astronaut.
-- `Placeholder: Silkscreen wordmark fallback...` for the logo.
-- `Placeholder until a toy astronaut plate is delivered` for the toy astronaut.
+- `Approved CSS fallback: Silkscreen wordmark...` for the logo.
+- The toy astronaut entry was removed; the prop is cut.
 
 ---
 
@@ -105,12 +106,12 @@ note if the font is redistributed.
 6. **Final approval.** POC-integrated sprites and the pretty sky are not final
    approved. The GDD/video should say “POC integrated; final approval pending”
    where that distinction matters.
-7. **Placeholders and source-generated art.** The badge, `scan.neuron`,
-   `scan.pathway`, `scan.reflex`, `sprite.exit`, `sprite.gate.nerve`, the four
-   atlases, the toy astronaut, the logo, and all audio are placeholders. The
-   2026-11-03 04 batch adds raw source plates for the sky, four swatches, gate,
-   and exit; these are **not** final runtime assets. Do not present either the
-   placeholders or the raw sources as final.
+7. **Placeholders and final art.** The badge, `scan.neuron`, `scan.pathway`,
+   `scan.reflex`, the Silicon interrupt/exit, the 03/04 far/mid/near layers,
+   the Silicon circuit atlas, the hub logo CSS fallback, and the remaining
+   audio are placeholders. The 2026-11-03 04 batch (sky, four atlases, gate,
+   exit) is final and licensed. Do not present placeholders or raw source JPEGs
+   as final runtime assets.
 
 ---
 

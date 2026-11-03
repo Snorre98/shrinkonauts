@@ -146,7 +146,7 @@ describe("03 background", () => {
 });
 
 describe("04 background", () => {
-  it("wires the interim 04 sky and keeps far/mid/near declared placeholders", () => {
+  it("wires the final 04 sky and keeps far/mid/near declared placeholders", () => {
     expect(muscleRoom.background.layers.map((layer) => layer.assetId)).toEqual([
       "bg.muscle_endplate.sky",
       "bg.muscle_endplate.far",
@@ -172,14 +172,14 @@ describe("04 background", () => {
     }
   });
 
-  it("ships the interim 04 sky as a 1280x720 lossless WebP with a matching licence", () => {
+  it("ships the final 04 sky as a 1280x720 lossless WebP with a matching licence", () => {
     const entry = manifest.assets["bg.muscle_endplate.sky"];
     expect(entry).toBeDefined();
     if (!entry) return;
     expect(entry.type).toBe("background");
     expect(entry.src).toBe("shared/backgrounds/muscle-endplate-sky.webp");
-    expect(entry.license).toBe("Procedural interim (CC0-1.0)");
-    expect(entry.placeholder).toBe(true);
+    expect(entry.license).toBe("Nano Banana / Google Gemini (plan TBD)");
+    expect(entry.placeholder).toBeUndefined();
 
     const path = join(PACK_DIR, entry.src as string);
     expect(existsSync(path)).toBe(true);

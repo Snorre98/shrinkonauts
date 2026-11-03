@@ -123,9 +123,13 @@ describe("bathroom hub final art", () => {
     }
   });
 
-  it("keeps the missing logo, toy astronaut, walk sheet, and audio as explicit placeholders", () => {
+  it("approves the logo CSS fallback, cuts the toy astronaut, and keeps missing art/audio explicit", () => {
     expect(manifest.assets["ui.logo.shrinkonauts"]?.placeholder).toBe(true);
-    expect(manifest.assets["sprite.prop.toy.astronaut"]?.placeholder).toBe(true);
+    expect(manifest.assets["ui.logo.shrinkonauts"]?.src).toBeUndefined();
+    expect(manifest.assets["ui.logo.shrinkonauts"]?.license).toContain(
+      "Approved CSS fallback",
+    );
+    expect(manifest.assets["sprite.prop.toy.astronaut"]).toBeUndefined();
     expect(manifest.assets["sprite.player.civilian.walk"]).toBeUndefined();
     for (const id of [
       "audio.cue.hub.click",

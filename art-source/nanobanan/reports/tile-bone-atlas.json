@@ -5,11 +5,13 @@
   "columns": 8,
   "rows": 6,
   "seed": 1,
-  "source": "/home/snorre/Documents/Studies/shrinkonauts/art-source/nanobanan/working/tile-bone-swatch-neutral-512.png",
-  "output": "/home/snorre/Documents/Studies/shrinkonauts/public/packs/anatomy-reflex/shared/tiles/bone-atlas.png",
-  "edgeColor": "#343a40",
-  "fillColor": "#7a7a7a",
+  "source": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/art-source/nanobanan/working/tile-bone-swatch-nano-clean-512.png",
+  "output": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/public/packs/anatomy-reflex/shared/tiles/bone-atlas.png",
+  "edgeColor": "#05090b",
+  "fillColor": "#c9b79a",
   "assetId": "tile.bone.atlas",
+  "weldEdges": true,
+  "selection": "tileable",
   "regions": {
     "mask-0": {
       "x": 0,
@@ -292,6 +294,290 @@
       "y": 160,
       "width": 32,
       "height": 32
+    }
+  },
+  "windows": {
+    "mask-0": {
+      "x": 192,
+      "y": 32,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-1": {
+      "x": 128,
+      "y": 384,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-4": {
+      "x": 128,
+      "y": 128,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-5": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-7": {
+      "x": 480,
+      "y": 32,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-16": {
+      "x": 384,
+      "y": 128,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-17": {
+      "x": 192,
+      "y": 352,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-20": {
+      "x": 192,
+      "y": 32,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-21": {
+      "x": 128,
+      "y": 384,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-23": {
+      "x": 384,
+      "y": 128,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-28": {
+      "x": 192,
+      "y": 32,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-29": {
+      "x": 128,
+      "y": 384,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-31": {
+      "x": 192,
+      "y": 352,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-64": {
+      "x": 192,
+      "y": 32,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-65": {
+      "x": 128,
+      "y": 384,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-68": {
+      "x": 128,
+      "y": 128,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-69": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-71": {
+      "x": 96,
+      "y": 96,
+      "score": 0,
+      "colours": 5
+    },
+    "mask-80": {
+      "x": 192,
+      "y": 352,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-81": {
+      "x": 384,
+      "y": 128,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-84": {
+      "x": 96,
+      "y": 96,
+      "score": 0,
+      "colours": 5
+    },
+    "mask-85": {
+      "x": 480,
+      "y": 32,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-87": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-92": {
+      "x": 480,
+      "y": 32,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-93": {
+      "x": 96,
+      "y": 96,
+      "score": 0,
+      "colours": 5
+    },
+    "mask-95": {
+      "x": 192,
+      "y": 32,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-112": {
+      "x": 128,
+      "y": 128,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-113": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-116": {
+      "x": 192,
+      "y": 32,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-117": {
+      "x": 128,
+      "y": 384,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-119": {
+      "x": 480,
+      "y": 32,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-124": {
+      "x": 384,
+      "y": 128,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-125": {
+      "x": 192,
+      "y": 352,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-127": {
+      "x": 192,
+      "y": 32,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-193": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-197": {
+      "x": 128,
+      "y": 384,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-199": {
+      "x": 480,
+      "y": 32,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-209": {
+      "x": 384,
+      "y": 128,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-213": {
+      "x": 96,
+      "y": 96,
+      "score": 0,
+      "colours": 5
+    },
+    "mask-215": {
+      "x": 192,
+      "y": 32,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-221": {
+      "x": 128,
+      "y": 384,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-223": {
+      "x": 384,
+      "y": 128,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-241": {
+      "x": 480,
+      "y": 32,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-245": {
+      "x": 384,
+      "y": 128,
+      "score": 0,
+      "colours": 7
+    },
+    "mask-247": {
+      "x": 128,
+      "y": 384,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-253": {
+      "x": 192,
+      "y": 352,
+      "score": 0,
+      "colours": 6
+    },
+    "mask-255": {
+      "x": 192,
+      "y": 32,
+      "score": 0,
+      "colours": 7
     }
   },
   "frames": {

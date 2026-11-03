@@ -163,8 +163,8 @@ ephemeral and are rebuilt from puzzle/world state after restore.
   no separate ambience loop.
 - Full key rebinding is deferred.
 - Final art/audio, the bathroom hub art pass (M3.5), and human M1.8 visual
-  review are deferred. A seven-plate 04 Nano Banana source batch is generated
-  (`2026-11-03`) but is not processed, accepted, or wired; see the
+  review are deferred. The seven-plate 04 Nano Banana batch is processed, wired
+  and accepted (`2026-11-03`); see the
   [completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix).
   M1.8 `wang` transitions, pattern animation, image/atlas-sourced UI patterns,
   final material atlases, and editor tooling are deferred within the accepted
@@ -196,14 +196,15 @@ room/boot tests, but the app does not boot it.
 | `/?skipMenu=1&pack=anatomy-reflex` | Direct boot into the selected pack |
 | `/?pack=silicon-reflex` | Preselects the gated Silicon cycle in the hub; Start is disabled |
 | `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
-| `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, and the 03 pretty sky are final, while deferred entries remain placeholders |
+| `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, the 03 pretty sky, and the 04 batch are final, while deferred entries remain placeholders |
 
-The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 34/56
+The bathroom hub resolves 8/21 IDs as placeholders. Anatomy resolves 26/58
 placeholders; the POC player sheets, Neuron Keeper static/idle, readable
-scan/entity sprites, the pretty 03 sky, the interim 04 sky, the four material
-atlases, and the interim 04 gate/exit placeholders have sources. `bg.nerve_forest.far`,
-`.mid`, `.near`, and `bg.muscle_endplate.far`, `.mid`, `.near` remain declared
-placeholders/future layered work; both rooms wire only their sky. The new M3
+scan/entity sprites, the pretty 03 sky, the final 04 sky, the four coloured
+material atlases, and the final 04 gate/exit sprites have sources.
+`bg.nerve_forest.far`, `.mid`, `.near`, `bg.muscle_endplate.far`, `.mid`,
+`.near`, the 03 scans, the Silicon interrupt/exit and the HUD badge remain
+declared placeholders/future work; both rooms wire only their sky. The 04
 additive prompt pack is [`docs/m3/muscle-endplate-asset-requirements-v01.md`](docs/m3/muscle-endplate-asset-requirements-v01.md).
 The dev fixture still resolves 10/10 placeholders, or 7/10 with its fixture
 manifest selected by the scripts. Unknown `?assets=` values fall back to
@@ -223,10 +224,9 @@ rooms the remaining placeholder-only sprites are:
 - `sprite.scan.interrupt` — cyan **INTE** in `01-interrupt-loop`;
 - `sprite.exit.silicon` — yellow **SILI** in `01-interrupt-loop`.
 
-Some assets have `src` files but keep `placeholder: true` because they are
-interim procedural art, not final processed outputs. The 2026-11-03 04
-Nano Banana batch adds raw source plates for the sky, four material swatches,
-gate and exit; those are `source-generated` only. See
+The 04 batch no longer has `src`-with-`placeholder` entries: the sky, four
+atlases, gate and exit are final. The hub logo is the only `src`-less CSS
+fallback that is formally approved; the toy astronaut was cut. See
 [`docs/assets/remaining-work.md`](docs/assets/remaining-work.md) for the single
 consolidated checklist, or the
 [completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix) for
@@ -328,8 +328,8 @@ M1.75 remains **implementation complete; manual solo/co-op playtest pending**.
 `authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until a
 human performs the checks in the M1.75 milestone document.
 
-Final art and audio files, the Silicon fixture, levels 5+, capture mode, a
-separate ambience loop, the M3.5 hub art pass, full key rebinding, and the
-deferred puzzle-engine ADR features remain out of scope for this branch. The
-2026-11-03 04 source batch is generated but not processed or wired; theme
-playback is implemented but theme files are pending.
+Final audio files, the Silicon fixture, levels 5+, capture mode, a separate
+ambience loop, the M3.5 hub art pass, full key rebinding, and the deferred
+puzzle-engine ADR features remain out of scope for this branch. The 2026-11-03
+04 batch is processed and wired; theme playback is implemented but theme files
+are pending.

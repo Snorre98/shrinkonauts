@@ -60,6 +60,7 @@ describe("materials catalog", () => {
     const resolved = resolveMaterialBinding(catalog, {
       materialId: "nerve",
       patternId: "bone-cortex",
+      tint: "joint",
       pattern: {
         space: "local",
         scale: 1.25,
@@ -79,7 +80,16 @@ describe("materials catalog", () => {
     expect(resolved.value.pattern?.seed).toBe(99);
     expect(resolved.value.pattern?.opacity).toBe(0.25);
     expect(resolved.value.pattern?.blend).toBe("multiply");
-    expect(resolved.value.tint).toBe("nerve");
+    expect(resolved.value.tint).toBe("joint");
+  });
+
+  it("has no default material tint after the coloured atlases land", () => {
+    const catalog = createMaterialCatalog(document());
+    for (const materialId of ["bone", "nerve", "muscle", "membrane"]) {
+      const resolved = resolveMaterialBinding(catalog, { materialId });
+      expect(resolved.ok).toBe(true);
+      if (resolved.ok) expect(resolved.value.tint).toBeUndefined();
+    }
   });
 
   it("uses material direction when no binding rotation is given", () => {

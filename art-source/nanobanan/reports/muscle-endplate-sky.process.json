@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "assetId": "bg.muscle_endplate.sky",
+  "promptPack": "muscle-endplate-2026-11-03.1",
+  "source": {
+    "path": "art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg",
+    "width": 2752,
+    "height": 1536,
+    "sha256": "a8064528e94ad0a3a712860f9d012ed337f8c4384be6b0165c8f0a1fa090d7d4"
+  },
+  "processing": {
+    "crop": "2720x1530 at x=16,y=3 (exact 16:9)",
+    "filter": "Lanczos",
+    "scale": "2.125x",
+    "outputSize": "1280x720",
+    "paletteQuantised": false,
+    "encoding": "lossless WebP VP8L"
+  },
+  "runtime": {
+    "path": "public/packs/anatomy-reflex/shared/backgrounds/muscle-endplate-sky.webp",
+    "width": 1280,
+    "height": 720,
+    "bytes": 669798,
+    "sha256": "fd8da92e2188e70787fb98149dffa9102e796db96626f2c1cf1e2bdbc68f6579"
+  },
+  "preview": "art-source/previews/nanobanan/backgrounds/muscle-endplate-sky-1280x720.png",
+  "acceptance": {
+    "opaque": true,
+    "readsAsMuscleLandscape": true,
+    "hudCornersQuiet": true,
+    "playerBandLowContrast": true,
+    "noCharactersTextLabelsArrows": true,
+    "noPurpleMagentaOrangePureRed": true,
+    "note": "Opaque scene-plate exception: not palette-quantised, matching the 03 pretty-sky precedent. 04 far/mid/near remain declared placeholders."
+  },
+  "commands": [
+    "ffmpeg -y -v error -i art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg -vf \"crop=2720:1530:16:3,scale=1280:720:flags=lanczos\" -pix_fmt rgb24 art-source/nanobanan/working/tmp/muscle-endplate-sky-1280x720.png",
+    "cwebp -quiet -lossless -q 100 -m 6 art-source/nanobanan/working/tmp/muscle-endplate-sky-1280x720.png -o public/packs/anatomy-reflex/shared/backgrounds/muscle-endplate-sky.webp"
+  ]
+}

@@ -124,6 +124,26 @@
       "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
     },
     {
+      "id": "sprite.gate.nerve",
+      "class": "hero-interactable",
+      "status": "accepted",
+      "source": "art-source/nanobanan/keyed/gate-nerve.png",
+      "output": "public/packs/anatomy-reflex/shared/sprites/gate-nerve.png",
+      "runtime": true,
+      "notes": "2026-11-03 04 batch. Magenta keyed, trimmed, fitted 60x60 in a 64x64 cell with 2px margins. The dark membrane aperture, nerve-yellow seam and cyan hinge clasps read; distinct from gate.ferry and exit. Accepted at 64x64.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    },
+    {
+      "id": "sprite.exit",
+      "class": "hero-interactable",
+      "status": "accepted",
+      "source": "art-source/nanobanan/keyed/exit.png",
+      "output": "public/packs/anatomy-reflex/shared/sprites/exit.png",
+      "runtime": true,
+      "notes": "2026-11-03 04 batch. Magenta keyed, trimmed, fitted 59x60 in a 64x64 cell with 2px margins. The warm destination light reads; distinct from the gate and usable in 03/04. Accepted at 64x64.",
+      "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "muscle", "sage", "ink"]
+    },
+    {
       "id": "sprite.prop.tracer",
       "class": "hero-prop",
       "status": "fit-preview",

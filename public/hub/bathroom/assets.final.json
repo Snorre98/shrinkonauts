@@ -47,7 +47,7 @@
     "ui.logo.shrinkonauts": {
       "type": "image",
       "placeholder": true,
-      "license": "Placeholder: Silkscreen wordmark fallback; the delivered plate has a washer baked behind the letters"
+      "license": "Approved CSS fallback: Silkscreen wordmark; delivered plate rejected because a washing machine is baked behind the letters"
     },
     "sprite.prop.poster": {
       "type": "sprite",
@@ -83,11 +83,6 @@
       "width": 16,
       "height": 16,
       "license": "Nano Banana / Google Gemini (plan TBD)"
-    },
-    "sprite.prop.toy.astronaut": {
-      "type": "sprite",
-      "placeholder": true,
-      "license": "Placeholder until a toy astronaut plate is delivered"
     },
     "sprite.prop.plush.neuron": {
       "type": "sprite",

@@ -6,6 +6,7 @@
  * Usage:
  *   npm run art:atlas -- --in <swatch.png> --out <atlas.png> --rule edge
  *     [--edge-color "#05090b"] [--fill-color "#101a20"] [--seed 1]
+ *     [--selection hash|tileable] [--weld-edges]
  *     [--asset-id tile.muscle.atlas] [--report <json>]
  *     [--preview <png>] [--preview-scale 4] [--background "#101a20"]
  *
@@ -26,6 +27,7 @@ import {
 } from "./art/ludo-sheet";
 
 export type AtlasRule = "edge" | "blob47";
+export type WindowSelection = "hash" | "tileable";
 
 export const FRAME_SIZE = 32;
 
@@ -70,7 +72,10 @@ export interface AtlasReport {
   edgeColor: string;
   fillColor: string;
   assetId: string | null;
+  weldEdges: boolean;
+  selection: WindowSelection;
   regions: Record<string, AtlasRegion>;
+  windows: Record<string, AtlasWindow>;
   frames?: Record<
     string,
     { kind: "atlas"; assetId: string; frame: string }
@@ -84,12 +89,34 @@ export interface BuildAtlasInput {
   edgeColor: readonly [number, number, number];
   fillColor: readonly [number, number, number];
   seed: number;
+  /**
+   * Make each frame's opposite edges pixel-identical before occlusion. This is
+   * required for fully connected frames (mask-15 / mask-255) that repeat as
+   * interior tiles; without it, every 32 px cell shows a texture seam.
+   */
+  weldEdges?: boolean;
+  /**
+   * `hash` picks deterministic windows from the seed (legacy). `tileable`
+   * prefers windows whose opposite edges already match, reducing the amount of
+   * correction the weld has to hide.
+   */
+  selection?: WindowSelection;
+}
+
+export interface AtlasWindow {
+  x: number;
+  y: number;
+  score: number;
+  colours: number;
 }
 
 export interface BuildAtlasResult {
   image: RgbaImage;
   layout: AtlasLayout;
   regions: Record<string, AtlasRegion>;
+  weldEdges: boolean;
+  selection: WindowSelection;
+  windows: Record<string, AtlasWindow>;
   warnings: string[];
 }
 
@@ -149,15 +176,10 @@ function compositeOpaque(
 
 function swatchWindow(
   source: RgbaImage,
-  mask: number,
-  seed: number,
+  originX: number,
+  originY: number,
   fillColor: readonly [number, number, number],
 ): RgbaImage {
-  const maxX = Math.max(1, Math.floor(source.width / FRAME_SIZE));
-  const maxY = Math.max(1, Math.floor(source.height / FRAME_SIZE));
-  const hash = fnv1a(`atlas:${mask}:${seed}`);
-  const originX = (hash % maxX) * FRAME_SIZE;
-  const originY = (Math.floor(hash / maxX) % maxY) * FRAME_SIZE;
   const data = Buffer.alloc(FRAME_SIZE * FRAME_SIZE * 4);
 
   for (let y = 0; y < FRAME_SIZE; y += 1) {
@@ -181,6 +203,90 @@ function swatchWindow(
   }
 
   return { width: FRAME_SIZE, height: FRAME_SIZE, data };
+}
+
+function colourDistance(
+  left: readonly [number, number, number, number],
+  right: readonly [number, number, number, number],
+): number {
+  return (
+    (Math.abs(left[0] - right[0]) +
+      Math.abs(left[1] - right[1]) +
+      Math.abs(left[2] - right[2])) /
+    3
+  );
+}
+
+/** Score every aligned 32×32 window by how closely its opposite edges match. */
+export function atlasWindows(source: RgbaImage): AtlasWindow[] {
+  const maxX = Math.max(1, Math.floor(source.width / FRAME_SIZE));
+  const maxY = Math.max(1, Math.floor(source.height / FRAME_SIZE));
+  const windows: AtlasWindow[] = [];
+  for (let row = 0; row < maxY; row += 1) {
+    for (let column = 0; column < maxX; column += 1) {
+      const originX = column * FRAME_SIZE;
+      const originY = row * FRAME_SIZE;
+      const colours = new Set<string>();
+      let leftRight = 0;
+      let topBottom = 0;
+      for (let offset = 0; offset < FRAME_SIZE; offset += 1) {
+        colours.add(
+          getPixel(source, originX + offset, originY).join(","),
+        );
+        leftRight += colourDistance(
+          getPixel(source, originX, originY + offset),
+          getPixel(source, originX + FRAME_SIZE - 1, originY + offset),
+        );
+        topBottom += colourDistance(
+          getPixel(source, originX + offset, originY),
+          getPixel(source, originX + offset, originY + FRAME_SIZE - 1),
+        );
+      }
+      for (let y = 0; y < FRAME_SIZE; y += 1) {
+        for (let x = 0; x < FRAME_SIZE; x += 1) {
+          colours.add(getPixel(source, originX + x, originY + y).join(","));
+        }
+      }
+      windows.push({
+        x: originX,
+        y: originY,
+        score: (leftRight + topBottom) / FRAME_SIZE,
+        colours: colours.size,
+      });
+    }
+  }
+  return windows.sort((left, right) => left.score - right.score);
+}
+
+function chooseWindow(
+  windows: readonly AtlasWindow[],
+  mask: number,
+  seed: number,
+  selection: WindowSelection,
+): AtlasWindow {
+  if (selection === "hash" || windows.length <= 1) {
+    const maxX = Math.max(
+      1,
+      Math.max(...windows.map((window) => window.x)) / FRAME_SIZE + 1,
+    );
+    const hash = fnv1a(`atlas:${mask}:${seed}`);
+    const x = (hash % maxX) * FRAME_SIZE;
+    const y =
+      (Math.floor(hash / maxX) % Math.max(1, windows.length / maxX)) *
+      FRAME_SIZE;
+    return (
+      windows.find((window) => window.x === x && window.y === y) ??
+      windows[0]!
+    );
+  }
+
+  const detailed = windows.filter((window) => window.colours >= 4);
+  const pool = (detailed.length > 0 ? detailed : windows).slice(0, 8);
+  const interior = mask === 15 || mask === 255;
+  const index = interior
+    ? 0
+    : fnv1a(`atlas-window:${mask}:${seed}`) % pool.length;
+  return pool[index] ?? windows[0]!;
 }
 
 function fillRect(
@@ -245,6 +351,41 @@ function applyEdgeOcclusion(
       corner,
       edgeColor,
     );
+  }
+}
+
+/**
+ * Weld each frame's opposite edges in 2×2 blocks. The swatch is already on a
+ * 2×2 grid, so copying the left/top block columns and rows preserves that grid
+ * while making the frame repeat cleanly when the connected edges meet
+ * themselves. Occlusion is applied afterwards, so open sides still get their
+ * dark band.
+ */
+function weldFrameEdges(frame: RgbaImage): void {
+  const block = 2;
+  for (let y = 0; y < FRAME_SIZE; y += block) {
+    for (let dy = 0; dy < block; dy += 1) {
+      for (let dx = 0; dx < block; dx += 1) {
+        const [red, green, blue] = getPixel(frame, dx, y + dy);
+        setPixel(frame, FRAME_SIZE - block + dx, y + dy, [
+          red,
+          green,
+          blue,
+        ]);
+      }
+    }
+  }
+  for (let x = 0; x < FRAME_SIZE; x += block) {
+    for (let dx = 0; dx < block; dx += 1) {
+      for (let dy = 0; dy < block; dy += 1) {
+        const [red, green, blue] = getPixel(frame, x + dx, dy);
+        setPixel(frame, x + dx, FRAME_SIZE - block + dy, [
+          red,
+          green,
+          blue,
+        ]);
+      }
+    }
   }
 }
 
@@ -393,7 +534,10 @@ export function buildAtlas(input: BuildAtlasInput): BuildAtlasResult {
     data: Buffer.alloc(layout.width * layout.height * 4),
   };
   const regions: Record<string, AtlasRegion> = {};
+  const windows: Record<string, AtlasWindow> = {};
   const warnings = swatchWarnings(input.source);
+  const selection = input.selection ?? "hash";
+  const candidates = atlasWindows(input.source);
 
   for (let index = 0; index < layout.keys.length; index += 1) {
     const mask = layout.keys[index] as number;
@@ -401,7 +545,15 @@ export function buildAtlas(input: BuildAtlasInput): BuildAtlasResult {
     const row = Math.floor(index / layout.columns);
     const x = column * FRAME_SIZE;
     const y = row * FRAME_SIZE;
-    const frame = swatchWindow(input.source, mask, input.seed, input.fillColor);
+    const window = chooseWindow(candidates, mask, input.seed, selection);
+    windows[`mask-${mask}`] = window;
+    const frame = swatchWindow(
+      input.source,
+      window.x,
+      window.y,
+      input.fillColor,
+    );
+    if (input.weldEdges) weldFrameEdges(frame);
     applyEdgeOcclusion(frame, internalMask(input.rule, mask), input.edgeColor);
 
     for (let frameY = 0; frameY < FRAME_SIZE; frameY += 1) {
@@ -431,7 +583,15 @@ export function buildAtlas(input: BuildAtlasInput): BuildAtlasResult {
     fillRect(image, emptyX, emptyY, FRAME_SIZE, FRAME_SIZE, input.fillColor);
   }
 
-  return { image, layout, regions, warnings };
+  return {
+    image,
+    layout,
+    regions,
+    weldEdges: input.weldEdges === true,
+    selection,
+    windows,
+    warnings,
+  };
 }
 
 function arg(args: string[], name: string): string | undefined {
@@ -524,9 +684,22 @@ function main(): void {
   );
   const seed = Number(arg(args, "seed") ?? "1");
   if (!Number.isFinite(seed)) throw new Error("--seed must be finite");
+  const weldEdges = args.includes("--weld-edges");
+  const selection = (arg(args, "selection") ?? "hash") as WindowSelection;
+  if (selection !== "hash" && selection !== "tileable") {
+    throw new Error('--selection must be "hash" or "tileable"');
+  }
 
   const source = readPng(sourcePath);
-  const result = buildAtlas({ source, rule, edgeColor, fillColor, seed });
+  const result = buildAtlas({
+    source,
+    rule,
+    edgeColor,
+    fillColor,
+    seed,
+    weldEdges,
+    selection,
+  });
   writePng(result.image, outputPath);
 
   const assetId = arg(args, "asset-id") ?? null;
@@ -554,7 +727,10 @@ function main(): void {
     edgeColor: arg(args, "edge-color") ?? "#05090b",
     fillColor: arg(args, "fill-color") ?? "#101a20",
     assetId,
+    weldEdges,
+    selection: result.selection,
     regions: result.regions,
+    windows: result.windows,
     ...(frames ? { frames } : {}),
     warnings: result.warnings,
   };

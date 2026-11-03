@@ -167,10 +167,10 @@ pause/close, `M` mute.
 The room is fully materialized: bone walls/floor use the `bone-blob47` atlas
 variant set, the central platform uses `edge` autotiling backed by the
 `nerve-edge` atlas variant set, and the tile material grid never changes
-collision. The checked-in atlases are neutral procedural interim placeholders
-and are tinted by the material; the final Nano Banana atlases should be
-authored in colour and the tints removed. See `materials.json` and `theme.json`
-for the shared world/UI definitions. Human visual review is pending.
+collision. The checked-in atlases are the final coloured Nano Banana
+`bone-blob47` and `nerve-edge` atlases; the material tints are removed. See
+`materials.json` and `theme.json` for the shared world/UI definitions. Human
+visual review is pending.
 
 ## Remaining implementation gaps (M2 chunk boundary)
 

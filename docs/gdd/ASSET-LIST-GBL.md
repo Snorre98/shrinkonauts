@@ -42,8 +42,8 @@ placeholders and derived review material.
 
 | Asset | What it is | Licence / note |
 |---|---|---|
-| `final/anatomy/tiles/bone-atlas.png`, `nerve-atlas.png`, `muscle-atlas.png`, `membrane-atlas.png` | In-repo procedural interim material atlases | CC0-1.0; Nano Banana swatch sources generated, not processed |
-| `art-source/nanobanan/new/muscle-endplate-2026-11-03/*.jpeg` (repo, not the GDD pack) | 04 raw source batch: sky, four swatches, gate, exit | Nano Banana; prompt pack `muscle-endplate-2026-11-03.1`; `source-generated` only |
+| `final/anatomy/tiles/bone-atlas.png`, `nerve-atlas.png`, `muscle-atlas.png`, `membrane-atlas.png` | Final coloured material atlases | Nano Banana / Google Gemini (plan TBD); processed 2×2-welded atlases |
+| `art-source/nanobanan/new/muscle-endplate-2026-11-03/*.jpeg` (repo, not the GDD pack) | 04 raw source batch: sky, four swatches, gate, exit | Nano Banana; prompt pack `muscle-endplate-2026-11-03.1`; accepted source, not runtime |
 | `final/anatomy/tiles/anatomy-atlas.svg` | In-repo placeholder atlas retained as a test fixture | CC0-1.0; no longer wired |
 | `final/silicon/tiles/circuit-atlas.svg` | In-repo placeholder circuit atlas | CC0-1.0; replace with final atlas |
 | `screenshots/current/*` | Project screenshots / contact sheets | Group work; contains AI-generated art |
@@ -74,13 +74,15 @@ The current licence labels are:
 | P2 player | `player-p2.png`, `player-p2-walk.png`, `.jump`, `.fall`, `.land` | Ludo.ai sprite sheet | Ludo.ai POC; plan TBD | Approved ADR-0065 sheets; prompt/model/seed TBD |
 | Neuron Keeper | `agent-neuron.png`, `agent-neuron-idle.png` | Ludo.ai sprite sheet | Ludo.ai POC; plan TBD | 36-frame source in `characters/neuron-agent/`; prompt/model/seed TBD |
 | Anatomy scans | `scan-synapse.png`, `scan-muscle.png` | Ludo/Nanobanan concept + local key/fit | Ludo.ai POC; plan TBD | `scan-neuron` and `scan-pathway` are placeholders |
-| Anatomy interactables | `gate-ferry.png`, `prop-tracer.png`, `pulse-terminal.png`, `receptor-triangle.png`, `receptor-circle.png`, `pad-dendrite.png`, `pad-terminal.png` | Ludo/Nanobanan concept + local key/fit | Ludo.ai POC; plan TBD | Fit reports in `source/reports/` |
+| Anatomy interactables | `gate-ferry.png`, `prop-tracer.png`, `pulse-terminal.png`, `receptor-triangle.png`, `receptor-circle.png`, `pad-dendrite.png`, `pad-terminal.png`, `gate-nerve.png`, `exit.png` | Ludo/Nanobanan concept + local key/fit | Ludo.ai POC / Nano Banana; plan TBD | Fit reports in `source/reports/`; `gate-nerve` and `exit` are the final 04 batch |
+| Anatomy material atlases | `bone-atlas.png`, `nerve-atlas.png`, `muscle-atlas.png`, `membrane-atlas.png` | Nano Banana / Google Gemini + local swatch/atlas pipeline | Nano Banana; plan TBD | Final coloured atlases; 32×32 frames; tints removed |
+| Muscle Endplate sky | `muscle-endplate-sky.webp` | Nano Banana / Google Gemini + local crop/Lanczos | Nano Banana; plan TBD | 2752×1536 source → 1280×720 lossless VP8L; recorded no-quantise exception |
 | Nerve Forest sky | `nerve-forest-sky.webp` | Ludo/Nanobanan concept | Ludo.ai POC; plan TBD | 2752×1536 source; crop/Lanczos/WebP; recorded no-quantise exception |
 | Bathroom scene | `bathroom-wall.webp` | Nano Banana / Google Gemini | Nano Banana; plan TBD | 640×360 scene plate; crop/pad/downscale; no palette quantisation |
 | Hub props | washer, door, drum, civilian, poster, cartridges, plush, basket, towel, detergent, cycle icons | Nano Banana / Google Gemini | Nano Banana; plan TBD | Source batch absent; reports in `source/reports/hub/` |
 | Silicon sprites | CPU, consoles, sockets, gate, pad, plug, scans | Ludo/Nanobanan concept + local key/fit | Ludo.ai POC; plan TBD | `fit.silicon.config.json`; reports in `source/reports/silicon/` |
 | Silicon sky | `silicon-board-sky.webp` | Ludo/Nanobanan concept | Ludo.ai POC; plan TBD | Crop/dither/WebP; report in `source/reports/silicon/` |
-| 04 source batch | `bg.muscle_endplate.sky`, four `tile.*.atlas`, `sprite.gate.nerve`, `sprite.exit` sources | Nano Banana / Google Gemini | Nano Banana; plan TBD | 7 raw JPEGs in repo `art-source/nanobanan/new/muscle-endplate-2026-11-03/`; source-generated only, not runtime, not in the GDD pack |
+| 04 source batch | `bg.muscle_endplate.sky`, four `tile.*.atlas`, `sprite.gate.nerve`, `sprite.exit` | Nano Banana / Google Gemini | Nano Banana; plan TBD | 7 raw JPEGs in repo `art-source/nanobanan/new/muscle-endplate-2026-11-03/`; processed and wired runtime files |
 | Concept plates | 38 JPEGs in `concepts/` | Nanobanan / Ludo.ai | Same as the intended runtime asset | Review/source only; not runtime |
 
 **Log line template for the report:**
@@ -140,9 +142,10 @@ separate ambience loop.”**
    documented but not fully reproducible.
 6. **Final art approval** is pending for POC-integrated sprites and the sky.
 7. **Placeholders** must not be described as final: badge, `scan.neuron`,
-   `scan.pathway`, `scan.reflex`, `sprite.exit`, `sprite.gate.nerve`, the four
-   atlases, the toy astronaut, the logo, and all audio.
-8. **04 source batch** is generated but has no licence entries and is not
-   processed or wired; do not list the raw JPEGs as runtime assets.
+   `scan.pathway`, `scan.reflex`, the Silicon interrupt/exit, the 03/04
+   far/mid/near layers, the Silicon circuit atlas, the hub logo CSS fallback,
+   and the 15 remaining SFX plus four themes. The toy astronaut is cut.
+8. **04 source batch** is processed and wired; the final files and licences are
+   in the runtime manifest. Do not list the raw JPEGs as runtime assets.
 
 See `LICENCE-NOTES.md` for the exact labels and the files they apply to.

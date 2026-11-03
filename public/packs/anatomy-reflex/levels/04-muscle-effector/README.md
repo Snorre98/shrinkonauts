@@ -93,7 +93,7 @@ trace do.
 | Property | Value |
 | --- | --- |
 | Room | `room-muscle-effector`, 40 × 22 tiles at 32 px (1280 × 704) |
-| Background | `bg.muscle_endplate`; interim 1280×720 sky wired, far/mid/near declared placeholders |
+| Background | `bg.muscle_endplate`; final 1280×720 sky wired, far/mid/near declared placeholders |
 | Spawns | P1 `(3, 20)`, P2 `(5, 20)` |
 | Checkpoint | `checkpoint-muscle-entry` at `(4, 20)` |
 | Agent | `agent-muscle` at `(6, 20)` |
@@ -198,24 +198,19 @@ pause/close, `M` mute.
   through the 03 → 04 transition.
 - Human solo/co-op playtesting has not been performed. `level.json` records
   `playtestedSolo: false` and `playtestedCoop: false`.
-- Documentation outside this chunk is stale: the top-level `README.md` and
-  `IMPLEMENTATION.md` still describe the older M1 slice, and the untracked
-  `docs/m3/asset-requirements.md` still assumes the ferry assets. Those files
-  were not edited. The public `public/syllabi/anatomy-reflex.json` is the
-  runtime source; the vault syllabus and the EV-5/EV-6 numbering conflict were
-  not edited.
+- The public `public/syllabi/anatomy-reflex.json` is the runtime source; the
+  vault syllabus and the EV-5/EV-6 numbering conflict were not edited.
 
 ## M1.8 material proof
 
-The room is fully materialized: muscle walls/floor use the `muscle-edge`
-atlas and the entrance strip uses the `membrane-edge` atlas. The `muscle-gate`
-carries a world-space `muscle-fibers` overlay that shares phase with the muscle
-floor. The checked-in atlases are neutral procedural interim placeholders and
-are tinted by the material; the final Nano Banana atlases should be authored in
-colour and the tints removed. The interim 04 sky replaces the procedural
-gradient; `bg.muscle_endplate.far`, `.mid` and `.near` remain declared
-placeholders. Materials are visual only; collision comes from `layers.tiles`.
-Human visual review is pending.
+The room is fully materialized: muscle walls/floor use the final coloured
+`muscle-edge` atlas and the entrance strip uses the final coloured
+`membrane-edge` atlas. The `muscle-gate` carries a world-space `muscle-fibers`
+overlay that shares phase with the muscle floor. The material tints are removed
+because the Nano Banana atlases are authored in colour. The final 04 sky
+replaces the procedural gradient; `bg.muscle_endplate.far`, `.mid` and `.near`
+remain declared placeholders. Materials are visual only; collision comes from
+`layers.tiles`. Human visual review is pending.
 
 ## Remaining implementation gaps (M2 chunk boundary)
 

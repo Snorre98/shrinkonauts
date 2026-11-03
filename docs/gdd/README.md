@@ -99,16 +99,16 @@ and the consolidated
 
 - **Bathroom hub:** the scene plate, washer body/door/drum, civilian, poster,
   cartridges, plush, basket, cycle icons and the reused P1 tiny astronaut are
-  wired final art. Towel and detergent bottles are manifest-only; the logo and
-  toy astronaut are still placeholders.
+  wired final art. Towel and detergent bottles are manifest-only; the logo uses
+  the approved Silkscreen CSS fallback and the toy astronaut is cut.
 - **Anatomy:** P1/P2 idle + walk/jump/fall/land sheets, Neuron Keeper static +
   36-frame idle, `scan.synapse`, `scan.muscle`, `pad.dendrite`,
   `pad.terminal`, `gate.ferry`, `prop.tracer`, `pulse.terminal`, both
-  receptors, the pretty nerve-forest sky, the interim 04 sky, the four material
-  atlases, and the interim 04 gate/exit placeholders are runtime art.
-- **04 source batch:** seven raw Nano Banana plates are generated in
-  `art-source/nanobanan/new/muscle-endplate-2026-11-03/`. They are
-  `source-generated` only; final runtime replacements are still pending.
+  receptors, the pretty nerve-forest sky, the final 04 sky, the four coloured
+  material atlases, and the final 04 gate/exit sprites are runtime art.
+- **04 source batch:** the seven Nano Banana plates in
+  `art-source/nanobanan/new/muscle-endplate-2026-11-03/` are processed, wired
+  and accepted. The manifest, licences, prompt log and tests are complete.
 - **Silicon:** all listed sprites and the board sky are runtime art. The
   circuit atlas is still a placeholder SVG.
 - **Placeholders:** colored 48×48 squares with four-letter labels in the
@@ -116,7 +116,7 @@ and the consolidated
   ones are `sprite.scan.neuron` (yellow NEUR), `sprite.scan.pathway` (cyan
   PATH), `sprite.scan.interrupt` (cyan INTE) and `sprite.exit.silicon` (yellow
   SILI). See [`../assets/prompt-library-v01.md`](../assets/prompt-library-v01.md).
-- **Audio:** cue and theme playback are implemented, but every cue is a placeholder and no audio or theme files exist in this pack.
+- **Audio:** cue and theme playback are implemented. Three pilot SFX (`scan`, `jump`, `land`) are installed in the Anatomy and Silicon packs; the other 15 cues and all four themes remain placeholders. The hub cues are still placeholders.
 - **UI:** the game HUD, dialogue, map, concept log, debrief and pause menu are
   CSS/DOM, not raster assets. They are visible in the action-shot walkthrough;
   see [`CAPTURES.md`](CAPTURES.md).
@@ -254,11 +254,10 @@ Short version:
 3. Anatomy `licenses.json` does not cover every new entity; the hub has no
    separate licences file. The 04 source batch has no licence entries yet.
 4. The raw hub source batch is not in the repository.
-5. Audio playback is implemented, but audio files are still placeholders.
-6. The anatomy and Silicon atlases are placeholder SVGs, not final 32x32
-   material atlases. The 2026-11-03 Nano Banana atlas swatches are
-   source-generated only.
-7. Some assets are declared but unused: `sprite.scan.reflex`,
-   `sprite.prop.toy.astronaut`, the towel and the detergent bottles (the latter
-   two are manifest-only). `sprite.exit` and `sprite.gate.nerve` are used by 04
-   but remain runtime placeholders until their generated sources are processed.
+5. Audio playback is implemented. Three pilot SFX are installed; the remaining
+   15 cues and four themes are still placeholders.
+6. The Anatomy material atlases are final coloured 32x32-frame atlases. The
+   Silicon circuit atlas is still a placeholder SVG.
+7. Some assets are declared but unused: `sprite.scan.reflex`, the towel and the
+   detergent bottles (the latter two are manifest-only). The toy astronaut is
+   cut. `sprite.exit` and `sprite.gate.nerve` are final 04 runtime sprites.

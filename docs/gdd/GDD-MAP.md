@@ -146,7 +146,7 @@ JPEGs are failed references — do not use them.
 
 ### Sound & Music
 
-No audio files exist — every cue is a placeholder. Cue playback and the
+Three pilot SFX exist (`scan`, `jump`, `land`); the other 15 cues and all four themes are placeholders. Cue playback and the
 ADR-0077 music bus/theme player are implemented, but the four charted themes are
 proposed and no theme files exist, so music is silent. The cue vocabulary is in
 `final/anatomy/metadata/theme.json` and
@@ -223,10 +223,10 @@ accessibility set. These content gaps remain visible in the captures:
    `"gateIds": []`; no 03 room entity opens it. The walkthrough uses the 03
    threshold gate as the physical gate and Silicon's `gate-transfer` as the
    concept-gate overlay.
-2. **04 muscle background** — the 2026-11-03 additive pass wires an interim
-   1280×720 `bg.muscle_endplate.sky` placeholder. A 2752×1536 Nano Banana source
-   plate is generated, but it is `source-generated` only; crop/export/acceptance
-   is pending. The 04 captions say this. See
+2. **04 muscle background** — the 2026-11-03 batch wires the final 1280×720
+   `bg.muscle_endplate.sky`, four coloured material atlases, and the final
+   `sprite.gate.nerve` / `sprite.exit`. The 04 captions should no longer call
+   the sky interim. See
    [`../m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md)
    and the [completion matrix](../assets/prompt-library-v01.md#40-completion-matrix).
 

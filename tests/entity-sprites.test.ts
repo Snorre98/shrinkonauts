@@ -110,27 +110,30 @@ describe("integrated entity sprites", () => {
     });
   }
 
-  it("keeps the reserve and placeholder entities declared", () => {
+  it("keeps the reserve and remaining placeholder entities declared", () => {
     for (const id of [
       "sprite.scan.reflex",
-      "sprite.gate.nerve",
       "sprite.checkpoint",
-      "sprite.exit",
     ]) {
       expect(manifest.assets[id]?.placeholder, id).toBe(true);
     }
   });
 
-  it("ships the interim 04 gate and exit placeholders at 64x64", () => {
+  it("ships the final 04 gate and exit sprites at 64x64", () => {
     for (const id of ["sprite.gate.nerve", "sprite.exit"]) {
       const entry = manifest.assets[id];
+      expect(entry?.placeholder, id).toBeUndefined();
       expect(entry?.src, id).toBeDefined();
       expect(entry?.display, id).toEqual({ width: 64, height: 64 });
+      expect(entry?.license, id).toBe("Nano Banana / Google Gemini (plan TBD)");
       if (!entry?.src) continue;
-      expect(existsSync(join(PACK_DIR, entry.src))).toBe(true);
+      const path = join(PACK_DIR, entry.src);
+      expect(existsSync(path)).toBe(true);
+      expect(statSync(path).size).toBeLessThanOrEqual(64 * 1024);
       const image = decode(entry.src);
       expect(image.width).toBe(64);
       expect(image.height).toBe(64);
+      expectPaletteAndMargins(image);
       expect(
         licences.assets.some(
           (licence) =>

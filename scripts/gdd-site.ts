@@ -478,7 +478,9 @@ function inferSource(pack: PackDefinition, id: string): string {
   if (id.startsWith("bg.")) {
     return "Ludo.ai / Nanobanan concept plate; crop, downscale and lossless WebP";
   }
-  if (id.startsWith("tile.")) return "Generated in-repo placeholder SVG";
+  if (id.startsWith("tile.")) {
+    return "Nano Banana / Google Gemini material swatch; local downscale, palette quantisation, 2x2 weld and atlas assembly";
+  }
   return "Ludo.ai / Nanobanan concept plate; local magenta key, fit and palette quantisation";
 }
 
@@ -501,7 +503,7 @@ function inferProcessing(pack: PackDefinition, id: string, license: LicenseEntry
   }
   if (id.startsWith("bg.")) return "Cropped to runtime aspect; Lanczos downscale; lossless WebP";
   if (id.startsWith("tile.")) {
-    return "Placeholder SVG authored in-repo; replace with final 32x32 atlas";
+    return "512x512 swatch quantised, 2x2-snapped and edge-welded; 32x32 frames assembled with --weld-edges";
   }
   return "Magenta keyed; trimmed; fitted to class cell; hard alpha; palette quantised";
 }
@@ -654,9 +656,9 @@ function buildPreviews(): GalleryItem[] {
 
 const CONCEPT_INFO: Record<string, [string, string, string]> = {
   "sprite-agent-neuron": ["sprite.agent.neuron", "alternate", "Review alternate; runtime uses the Neuron Keeper sheet."],
-  "sprite-scan-neuron": ["sprite.scan.neuron", "placeholder", "Collapses to 16x9 at 36x36; kept for audit."],
+  "sprite-scan-neuron": ["sprite.scan.neuron", "placeholder", "Fits 32x17 at 36x36; detail and cyan rim lost; kept for audit."],
   "sprite-scan-synapse": ["sprite.scan.synapse", "runtime", "POC integrated; final approval pending."],
-  "sprite-scan-pathway": ["sprite.scan.pathway", "placeholder", "One-way reading and myelin gaps lost at 36x36."],
+  "sprite-scan-pathway": ["sprite.scan.pathway", "placeholder", "Fits 32x13 at 36x36; one-way reading and myelin gaps lost."],
   "sprite-scan-muscle": ["sprite.scan.muscle", "runtime", "POC integrated; final approval pending."],
   "sprite-scan-ferry-v2": ["sprite.gate.ferry", "runtime", "Closed organic gate; used by 03 and 04."],
   "sprite-prop-tracer": ["sprite.prop.tracer", "runtime", "ACh packet; POC integrated."],
@@ -664,7 +666,7 @@ const CONCEPT_INFO: Record<string, [string, string, string]> = {
   "sprite-receptor-triangle": ["sprite.receptor.triangle", "runtime", "Nicotinic receptor; POC integrated."],
   "sprite-receptor-circle": ["sprite.receptor.circle", "runtime", "Wrong receptor; POC integrated."],
   "sprite-scan-reflex": ["sprite.scan.reflex", "placeholder", "Reserve only; not referenced by 03/04."],
-  "ui-icon-badge": ["ui.icon.badge", "placeholder", "16x16 badge fit loses the helmet dome."],
+  "ui-icon-badge": ["ui.icon.badge", "placeholder", "14x14 fit loses the helmet dome; CSS fallback retained."],
   "bg.nerve_forest.sky": ["bg.nerve_forest.sky", "runtime", "Pretty sky; the only wired 03 background."],
   "bg-nerve_forest-sky-updated": ["—", "superseded", "Previous sky source; retained for comparison."],
   "bg-nerve_forest-far-updated": ["bg.nerve_forest.far", "placeholder", "Processed; layered stack not wired."],
@@ -673,8 +675,16 @@ const CONCEPT_INFO: Record<string, [string, string, string]> = {
   "bg-nerve_forest-far": ["—", "superseded", "Failed reference; do not use."],
   "bg-nerve_forest-mid": ["—", "superseded", "Failed reference; do not use."],
   "bg-nerve_forest-near": ["—", "superseded", "Failed reference; do not use."],
-  "tile-bone-atlas": ["tile.bone.atlas", "source-only", "Material swatch, not a 47-frame atlas."],
-  "tile-nerve-atlas": ["tile.nerve.atlas", "source-only", "Material swatch, not a 16-frame atlas."],
+  "tile-bone-atlas": ["tile.bone.atlas", "source-only", "Superseded material swatch; do not use."],
+  "tile-nerve-atlas": ["tile.nerve.atlas", "source-only", "Superseded material swatch; do not use."],
+  "bg.muscle_endplate.sky": ["bg.muscle_endplate.sky", "runtime", "Final 04 sky; 1280x720 lossless WebP."],
+  "sprite.gate.nerve": ["sprite.gate.nerve", "runtime", "Final Ca2+ gate; 64x64."],
+  "sprite.exit": ["sprite.exit", "runtime", "Final membrane airlock; 64x64, used in 03/04."],
+  "tile.bone.atlas": ["tile.bone.atlas", "runtime", "Processed bone swatch; final 47-frame blob47 atlas."],
+  "tile.nerve.atlas": ["tile.nerve.atlas", "runtime", "Processed nerve swatch; final 16-frame edge atlas."],
+  "tile.muscle.atlas": ["tile.muscle.atlas", "runtime", "Processed muscle swatch; final 16-frame edge atlas."],
+  "tile.membrane.atlas": ["tile.membrane.atlas", "runtime", "Processed membrane swatch; final 16-frame edge atlas."],
+  "ui-logo-shrinkonauts": ["ui.logo.shrinkonauts", "fallback", "AI plate rejected (washer baked behind letters); CSS wordmark approved."],
   "bg-silicon_board-sky": ["bg.silicon_board.sky", "runtime", "Silicon board sky; lossless WebP."],
   "sprite-agent-cpu": ["sprite.agent.cpu", "runtime", "CPU Core; POC integrated."],
   "sprite-console-sensor": ["sprite.console.sensor", "runtime", "Sensor console; POC integrated."],
@@ -685,7 +695,7 @@ const CONCEPT_INFO: Record<string, [string, string, string]> = {
   "sprite-scan-actuator": ["sprite.scan.actuator", "runtime", "Actuator scan; POC integrated."],
   "sprite-scan-controller": ["sprite.scan.controller", "runtime", "Interrupt controller scan; POC integrated."],
   "sprite-scan-cpu": ["sprite.scan.cpu", "runtime", "CPU scan; POC integrated."],
-  "sprite-scan-interrupt": ["sprite.scan.interrupt", "placeholder", "Declared placeholder."],
+  "sprite-scan-interrupt": ["sprite.scan.interrupt", "placeholder", "Fits 32x7/220 px; square scan read lost; placeholder retained."],
   "sprite-scan-sensor": ["sprite.scan.sensor", "runtime", "Sensor scan; POC integrated."],
   "sprite-socket-controller": ["sprite.socket.controller", "runtime", "Controller socket; POC integrated."],
   "sprite-socket-cpu": ["sprite.socket.cpu", "runtime", "CPU socket decoy; POC integrated."],
@@ -1650,12 +1660,12 @@ ${siteHeader("about")}
   <ul>
     <li>No generated capture binaries in git; action shots are rebuilt by <code>npm run gdd:capture</code> and merged by <code>npm run gdd:site</code>.</li>
     <li>No static contact sheets or <code>gdd-picks/</code> folders; the gallery replaces them.</li>
-    <li>No audio files — every cue is a placeholder.</li>
+    <li>No theme files; three pilot SFX are installed and the remaining 15 cues are placeholders.</li>
     <li>No ignored local-only plates (full-size keyed files, raw hub batch).</li>
   </ul>
   <h2>Known visual gaps</h2>
   <ul>
-    <li>The 04 Muscle Effector background layer is not wired yet; the walkthrough labels those shots as final sprite art over a procedural gradient.</li>
+    <li>The 04 Muscle Effector sky, material atlases, gate and exit are wired; its far/mid/near layers remain declared placeholders.</li>
     <li>The 03 concept gate <code>gate-nerve-01</code> is authored but not loaded; the concept-gate overlay is captured on Silicon.</li>
   </ul>
   <h2>Licences</h2>

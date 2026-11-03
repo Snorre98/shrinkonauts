@@ -5,11 +5,13 @@
   "columns": 4,
   "rows": 4,
   "seed": 1,
-  "source": "/home/snorre/Documents/Studies/shrinkonauts/art-source/nanobanan/working/tile-membrane-swatch-neutral-512.png",
-  "output": "/home/snorre/Documents/Studies/shrinkonauts/public/packs/anatomy-reflex/shared/tiles/membrane-atlas.png",
-  "edgeColor": "#343a40",
+  "source": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/art-source/nanobanan/working/tile-membrane-swatch-nano-clean-512.png",
+  "output": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/public/packs/anatomy-reflex/shared/tiles/membrane-atlas.png",
+  "edgeColor": "#05090b",
   "fillColor": "#101a20",
   "assetId": "tile.membrane.atlas",
+  "weldEdges": true,
+  "selection": "tileable",
   "regions": {
     "mask-0": {
       "x": 0,
@@ -106,6 +108,104 @@
       "y": 96,
       "width": 32,
       "height": 32
+    }
+  },
+  "windows": {
+    "mask-0": {
+      "x": 64,
+      "y": 64,
+      "score": 12.541666666666666,
+      "colours": 4
+    },
+    "mask-1": {
+      "x": 416,
+      "y": 160,
+      "score": 30.083333333333336,
+      "colours": 4
+    },
+    "mask-2": {
+      "x": 256,
+      "y": 128,
+      "score": 27.791666666666664,
+      "colours": 4
+    },
+    "mask-3": {
+      "x": 352,
+      "y": 160,
+      "score": 27.395833333333343,
+      "colours": 4
+    },
+    "mask-4": {
+      "x": 448,
+      "y": 320,
+      "score": 26.60416666666667,
+      "colours": 4
+    },
+    "mask-5": {
+      "x": 384,
+      "y": 96,
+      "score": 26.458333333333332,
+      "colours": 4
+    },
+    "mask-6": {
+      "x": 64,
+      "y": 352,
+      "score": 13.374999999999998,
+      "colours": 4
+    },
+    "mask-7": {
+      "x": 352,
+      "y": 128,
+      "score": 12.833333333333332,
+      "colours": 4
+    },
+    "mask-8": {
+      "x": 64,
+      "y": 64,
+      "score": 12.541666666666666,
+      "colours": 4
+    },
+    "mask-9": {
+      "x": 416,
+      "y": 160,
+      "score": 30.083333333333336,
+      "colours": 4
+    },
+    "mask-10": {
+      "x": 384,
+      "y": 96,
+      "score": 26.458333333333332,
+      "colours": 4
+    },
+    "mask-11": {
+      "x": 448,
+      "y": 320,
+      "score": 26.60416666666667,
+      "colours": 4
+    },
+    "mask-12": {
+      "x": 352,
+      "y": 128,
+      "score": 12.833333333333332,
+      "colours": 4
+    },
+    "mask-13": {
+      "x": 64,
+      "y": 352,
+      "score": 13.374999999999998,
+      "colours": 4
+    },
+    "mask-14": {
+      "x": 416,
+      "y": 160,
+      "score": 30.083333333333336,
+      "colours": 4
+    },
+    "mask-15": {
+      "x": 64,
+      "y": 64,
+      "score": 12.541666666666666,
+      "colours": 4
     }
   },
   "frames": {

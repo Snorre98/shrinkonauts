@@ -17,7 +17,9 @@
 > assets. Track every asset through `prompt-ready → source-generated →
 > source-accepted → processed → wired → accepted` in the
 > [completion matrix](../assets/prompt-library-v01.md#40-completion-matrix).
-> The current 04 Nano Banana batch is source-generated only.
+> The 04 Nano Banana batch is processed, wired and accepted. The remaining
+> visible placeholders are the 03 scans, Silicon interrupt/exit and the HUD
+> badge; the hub logo uses the approved CSS fallback.
 
 ---
 

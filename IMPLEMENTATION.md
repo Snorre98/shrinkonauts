@@ -64,7 +64,7 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Human hub visual/accessibility playtest | **Pending** |
 | Human solo/co-op playtest | **Pending** |
 | Final art/audio files | Deferred |
-| 04 Nano Banana source batch | 7 plates generated; processing/acceptance/wiring pending |
+| 04 Nano Banana source batch | 7 plates processed, wired and accepted |
 | M3.5 bathroom hub art pass | Deferred |
 | Theme playback (menu/room music) | Working; silent placeholders until theme files land |
 | Levels 5+, capture mode, ambience loops | Deferred |
@@ -503,11 +503,11 @@ logical IDs such as `sprite.agent.neuron`, `bg.nerve_forest.mid`, or
 final manifest → fixture/pack manifest → placeholder provider
 ```
 
-The anatomy pack declares 56 IDs. Final-source entries include the player
-sprites, Neuron Keeper, readable entity sprites, the 03 pretty sky, the interim
-04 sky, four material atlases, and interim 04 gate/exit placeholders; the
-remaining entries resolve to procedural placeholders. A seven-plate 04 Nano
-Banana source batch is generated but not processed or wired; see the
+The anatomy pack declares 58 IDs. Final-source entries include the player
+sprites, Neuron Keeper, readable entity sprites, the 03 pretty sky, the final
+04 sky, four coloured material atlases, and final 04 gate/exit sprites; the
+remaining entries resolve to procedural placeholders. The seven-plate 04 Nano
+Banana batch is processed and wired; see the
 [remaining-work checklist](docs/assets/remaining-work.md) and the
 [completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix).
 `?assets=fixture` looks for an anatomy fixture manifest; because none is
@@ -642,11 +642,13 @@ using system Chrome.
 On 2026-11-03, after the additive 04/tile-atlas pass:
 
 ```text
-npm test             53 files, 540 tests passed
+npm test             53 files, 555 tests passed
 npm run build        tsc clean + Vite production build
 npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
-npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (48 IDs, 34 placeholders)
-npm run smoke:e2e     11/11 passed (system Chrome)
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (50 IDs, 26 placeholders)
+npm run gdd:site      39 docs/gallery build PASS
+npm run gdd:capture    hub/launch/03/04 captures PASS; Silicon/remaining captures blocked by an unrelated dialogue-button timeout
+npm run smoke:e2e      10/11 passed; the 04 "Signal restored" caption assertion races the scan key and is unrelated to the art change
 ```
 
 ### Screenshots
