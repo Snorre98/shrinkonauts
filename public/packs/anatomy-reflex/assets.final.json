@@ -445,6 +445,14 @@
       "type": "audio",
       "placeholder": true
     },
+    "audio.music.nerve_forest": {
+      "type": "audio",
+      "placeholder": true
+    },
+    "audio.music.muscle_effector": {
+      "type": "audio",
+      "placeholder": true
+    },
     "sprite.prop.tracer": {
       "type": "sprite",
       "src": "shared/sprites/prop-tracer.png",

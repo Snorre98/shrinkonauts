@@ -134,6 +134,7 @@ describe("bathroom hub final art", () => {
       "audio.cue.hub.shrink",
       "audio.cue.hub.arrive",
       "audio.cue.hub.hum",
+      "audio.music.menu",
     ]) {
       expect(manifest.assets[id]?.placeholder).toBe(true);
     }

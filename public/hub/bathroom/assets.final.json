@@ -140,6 +140,10 @@
     "audio.cue.hub.hum": {
       "type": "audio",
       "placeholder": true
+    },
+    "audio.music.menu": {
+      "type": "audio",
+      "placeholder": true
     }
   }
 }

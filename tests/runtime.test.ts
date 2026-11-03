@@ -15,9 +15,29 @@ const content = loadContent(packDirectory("anatomy-reflex"));
 class FakeAudio implements AudioPort {
   muted = false;
   readonly played: string[] = [];
+  readonly themes: string[] = [];
+  readonly stoppedThemes: Array<{ fadeOutMs?: number }> = [];
+  pauses = 0;
+  resumes = 0;
 
   play(assetId: string): void {
     this.played.push(assetId);
+  }
+
+  playTheme(assetId: string): void {
+    this.themes.push(assetId);
+  }
+
+  stopTheme(options: { fadeOutMs?: number } = {}): void {
+    this.stoppedThemes.push(options);
+  }
+
+  pauseTheme(): void {
+    this.pauses += 1;
+  }
+
+  resumeTheme(): void {
+    this.resumes += 1;
   }
 
   setMuted(muted: boolean): void {
@@ -359,6 +379,43 @@ describe("game runtime", () => {
     expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
       "03-nerve-forest",
     );
+  });
+
+  it("plays the room theme on boot and pauses/resumes it with the game", () => {
+    const { runtime, audio } = makeRuntime();
+
+    expect(audio.themes).toEqual(["audio.music.nerve_forest"]);
+
+    runtime.togglePause();
+    expect(runtime.state).toBe("pause");
+    expect(audio.pauses).toBe(1);
+
+    runtime.togglePause();
+    expect(runtime.state).toBe("level");
+    expect(audio.resumes).toBe(1);
+  });
+
+  it("falls back to the pack theme when a room has no music", () => {
+    const copy = structuredClone(content);
+    delete copy.rooms["room-nerve-forest"]?.music;
+    copy.theme.audio = {
+      ...copy.theme.audio,
+      music: "audio.music.anatomy_fallback",
+    };
+
+    const { audio } = makeRuntimeWithContent(copy);
+    expect(audio.themes).toEqual(["audio.music.anatomy_fallback"]);
+  });
+
+  it("stops the theme when neither the room nor the pack supplies music", () => {
+    const copy = structuredClone(content);
+    const room = copy.rooms["room-nerve-forest"];
+    if (room) delete room.music;
+    if (copy.theme.audio) delete copy.theme.audio.music;
+
+    const { audio } = makeRuntimeWithContent(copy);
+    expect(audio.themes).toEqual([]);
+    expect(audio.stoppedThemes).toEqual([{ fadeOutMs: 600 }]);
   });
 
   it("starts solo runs with P2 inactive and can discard a saved run", () => {

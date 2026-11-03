@@ -63,9 +63,10 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Playwright browser smoke on system Chrome | Working |
 | Human hub visual/accessibility playtest | **Pending** |
 | Human solo/co-op playtest | **Pending** |
-| Final art/audio | Deferred |
+| Final art/audio files | Deferred |
 | M3.5 bathroom hub art pass | Deferred |
-| Levels 5+, capture mode, music/ambience loops | Deferred |
+| Theme playback (menu/room music) | Working; silent placeholders until theme files land |
+| Levels 5+, capture mode, ambience loops | Deferred |
 | Full key rebinding | Deferred |
 | Physical gate bodies, `locked`/`unlock`, conditional links | Deferred |
 | Per-level debrief overrides, side-level travel | Deferred |
@@ -318,7 +319,7 @@ resolves referenced JSON files, parses every document, and returns a structured
 ```text
 public/packs/anatomy-reflex/
   pack.json                 start/end level, manifests, assets
-  theme.json                palette, fonts, parallax, UI assets, audio cues
+  theme.json                palette, fonts, parallax, UI assets, audio cues/music
   mapping.json              concept → objective/level coverage
   licenses.json             licence entries
   assets.placeholder.json   placeholder manifest
@@ -526,9 +527,11 @@ jump, land, wrong
 
 Web Audio is unlocked on the first keydown/pointerdown, mute and volume persist
 through the save-owned storage seam, and missing/failed media warns and falls
-back to a synth or silence. Feedback lexicon audio IDs remain vocabulary
-metadata; the current runtime continues to play the named theme cues. Music and
-ambience loops are deferred.
+back to a synth or silence. File-backed cues fetch and decode once, then play a
+cached buffer. Room/menu themes use a dedicated music bus, looped buffers,
+gain-ramp crossfades, and warn-once silence. Theme files are not delivered yet,
+so `room.music` and `theme.audio.music` currently resolve to placeholders. A
+separate ambience loop is deferred.
 
 ## Validation
 
@@ -592,7 +595,7 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/room-boot.test.ts` | Room parsing, simulation spawn/ground/camera/movement, jump/land cues |
 | `tests/assets.test.ts` | ID validation, provider precedence, preload, placeholder fallback |
 | `tests/manifest.test.ts` | Manifest parsing and malformed entries |
-| `tests/audio.test.ts` | Cue playback, mute/volume, unlock, provider fallback |
+| `tests/audio.test.ts` | Cue/theme playback, mute/volume, unlock, provider fallback |
 | `tests/cue-emission.test.ts` | Jump/land cue emission from the simulation |
 | `tests/syllabus.test.ts` | Real syllabus parse, lookups, duplicate/cycle/evidence rejection |
 | `tests/validate.test.ts` | Dev content, failure modes, feedback vocabulary/rules |

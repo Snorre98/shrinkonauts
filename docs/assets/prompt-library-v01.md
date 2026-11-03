@@ -21,9 +21,9 @@
 | Current graphics state | Final, interim, and placeholder assets coexist |
 | Current audio state | All 18 SFX cues are placeholders; four themes are proposed, no files |
 | Visible placeholder-only sprites | `sprite.scan.neuron`, `sprite.scan.pathway`, `sprite.scan.interrupt`, `sprite.exit.silicon` |
-| Blocked audio | `ManifestAudioProvider` is still a stub; files will not play until implemented |
+| Audio delivery | File-backed cue and theme playback implemented; no audio files exist yet |
 | Prompt versioning | Per-discipline document version plus the umbrella version above |
-| Generation order | Visible placeholders → final 04 replacements → provider → SFX → themes |
+| Generation order | Visible placeholders → final 04 replacements → SFX → themes |
 
 **The one-line rule:** every visible placeholder must be in the inventory; every generated asset must have a prompt source, a source file, an acceptance result, and a licence.
 
@@ -45,8 +45,10 @@ The branch has two committed/documentation streams:
    - Interim 04 sky, gate and exit files.
    - Manifest, materials, room, licence, test and README wiring.
 
-The branch does **not** yet have final audio files or playback. The graphics
-intermediates are playable but are not final Nano Banana outputs.
+The branch does **not** yet have final audio files. File-backed cue playback and
+ADR-0077 theme playback are implemented; missing files resolve to the synth or
+silence. The graphics intermediates are playable but are not final Nano Banana
+outputs.
 
 ### 2.1 Status vocabulary
 
@@ -231,9 +233,10 @@ at 36×36; distinct from `scan.neuron`; no text.
 - **18 SFX cues** are declared across the anatomy, Silicon and hub manifests.
 - **All 18 are placeholders with no `src`.** No audio files exist.
 - **Four themes** are proposed in ADR-0076; no files exist.
-- `ManifestAudioProvider` is a stub: it warns `AUDIO_FILE_PROVIDER_STUB` and
-  falls back to the synth. Dropping files into `public/` will not make them
-  play.
+- `ManifestAudioProvider` is implemented: it fetches, decodes, caches and plays
+  file-backed cues, keeping the synth fallback for missing or failed files.
+  ADR-0077 theme playback is also implemented. No audio files exist yet, so
+  cues still resolve to placeholders and themes resolve to silence.
 - No audio licence records exist.
 
 ### 7.2 SFX index
@@ -297,7 +300,7 @@ Do not commit audio files before gate 1. A silent file hides the provider gap.
 
 ### P2 — audio
 
-8. Implement `ManifestAudioProvider` and theme playback.
+8. ~~Implement `ManifestAudioProvider` and theme playback.~~ Done in this branch.
 9. Generate and wire the 18 SFX cues.
 10. Generate and wire the four themes.
 

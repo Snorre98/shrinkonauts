@@ -1,3 +1,7 @@
+import type {
+  AudioThemeOptions,
+  AudioThemeStopOptions,
+} from "../audio";
 import type { LearningEvent } from "../curriculum";
 import {
   createCurriculum,
@@ -114,6 +118,7 @@ import {
 import { TETHER_LENGTHS } from "../world/physics";
 import {
   initialMachine,
+  machineIsPaused,
   transition,
   type GameState,
   type GameEventType,
@@ -153,6 +158,10 @@ function maxTetherLengthForLevel(
 
 export interface AudioPort {
   play(assetId: string): void;
+  playTheme(assetId: string, options?: AudioThemeOptions): void;
+  stopTheme(options?: AudioThemeStopOptions): void;
+  pauseTheme(): void;
+  resumeTheme(): void;
   setMuted(muted: boolean): void;
   readonly muted: boolean;
 }
@@ -515,6 +524,7 @@ export class GameRuntime implements WorldRuntime {
 
     this.level = level;
     this.room = room;
+    this.playThemeForRoom();
     this.world = createRoomSimulation(
       room,
       undefined,
@@ -785,7 +795,15 @@ export class GameRuntime implements WorldRuntime {
       this.closeGate();
       return;
     }
-    this.transition(this.machine.state === "pause" ? "resume" : "pause");
+    if (this.machine.state === "pause") {
+      this.transition("resume");
+      this.audio.resumeTheme();
+      return;
+    }
+    this.transition("pause");
+    if (machineIsPaused(this.machine)) {
+      this.audio.pauseTheme();
+    }
   }
 
   toggleMap(): void {
@@ -2287,6 +2305,19 @@ export class GameRuntime implements WorldRuntime {
       this.audio.play(assetId);
     }
     this.onCue?.(name);
+  }
+
+  /**
+   * Theme resolution order from ADR-0076: room → pack theme → silence. The
+   * audio module crossfades when the previous room theme is still playing.
+   */
+  private playThemeForRoom(): void {
+    const themeId = this.room.music ?? this.content.theme.audio?.music;
+    if (themeId) {
+      this.audio.playTheme(themeId);
+    } else {
+      this.audio.stopTheme({ fadeOutMs: 600 });
+    }
   }
 
   private entityLabel(id: string): string {

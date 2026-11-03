@@ -90,23 +90,25 @@ Only `public/packs/silicon-reflex/shared/audio/` exists, and it contains `.gitke
 
 The M3 checklist item `[x] 11 M3 audio cues` is a **scope decision**, not proof of delivery. The status table still says final art/audio is deferred.
 
-### 3.2 Final file playback is still a stub
+### 3.2 Final file playback is implemented
 
-[`../../src/audio/providers.ts`](../../src/audio/providers.ts) contains `ManifestAudioProvider`, which currently warns once per asset:
-
-```text
-AUDIO_FILE_PROVIDER_STUB: <id> has a file source; final file playback is deferred to M3. Using the placeholder cue.
-```
-
-It then falls back to the synth. **Dropping files into `public/` will not make them play.** The provider must be implemented to:
+[`../../src/audio/providers.ts`](../../src/audio/providers.ts) now implements `ManifestAudioProvider`:
 
 1. Fetch `asset.src`.
 2. Decode via `context.decodeAudioData`.
 3. Cache the decoded `AudioBuffer` per asset ID.
-4. Play a buffer source through the existing volume gain.
+4. Play a buffer source through a per-cue volume gain.
 5. Keep the synth/silent fallback for missing or failed files.
 
-This is a code task, not an asset task. If the M3 capture cannot include it, the delivered files will be silent and the capture will still use synth placeholders.
+The first uncached play uses the placeholder cue while the file loads in the
+background; later plays use the decoded file. Fetch/decode failures warn once
+and keep the placeholder path. Dropping files into `public/` and adding `src`
+entries to the manifests now makes them play.
+
+ADR-0077 theme playback is also implemented in `src/audio/audio.ts`: the music
+bus, looped buffers, crossfade, pending-until-unlock queue, pause/resume, and
+warn-once silence. The four theme files are still missing, so the wired
+`room.music` / `theme.audio.music` IDs currently resolve to silence.
 
 ### 3.3 First pack cue may be silent
 
@@ -793,8 +795,8 @@ Do not batch all 18 before the pilot is approved. The pilot is the audio style a
 
 ### 13.1 Runtime
 
-- [ ] Implement `ManifestAudioProvider`: fetch, decode, cache, play; keep the synth fallback.
-- [ ] Add a test that a manifest audio asset with `src` plays a buffer and does not emit `AUDIO_FILE_PROVIDER_STUB`.
+- [x] Implement `ManifestAudioProvider`: fetch, decode, cache, play; keep the synth fallback.
+- [x] Add a test that a manifest audio asset with `src` plays a buffer and does not emit `AUDIO_FILE_PROVIDER_STUB`.
 - [ ] Verify the first `boot` cue after pack start. If it is silent, unlock the new pack audio inside the start gesture.
 - [ ] Verify mute and volume apply to hub and pack audio.
 - [ ] Verify mute/volume persist across reload (`shrinkonauts.audio` and settings).

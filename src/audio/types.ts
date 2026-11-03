@@ -12,6 +12,21 @@ export interface AudioSettings {
   volume: number;
 }
 
+/** Options for a room/menu music theme. */
+export interface AudioThemeOptions {
+  /** Default true. Looping is sample-accurate through AudioBufferSourceNode. */
+  loop?: boolean;
+  /** Gain ramp-in time; defaults to 800 ms. */
+  fadeInMs?: number;
+  /** Optional per-theme trim, multiplied with the music bus. Defaults to 1. */
+  gain?: number;
+}
+
+export interface AudioThemeStopOptions {
+  /** Gain ramp-out time; defaults to 1000 ms. */
+  fadeOutMs?: number;
+}
+
 /**
  * An audio provider turns a resolved asset descriptor into sound. Providers
  * never know file paths, manifests, or cues: `assets` has already resolved the
@@ -36,6 +51,8 @@ export interface CreateAudioOptions {
   onWarning?: (message: string) => void;
   /** Injectable for tests/headless environments. */
   contextFactory?: () => AudioContext;
+  /** Injectable fetch used by file-backed cues and themes. */
+  fetchImpl?: typeof fetch;
   /**
    * Forces one provider for every cue. Useful for headless/test runs with
    * NullAudioProvider. Without it, cues use the manifest → synth → null chain.
@@ -47,6 +64,12 @@ export interface AudioModule {
   /** Must be called from a user gesture. Returns true once running. */
   unlock(): Promise<boolean>;
   play(cueId: AssetId): void;
+  /** Plays a loopable room/menu theme through the music bus. */
+  playTheme(assetId: AssetId, options?: AudioThemeOptions): void;
+  stopTheme(options?: AudioThemeStopOptions): void;
+  /** Ramps the music bus to silence without stopping the loop. */
+  pauseTheme(): void;
+  resumeTheme(): void;
   setMuted(muted: boolean): void;
   /** Returns the new muted state. */
   toggleMuted(): boolean;

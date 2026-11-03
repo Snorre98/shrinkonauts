@@ -238,9 +238,26 @@ function runMode(
 class FakeAudio implements AudioPort {
   muted = false;
   readonly played: string[] = [];
+  readonly themes: string[] = [];
 
   play(assetId: string): void {
     this.played.push(assetId);
+  }
+
+  playTheme(assetId: string): void {
+    this.themes.push(assetId);
+  }
+
+  stopTheme(): void {
+    // The smoke test does not model theme teardown.
+  }
+
+  pauseTheme(): void {
+    // The smoke test does not model pause ramps.
+  }
+
+  resumeTheme(): void {
+    // The smoke test does not model resume ramps.
   }
 
   setMuted(muted: boolean): void {

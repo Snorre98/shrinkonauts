@@ -298,5 +298,6 @@
       "height": 4,
       "puzzleId": "puzzle-interrupt-loop"
     }
-  ]
+  ],
+  "music": "audio.music.interrupt_loop"
 }

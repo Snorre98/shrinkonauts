@@ -336,5 +336,6 @@
       "height": 4,
       "puzzleId": "puzzle-endplate-ferry"
     }
-  ]
+  ],
+  "music": "audio.music.muscle_effector"
 }

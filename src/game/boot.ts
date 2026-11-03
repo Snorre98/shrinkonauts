@@ -349,6 +349,7 @@ export class AppController {
       storage: this.saveData.audioStorage,
       logger: consoleLogger,
       onWarning: (message) => this.warn(message),
+      fetchImpl: this.fetchImpl,
     });
     this.hubAudio.setMuted(this.saveData.settings.audio.muted);
     this.hubAudio.setVolume(this.saveData.settings.audio.volume);
@@ -511,6 +512,10 @@ export class AppController {
     if (!this.state) return;
     this.ensureHubAudio();
     this.activeAudio = this.hubAudio;
+    const menuTheme = this.hubContent.theme.audio?.music;
+    if (menuTheme) {
+      this.hubAudio?.playTheme(menuTheme, { fadeInMs: 800 });
+    }
 
     this.hubContainer?.remove();
     this.hubContainer = document.createElement("div");
@@ -741,6 +746,7 @@ export class AppController {
       storage: this.saveData.audioStorage,
       logger: consoleLogger,
       onWarning: (message) => this.warn(message),
+      fetchImpl: this.fetchImpl,
     });
     audio.setMuted(this.saveData.settings.audio.muted);
     audio.setVolume(this.saveData.settings.audio.volume);
@@ -748,6 +754,10 @@ export class AppController {
     try {
       const audioPort: AudioPort = {
         play: (assetId) => audio.play(assetId),
+        playTheme: (assetId, options) => audio.playTheme(assetId, options),
+        stopTheme: (options) => audio.stopTheme(options),
+        pauseTheme: () => audio.pauseTheme(),
+        resumeTheme: () => audio.resumeTheme(),
         setMuted: (muted) => audio.setMuted(muted),
         get muted() {
           return audio.muted;
@@ -795,8 +805,9 @@ export class AppController {
   ): Promise<void> {
     await this.setTransition(true, skipIntro);
     this.destroyHub();
-    this.hubAudio?.dispose();
+    const hubAudio = this.hubAudio;
     this.hubAudio = null;
+    this.fadeOutAndDispose(hubAudio, 700);
 
     applyTheme(bundle.content.theme);
     document.title = `${bundle.content.pack.title} — Shrinkonauts`;
@@ -968,9 +979,10 @@ export class AppController {
     this.packAssets = null;
     this.packPlan = null;
     const wasActivePack = this.activeAudio === this.packAudio;
-    this.packAudio?.dispose();
+    const packAudio = this.packAudio;
     this.packAudio = null;
     if (wasActivePack) this.activeAudio = null;
+    this.fadeOutAndDispose(packAudio, 600);
   }
 
   private destroyHub(): void {
@@ -1031,6 +1043,19 @@ export class AppController {
     await new Promise<void>((resolve) => {
       window.setTimeout(resolve, 230);
     });
+  }
+
+  /**
+   * The hub and pack use separate AudioContexts, so a true shared crossfade is
+   * not possible. Fade the outgoing theme and dispose after the ramp ends.
+   */
+  private fadeOutAndDispose(
+    audio: AudioModule | null,
+    fadeOutMs: number,
+  ): void {
+    if (!audio) return;
+    audio.stopTheme({ fadeOutMs });
+    window.setTimeout(() => audio.dispose(), fadeOutMs + 150);
   }
 
   private warn(message: string): void {

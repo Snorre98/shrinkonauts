@@ -241,5 +241,6 @@
       "height": 4,
       "puzzleId": "puzzle-node-run"
     }
-  ]
+  ],
+  "music": "audio.music.nerve_forest"
 }

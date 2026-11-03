@@ -431,6 +431,10 @@
     "audio.cue.land": {
       "type": "audio",
       "placeholder": true
+    },
+    "audio.music.interrupt_loop": {
+      "type": "audio",
+      "placeholder": true
     }
   }
 }
