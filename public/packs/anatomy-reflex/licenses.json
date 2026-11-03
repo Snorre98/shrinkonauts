@@ -277,6 +277,96 @@
       "url": "https://stability.ai/license",
       "modified": "Generated 2026-11-03; seed 4; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
       "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/boot.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds hum=11, hiss=3; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/boot/boot.receipt.json sha256 70f0dd9644b00b4c77b5ffa0206982cf456889444b62a34bdf78a43e37fa9a68",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/dialogue.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds dialogue=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/dialogue/dialogue.receipt.json sha256 d8df98b6011ff786904bd6594ca2447ce8e422e950d0d9faca73b03c8b3cb23f",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/dash.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds dash=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/dash/dash.receipt.json sha256 120452424a2c4ead13052cef09e460d57c5f32213d104c13c5490995a4859caa",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/gate.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds gate=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/gate/gate.receipt.json sha256 179b11eb64cbd04f84ccbbf6ab240b786b89b06943d5293448efb8d377aef553",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/map.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds map=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/map/map.receipt.json sha256 34cff6305c57c17d2146ae8bdcc4dc0f544638ab44ab87238c6ccf81080f433f",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/debrief.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds debrief=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/debrief/debrief.receipt.json sha256 886bb1cc6aca8af16bb89b6922514711beec0ad90412f11426bb87c04348ac2b",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/checkpoint.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds checkpoint=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/checkpoint/checkpoint.receipt.json sha256 0b3bf367057d946114727d630b1dab650b855490bcbb0126b17c3a099a948504",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/unlock.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds unlock=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/unlock/unlock.receipt.json sha256 682bee9d439334f96e4723f5110d76dce203b768d422d8c1299d3e5095e6a10f",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/wrong.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds wrong=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/wrong/wrong.receipt.json sha256 40961e163d3afe9fd203db5002bafeb0787d1a613d7bc48224a39b8c9f9168d6",
+      "aiGenerated": true
     }
   ]
 }

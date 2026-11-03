@@ -255,96 +255,138 @@
     "sprite.agent.cpu": {
       "type": "sprite",
       "src": "shared/sprites/agent-cpu.png",
-      "display": { "width": 96, "height": 96 },
+      "display": {
+        "width": 96,
+        "height": 96
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.prop.route_plug": {
       "type": "sprite",
       "src": "shared/sprites/prop-route-plug.png",
-      "display": { "width": 48, "height": 48 },
+      "display": {
+        "width": 48,
+        "height": 48
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.socket.controller": {
       "type": "sprite",
       "src": "shared/sprites/socket-controller.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.socket.cpu": {
       "type": "sprite",
       "src": "shared/sprites/socket-cpu.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.actuator": {
       "type": "sprite",
       "src": "shared/sprites/gate-actuator.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.exit.silicon": {
       "type": "sprite",
       "placeholder": true,
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x"
     },
     "sprite.scan.sensor": {
       "type": "sprite",
       "src": "shared/sprites/scan-sensor.png",
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.interrupt": {
       "type": "sprite",
       "placeholder": true,
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x"
     },
     "sprite.scan.controller": {
       "type": "sprite",
       "src": "shared/sprites/scan-controller.png",
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.cpu": {
       "type": "sprite",
       "src": "shared/sprites/scan-cpu.png",
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.actuator": {
       "type": "sprite",
       "src": "shared/sprites/scan-actuator.png",
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.pad.sensor": {
       "type": "sprite",
       "src": "shared/sprites/pad-sensor.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.console.sensor": {
       "type": "sprite",
       "src": "shared/sprites/console-sensor.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.console.transfer": {
       "type": "sprite",
       "src": "shared/sprites/console-transfer.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
@@ -386,11 +428,13 @@
     },
     "audio.cue.boot": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/boot.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.dialogue": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/dialogue.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.scan": {
       "type": "audio",
@@ -399,31 +443,38 @@
     },
     "audio.cue.dash": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/dash.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.gate": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/gate.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.map": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/map.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.debrief": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/debrief.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.checkpoint": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/checkpoint.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.unlock": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/unlock.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.wrong": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/wrong.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.jump": {
       "type": "audio",

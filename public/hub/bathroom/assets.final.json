@@ -114,27 +114,33 @@
     },
     "audio.cue.hub.click": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-click.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.door": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-door.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.spin": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-spin.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.shrink": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-shrink.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.arrive": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-arrive.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.hum": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-hum.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.music.menu": {
       "type": "audio",

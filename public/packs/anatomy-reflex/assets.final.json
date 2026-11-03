@@ -15,7 +15,10 @@
       "frames": 49,
       "fps": 38,
       "loop": true,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p1.jump": {
@@ -26,7 +29,10 @@
       "frames": 12,
       "fps": 30,
       "loop": false,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p1.fall": {
@@ -37,7 +43,10 @@
       "frames": 10,
       "fps": 15,
       "loop": true,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p1.land": {
@@ -48,7 +57,10 @@
       "frames": 8,
       "fps": 30,
       "loop": false,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p2": {
@@ -64,7 +76,10 @@
       "frames": 36,
       "fps": 28,
       "loop": true,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p2.jump": {
@@ -75,7 +90,10 @@
       "frames": 12,
       "fps": 30,
       "loop": false,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p2.fall": {
@@ -86,7 +104,10 @@
       "frames": 10,
       "fps": 15,
       "loop": true,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p2.land": {
@@ -97,7 +118,10 @@
       "frames": 8,
       "fps": 30,
       "loop": false,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "tileset.anatomy": {
@@ -112,53 +136,288 @@
       "height": 192,
       "license": "Nano Banana / Google Gemini (plan TBD)",
       "regions": {
-        "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
-        "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
-        "mask-4": { "x": 64, "y": 0, "width": 32, "height": 32 },
-        "mask-5": { "x": 96, "y": 0, "width": 32, "height": 32 },
-        "mask-7": { "x": 128, "y": 0, "width": 32, "height": 32 },
-        "mask-16": { "x": 160, "y": 0, "width": 32, "height": 32 },
-        "mask-17": { "x": 192, "y": 0, "width": 32, "height": 32 },
-        "mask-20": { "x": 224, "y": 0, "width": 32, "height": 32 },
-        "mask-21": { "x": 0, "y": 32, "width": 32, "height": 32 },
-        "mask-23": { "x": 32, "y": 32, "width": 32, "height": 32 },
-        "mask-28": { "x": 64, "y": 32, "width": 32, "height": 32 },
-        "mask-29": { "x": 96, "y": 32, "width": 32, "height": 32 },
-        "mask-31": { "x": 128, "y": 32, "width": 32, "height": 32 },
-        "mask-64": { "x": 160, "y": 32, "width": 32, "height": 32 },
-        "mask-65": { "x": 192, "y": 32, "width": 32, "height": 32 },
-        "mask-68": { "x": 224, "y": 32, "width": 32, "height": 32 },
-        "mask-69": { "x": 0, "y": 64, "width": 32, "height": 32 },
-        "mask-71": { "x": 32, "y": 64, "width": 32, "height": 32 },
-        "mask-80": { "x": 64, "y": 64, "width": 32, "height": 32 },
-        "mask-81": { "x": 96, "y": 64, "width": 32, "height": 32 },
-        "mask-84": { "x": 128, "y": 64, "width": 32, "height": 32 },
-        "mask-85": { "x": 160, "y": 64, "width": 32, "height": 32 },
-        "mask-87": { "x": 192, "y": 64, "width": 32, "height": 32 },
-        "mask-92": { "x": 224, "y": 64, "width": 32, "height": 32 },
-        "mask-93": { "x": 0, "y": 96, "width": 32, "height": 32 },
-        "mask-95": { "x": 32, "y": 96, "width": 32, "height": 32 },
-        "mask-112": { "x": 64, "y": 96, "width": 32, "height": 32 },
-        "mask-113": { "x": 96, "y": 96, "width": 32, "height": 32 },
-        "mask-116": { "x": 128, "y": 96, "width": 32, "height": 32 },
-        "mask-117": { "x": 160, "y": 96, "width": 32, "height": 32 },
-        "mask-119": { "x": 192, "y": 96, "width": 32, "height": 32 },
-        "mask-124": { "x": 224, "y": 96, "width": 32, "height": 32 },
-        "mask-125": { "x": 0, "y": 128, "width": 32, "height": 32 },
-        "mask-127": { "x": 32, "y": 128, "width": 32, "height": 32 },
-        "mask-193": { "x": 64, "y": 128, "width": 32, "height": 32 },
-        "mask-197": { "x": 96, "y": 128, "width": 32, "height": 32 },
-        "mask-199": { "x": 128, "y": 128, "width": 32, "height": 32 },
-        "mask-209": { "x": 160, "y": 128, "width": 32, "height": 32 },
-        "mask-213": { "x": 192, "y": 128, "width": 32, "height": 32 },
-        "mask-215": { "x": 224, "y": 128, "width": 32, "height": 32 },
-        "mask-221": { "x": 0, "y": 160, "width": 32, "height": 32 },
-        "mask-223": { "x": 32, "y": 160, "width": 32, "height": 32 },
-        "mask-241": { "x": 64, "y": 160, "width": 32, "height": 32 },
-        "mask-245": { "x": 96, "y": 160, "width": 32, "height": 32 },
-        "mask-247": { "x": 128, "y": 160, "width": 32, "height": 32 },
-        "mask-253": { "x": 160, "y": 160, "width": 32, "height": 32 },
-        "mask-255": { "x": 192, "y": 160, "width": 32, "height": 32 }
+        "mask-0": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-1": {
+          "x": 32,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-4": {
+          "x": 64,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-5": {
+          "x": 96,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-7": {
+          "x": 128,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-16": {
+          "x": 160,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-17": {
+          "x": 192,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-20": {
+          "x": 224,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-21": {
+          "x": 0,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-23": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-28": {
+          "x": 64,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-29": {
+          "x": 96,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-31": {
+          "x": 128,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-64": {
+          "x": 160,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-65": {
+          "x": 192,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-68": {
+          "x": 224,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-69": {
+          "x": 0,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-71": {
+          "x": 32,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-80": {
+          "x": 64,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-81": {
+          "x": 96,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-84": {
+          "x": 128,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-85": {
+          "x": 160,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-87": {
+          "x": 192,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-92": {
+          "x": 224,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-93": {
+          "x": 0,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-95": {
+          "x": 32,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-112": {
+          "x": 64,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-113": {
+          "x": 96,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-116": {
+          "x": 128,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-117": {
+          "x": 160,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-119": {
+          "x": 192,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-124": {
+          "x": 224,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-125": {
+          "x": 0,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-127": {
+          "x": 32,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-193": {
+          "x": 64,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-197": {
+          "x": 96,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-199": {
+          "x": 128,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-209": {
+          "x": 160,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-213": {
+          "x": 192,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-215": {
+          "x": 224,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-221": {
+          "x": 0,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-223": {
+          "x": 32,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-241": {
+          "x": 64,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-245": {
+          "x": 96,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-247": {
+          "x": 128,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-253": {
+          "x": 160,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-255": {
+          "x": 192,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        }
       }
     },
     "tile.nerve.atlas": {
@@ -168,22 +427,102 @@
       "height": 128,
       "license": "Nano Banana / Google Gemini (plan TBD)",
       "regions": {
-        "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
-        "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
-        "mask-2": { "x": 64, "y": 0, "width": 32, "height": 32 },
-        "mask-3": { "x": 96, "y": 0, "width": 32, "height": 32 },
-        "mask-4": { "x": 0, "y": 32, "width": 32, "height": 32 },
-        "mask-5": { "x": 32, "y": 32, "width": 32, "height": 32 },
-        "mask-6": { "x": 64, "y": 32, "width": 32, "height": 32 },
-        "mask-7": { "x": 96, "y": 32, "width": 32, "height": 32 },
-        "mask-8": { "x": 0, "y": 64, "width": 32, "height": 32 },
-        "mask-9": { "x": 32, "y": 64, "width": 32, "height": 32 },
-        "mask-10": { "x": 64, "y": 64, "width": 32, "height": 32 },
-        "mask-11": { "x": 96, "y": 64, "width": 32, "height": 32 },
-        "mask-12": { "x": 0, "y": 96, "width": 32, "height": 32 },
-        "mask-13": { "x": 32, "y": 96, "width": 32, "height": 32 },
-        "mask-14": { "x": 64, "y": 96, "width": 32, "height": 32 },
-        "mask-15": { "x": 96, "y": 96, "width": 32, "height": 32 }
+        "mask-0": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-1": {
+          "x": 32,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-2": {
+          "x": 64,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-3": {
+          "x": 96,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-4": {
+          "x": 0,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-5": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-6": {
+          "x": 64,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-7": {
+          "x": 96,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-8": {
+          "x": 0,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-9": {
+          "x": 32,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-10": {
+          "x": 64,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-11": {
+          "x": 96,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-12": {
+          "x": 0,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-13": {
+          "x": 32,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-14": {
+          "x": 64,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-15": {
+          "x": 96,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
       }
     },
     "tile.muscle.atlas": {
@@ -193,22 +532,102 @@
       "height": 128,
       "license": "Nano Banana / Google Gemini (plan TBD)",
       "regions": {
-        "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
-        "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
-        "mask-2": { "x": 64, "y": 0, "width": 32, "height": 32 },
-        "mask-3": { "x": 96, "y": 0, "width": 32, "height": 32 },
-        "mask-4": { "x": 0, "y": 32, "width": 32, "height": 32 },
-        "mask-5": { "x": 32, "y": 32, "width": 32, "height": 32 },
-        "mask-6": { "x": 64, "y": 32, "width": 32, "height": 32 },
-        "mask-7": { "x": 96, "y": 32, "width": 32, "height": 32 },
-        "mask-8": { "x": 0, "y": 64, "width": 32, "height": 32 },
-        "mask-9": { "x": 32, "y": 64, "width": 32, "height": 32 },
-        "mask-10": { "x": 64, "y": 64, "width": 32, "height": 32 },
-        "mask-11": { "x": 96, "y": 64, "width": 32, "height": 32 },
-        "mask-12": { "x": 0, "y": 96, "width": 32, "height": 32 },
-        "mask-13": { "x": 32, "y": 96, "width": 32, "height": 32 },
-        "mask-14": { "x": 64, "y": 96, "width": 32, "height": 32 },
-        "mask-15": { "x": 96, "y": 96, "width": 32, "height": 32 }
+        "mask-0": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-1": {
+          "x": 32,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-2": {
+          "x": 64,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-3": {
+          "x": 96,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-4": {
+          "x": 0,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-5": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-6": {
+          "x": 64,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-7": {
+          "x": 96,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-8": {
+          "x": 0,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-9": {
+          "x": 32,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-10": {
+          "x": 64,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-11": {
+          "x": 96,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-12": {
+          "x": 0,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-13": {
+          "x": 32,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-14": {
+          "x": 64,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-15": {
+          "x": 96,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
       }
     },
     "tile.membrane.atlas": {
@@ -218,22 +637,102 @@
       "height": 128,
       "license": "Nano Banana / Google Gemini (plan TBD)",
       "regions": {
-        "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
-        "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
-        "mask-2": { "x": 64, "y": 0, "width": 32, "height": 32 },
-        "mask-3": { "x": 96, "y": 0, "width": 32, "height": 32 },
-        "mask-4": { "x": 0, "y": 32, "width": 32, "height": 32 },
-        "mask-5": { "x": 32, "y": 32, "width": 32, "height": 32 },
-        "mask-6": { "x": 64, "y": 32, "width": 32, "height": 32 },
-        "mask-7": { "x": 96, "y": 32, "width": 32, "height": 32 },
-        "mask-8": { "x": 0, "y": 64, "width": 32, "height": 32 },
-        "mask-9": { "x": 32, "y": 64, "width": 32, "height": 32 },
-        "mask-10": { "x": 64, "y": 64, "width": 32, "height": 32 },
-        "mask-11": { "x": 96, "y": 64, "width": 32, "height": 32 },
-        "mask-12": { "x": 0, "y": 96, "width": 32, "height": 32 },
-        "mask-13": { "x": 32, "y": 96, "width": 32, "height": 32 },
-        "mask-14": { "x": 64, "y": 96, "width": 32, "height": 32 },
-        "mask-15": { "x": 96, "y": 96, "width": 32, "height": 32 }
+        "mask-0": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-1": {
+          "x": 32,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-2": {
+          "x": 64,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-3": {
+          "x": 96,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-4": {
+          "x": 0,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-5": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-6": {
+          "x": 64,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-7": {
+          "x": 96,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-8": {
+          "x": 0,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-9": {
+          "x": 32,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-10": {
+          "x": 64,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-11": {
+          "x": 96,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-12": {
+          "x": 0,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-13": {
+          "x": 32,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-14": {
+          "x": 64,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-15": {
+          "x": 96,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
       }
     },
     "bg.nerve_forest.sky": {
@@ -273,7 +772,10 @@
     "sprite.agent.neuron": {
       "type": "sprite",
       "src": "shared/sprites/agent-neuron.png",
-      "display": { "width": 96, "height": 96 },
+      "display": {
+        "width": 96,
+        "height": 96
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
@@ -285,61 +787,91 @@
       "frames": 36,
       "fps": 12.5,
       "loop": true,
-      "anchor": [0.5, 1],
-      "display": { "width": 96, "height": 96 },
+      "anchor": [
+        0.5,
+        1
+      ],
+      "display": {
+        "width": 96,
+        "height": 96
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.nerve": {
       "type": "sprite",
       "src": "shared/sprites/gate-nerve.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "sprite.scan.neuron": {
       "type": "sprite",
       "placeholder": true,
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x"
     },
     "sprite.scan.synapse": {
       "type": "sprite",
       "src": "shared/sprites/scan-synapse.png",
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.pathway": {
       "type": "sprite",
       "placeholder": true,
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x"
     },
     "sprite.scan.muscle": {
       "type": "sprite",
       "src": "shared/sprites/scan-muscle.png",
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.reflex": {
       "type": "sprite",
       "placeholder": true,
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x"
     },
     "sprite.pad.dendrite": {
       "type": "sprite",
       "src": "shared/sprites/pad-dendrite.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.pad.terminal": {
       "type": "sprite",
       "src": "shared/sprites/pad-terminal.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
@@ -350,7 +882,10 @@
     "sprite.exit": {
       "type": "sprite",
       "src": "shared/sprites/exit.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Nano Banana / Google Gemini (plan TBD)"
     },
@@ -392,11 +927,13 @@
     },
     "audio.cue.boot": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/boot.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.dialogue": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/dialogue.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.scan": {
       "type": "audio",
@@ -405,31 +942,38 @@
     },
     "audio.cue.dash": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/dash.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.gate": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/gate.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.map": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/map.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.debrief": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/debrief.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.checkpoint": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/checkpoint.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.unlock": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/unlock.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.wrong": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/wrong.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.jump": {
       "type": "audio",
@@ -452,35 +996,50 @@
     "sprite.prop.tracer": {
       "type": "sprite",
       "src": "shared/sprites/prop-tracer.png",
-      "display": { "width": 48, "height": 48 },
+      "display": {
+        "width": 48,
+        "height": 48
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.pulse.terminal": {
       "type": "sprite",
       "src": "shared/sprites/pulse-terminal.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.triangle": {
       "type": "sprite",
       "src": "shared/sprites/receptor-triangle.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.circle": {
       "type": "sprite",
       "src": "shared/sprites/receptor-circle.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.ferry": {
       "type": "sprite",
       "src": "shared/sprites/gate-ferry.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     }

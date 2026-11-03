@@ -138,9 +138,13 @@ describe("bathroom hub final art", () => {
       "audio.cue.hub.shrink",
       "audio.cue.hub.arrive",
       "audio.cue.hub.hum",
-      "audio.music.menu",
     ]) {
-      expect(manifest.assets[id]?.placeholder).toBe(true);
+      const entry = manifest.assets[id];
+      expect(entry?.src).toMatch(/^shared\/audio\/[a-z-]+\.mp3$/);
+      expect(entry?.license).toBeTruthy();
+      expect(entry?.placeholder).toBeUndefined();
+      expect(existsSync(join(HUB_DIR, entry?.src as string))).toBe(true);
     }
+    expect(manifest.assets["audio.music.menu"]?.placeholder).toBe(true);
   });
 });
