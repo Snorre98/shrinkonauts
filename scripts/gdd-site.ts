@@ -1000,6 +1000,7 @@ const DOC_SOURCES: DocSource[] = [
   { source: "docs/gdd/CAPTURES.md", section: "GDD pack", slug: "CAPTURES" },
   { source: "docs/gdd/ASSET-LIST-GBL.md", section: "GDD pack", slug: "ASSET-LIST-GBL" },
   { source: "docs/gdd/LICENCE-NOTES.md", section: "GDD pack", slug: "LICENCE-NOTES" },
+  { source: "docs/m2.75/README.md", section: "GDD pack", slug: "m2.75-nerve-forest-rescope" },
   { source: "docs/gdd/gbl/gbl-course-requirements.md", section: "GBL / learning design", slug: "gbl-course-requirements" },
   { source: "docs/gdd/gbl/learning-design-brief.md", section: "GBL / learning design", slug: "learning-design-brief" },
   { source: "docs/gdd/gbl/curriculum-alignment.md", section: "GBL / learning design", slug: "curriculum-alignment" },

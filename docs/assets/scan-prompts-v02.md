@@ -1,11 +1,17 @@
 # Scan prompts v02 — 03 Nerve Forest
 
-**Status:** prompt-ready; no source generated
+**Status:** on hold — the 03 concept is under M2.75 rescope
 **Scope:** `sprite.scan.neuron`, `sprite.scan.myelin`, `sprite.scan.pathway`
 **Replaces:** the whole-cell scan prompts in
 [`prompt-library-v01.md`](prompt-library-v01.md) §5.1–§5.3 and the older
 whole-cell prompts in
 [`../m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) §8.18.
+
+> **Hold (2026-11-03):** these prompts are complete enough to review, but do not
+> generate final sources yet. The room currently treats a cell, a part of a
+> cell, and a process/route as peer scan objects; M2.75 is deciding whether that
+> taxonomy is correct. See [`../m2.75/README.md`](../m2.75/README.md). The
+> prompts may survive a rescope, but the asset set may not.
 
 ## Why this revision exists
 

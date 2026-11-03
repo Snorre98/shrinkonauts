@@ -1,9 +1,9 @@
 # Room and Menu Audio Themes — Requirements and Generation Prompts
 
-> **Status:** Proposed extension · adventure-tone revision · 3 November 2026  
+> **Status:** Proposed extension · adventure-tone revision · retro-hybrid revision · 3 November 2026  
 > **Owner:** Snorre  
 > **Scope:** Four loopable themes — bathroom hub/menu, `03-nerve-forest`, `04-muscle-effector`, `01-interrupt-loop`  
-> **Prompt version:** `audio-themes-2026-11-03.2`  
+> **Prompt version:** `audio-themes-2026-11-03.3`  
 > **Depends on:** [ADR-0076](../adr-audio/0076-room-and-menu-audio-themes.md), [ADR-0077](../adr-audio/0077-audio-theme-playback-and-mixing.md)  
 > **Related:** [`audio-requirements-and-prompts-v01.md`](audio-requirements-and-prompts-v01.md) — the 18 SFX cues · [`../assets/prompt-library-v01.md`](../assets/prompt-library-v01.md) — cross-discipline inventory and completion gates
 > **Primary tool:** Ludo.ai Audio Generator (Music mode)  
@@ -26,6 +26,8 @@
 
 **Tone anchor (2026-11-03).** `DESIGN.md` defines the game as a *wondrous sci-fi puzzle adventure; warm and wry*. In this document, **adventurous** means curious, bright-eyed, forward-moving, playful, and small-scale. It does not mean epic, heroic, dangerous, or dark. The four themes are siblings in that adventure: the menu is the **invitation**, `03` is **discovery**, `04` is **teamwork**, and Silicon is **mission**. None is horror or thriller scoring.
 
+**Retro-hybrid revision (2026-11-03).** The score now uses a **retro chip-adventure** surface: warm 16-bit chip textures for the menu and anatomy rooms, and crisp 8-bit hardware textures for Silicon. The chip palette is a shared texture, not a strict NES limitation. Keep the warm sampled/organic low end and the uncluttered mix; reject thin, toy-like, or generic NES imitation.
+
 ---
 
 ## 1. Summary
@@ -43,6 +45,7 @@
 | Music slider | **Deferred**; master mute/volume only in v1 |
 | `hub.hum` | The menu theme owns the ambience bed; `hub.hum` becomes a one-shot or is retired |
 | Tone | **Wondrous sci-fi puzzle adventure**; every theme is adventurous, not horror, thriller, or epic |
+| Palette | **Retro chip-adventure hybrid** — warm 16-bit for menu/`03`/`04`; crisp 8-bit for `01`; full-bodied, not thin |
 | Licensing | Ludo Music (paid) or Stable Audio 2.5; log every theme |
 
 ---
@@ -96,11 +99,18 @@ The four themes are siblings in one **wondrous sci-fi puzzle adventure**, not fo
 | `04-muscle-effector` | **Teamwork** | A sturdy work song; effort, determination, a small hard-won triumph |
 | `01-interrupt-loop` | **Mission** | A tiny robot's relay race; precision, playful momentum, a sense of mission |
 
+| Theme | Chip dialect | Surface |
+|---|---|---|
+| Menu | **Warm 16-bit home console** | Pulse-wave electric piano, sampled marimba, triangle bass, noise-brushed hand percussion, chip-bell home chime |
+| `03-nerve-forest` | **Airy 16-bit exploration** | Pulse-wave lead doubled with marimba/kalimba, triangle sub, noise water-drop percussion, warm pad, short arpeggios |
+| `04-muscle-effector` | **Sturdy 16-bit work song** | Pulse-wave stabs, triangle bass, noise-channel thumps, soft round drum, membrane hand drums, chip chime |
+| `01-interrupt-loop` | **Crisp 8-bit hardware** | Square/pulse arpeggios, triangle bass, noise clicks, relay/servo textures, digital ticks, glitch stutters |
+
 | Identity | Motif | Use |
 |---|---|---|
-| Anatomy | **Signal motif** — a three-note rising “setting out” figure | `03` states it as a plucked nerve-fiber motif; `04` states it slower and sturdier on a warm analog synth; `05` resolves it when authored |
-| Silicon | **Relay motif** — a two-note alternating tick | `01` states it as a playful ready-set relay figure; not a variation of the anatomy motif |
-| Menu | **Home motif** — a three-note rising warm chime | The hub's own identity; a welcome and an invitation, not a danger signal |
+| Anatomy | **Signal motif** — a three-note rising “setting out” figure | `03` states it as a plucked pulse-wave/marimba nerve-fiber motif; `04` states it slower and sturdier on a warm chip lead; `05` resolves it when authored |
+| Silicon | **Relay motif** — a two-note alternating tick | `01` states it as a crisp square/pulse ready-set relay figure; not a variation of the anatomy motif |
+| Menu | **Home motif** — a three-note rising warm chime | The hub's own identity; a chip-bell welcome and invitation, not a danger signal |
 
 Rules:
 
@@ -108,21 +118,23 @@ Rules:
 - State the motif two to four times per loop.
 - Never put the motif in a frequency range that masks dialogue, scan, gate, or UI cues.
 - The room theme is a variation on its cycle motif, not a new melody per room.
-- Adventure is carried by bright harmony, a clear pulse, and playful percussion — never by epic brass, a low ominous drone, a heartbeat, or a ticking clock.
-- The menu theme is the only theme that may feel warmly domestic. Silicon must not use amber/warm anatomy instruments; it stays crisp and friendly-machine, not cold or severe.
+- Adventure is carried by bright harmony, a clear pulse, playful percussion, and a **retro chip-adventure palette** — never by epic brass, a low ominous drone, a heartbeat, or a ticking clock.
+- The chip palette is a texture, not a strict NES limitation. Use pulse-wave leads, triangle bass, noise-channel percussion, and short arpeggios, but keep a rounded low end and the warm sampled/organic textures on the menu and anatomy themes.
+- Full-bodied, not thin or toy-like. A generic NES imitation is a reject, not a target.
+- The menu theme is the only theme that may feel warmly domestic. Silicon may use chip timbres, but it must not use amber/warm anatomy instruments or organic textures; it stays crisp and friendly-machine, not cold or severe.
 
-### 3.2 Global music style
+### 3.2 Global retro chip-adventure style
 
-**`ADVENTURE_STYLE_ANATOMY` — menu, `03`, `04`:**
+**`ADVENTURE_STYLE_RETRO_ANATOMY` — menu, `03`, `04`:**
 
 ```text
-Wondrous small-scale sci-fi puzzle-adventure game music, intimate and tactile, warm and a little wry, with a sense of discovery and gentle forward momentum. Bright major or open modal harmony, rounded low end, tactile wooden and soft organic textures, uncluttered arrangement with space for dialogue and UI cues. Curious and optimistic, never epic, never ominous.
+Wondrous small-scale sci-fi puzzle-adventure game music with a warm retro chip-adventure palette: 16-bit-era pulse-wave leads, warm sampled mallets and electric piano, triangle bass, noise-channel percussion, and short arpeggios, grounded by soft organic textures and a rounded low end. Bright major or open modal harmony, playful forward momentum, uncluttered arrangement with space for dialogue and UI cues. Curious, wondrous, warm and a little wry; full-bodied rather than thin, not a strict NES imitation, never horror, never epic.
 ```
 
-**`ADVENTURE_STYLE_SILICON` — `01`:**
+**`ADVENTURE_STYLE_RETRO_SILICON` — `01`:**
 
 ```text
-Wondrous small-scale sci-fi puzzle-adventure game music, crisp and tactile, playful and mission-driven, with a sense of forward motion. Bright modal harmony, rounded low end, graphite and circuit-board textures, uncluttered arrangement with space for dialogue and UI cues. Curious and friendly-machine, never epic, never ominous.
+Wondrous small-scale sci-fi puzzle-adventure game music with a crisp retro-hardware palette: 8-bit/16-bit square and pulse-wave arpeggios, triangle bass, noise-channel clicks, and clean digital textures. Bright modal harmony, rounded low end, playful mission-driven forward motion, uncluttered arrangement with space for dialogue and UI cues. Curious, nimble and friendly-machine; full-bodied rather than thin, not a generic NES imitation, never horror, never epic.
 ```
 
 ### 3.3 Global negative and tool routing
@@ -130,7 +142,7 @@ Wondrous small-scale sci-fi puzzle-adventure game music, crisp and tactile, play
 Use this shared core with any tool that exposes a negative prompt. Each theme card below provides the complete negative block already combined with its theme add-ons.
 
 ```text
-vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump scare, ominous drone, minor-key ostinato, heartbeat, ticking clock, alarm, screaming strings, gore, screams, pain, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, heavy metal, industrial grinding, long reverb wash, clipping, distortion, low quality.
+vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump scare, ominous drone, minor-key ostinato, heartbeat, ticking clock, alarm, screaming strings, gore, screams, pain, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, heavy metal, industrial grinding, generic NES imitation, thin toy-like chiptune, novelty 8-bit, bitcrushed vocals, long reverb wash, clipping, distortion, low quality.
 ```
 
 | Tool | Positive block | Negative block |
@@ -156,10 +168,10 @@ If a take reads as horror or thriller, reject it and rewrite the positive prompt
 
 | Theme | Core instruments | Avoid |
 |---|---|---|
-| Menu | gentle rhythmic washing-machine motor hum, brushed hand percussion, muted analog bass, warm electric piano/marimba, pipe ticks, water drips, rising three-note home chime | drum kit, big band, cartoon sitcom theme, chiptune lead, ominous drone |
-| 03 Nerve Forest | rising three-note plucked nerve-fiber motif on marimba/kalimba, soft hand percussion, warm analog pad, gentle sub-bass pulse, tiny electrical sparkles, soft water-drop percussion, amber chime | jungle drums, tribal percussion, horror strings, low membrane drone, heroic brass |
-| 04 Muscle Effector | soft round low drum thumps, supple membrane percussion like soft hand drums, bouncy analog bass, rounded analog synth swells, playful wooden click-clack percussion, bright rising chime | heavy metal, industrial grinding, heartbeat, ticking alarm, pain sounds, heroic brass |
-| Silicon | soft low graphite hum that breathes with the pulse, light relay clicks, servo whirrs, digital ticks, rounded cyan synth pulse, toy-like mechanical percussion, small glitch stutters | chiptune lead, warm analog pads, organic textures, ominous drone, comedy robot voice |
+| Menu | **warm 16-bit home-console palette:** pulse-wave electric piano, sampled marimba, triangle bass, noise-brushed hand percussion, pipe ticks, water drips, chip-bell home chime, soft washing-machine hum | acoustic jazz drum kit, big band, cartoon sitcom theme, generic NES imitation, ominous drone |
+| 03 Nerve Forest | **16-bit exploration palette:** pulse-wave lead doubled with marimba/kalimba, triangle sub, noise water-drop percussion, warm pad, short arpeggios, amber chime | jungle drums, tribal percussion, horror strings, low membrane drone, heroic brass, generic NES imitation |
+| 04 Muscle Effector | **16-bit work-song palette:** pulse-wave stabs, triangle bass, noise-channel thumps, soft round drum, membrane hand drums, chip chime | heavy metal, industrial grinding, heartbeat, ticking alarm, pain sounds, heroic brass, generic NES imitation |
+| Silicon | **crisp 8-bit hardware palette:** square/pulse arpeggios, triangle bass, noise clicks, relay clicks, servo whirrs, digital ticks, glitch stutters | generic NES imitation, thin toy-like chiptune, novelty 8-bit, warm analog pads, organic textures, comedy robot voice |
 
 ---
 
@@ -170,7 +182,8 @@ If a take reads as horror or thriller, reject it and rewrite the positive prompt
 - **Ludo:** Music mode, Loop on, duration set in the UI, no duration in the prompt, prompt expansion off if the UI/API offers it. Paste the Ludo block only; do not paste the negative block.
 - **Stable Audio 2.5:** set duration to 60–75 s and trim to the loop; paste the Stable block only; do not paste the negative block. Use a fixed seed when comparing revisions.
 - **Stable Audio 3 Medium / tools with a negative field:** paste the Stable block and the theme negative block.
-- **Both:** generate 2–4 variations; keep the first that passes the loop, mix, and blind-listen adventure checks. Reject any take that reads as horror, thriller, or dread.
+- **Both:** generate 2–4 variations; keep the first that passes the loop, mix, retro-dialect, and blind-listen adventure checks. Reject any take that reads as horror, thriller, dread, or thin novelty chiptune.
+- **Retro palette:** keep the assigned chip dialect — menu warm 16-bit, `03` airy 16-bit, `04` sturdy 16-bit, `01` crisp 8-bit. Do not let all four collapse into one console.
 - **BPM:** keep it in the prompt because it steers tempo; if the tool ignores it, adjust the result in post or regenerate.
 
 **Copy-paste blocks.** Each Ludo and Stable Audio prompt is fenced. Copy the contents of the block only; the labels outside the fence are not part of the prompt.
@@ -182,31 +195,32 @@ If a take reads as horror or thriller, reject it and rewrite the positive prompt
 - **Length:** 45–60 s, seamless loop.
 - **Tempo:** 104 BPM (range 100–108).
 - **Structure:** 16-bar A (sparse) → 8-bar B (gentle lift) → 8-bar A return; loop on a bar boundary. No big intro, no final cadence.
-- **Instruments:** gentle rhythmic washing-machine motor hum, brushed hand percussion, muted analog bass, warm electric piano or marimba, tiny pipe ticks, distant water drips, rising three-note home chime.
+- **Instruments:** warm 16-bit home-console palette: pulse-wave electric piano, sampled marimba, triangle bass, noise-brushed hand percussion, short chip arpeggios, tiny pipe ticks, distant water drips, rising three-note chip-bell home chime, soft rhythmic washing-machine hum.
 - **Mood:** warm, curious, optimistic; the laundry lab at rest, with the journey ahead. Not cartoonish, not epic.
 - **Visual counterpart:** the hub menu; music is background, never informational.
 
 **Ludo — Music mode, Loop on, prompt expansion off:**
 
 ```text
-Loopable game music for a cozy retro-futuristic laundry-lab menu in a wondrous sci-fi puzzle adventure, like the launchpad for a small expedition, 104 BPM. Warm, curious and inviting, with bright major harmony, a gentle forward sway and a sense of possibility. A soft rhythmic washing-machine motor hum under brushed hand percussion, muted analog bass, warm electric piano and marimba, tiny pipe ticks, distant water drips, and a rising three-note home chime woven into the texture. A light lift in the middle, then a warm return; intimate, tactile and uncluttered, with space for menu sounds. Purely instrumental and wordless, seamless loop.
+Loopable retro chip-adventure game music for a cozy retro-futuristic laundry-lab menu in a wondrous sci-fi puzzle adventure, like the launchpad for a small expedition, 104 BPM. Warm, curious and inviting, with bright major harmony, a gentle forward sway and a sense of possibility. A warm 16-bit home-console palette: pulse-wave electric piano and sampled marimba, triangle bass, noise-brushed hand percussion, short chip arpeggios, tiny pipe ticks, distant water drips, and a rising three-note home chime on a chip bell, over a soft rhythmic washing-machine hum. A light lift in the middle, then a warm return; full-bodied, tactile and uncluttered, with space for menu sounds. Purely instrumental and wordless, seamless loop.
 ```
 
 **Stable Audio 2.5:**
 
 ```text
-An instrumental game menu loop for a cozy retro-futuristic laundry-lab menu in a wondrous sci-fi puzzle adventure, like the launchpad for a small expedition, 104 BPM. Warm, curious and inviting, with bright major harmony, a gentle forward sway and a sense of possibility. A soft rhythmic washing-machine motor hum under brushed hand percussion, muted analog bass, warm electric piano and marimba, tiny pipe ticks, distant water drips, and a rising three-note home chime woven into the texture. A sparse opening, a light lift, then a warm return; intimate, tactile, small-scale and uncluttered, with space for menu sounds. Seamless loop, dry small-room production, purely instrumental and wordless.
+An instrumental retro chip-adventure game menu loop for a cozy retro-futuristic laundry-lab menu in a wondrous sci-fi puzzle adventure, like the launchpad for a small expedition, 104 BPM. Warm, curious and inviting, with bright major harmony, a gentle forward sway and a sense of possibility. A warm 16-bit home-console palette: pulse-wave electric piano and sampled marimba, triangle bass, noise-brushed hand percussion, short chip arpeggios, tiny pipe ticks, distant water drips, and a rising three-note home chime on a chip bell, over a soft rhythmic washing-machine hum. A sparse opening, a light lift, then a warm return; full-bodied, tactile, small-scale and uncluttered, with space for menu sounds. Seamless loop, dry small-room production, purely instrumental and wordless.
 ```
 
 **Negative — tools with a negative field:**
 
 ```text
-vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump scare, ominous drone, minor-key ostinato, heartbeat, ticking clock, alarm, screaming strings, gore, screams, pain, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, heavy metal, industrial grinding, cartoon sitcom theme, big band, drum kit, chiptune lead, 8-bit melody, long reverb wash, clipping, distortion, low quality.
+vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump scare, ominous drone, minor-key ostinato, heartbeat, ticking clock, alarm, screaming strings, gore, screams, pain, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, heavy metal, industrial grinding, cartoon sitcom theme, big band, acoustic jazz drum kit, generic NES imitation, thin toy-like chiptune, novelty 8-bit, bitcrushed vocals, long reverb wash, clipping, distortion, low quality.
 ```
 
 **Accept:**
 
 - Reads as a warm invitation to a small expedition, not a sitcom or a horror menu.
+- Uses the warm 16-bit home-console palette; full-bodied, not thin.
 - Loops across three consecutive plays without a seam or a reset in energy.
 - Sits under the hub click/door/spin/shrink/arrive cues at 0.35 music gain.
 - No vocals; no melody that competes with menu text.
@@ -227,31 +241,32 @@ vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump 
 - **Length:** 30–45 s, seamless loop.
 - **Tempo:** 100 BPM (range 92–104).
 - **Structure:** 8-bar pulse A → 8-bar lift B → 8-bar A return; loop. Keep the lift subtle; the puzzle should stay readable.
-- **Instruments:** rising three-note plucked nerve-fiber motif on marimba/kalimba, soft hand percussion, warm analog pad, gentle sub-bass pulse, tiny electrical sparkles, soft water-drop percussion, amber chime.
+- **Instruments:** 16-bit exploration palette: pulse-wave lead doubled with marimba/kalimba for the rising three-note nerve-fiber motif, triangle sub, noise water-drop percussion, warm pad, short arpeggios, subtle sub-bass pulse, amber chime.
 - **Mood:** curious, bright-eyed, open, alive; wonder around the next bend, not danger or jungle adventure.
 - **Visual counterpart:** the living nerve forest, amber signal path, membrane folds.
 
 **Ludo — Music mode, Loop on, prompt expansion off:**
 
 ```text
-Loopable game music for a curious expedition through a living nerve forest in a wondrous sci-fi puzzle adventure, 100 BPM. Nimble, bright-eyed and open, with bright modal harmony, a flowing forward pulse and a sense of discovery. A rising three-note nerve-fiber motif on marimba and kalimba, woven into the texture rather than played as a lead; soft hand percussion, a warm analog pad, a gentle sub-bass pulse, tiny electrical sparkles, soft water-drop percussion and an amber chime. A small lift in the middle, then a warm return; intimate, tactile and uncluttered, with space for dialogue and scan cues. Purely instrumental and wordless, seamless loop.
+Loopable retro chip-adventure game music for a curious expedition through a living nerve forest in a wondrous sci-fi puzzle adventure, 100 BPM. Nimble, bright-eyed and open, with bright modal harmony, a flowing forward pulse and a sense of discovery. A 16-bit exploration palette: a pulse-wave lead doubled with marimba and kalimba states the rising three-note nerve-fiber motif, woven into the texture rather than played as a heroic lead; triangle sub, noise water-drop percussion, warm pad, short arpeggios, tiny electrical sparkles and an amber chime. A small lift in the middle, then a warm return; full-bodied, tactile and uncluttered, with space for dialogue and scan cues. Purely instrumental and wordless, seamless loop.
 ```
 
 **Stable Audio 2.5:**
 
 ```text
-An instrumental game loop for a curious expedition through a living nerve forest in a wondrous sci-fi puzzle adventure, 100 BPM. Nimble, bright-eyed and open, with bright modal harmony, a flowing forward pulse and a sense of discovery. A rising three-note nerve-fiber motif on marimba and kalimba, woven into the texture rather than played as a lead; soft hand percussion, a warm analog pad, a gentle sub-bass pulse, tiny electrical sparkles, soft water-drop percussion and an amber chime. A small lift, then a warm return; intimate, tactile, small-scale and uncluttered, with space for dialogue and scan cues. Seamless loop, dry close production, purely instrumental and wordless.
+An instrumental retro chip-adventure game loop for a curious expedition through a living nerve forest in a wondrous sci-fi puzzle adventure, 100 BPM. Nimble, bright-eyed and open, with bright modal harmony, a flowing forward pulse and a sense of discovery. A 16-bit exploration palette: a pulse-wave lead doubled with marimba and kalimba states the rising three-note nerve-fiber motif, woven into the texture rather than played as a heroic lead; triangle sub, noise water-drop percussion, warm pad, short arpeggios, tiny electrical sparkles and an amber chime. A small lift, then a warm return; full-bodied, tactile, small-scale and uncluttered, with space for dialogue and scan cues. Seamless loop, dry close production, purely instrumental and wordless.
 ```
 
 **Negative — tools with a negative field:**
 
 ```text
-vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump scare, ominous drone, low membrane drone, minor-key ostinato, heartbeat, ticking clock, alarm, screaming strings, gore, screams, pain, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, heavy metal, industrial grinding, jungle drums, tribal percussion, chiptune, 8-bit melody, long reverb wash, clipping, distortion, low quality.
+vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump scare, ominous drone, low membrane drone, minor-key ostinato, heartbeat, ticking clock, alarm, screaming strings, gore, screams, pain, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, heavy metal, industrial grinding, jungle drums, tribal percussion, generic NES imitation, thin toy-like chiptune, novelty 8-bit, bitcrushed vocals, long reverb wash, clipping, distortion, low quality.
 ```
 
 **Accept:**
 
 - Reads as a curious living landscape, not a jungle or a horror level.
+- Uses the airy 16-bit exploration palette; distinct from the menu.
 - Bright-eyed and forward-moving; supports puzzle concentration.
 - The motif is present but does not mask dialogue or scan cues.
 - No sudden stingers or drops; the loop is safe to sit under a puzzle.
@@ -271,31 +286,32 @@ vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump 
 - **Length:** 30–45 s, seamless loop.
 - **Tempo:** 110 BPM (range 100–116).
 - **Structure:** 8-bar effort A → 8-bar lift B → 8-bar release/return A; loop. The release should resolve without ending the loop.
-- **Instruments:** soft round low drum thumps, supple membrane percussion like soft hand drums, bouncy analog bass, rounded analog synth swells, playful wooden click-clack percussion, bright rising chime at the phrase turn.
+- **Instruments:** 16-bit work-song palette: pulse-wave stabs, short pulse-wave arpeggios, triangle bass, noise-channel thumps, soft round low drum, supple membrane hand drums, playful wooden click-clack percussion, bright chip chime at the phrase turn.
 - **Mood:** effortful but buoyant, warm, friendly, quietly triumphant; a small team pulling together. Not aggressive, not metallic, not ominous.
 - **Visual counterpart:** muscle endplate, ACh ferry, receptor, contraction gate.
 
 **Ludo — Music mode, Loop on, prompt expansion off:**
 
 ```text
-Loopable game music for a busy, friendly muscle workshop in a wondrous sci-fi puzzle adventure, 110 BPM. Effortful but buoyant and quietly triumphant, warm and friendly, like a small team pulling together. Warm major harmony and a sturdy working groove; the same rising three-note signal motif, played slower and sturdier on a warm analog synth and woven into the texture rather than a heroic lead. Soft round low drum thumps, like a hand on a big wooden drum; supple membrane percussion, like soft hand drums; bouncy analog bass; rounded analog synth swells; playful wooden click-clack percussion; and a bright rising chime at the phrase turn. A small lift in the middle, then a warm return; intimate, tactile and uncluttered, with space for jump, land and dash cues. Purely instrumental and wordless, seamless loop.
+Loopable retro chip-adventure game music for a busy, friendly muscle workshop in a wondrous sci-fi puzzle adventure, 110 BPM. Effortful but buoyant and quietly triumphant, warm and friendly, like a small team pulling together. Warm major harmony and a sturdy working groove; a 16-bit work-song palette with the same rising three-note signal motif, played slower and sturdier on a warm pulse-wave lead and woven into the texture rather than a heroic lead. Soft round low drum thumps, like a hand on a big wooden drum; supple membrane percussion, like soft hand drums; triangle bass; pulse-wave stabs; short pulse-wave arpeggios; playful wooden click-clack percussion; and a bright chip chime at the phrase turn. A small lift in the middle, then a warm return; full-bodied, tactile and uncluttered, with space for jump, land and dash cues. Purely instrumental and wordless, seamless loop.
 ```
 
 **Stable Audio 2.5:**
 
 ```text
-An instrumental game loop for a busy, friendly muscle workshop in a wondrous sci-fi puzzle adventure, 110 BPM. Effortful but buoyant and quietly triumphant, warm and friendly, like a small team pulling together. Warm major harmony and a sturdy working groove; the same rising three-note signal motif, played slower and sturdier on a warm analog synth and woven into the texture rather than a heroic lead. Soft round low drum thumps, like a hand on a big wooden drum; supple membrane percussion, like soft hand drums; bouncy analog bass; rounded analog synth swells; playful wooden click-clack percussion; and a bright rising chime at the phrase turn. A small lift, then a warm return; intimate, tactile, small-scale and uncluttered, with space for jump, land and dash cues. Seamless loop, dry close production, purely instrumental and wordless.
+An instrumental retro chip-adventure game loop for a busy, friendly muscle workshop in a wondrous sci-fi puzzle adventure, 110 BPM. Effortful but buoyant and quietly triumphant, warm and friendly, like a small team pulling together. Warm major harmony and a sturdy working groove; a 16-bit work-song palette with the same rising three-note signal motif, played slower and sturdier on a warm pulse-wave lead and woven into the texture rather than a heroic lead. Soft round low drum thumps, like a hand on a big wooden drum; supple membrane percussion, like soft hand drums; triangle bass; pulse-wave stabs; short pulse-wave arpeggios; playful wooden click-clack percussion; and a bright chip chime at the phrase turn. A small lift, then a warm return; full-bodied, tactile, small-scale and uncluttered, with space for jump, land and dash cues. Seamless loop, dry close production, purely instrumental and wordless.
 ```
 
 **Negative — tools with a negative field:**
 
 ```text
-vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump scare, thriller, ominous drone, minor-key ostinato, heartbeat, ticking clock, ticking alarm, alarm, screaming strings, gore, blood, screams, pain, grunts, heavy metal, industrial grinding, metal impacts, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, long reverb wash, clipping, distortion, low quality.
+vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump scare, thriller, ominous drone, minor-key ostinato, heartbeat, ticking clock, ticking alarm, alarm, screaming strings, gore, blood, screams, pain, grunts, heavy metal, industrial grinding, metal impacts, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, generic NES imitation, thin toy-like chiptune, novelty 8-bit, bitcrushed vocals, long reverb wash, clipping, distortion, low quality.
 ```
 
 **Accept:**
 
 - Reads as sturdy, upbeat teamwork, not a thriller.
+- Uses the sturdy 16-bit work-song palette; full-bodied, not thin.
 - Effortful but buoyant; the release feels like a small triumph, not a threat.
 - The low end does not mask jump/land/dash cues.
 - Distinct from `03`; the shared motif is slower and sturdier, not darker.
@@ -316,31 +332,32 @@ vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, jump 
 - **Length:** 30–45 s, seamless loop.
 - **Tempo:** 116 BPM (range 110–124).
 - **Structure:** 8-bar machine pulse A → 4-bar glitch fill → 8-bar B → 8-bar A return; loop. The glitch fill is a texture, not a drop.
-- **Instruments:** soft low graphite hum that breathes with the pulse, light relay clicks, servo whirrs, digital ticks, rounded cyan synth pulse, toy-like mechanical percussion, small glitch stutters.
+- **Instruments:** crisp 8-bit hardware palette: square/pulse arpeggios, triangle bass, noise clicks, light relay clicks, servo whirrs, digital ticks, toy-like mechanical percussion, small glitch stutters.
 - **Mood:** crisp, nimble, playful, mission-driven; friendly-machine, not cold or severe.
 - **Visual counterpart:** graphite/cyan board, relay, sockets, CPU wake, actuator.
 
 **Ludo — Music mode, Loop on, prompt expansion off:**
 
 ```text
-Loopable game music for a tiny robot on a circuit-board mission in a wondrous sci-fi puzzle adventure, 116 BPM, like a playful relay race. Crisp, nimble and playful, with bright modal harmony, a bouncy machine pulse and a sense of mission. A two-note alternating relay tick as the motif, woven into the rhythm rather than played as a lead; a soft low graphite hum that breathes with the pulse, light relay clicks, servo whirrs, digital ticks, a rounded cyan synth pulse, toy-like mechanical percussion and small glitch stutters used as rhythmic texture. Steady forward motion with a light four-bar glitch fill and a bright return; clean, tactile and uncluttered, with space for UI and scan cues. Purely instrumental and wordless, seamless loop.
+Loopable retro chip-adventure game music for a tiny robot on a circuit-board mission in a wondrous sci-fi puzzle adventure, 116 BPM, like a playful relay race. Crisp, nimble and playful, with bright modal harmony, a bouncy machine pulse and a sense of mission. A crisp 8-bit hardware palette: square and pulse-wave arpeggios, triangle bass, noise-channel clicks, light relay clicks, servo whirrs, digital ticks and small glitch stutters, with a two-note alternating relay tick as the motif woven into the rhythm rather than played as a lead. Steady forward motion with a light four-bar glitch fill and a bright return; full-bodied, clean, tactile and uncluttered, with space for UI and scan cues. Purely instrumental and wordless, seamless loop.
 ```
 
 **Stable Audio 2.5:**
 
 ```text
-An instrumental game loop for a tiny robot's journey across a graphite circuit board in a wondrous sci-fi puzzle adventure, 116 BPM, like a playful relay race. Crisp, nimble and playful, with bright modal harmony, a bouncy machine pulse and a sense of mission. A two-note alternating relay tick as the motif, woven into the rhythm rather than played as a lead; a soft low graphite hum that breathes with the pulse, light relay clicks, servo whirrs, digital ticks, a rounded cyan synth pulse, toy-like mechanical percussion and small glitch stutters used as rhythmic texture. Steady forward motion, a light four-bar glitch fill, then a bright return; clean, tactile, small-scale and uncluttered, with space for UI and scan cues. Seamless loop, dry close production, purely instrumental and wordless.
+An instrumental retro chip-adventure game loop for a tiny robot's journey across a graphite circuit board in a wondrous sci-fi puzzle adventure, 116 BPM, like a playful relay race. Crisp, nimble and playful, with bright modal harmony, a bouncy machine pulse and a sense of mission. A crisp 8-bit hardware palette: square and pulse-wave arpeggios, triangle bass, noise-channel clicks, light relay clicks, servo whirrs, digital ticks and small glitch stutters, with a two-note alternating relay tick as the motif woven into the rhythm rather than played as a lead. Steady forward motion, a light four-bar glitch fill, then a bright return; full-bodied, clean, tactile, small-scale and uncluttered, with space for UI and scan cues. Seamless loop, dry close production, purely instrumental and wordless.
 ```
 
 **Negative — tools with a negative field:**
 
 ```text
-vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, ominous drone, minor-key ostinato, heartbeat, ticking clock, alarm, screaming strings, gore, screams, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, heavy metal, industrial grinding, chiptune lead, 8-bit melody, retro console music, warm analog pads, organic textures, comedy robot voice, vocoder, long reverb wash, clipping, low quality.
+vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, ominous drone, minor-key ostinato, heartbeat, ticking clock, alarm, screaming strings, gore, screams, epic orchestra, cinematic bombast, heroic brass, EDM drop, dubstep, heavy metal, industrial grinding, generic NES imitation, thin toy-like chiptune, novelty 8-bit, bitcrushed vocals, warm analog pads, organic textures, comedy robot voice, vocoder, long reverb wash, clipping, low quality.
 ```
 
 **Accept:**
 
-- Reads as a playful machine mission, not an 8-bit console or a horror level.
+- Reads as a playful machine mission, not a generic NES imitation or a horror level.
+- Uses the crisp 8-bit hardware palette; distinct from the anatomy themes.
 - No amber/warm anatomy instruments.
 - Clicks are crisp but not piercing; they do not mask the SFX cues.
 - Distinct from the anatomy themes; the relay motif is present.
@@ -349,7 +366,7 @@ vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, omino
 
 **Reject:**
 
-- A chiptune lead or a full 8-bit melody.
+- A generic NES imitation or a thin, toy-like chiptune.
 - Warm analog pads or organic textures.
 - An ominous drone or tension.
 - A comedy robot voice or vocoder.
@@ -359,13 +376,13 @@ vocals, lyrics, speech, singing, choir, intelligible words, horror, dread, omino
 
 ## 5. Future room template
 
-Do not generate these until the room is authored. Use the anatomy "signal" motif as the base.
+Do not generate these until the room is authored. Use the anatomy "signal" motif and the warm 16-bit chip-adventure palette as the base.
 
 | Future room | Adventure role and direction | Tempo | Length |
 |---|---|---:|---:|
-| `01-bone-gate` | **Trailhead:** sparse bone percussion, low sine, signal motif stated quietly; chalky, open, curious; a sense of entering a cave, not dread | 90–100 BPM | 30–45 s |
-| `02-joint-chamber` | **Glide:** fluid synth, joint-cyan shimmer, slow pulse, signal motif stretched; slippery, calm, wondrous | 88–100 BPM | 30–45 s |
-| `05-reflex-core` | **Small triumph:** full signal-motif resolution, confident and warm; the adventure arc completes | 104–112 BPM | 45–60 s |
+| `01-bone-gate` | **Trailhead:** sparse 16-bit trailhead palette, bone percussion, low triangle sine, signal motif stated quietly; chalky, open, curious; a sense of entering a cave, not dread | 90–100 BPM | 30–45 s |
+| `02-joint-chamber` | **Glide:** fluid 16-bit glide palette, pulse-wave shimmer, slow triangle pulse, signal motif stretched; slippery, calm, wondrous | 88–100 BPM | 30–45 s |
+| `05-reflex-core` | **Small triumph:** full 16-bit resolution of the signal motif, confident and warm; the adventure arc completes | 104–112 BPM | 45–60 s |
 
 Asset IDs would be `audio.music.bone_gate`, `audio.music.joint_chamber`, `audio.music.reflex_core`, in the anatomy pack.
 
@@ -397,6 +414,8 @@ Ludo-specific rules:
 
 - Do not write "45 seconds" in the prompt; set the duration in the UI.
 - Do not paste the negative block; Ludo has no negative field. The Ludo block is already positively framed for adventure.
+- Do not use "8-bit" as the only style label. Say "retro chip-adventure" and name the pulse-wave, triangle-bass, and noise-channel roles.
+- Ludo may produce a generic NES loop. Reject it if it is thin, toy-like, or if all four themes sound like the same console.
 - Ask for a seamless loop, but verify it. A generated "song" may still have an intro/outro; edit to a bar-aligned loop in a DAW.
 - Do not use a vocal mode. Music mode only.
 - If prompt expansion adds vocals, epic strings, a pop structure, or a horror mood, reject the take or remix with expansion off.
@@ -417,7 +436,8 @@ Stable-specific rules:
 
 - Generate longer than the target loop, then trim to a bar-aligned section.
 - Do not paste the negative block into Stable Audio 2.5. “No horror / no vocals” lists can prime the very qualities they forbid; the Stable block is already positively framed.
-- Use audio-to-audio to derive `04` from `03` at a moderate strength (roughly 0.35–0.55) while preserving the signal motif. `04` should be slower, sturdier, and warmer — not darker.
+- If Stable makes the chip palette thin or toy-like, add warm sampled mallets/electric piano and a rounded triangle bass. Do not just add more “8-bit”.
+- Use audio-to-audio to derive `04` from `03` at a moderate strength (roughly 0.35–0.55) while preserving the signal motif. `04` should be slower, sturdier, and warmer — not darker. It must stay a 16-bit work song, not drift toward Silicon's 8-bit hardware palette.
 - Use inpainting to fix a bad loop seam or a final cadence.
 - Use a fixed seed when comparing prompt revisions.
 - Stable Audio 3 Medium supports a negative prompt. Use the Stable block plus the theme negative block there.
@@ -425,20 +445,22 @@ Stable-specific rules:
 
 ### 6.3 Remix and variation workflow
 
-1. Generate the **menu theme** first as the production/style anchor (P0). It must read as an invitation to a small expedition.
-2. Generate **`03-nerve-forest`** as the anatomy motif anchor (P0). It must read as bright-eyed discovery, not jungle or horror.
-3. Generate **`04-muscle-effector`** as a variation of `03`: same signal motif, slower and sturdier instrumentation, warmer teamwork. Use Ludo Remix or Stable Audio 2.5 audio-to-audio; do not start from scratch unless the remix loses the motif. Do not make it darker or heavier.
-4. Generate **`01-interrupt-loop`** independently. Do not remix the anatomy theme; Silicon must be a crisp, friendly-machine sibling, not a recolour and not a severe one.
-5. If the menu and `03` feel like different games, revise the menu's instrument palette rather than the motif.
-6. Blind-listen every theme with the screen off. If it reads as horror, thriller, dread, or sadness, reject it and rewrite the positive prompt.
+1. Generate the **menu theme** first as the production/style anchor (P0). It must read as a warm 16-bit invitation to a small expedition.
+2. Generate **`03-nerve-forest`** as the anatomy motif anchor (P0). It must read as bright-eyed 16-bit discovery, not jungle or horror.
+3. Generate **`04-muscle-effector`** as a variation of `03`: same signal motif, slower and sturdier 16-bit work-song instrumentation, warmer teamwork. Use Ludo Remix or Stable Audio 2.5 audio-to-audio; do not start from scratch unless the remix loses the motif. Do not make it darker or heavier.
+4. Generate **`01-interrupt-loop`** last and independently. Do not remix the anatomy theme; Silicon must be the crisp 8-bit hardware sibling, not a recolour and not a severe one.
+5. Keep the four chip dialects distinct: menu warm 16-bit, `03` airy 16-bit, `04` sturdy 16-bit, `01` crisp 8-bit. Do not let one console palette swallow all four.
+6. If the menu and `03` feel like different games, revise the menu's instrument palette rather than the motif.
+7. Blind-listen every theme with the screen off. If it reads as horror, thriller, dread, or sadness — or as a thin novelty chiptune — reject it and rewrite the positive prompt.
 
 ### 6.4 Seeds, variations, and retries
 
 - Generate 2–4 variations per theme.
-- Keep the first that passes the loop, mix, identity, and blind-listen adventure checks.
+- Keep the first that passes the loop, mix, identity, retro-dialect, and blind-listen adventure checks.
 - Maximum two prompt revisions before changing tool or accepting a placeholder.
 - If a take reads as horror, do not add more negatives; rewrite the positive harmony, pulse, and instrumentation.
-- Record model, seed, duration, BPM, loop points, post-processing, adventure check, and licence.
+- If a take is thin or toy-like, add warm sampled textures and a rounded low end; do not just add more “8-bit”.
+- Record model, seed, duration, BPM, loop points, post-processing, retro dialect, adventure check, and licence.
 - Keep failed rows in the prompt log; do not overwrite history.
 
 ---
@@ -536,10 +558,10 @@ The hub has no `licenses.json`; add the `license` field to the hub manifest entr
 | Stage | Generate | Gate |
 |---|---|---|
 | 0 | Confirm ADR-0076/0077 and implement the theme player | A test theme loops and crossfades; no `AUDIO_FILE_PROVIDER_STUB` |
-| 1 | Menu theme (P0) | Reads as a warm invitation to a small expedition, not horror or sitcom; loops three times; sits under hub cues; no vocals; approved at 0.35 gain |
-| 2 | `03-nerve-forest` (P0) | Anatomy motif reads; bright-eyed discovery, no horror/jungle clichés; supports puzzle concentration |
-| 3 | `04-muscle-effector` (P1) | Same motif, slower and sturdier; upbeat teamwork, not horror; distinct from 03; low end does not mask jump/land |
-| 4 | `01-interrupt-loop` (P1/P2) | Crisp and playful mission; no chiptune lead and no horror drone; distinct from anatomy |
+| 1 | Menu theme (P0) | Reads as a warm 16-bit invitation to a small expedition, not horror or sitcom; loops three times; sits under hub cues; no vocals; approved at 0.35 gain |
+| 2 | `03-nerve-forest` (P0) | Anatomy motif reads in the airy 16-bit palette; bright-eyed discovery, no horror/jungle clichés; supports puzzle concentration |
+| 3 | `04-muscle-effector` (P1) | Same motif, slower and sturdier in the 16-bit work-song palette; upbeat teamwork, not horror; distinct from 03; low end does not mask jump/land |
+| 4 | `01-interrupt-loop` (P1/P2) | Crisp 8-bit hardware mission; playful, not generic NES and no horror drone; distinct from anatomy |
 | 5 | Integration | Room/hub transitions, mute, volume, pause, crossfade, licences |
 
 Do not generate all four before the menu/03 pilot passes. The menu is the production anchor; 03 is the anatomy motif anchor. If either pilot reads as horror or thriller, stop and rewrite the positive prompt before generating the rest.
@@ -555,10 +577,10 @@ Do not generate all four before the menu/03 pilot passes. The menu is the produc
 5. Encode to OGG Vorbis q4–q6 (or MP3 fallback).
 6. Check the loop seam in an audio editor at sample level.
 7. Play three consecutive loops in the browser.
-8. Blind-listen with the screen off. The theme must read as wondrous puzzle adventure, not horror, thriller, dread, or sadness. If it fails, reject it and rewrite the positive prompt.
+8. Blind-listen with the screen off. The theme must read as a wondrous retro chip-adventure, not horror, thriller, dread, sadness, or a thin novelty chiptune. If it fails, reject it and rewrite the positive prompt.
 9. A/B the theme under the room's SFX cues at 0.35 music gain.
 10. Check the crossfade into and out of the room.
-11. Record the prompt, model, seed, duration, BPM, loop points, post-processing, adventure check, and licence.
+11. Record the prompt, model, seed, duration, BPM, loop points, post-processing, retro dialect, adventure check, and licence.
 
 ### Per-theme acceptance
 
@@ -571,6 +593,10 @@ Do not generate all four before the menu/03 pilot passes. The menu is the produc
 - [ ] Reads as **wondrous puzzle adventure**, not horror, thriller, dread, or sadness (blind-listen check).
 - [ ] No horror signifiers: low drone, heartbeat, ticking clock, minor-key ostinato, dissonant strings.
 - [ ] Positive adventure markers: rising motif, clear pulse, bright harmony, playful percussion.
+- [ ] Retro chip-adventure identity present: pulse-wave lead, triangle bass, noise-channel percussion, short arpeggios.
+- [ ] Full-bodied; not thin, toy-like, or a generic NES imitation.
+- [ ] Uses the assigned chip dialect (menu warm 16-bit, `03` airy 16-bit, `04` sturdy 16-bit, `01` crisp 8-bit).
+- [ ] Chip highs are softened and do not mask SFX.
 - [ ] Motif present but not masking SFX.
 - [ ] Reads as the intended room/menu identity.
 - [ ] Distinct from the other themes.
@@ -579,7 +605,8 @@ Do not generate all four before the menu/03 pilot passes. The menu is the produc
 ### Global acceptance
 
 - [ ] Menu + 03 + 04 + Silicon themes approved, or a recorded placeholder decision.
-- [ ] All four themes pass the blind-listen adventure test: wondrous, curious, forward-moving; not horror, thriller, dread, or epic.
+- [ ] All four themes pass the blind-listen adventure test: wondrous, curious, forward-moving, retro chip-adventure; not horror, thriller, dread, epic, or thin novelty chiptune.
+- [ ] All four themes pass the retro-dialect test: menu warm 16-bit, `03` airy 16-bit, `04` sturdy 16-bit, `01` crisp 8-bit; no shared generic-NES palette.
 - [ ] `room.music` is wired for 03, 04, and 01; hub theme `audio.music` is wired.
 - [ ] `theme.audio.music` fallback behaviour is documented and tested.
 - [ ] Menu theme replaces the `hub.hum` ambience role; `hub.hum` is not looped underneath.
@@ -645,7 +672,7 @@ Then manually listen to the menu theme, each room theme, the three-loop seam, th
 | `audio.music.muscle_effector` | | | | | | | | | | |
 | `audio.music.interrupt_loop` | | | | | | | | | | |
 
-**Minimum fields:** prompt version, asset ID, tool/plan, model/seed, duration, BPM, loop points, variations, chosen file, post-processing, runtime check, adventure check (blind-listen: adventure vs horror), verdict, licence, notes.
+**Minimum fields:** prompt version, asset ID, tool/plan, model/seed, duration, BPM, loop points, variations, chosen file, post-processing, runtime check, retro dialect (menu warm 16-bit, `03` airy 16-bit, `04` sturdy 16-bit, `01` crisp 8-bit), adventure check (blind-listen: adventure vs horror), verdict, licence, notes.
 
 ---
 
@@ -669,3 +696,4 @@ Then manually listen to the menu theme, each room theme, the three-loop seam, th
 |---|---|
 | 2026-11-03 | Initial proposed room/menu theme prompt pack. Adds four theme cards, motif rules, tool guide, loop QA, integration checklist, prompt log, and open decisions. |
 | 2026-11-03 | Adventure-tone rewrite (`audio-themes-2026-11-03.2`): anchored the direction to `DESIGN.md` “wondrous sci-fi puzzle adventure; warm and wry”; added adventure roles (invitation, discovery, teamwork, mission); replaced `warm-dark`, `tense`, `mysterious`, drone, heartbeat, ticking-timer, low-brass, and wet-membrane language with bright harmony, rising motifs, playful percussion, and forward motion; fully assembled Ludo and Stable Audio 2.5 prompts; complete per-theme negative blocks; added the blind-listen adventure check and removed the old “adventure is the reject reason” wording. |
+| 2026-11-03 | Retro-hybrid revision (`audio-themes-2026-11-03.3`): added a retro chip-adventure palette with four distinct chip dialects — warm 16-bit menu, airy 16-bit `03`, sturdy 16-bit `04`, crisp 8-bit Silicon. Added pulse-wave, triangle-bass, noise-channel, and arpeggio instrumentation; removed the old chiptune/8-bit negative bans and replaced them with generic-NES, thin-toy, novelty-8-bit, and bitcrushed-vocal guards; kept the warm sampled/organic low end, adventure roles, and horror/epic rejections; added retro-dialect acceptance and prompt-log fields. |

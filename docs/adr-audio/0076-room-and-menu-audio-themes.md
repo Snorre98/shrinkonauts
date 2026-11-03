@@ -80,10 +80,11 @@ This resolves the open M3.5 question "is `hub.hum` ambience or one-shot?" in fav
 
 The four themes are siblings, not four unrelated tracks:
 
-- **Anatomy "signal" motif:** a three-note ascending figure. `03` states it as a plucked nerve-fiber motif; `04` states it slower and heavier as a low brass/synth swell. `05`, when authored, resolves it.
-- **Silicon "relay" motif:** a two-note alternating tick. It is cold, precise, and not a variation of the anatomy motif. It must not use amber/warm anatomy instruments.
-- **Menu "home" motif:** a three-note warm chime. It can hint at the anatomy motif but is its own identity, because the hub is the real-world frame.
+- **Anatomy "signal" motif:** a three-note ascending figure. `03` states it as a plucked pulse-wave/marimba nerve-fiber motif; `04` states it slower and sturdier on a warm chip lead. `05`, when authored, resolves it.
+- **Silicon "relay" motif:** a two-note alternating tick. It is a crisp square/pulse ready-set figure, not a variation of the anatomy motif. It must not use amber/warm anatomy instruments or organic textures.
+- **Menu "home" motif:** a three-note warm chip-bell chime. It can hint at the anatomy motif but is its own identity, because the hub is the real-world frame.
 - The motif is low/mid register, stated two to four times per loop, and never mixed as a hook over the SFX cues.
+- The themes use a **retro chip-adventure palette**: warm 16-bit chip textures for the menu and anatomy rooms, crisp 8-bit hardware textures for Silicon. The chip palette is a texture, not a strict NES limitation; keep a full-bodied low end and avoid thin, toy-like chiptune.
 
 ### 5. Format and budget
 

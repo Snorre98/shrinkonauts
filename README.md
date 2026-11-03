@@ -291,13 +291,16 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
   of done, and remaining playtest checks.
 - [`docs/m1.9/README.md`](docs/m1.9/README.md) — bathroom hub, pack catalog,
   per-pack saves, and launch transition.
+- [`docs/m2.75/README.md`](docs/m2.75/README.md) — Nerve Forest concept rescope:
+  ontology, learning load, literalism, and the option space for redesigning 03.
 - [`docs/m3/muscle-endplate-asset-requirements-v01.md`](docs/m3/muscle-endplate-asset-requirements-v01.md)
   — additive 04 sky, shared tile-atlas prompts, and the `art:atlas` workflow.
 - [`docs/assets/prompt-library-v01.md`](docs/assets/prompt-library-v01.md) —
   cross-discipline inventory of graphics/audio placeholders, prompt routing,
   and completion order.
-- [`docs/adr-assets/README.md`](docs/adr-assets/README.md) — ADR-0078 for the
-  asset prompt-library governance and placeholder completion.
+- [`docs/adr-assets/README.md`](docs/adr-assets/README.md) — ADR-0078–0079 for
+  asset prompt-library governance, placeholder completion, and the scan fact
+  model.
 - [`docs/m1.9/remaining-work.md`](docs/m1.9/remaining-work.md) — what is
   deliberately missing and which milestone owns it.
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the

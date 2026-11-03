@@ -7,6 +7,12 @@
 accepted M1.5 puzzle contract
 **Not implemented:** no code, pack content, schema, engine, or vault changes
 
+> **M2.75 rescope (2026-11-03):** the `03-nerve-forest` concept is under review
+> in [`../../m2.75/README.md`](../../m2.75/README.md). The 03 section in this package
+> is the current implementation baseline, not a final concept decision. Do not
+> commission new 03 scan art or rewrite the 03 learning content until M2.75
+> chooses a model.
+
 ## 1. What this package decides
 
 This package defines one room-scale puzzle for each of the six rooms in the M2

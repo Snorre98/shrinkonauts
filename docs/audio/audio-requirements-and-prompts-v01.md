@@ -176,7 +176,7 @@ Do not cross-use the styles. `audio.cue.wrong` belongs to the M3 anatomy kit. Th
 | Suit | soft servos, pneumatic pushes, fabric snaps, relay clicks, tiny confirmation beeps | heavy armour, gunmetal impacts, mech stomps |
 | Biology | wet chirps, soft squelch, bone clunk, membrane thud, damp room tone | gore, blood, tearing meat, screams |
 | UI / hub | plastic button clicks, enamel and metal clunks, appliance hum, water slosh, digital shimmer | mouse clicks, keyboard clicks, phone notifications |
-| Tone | gross-cute, tactile, small-scale, deadpan | cinematic, horror, epic, 8-bit chiptune, cartoon boings |
+| Tone | gross-cute, tactile, small-scale, deadpan | cinematic, horror, epic, 8-bit chiptune SFX, cartoon boings |
 
 ### 4.4 Global negative (Stable Audio 3 Small SFX)
 
@@ -202,7 +202,7 @@ The global negative is intentionally broad. For tonal cues (`boot`, `debrief`, `
 - A voice, whisper, vocal texture, or intelligible speech.
 - Gore, blood, screams, pain, or body horror.
 - A realistic gunshot, explosion, horror stinger, or cinematic boom.
-- An 8-bit chiptune replacement for any cue. The visuals are pixel art; the audio direction is diegetic and tactile, not chiptune.
+- An 8-bit chiptune replacement for any **SFX cue**. The SFX stay diegetic and tactile; the separate music themes use a retro chip-adventure palette. Do not apply the theme's chip timbres to the SFX.
 - Footsteps, hazard sounds, or `propReturned` sounds. Those cues are emitted by the simulation but are not mapped in the theme.
 - Per-level, per-player, or Silicon-specific variants.
 - A new cue ID.

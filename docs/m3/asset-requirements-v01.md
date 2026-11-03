@@ -1159,11 +1159,13 @@ P2 now uses the approved Ludo walk and jump sheets. For the POC they are used di
 
 > **Scan prompts superseded (2026-11-04):** the whole-cell scan prompts below
 > for `sprite.scan.neuron` and `sprite.scan.pathway` are retained for anatomy
-> history only. Use [`docs/assets/scan-prompts-v02.md`](../../assets/scan-prompts-v02.md)
+> history only. Use [`docs/assets/scan-prompts-v02.md`](../assets/scan-prompts-v02.md)
 > for the three fact-specific 03 scan prompts (neuron cell, myelin sleeve,
 > one-way chain). `sprite.scan.myelin` is now a required asset, not an optional
 > future one. The old whole-cell plates fit 32×17 and 32×13 and fail the
-> compactness gate.
+> compactness gate. **Generation is on hold pending
+> [M2.75](../m2.75/README.md)**, which is reviewing whether the three-object
+> scan taxonomy is the right model.
 
 | Asset ID | Style / negative | Frame | Source | File |
 |---|---|---|---|---|

@@ -57,6 +57,10 @@ The accepted command family was `art:key`, `art:normalize`, `art:tile-clean`,
 
 ## 3. Remaining placeholder decisions outside 04
 
+> **03 scan art is on hold (2026-11-03):** the 03 concept and asset taxonomy are
+> under [M2.75](../m2.75/README.md) review. Do not generate the three scan sources
+> until that milestone chooses the model.
+
 | Asset | Where | Runtime | Stage | Decision / what remains | Prompt source |
 |---|---|---|---|---|---|
 | `sprite.scan.neuron` | 03 (`scan-neuron`) | `placeholder-only` | `processed (rejected)` | Keep placeholder. Old plate fits 32×17 and fails; compact-cell prompt ready, needs a new source. | [scan-prompts v02 §1](scan-prompts-v02.md) |

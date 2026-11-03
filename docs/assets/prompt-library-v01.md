@@ -221,6 +221,11 @@ are not used when the material grid resolves; they are not visible placeholders.
 
 ## 5. New graphics gap prompts
 
+> **On hold (2026-11-03):** the 03 scan taxonomy is under
+> [M2.75](../m2.75/README.md) review. Do not generate final scan sources until
+> M2.75 chooses whether myelin and pathway are separate objects, parts, or
+> process overlays. The prompts below are review-ready, not commissioned.
+
 The 03 scan set is now three fact-specific icons, not two shared whole-cell
 diagrams. The full copy-paste prompts are in
 [`scan-prompts-v02.md`](scan-prompts-v02.md). Use `STYLE_SPRITE`, `PALETTE`, and
