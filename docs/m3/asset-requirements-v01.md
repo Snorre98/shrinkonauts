@@ -1552,7 +1552,9 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 **Status:** the 2026-11-03 material JPEGs are 2048×2048 source swatches, not
 frame atlases. They were nearest-downscaled to 512, palette-quantised,
 2×2-snapped and edge-welded, then assembled into final 16/47-frame atlases
-through `npm run art:atlas -- --weld-edges`. The material tints are removed.
+through `npm run art:atlas -- --selection single --weld-edges`. The
+single-window mode keeps one source tile across all masks and accepts a 32 px
+repeat. The material tints are removed.
 See the [completion matrix](../assets/prompt-library-v01.md#40-completion-matrix).
 
 Ludo cannot output a named atlas. Generate **one seamless 1024×1024 material swatch concept per material**, pixel-clean it to a **512×512 working swatch** with 2×2 clusters, approve it at 32×32, then assemble the frames in Aseprite. The atlas is a post-process, not a single Ludo output. Keep the frame grid at **32×32**; do not switch to 16×16 frames.
@@ -2256,6 +2258,7 @@ Do not invent new prefixes without updating the asset contract.
 | 2026-11-03 | Additive 04 and tile-atlas pass: added [`muscle-endplate-asset-requirements-v01.md`](muscle-endplate-asset-requirements-v01.md); wired four material atlases (`tile.bone.atlas`, `tile.nerve.atlas`, `tile.muscle.atlas`, `tile.membrane.atlas`), an interim 1280×720 04 sky, and interim 64×64 `sprite.gate.nerve`/`sprite.exit` placeholders. Removed `tile.anatomy.atlas` from the runtime manifest; retained the SVG as a test fixture. Added `npm run art:atlas`. Final Nano Banana art and tint removal remain pending. |
 | 2026-11-03 | 04 Nano Banana source batch generated: seven raw plates under `art-source/nanobanan/new/muscle-endplate-2026-11-03/` (sky, four atlas swatches, gate, exit). All are `source-generated` only; runtime files remain interim. The gate/exit sources now use flat `#FF00FF`. Added the pipeline-stage vocabulary and completion matrix to `docs/assets/prompt-library-v01.md`; processing, acceptance, wiring, prompt-log completion and licence records remain pending. |
 | 2026-11-03 | 04 batch accepted: processed the 04 sky, four material atlases, `sprite.gate.nerve` and `sprite.exit`; removed `placeholder` and the four material tints; added licences, prompt log, `art:normalize --ramps`, `art:atlas --weld-edges` and final-atlas tests. The 03 scans, Silicon interrupt/exit and HUD badge remain placeholders; the hub logo uses the approved CSS fallback and the toy astronaut is cut. |
+| 2026-11-03 | Material atlas uniformity pass: added `art:atlas --selection single`, rebuilt the four atlases with one shared source window plus edge weld, and removed the tile-level procedural fiber overlays from `materials.json`. The accepted trade-off is a 32 px repeat; exposed edges keep the 2 px occlusion bands. |
 
 ---
 

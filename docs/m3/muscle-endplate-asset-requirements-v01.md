@@ -291,16 +291,17 @@ which would break the swatch seam. Quantise to the material ramps with
 --ramps ...`, then snap to the 2×2 grid and weld the swatch edges with
 `npm run art:tile-clean -- --snap2x2 --weld-x union --weld-y union`. Approve the
 result at 32×32, then assemble the frames with
-`npm run art:atlas -- --selection tileable --weld-edges`.
+`npm run art:atlas -- --selection single --weld-edges`.
 
 The assembler uses deterministic 32×32 windows from the approved 512×512 swatch
 and adds edge occlusion only on the sides where the mask bit is absent. The
-`--selection tileable` pass scores every aligned window and prefers those whose
-opposite edges already match (requiring at least four colours for interior
-frames), which keeps the muscle/nerve grain visible without a hard tile line.
-The explicit `--weld-edges` pass then makes each frame's opposite edges
+`--selection single` pass scores every aligned window and reuses the
+best-scoring, least-busy detailed window for every frame, so all masks show the
+same source texture instead of a per-mask patchwork. The accepted trade-off is a 32 px
+repeat. The explicit `--weld-edges` pass then makes that frame's opposite edges
 pixel-identical before occlusion, so the fully connected interior frame repeats
-without a seam.
+without a seam. Use `--selection tileable` only when per-mask grain variation is
+wanted more than uniformity.
 It writes the atlas PNG, a JSON region map and a report. Do not ask the generator
 for a named atlas; it cannot produce one reliably.
 
@@ -478,7 +479,7 @@ npm run art:atlas -- \
   --edge-color "#05090b" \
   --asset-id tile.muscle.atlas \
   --seed 1 \
-  --selection tileable \
+  --selection single \
   --weld-edges \
   --report art-source/nanobanan/reports/tile-muscle-atlas.json \
   --preview art-source/previews/nanobanan/tiles/tile-muscle-atlas-4x.png \
@@ -497,7 +498,7 @@ npm run art:atlas -- \
   --fill-color "#c9b79a" \
   --asset-id tile.bone.atlas \
   --seed 1 \
-  --selection tileable \
+  --selection single \
   --weld-edges \
   --report art-source/nanobanan/reports/tile-bone-atlas.json
 ```
@@ -508,10 +509,14 @@ npm run art:atlas -- \
 - `edge` writes 16 frames in a 4×4 grid, keys `0`–`15`.
 - `blob47` writes 47 frames in an 8×6 grid using the canonical mask list above.
 - Adds edge/corner occlusion only where the mask bit is absent.
+- With `--selection single`, scores every aligned 32×32 window by opposite-edge
+  difference and reuses the best-scoring, least-busy detailed window for every
+  frame. This is reported as `selection: "single"`; the `windows` map is
+  identical for every mask. The accepted trade-off is a 32 px repeat.
 - With `--selection tileable`, scores every aligned 32×32 window by opposite-edge
-  difference and chooses from the lowest-scoring detailed windows. Interior
-  frames use the best window. This is reported as `selection: "tileable"` plus a
-  per-mask `windows` map.
+  difference and chooses different windows per mask from the lowest-scoring
+  detailed windows. Interior frames use the best window. This is reported as
+  `selection: "tileable"` plus a per-mask `windows` map.
 - With `--weld-edges`, copies each frame's left/top 2×2 blocks to its right/bottom
   edges before occlusion. This is an explicit seam closure, not a silent repair;
   it is reported as `weldEdges: true` and is required for `mask-15`/`mask-255`
@@ -531,7 +536,7 @@ npm run art:atlas -- \
   "columns": 4,
   "rows": 4,
   "weldEdges": true,
-  "selection": "tileable",
+  "selection": "single",
   "regions": {
     "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 }
   },
@@ -695,10 +700,10 @@ Expected results:
 | Date | Prompt pack | Asset | Generator | Source | Chosen file | Runtime export | Status | Notes |
 |---|---|---|---|---|---|---|---|---|
 | 2026-11-03 | muscle-endplate-2026-11-03.1 | `bg.muscle_endplate.sky` | Nano Banana / Google Gemini (manual web UI; model/seed not recorded) | `art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg` | same | `shared/backgrounds/muscle-endplate-sky.webp` | accepted | 2720×1530 crop at (16,3); Lanczos to 1280×720; lossless VP8L; 669,798 bytes; `reports/muscle-endplate-sky.process.json` |
-| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.muscle.atlas` | Nano Banana / Google Gemini | `.../tile.muscle.atlas.jpeg` | `working/tile-muscle-swatch-nano-clean-512.png` | `shared/tiles/muscle-atlas.png` | accepted | nearest 512; ramps muscle/bone/boneShadow/teal/ink/sage; max distance 66.51; 2×2 clean; tileable selection + edge weld; `reports/tile-muscle-*` |
-| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.membrane.atlas` | Nano Banana / Google Gemini | `.../tile.membrane.atlas.jpeg` | `working/tile-membrane-swatch-nano-clean-512.png` | `shared/tiles/membrane-atlas.png` | accepted | nearest 512; ramps sage/bone/boneShadow/teal/ink/joint; max distance 56.05; 2×2 clean; tileable selection + edge weld; `reports/tile-membrane-*` |
-| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.bone.atlas` | Nano Banana / Google Gemini | `.../tile.bone.atlas.jpeg` | `working/tile-bone-swatch-nano-clean-512.png` | `shared/tiles/bone-atlas.png` | accepted | nearest 512; ramps bone/boneShadow/teal/ink/sage; max distance 74.23; 2×2 clean; tileable selection + edge weld; `reports/tile-bone-*` |
-| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.nerve.atlas` | Nano Banana / Google Gemini | `.../tile.nerve.atlas.jpeg` | `working/tile-nerve-swatch-nano-clean-512.png` | `shared/tiles/nerve-atlas.png` | accepted | nearest 512; ramps nerve/sage/joint/boneShadow/teal/ink/bone; max distance 62.20; 2×2 clean; tileable selection + edge weld; `reports/tile-nerve-*` |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.muscle.atlas` | Nano Banana / Google Gemini | `.../tile.muscle.atlas.jpeg` | `working/tile-muscle-swatch-nano-clean-512.png` | `shared/tiles/muscle-atlas.png` | accepted | nearest 512; ramps muscle/bone/boneShadow/teal/ink/sage; max distance 66.51; 2×2 clean; single-window selection + edge weld; `reports/tile-muscle-*` |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.membrane.atlas` | Nano Banana / Google Gemini | `.../tile.membrane.atlas.jpeg` | `working/tile-membrane-swatch-nano-clean-512.png` | `shared/tiles/membrane-atlas.png` | accepted | nearest 512; ramps sage/bone/boneShadow/teal/ink/joint; max distance 56.05; 2×2 clean; single-window selection + edge weld; `reports/tile-membrane-*` |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.bone.atlas` | Nano Banana / Google Gemini | `.../tile.bone.atlas.jpeg` | `working/tile-bone-swatch-nano-clean-512.png` | `shared/tiles/bone-atlas.png` | accepted | nearest 512; ramps bone/boneShadow/teal/ink/sage; max distance 74.23; 2×2 clean; single-window selection + edge weld; `reports/tile-bone-*` |
+| 2026-11-03 | muscle-endplate-2026-11-03.1 | `tile.nerve.atlas` | Nano Banana / Google Gemini | `.../tile.nerve.atlas.jpeg` | `working/tile-nerve-swatch-nano-clean-512.png` | `shared/tiles/nerve-atlas.png` | accepted | nearest 512; ramps nerve/sage/joint/boneShadow/teal/ink/bone; max distance 62.20; 2×2 clean; single-window selection + edge weld; `reports/tile-nerve-*` |
 | 2026-11-03 | muscle-endplate-2026-11-03.1 | `sprite.gate.nerve` | Nano Banana / Google Gemini | `.../sprite.gate.nerve.jpeg` | `keyed/gate-nerve.png` (ignored) | `shared/sprites/gate-nerve.png` | accepted | flat `#FF00FF`; key 0.18/0.08 despill trim; 60×60 fit in 64×64; 5,444 bytes; palette/alpha clean; sourceScale 31.2 and maxDistance 52.7 warnings reviewed |
 | 2026-11-03 | muscle-endplate-2026-11-03.1 | `sprite.exit` | Nano Banana / Google Gemini | `.../sprite.exit.jpeg` | `keyed/exit.png` (ignored) | `shared/sprites/exit.png` | accepted | flat `#FF00FF`; key 0.18/0.08 despill trim; 59×60 fit in 64×64; 6,043 bytes; palette/alpha clean; sourceScale 30.1, maxDistance 63.6 and no-joint-ramp warnings reviewed |
 

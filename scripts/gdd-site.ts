@@ -503,7 +503,7 @@ function inferProcessing(pack: PackDefinition, id: string, license: LicenseEntry
   }
   if (id.startsWith("bg.")) return "Cropped to runtime aspect; Lanczos downscale; lossless WebP";
   if (id.startsWith("tile.")) {
-    return "512x512 swatch quantised, 2x2-snapped and edge-welded; 32x32 frames assembled with --weld-edges";
+    return "512x512 swatch quantised, 2x2-snapped and edge-welded; 32x32 frames assembled with --selection single --weld-edges";
   }
   return "Magenta keyed; trimmed; fitted to class cell; hard alpha; palette quantised";
 }

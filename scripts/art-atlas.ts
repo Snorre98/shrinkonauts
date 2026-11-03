@@ -6,7 +6,7 @@
  * Usage:
  *   npm run art:atlas -- --in <swatch.png> --out <atlas.png> --rule edge
  *     [--edge-color "#05090b"] [--fill-color "#101a20"] [--seed 1]
- *     [--selection hash|tileable] [--weld-edges]
+ *     [--selection hash|tileable|single] [--weld-edges]
  *     [--asset-id tile.muscle.atlas] [--report <json>]
  *     [--preview <png>] [--preview-scale 4] [--background "#101a20"]
  *
@@ -27,7 +27,7 @@ import {
 } from "./art/ludo-sheet";
 
 export type AtlasRule = "edge" | "blob47";
-export type WindowSelection = "hash" | "tileable";
+export type WindowSelection = "hash" | "tileable" | "single";
 
 export const FRAME_SIZE = 32;
 
@@ -98,7 +98,9 @@ export interface BuildAtlasInput {
   /**
    * `hash` picks deterministic windows from the seed (legacy). `tileable`
    * prefers windows whose opposite edges already match, reducing the amount of
-   * correction the weld has to hide.
+   * correction the weld has to hide. `single` reuses the best-scoring,
+   * least-busy window for every frame, so the texture is uniform instead of a
+   * per-mask patchwork.
    */
   selection?: WindowSelection;
 }
@@ -282,6 +284,20 @@ function chooseWindow(
 
   const detailed = windows.filter((window) => window.colours >= 4);
   const pool = (detailed.length > 0 ? detailed : windows).slice(0, 8);
+  if (selection === "single") {
+    // Prefer the least-busy window among the best edge matches. This avoids
+    // repeating a single prominent feature (for example a dark mineral pore)
+    // across every tile while keeping the seam score strong.
+    return (
+      [...pool].sort(
+        (left, right) =>
+          left.score - right.score ||
+          left.colours - right.colours ||
+          left.y - right.y ||
+          left.x - right.x,
+      )[0] ?? windows[0]!
+    );
+  }
   const interior = mask === 15 || mask === 255;
   const index = interior
     ? 0
@@ -537,6 +553,11 @@ export function buildAtlas(input: BuildAtlasInput): BuildAtlasResult {
   const windows: Record<string, AtlasWindow> = {};
   const warnings = swatchWarnings(input.source);
   const selection = input.selection ?? "hash";
+  if (selection === "single") {
+    warnings.push(
+      "single 32×32 window reused for every frame; the texture repeats every 32 px",
+    );
+  }
   const candidates = atlasWindows(input.source);
 
   for (let index = 0; index < layout.keys.length; index += 1) {
@@ -686,8 +707,12 @@ function main(): void {
   if (!Number.isFinite(seed)) throw new Error("--seed must be finite");
   const weldEdges = args.includes("--weld-edges");
   const selection = (arg(args, "selection") ?? "hash") as WindowSelection;
-  if (selection !== "hash" && selection !== "tileable") {
-    throw new Error('--selection must be "hash" or "tileable"');
+  if (
+    selection !== "hash" &&
+    selection !== "tileable" &&
+    selection !== "single"
+  ) {
+    throw new Error('--selection must be "hash", "tileable" or "single"');
   }
 
   const source = readPng(sourcePath);

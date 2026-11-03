@@ -11,7 +11,7 @@
   "fillColor": "#c9b79a",
   "assetId": "tile.bone.atlas",
   "weldEdges": true,
-  "selection": "tileable",
+  "selection": "single",
   "regions": {
     "mask-0": {
       "x": 0,
@@ -298,22 +298,22 @@
   },
   "windows": {
     "mask-0": {
-      "x": 192,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-1": {
-      "x": 128,
-      "y": 384,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-4": {
-      "x": 128,
-      "y": 128,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-5": {
       "x": 416,
@@ -322,76 +322,76 @@
       "colours": 4
     },
     "mask-7": {
-      "x": 480,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-16": {
-      "x": 384,
-      "y": 128,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-17": {
-      "x": 192,
-      "y": 352,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-20": {
-      "x": 192,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-21": {
-      "x": 128,
-      "y": 384,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-23": {
-      "x": 384,
-      "y": 128,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-28": {
-      "x": 192,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-29": {
-      "x": 128,
-      "y": 384,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-31": {
-      "x": 192,
-      "y": 352,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-64": {
-      "x": 192,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-65": {
-      "x": 128,
-      "y": 384,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-68": {
-      "x": 128,
-      "y": 128,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-69": {
       "x": 416,
@@ -400,34 +400,34 @@
       "colours": 4
     },
     "mask-71": {
-      "x": 96,
+      "x": 416,
       "y": 96,
       "score": 0,
-      "colours": 5
+      "colours": 4
     },
     "mask-80": {
-      "x": 192,
-      "y": 352,
-      "score": 0,
-      "colours": 6
-    },
-    "mask-81": {
-      "x": 384,
-      "y": 128,
-      "score": 0,
-      "colours": 7
-    },
-    "mask-84": {
-      "x": 96,
+      "x": 416,
       "y": 96,
       "score": 0,
-      "colours": 5
+      "colours": 4
+    },
+    "mask-81": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-84": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
     },
     "mask-85": {
-      "x": 480,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-87": {
       "x": 416,
@@ -436,28 +436,28 @@
       "colours": 4
     },
     "mask-92": {
-      "x": 480,
-      "y": 32,
-      "score": 0,
-      "colours": 6
-    },
-    "mask-93": {
-      "x": 96,
+      "x": 416,
       "y": 96,
       "score": 0,
-      "colours": 5
+      "colours": 4
+    },
+    "mask-93": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
     },
     "mask-95": {
-      "x": 192,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-112": {
-      "x": 128,
-      "y": 128,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-113": {
       "x": 416,
@@ -466,40 +466,40 @@
       "colours": 4
     },
     "mask-116": {
-      "x": 192,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-117": {
-      "x": 128,
-      "y": 384,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-119": {
-      "x": 480,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-124": {
-      "x": 384,
-      "y": 128,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-125": {
-      "x": 192,
-      "y": 352,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-127": {
-      "x": 192,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-193": {
       "x": 416,
@@ -508,76 +508,76 @@
       "colours": 4
     },
     "mask-197": {
-      "x": 128,
-      "y": 384,
-      "score": 0,
-      "colours": 6
-    },
-    "mask-199": {
-      "x": 480,
-      "y": 32,
-      "score": 0,
-      "colours": 6
-    },
-    "mask-209": {
-      "x": 384,
-      "y": 128,
-      "score": 0,
-      "colours": 7
-    },
-    "mask-213": {
-      "x": 96,
+      "x": 416,
       "y": 96,
       "score": 0,
-      "colours": 5
+      "colours": 4
+    },
+    "mask-199": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-209": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-213": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
     },
     "mask-215": {
-      "x": 192,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-221": {
-      "x": 128,
-      "y": 384,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-223": {
-      "x": 384,
-      "y": 128,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-241": {
-      "x": 480,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-245": {
-      "x": 384,
-      "y": 128,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     },
     "mask-247": {
-      "x": 128,
-      "y": 384,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-253": {
-      "x": 192,
-      "y": 352,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 6
+      "colours": 4
     },
     "mask-255": {
-      "x": 192,
-      "y": 32,
+      "x": 416,
+      "y": 96,
       "score": 0,
-      "colours": 7
+      "colours": 4
     }
   },
   "frames": {
@@ -817,5 +817,7 @@
       "frame": "mask-255"
     }
   },
-  "warnings": []
+  "warnings": [
+    "single 32×32 window reused for every frame; the texture repeats every 32 px"
+  ]
 }

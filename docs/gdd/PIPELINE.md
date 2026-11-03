@@ -300,8 +300,9 @@ across the play band, so it is not ready to wire.
 - Anatomy uses four **final coloured PNG atlases**: 256×192 bone `blob47`,
   128×128 nerve `edge`, 128×128 muscle `edge`, and 128×128 membrane `edge`.
   They are assembled from processed 512×512 swatches and 32×32 frames by
-  `npm run art:atlas -- --selection tileable --weld-edges`; the material
-  tints are removed.
+  `npm run art:atlas -- --selection single --weld-edges`; the single-window
+  mode keeps one source tile across all masks and accepts a 32 px repeat. The
+  material tints are removed.
   `tile.anatomy.atlas` is no longer wired and is retained only as a test
   fixture. `tile.circuit.atlas` remains a placeholder SVG. The 2026-11-03 Nano
   Banana 2048×2048 swatches are nearest-downscaled, palette-quantised,

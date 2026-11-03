@@ -92,9 +92,21 @@ describe("materials catalog", () => {
     }
   });
 
-  it("uses material direction when no binding rotation is given", () => {
+  it("does not apply a default pattern overlay", () => {
     const catalog = createMaterialCatalog(document());
-    const resolved = resolveMaterialBinding(catalog, { materialId: "nerve" });
+    for (const materialId of ["bone", "nerve", "muscle", "membrane"]) {
+      const resolved = resolveMaterialBinding(catalog, { materialId });
+      expect(resolved.ok).toBe(true);
+      if (resolved.ok) expect(resolved.value.pattern).toBeUndefined();
+    }
+  });
+
+  it("uses material direction when an explicit pattern has no rotation", () => {
+    const catalog = createMaterialCatalog(document());
+    const resolved = resolveMaterialBinding(catalog, {
+      materialId: "nerve",
+      patternId: "nerve-fibers",
+    });
     expect(resolved.ok).toBe(true);
     if (resolved.ok) {
       expect(resolved.value.pattern?.rotation).toBeCloseTo(0.35);

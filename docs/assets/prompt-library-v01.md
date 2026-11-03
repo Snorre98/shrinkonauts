@@ -42,8 +42,9 @@ The branch now contains:
    - Processed 04 sky, four coloured material atlases, `sprite.gate.nerve` and
      `sprite.exit`; manifest `src`, licences, prompt log and tests complete.
    - Material tints removed; `placeholder` removed from the seven entries.
-   - The atlas assembler has an explicit `--weld-edges` pass; `art:normalize`
-     accepts a `--ramps` subset for material swatches.
+   - The atlas assembler has an explicit `--weld-edges` pass and a
+     `--selection single` mode that reuses one source window across all masks;
+     `art:normalize` accepts a `--ramps` subset for material swatches.
 2. **Earlier POC graphics integrated**:
    - P1/P2 players, Neuron Keeper static + 36-frame idle.
    - Readable scans/entities, the 03 pretty sky and the hub M3.5 art.

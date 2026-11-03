@@ -212,9 +212,11 @@ pause/close, `M` mute.
 The room is fully materialized: muscle walls/floor and the postsynaptic/exit
 platforms use the final coloured `muscle-edge` atlas, while the presynaptic
 tower, vesicle dock and cleft bridge use the final coloured `membrane-edge`
-atlas. The `muscle-gate` carries a world-space `muscle-fibers` overlay that
-shares phase with the muscle floor. The material tints are removed
-because the Nano Banana atlases are authored in colour. The final 04 sky
+atlas. The `muscle-gate` retains its explicit world-space `muscle-fibers`
+overlay as an object treatment; the muscle and membrane floor tiles use the
+single-window atlases without a procedural overlay, so they are uniform rather
+than sharing the gate's pattern phase. The material tints are removed because
+the Nano Banana atlases are authored in colour. The final 04 sky
 replaces the procedural gradient; `bg.muscle_endplate.far`, `.mid` and `.near`
 remain declared placeholders. Materials are visual only; collision comes from
 `layers.tiles`. Human visual review is pending.

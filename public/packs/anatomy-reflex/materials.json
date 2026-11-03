@@ -6,7 +6,6 @@
       "family": "mineral",
       "palette": ["bone", "boneShadow"],
       "edge": "hard",
-      "patternId": "bone-cortex",
       "autotile": "blob47",
       "variantSet": "bone-blob47"
     },
@@ -14,7 +13,6 @@
       "family": "organic",
       "palette": ["nerve", "joint"],
       "edge": "soft",
-      "patternId": "nerve-fibers",
       "direction": 0.35,
       "autotile": "edge",
       "variantSet": "nerve-edge"
@@ -23,7 +21,6 @@
       "family": "organic",
       "palette": ["muscle", "bone"],
       "edge": "soft",
-      "patternId": "muscle-fibers",
       "direction": 0,
       "autotile": "edge",
       "variantSet": "muscle-edge"
@@ -32,7 +29,6 @@
       "family": "organic",
       "palette": ["muted", "bone"],
       "edge": "soft",
-      "patternId": "membrane-cells",
       "autotile": "edge",
       "variantSet": "membrane-edge"
     }

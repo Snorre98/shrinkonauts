@@ -47,7 +47,7 @@ function build(
   options: {
     weldEdges?: boolean;
     source?: RgbaImage;
-    selection?: "hash" | "tileable";
+    selection?: "hash" | "tileable" | "single";
   } = {},
 ): BuildAtlasResult {
   const { source, weldEdges, selection } = options;
@@ -199,6 +199,31 @@ describe("atlas assembler", () => {
       leftRight: 0,
       topBottom: 0,
     });
+  });
+
+  it("reuses one window for every frame in single mode", () => {
+    const result = build("edge", {
+      source: weldSwatch(96),
+      selection: "single",
+      weldEdges: true,
+    });
+    expect(result.selection).toBe("single");
+    const windows = Object.values(result.windows);
+    expect(windows).toHaveLength(EDGE_KEYS.length);
+    const [first] = windows;
+    expect(first).toBeDefined();
+    if (!first) return;
+    for (const window of windows) {
+      expect(window.x).toBe(first.x);
+      expect(window.y).toBe(first.y);
+    }
+    expect(oppositeEdgeMismatch(result, "mask-15")).toEqual({
+      leftRight: 0,
+      topBottom: 0,
+    });
+    expect(
+      result.warnings.some((warning) => warning.includes("single")),
+    ).toBe(true);
   });
 
   it("writes an 8x6 blob47 atlas with 47 named regions and one filled empty cell", () => {
