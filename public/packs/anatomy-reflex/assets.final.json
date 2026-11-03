@@ -407,7 +407,8 @@
     },
     "audio.cue.scan": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/scan.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.dash": {
       "type": "audio",
@@ -439,11 +440,13 @@
     },
     "audio.cue.jump": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/jump.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.land": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/land.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.music.nerve_forest": {
       "type": "audio",

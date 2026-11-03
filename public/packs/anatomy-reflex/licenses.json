@@ -240,6 +240,36 @@
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
       "modified": "2026-11-01; 2752x1536 source sha256 29103f0b12b59f497fabe3702fd4cc39a11244fe8588dda4681448391df3e5ca; 2672x1536 crop at x=40 (40 px each side); Lanczos downscale to 1280x736; no palette quantization; lossless WebP; muscle-pink drapes retained"
+    },
+    {
+      "file": "shared/audio/jump.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "Generated 2026-11-03; seed 2; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/land.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "Generated 2026-11-03; seed 4; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/scan.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "Generated 2026-11-03; seed 4; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
+      "aiGenerated": true
     }
   ]
 }

@@ -1,0 +1,43 @@
+asset_id,model,seed,requested_duration_s,variations,chosen_file,post_processing,verdict,licence
+audio.cue.boot,stable-audio-3-small-sfx,2,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,3,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,4,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.scan,stable-audio-3-small-sfx,1,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.scan,stable-audio-3-small-sfx,2,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.scan,stable-audio-3-small-sfx,3,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.scan,stable-audio-3-small-sfx,4,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.jump,stable-audio-3-small-sfx,1,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.jump,stable-audio-3-small-sfx,2,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.jump,stable-audio-3-small-sfx,3,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.jump,stable-audio-3-small-sfx,4,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.land,stable-audio-3-small-sfx,1,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.land,stable-audio-3-small-sfx,2,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.land,stable-audio-3-small-sfx,3,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.land,stable-audio-3-small-sfx,4,1,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,1,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,2,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,3,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,4,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -3 dBFS;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,5,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,6,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,7,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,8,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,1,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,2,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,3,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,4,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,5,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,6,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,1,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,2,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,3,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,4,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,5,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx,6,1.2,6,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx-base,1,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx-base,2,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx-base,3,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.boot,stable-audio-3-small-sfx-base,4,1.2,4,,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,take,Stability AI Community License
+audio.cue.jump,stable-audio-3-small-sfx,2,1,1,shared/audio/jump.mp3,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,accepted,Stability AI Community License
+audio.cue.land,stable-audio-3-small-sfx,4,1,1,shared/audio/land.mp3,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,accepted,Stability AI Community License
+audio.cue.scan,stable-audio-3-small-sfx,4,1,1,shared/audio/scan.mp3,head/tail trim;  35 Hz HPF;  window clamp;  -5 dBFS / <= -1 dBTP;  10 ms fade;  48 kHz mono MP3 160k,accepted,Stability AI Community License
