@@ -1,42 +1,5 @@
 {
   "schemaVersion": "1.1",
   "id": "silicon-reflex.placeholder",
-  "assets": {
-    "ui.blueprint.symbol.sensor-detect": {
-      "type": "image",
-      "placeholder": true,
-      "display": {
-        "width": 32,
-        "height": 32
-      },
-      "fidelity": "ui-1x"
-    },
-    "ui.blueprint.symbol.route-integrate": {
-      "type": "image",
-      "placeholder": true,
-      "display": {
-        "width": 32,
-        "height": 32
-      },
-      "fidelity": "ui-1x"
-    },
-    "ui.blueprint.symbol.cpu-wake": {
-      "type": "image",
-      "placeholder": true,
-      "display": {
-        "width": 32,
-        "height": 32
-      },
-      "fidelity": "ui-1x"
-    },
-    "ui.blueprint.symbol.actuator-gate": {
-      "type": "image",
-      "placeholder": true,
-      "display": {
-        "width": 32,
-        "height": 32
-      },
-      "fidelity": "ui-1x"
-    }
-  }
+  "assets": {}
 }

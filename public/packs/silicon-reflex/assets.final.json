@@ -490,6 +490,46 @@
       "type": "audio",
       "src": "shared/audio/theme-interrupt-loop.mp3",
       "license": "Stability AI Community License"
+    },
+    "ui.blueprint.symbol.sensor-detect": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/sensor-detect.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.route-integrate": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/route-integrate.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.cpu-wake": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/cpu-wake.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.actuator-gate": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/actuator-gate.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     }
   }
 }

@@ -1053,6 +1053,86 @@
       },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "ui.blueprint.symbol.input-pair": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/input-pair.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.threshold-gauge": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/threshold-gauge.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.axon-flow": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/axon-flow.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.exit-gate": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/exit-gate.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.ca-window": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/ca-window.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.ach-carry": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/ach-carry.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.receptor-bind": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/receptor-bind.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.response-clear": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/response-clear.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     }
   }
 }
