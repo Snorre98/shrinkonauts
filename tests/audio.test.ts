@@ -324,6 +324,38 @@ describe("audio themes", () => {
     expect(musicBus?.gain.events[0]?.value).toBeCloseTo(0.245);
   });
 
+  it("invokes theme fetch with the global receiver", async () => {
+    const fake = new FakeContext();
+    const warnings: string[] = [];
+    const receivers: unknown[] = [];
+    const fetchImpl = vi.fn(function (this: unknown) {
+      receivers.push(this);
+      if (this !== globalThis) {
+        throw new TypeError("Illegal invocation");
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => new ArrayBuffer(8),
+      });
+    }) as unknown as typeof fetch;
+    const audio = createAudio({
+      assets: themeAssets(),
+      storage: null,
+      logger: silentLogger,
+      onWarning: (message) => warnings.push(message),
+      fetchImpl,
+      contextFactory: () => context(fake),
+    });
+
+    audio.playTheme("audio.music.menu");
+    await expect(audio.unlock()).resolves.toBe(true);
+    await vi.waitFor(() => expect(fake.bufferSources).toHaveLength(1));
+
+    expect(receivers).toEqual([globalThis]);
+    expect(warnings).toHaveLength(0);
+  });
+
   it("crossfades the old theme out and the new theme in", async () => {
     const fake = new FakeContext();
     const audio = createAudio({

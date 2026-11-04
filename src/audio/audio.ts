@@ -102,7 +102,9 @@ export class DefaultAudioModule implements AudioModule {
         : options.storage;
     this.onWarning = options.onWarning;
     this.contextFactory = options.contextFactory ?? browserContextFactory;
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    // Bind to the global receiver so Chrome's fetch does not throw
+    // "Illegal invocation" when called as an instance method.
+    this.fetchImpl = (options.fetchImpl ?? fetch).bind(globalThis);
     this.providerOverride = options.provider;
 
     this.manifestProvider = new ManifestAudioProvider({
