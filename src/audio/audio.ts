@@ -1,5 +1,6 @@
 import {
   inferCategory,
+  type AssetId,
   type AssetsModule,
   type ResolvedAsset,
 } from "../assets";
@@ -26,6 +27,8 @@ const DEFAULT_THEME_FADE_IN_MS = 800;
 const DEFAULT_THEME_FADE_OUT_MS = 1000;
 const THEME_CACHE_LIMIT = 2;
 const MUSIC_RAMP_SECONDS = 0.15;
+const PENDING_CUE_LIMIT = 16;
+const PRELOAD_SAMPLE_RATE = 48_000;
 
 interface ActiveTheme {
   assetId: string;
@@ -80,8 +83,13 @@ export class DefaultAudioModule implements AudioModule {
   private readonly themeBuffers = new Map<string, AudioBuffer>();
   private readonly themeLoads = new Map<string, Promise<AudioBuffer | null>>();
   private readonly themeFailed = new Set<string>();
+  private readonly pendingCues: string[] = [];
+  private readonly pendingCueSet = new Set<string>();
+  private readonly preloaded = new Set<string>();
+  private readonly preloading = new Map<string, Promise<void>>();
 
   private context: AudioContext | null = null;
+  private preloadContext: BaseAudioContext | null = null;
   private musicBus: GainNode | null = null;
   private musicBusValue = 0;
   private activeTheme: ActiveTheme | null = null;
@@ -164,6 +172,7 @@ export class DefaultAudioModule implements AudioModule {
       }
 
       this.unlockedState = true;
+      this.flushPendingCues();
       this.startPendingTheme();
       return true;
     } catch (error) {
@@ -172,6 +181,55 @@ export class DefaultAudioModule implements AudioModule {
       );
       return false;
     }
+  }
+
+  async preload(assetIds: readonly AssetId[]): Promise<void> {
+    if (this.disposed || this.providerOverride) {
+      return;
+    }
+
+    const ids = [...new Set(assetIds)];
+    if (ids.length === 0) {
+      return;
+    }
+
+    const context = this.preloadContextForDecode();
+    if (!context) {
+      return;
+    }
+
+    await Promise.all(
+      ids.map(async (id) => {
+        if (this.preloaded.has(id)) {
+          return;
+        }
+        const existing = this.preloading.get(id);
+        if (existing) {
+          await existing;
+          return;
+        }
+
+        let asset: ResolvedAsset;
+        try {
+          asset = this.assets.audio(id);
+        } catch {
+          return;
+        }
+        if (!asset || asset.type !== "audio" || !asset.src) {
+          this.preloaded.add(id);
+          return;
+        }
+
+        const load = this.manifestProvider
+          .preload(context, asset)
+          .finally(() => {
+            this.preloading.delete(id);
+            this.preloaded.add(id);
+          });
+        this.preloading.set(id, load);
+        await load;
+      }),
+    );
   }
 
   play(cueId: string): void {
@@ -206,8 +264,8 @@ export class DefaultAudioModule implements AudioModule {
     const provider = this.providerFor(asset);
 
     if (provider.needsContext && !this.unlockedState) {
-      // Before the first gesture there is no context; stay silent rather than
-      // creating one outside a user gesture.
+      // Queue the cue until the first gesture can create/resume the context.
+      this.queueCue(cueId);
       return;
     }
 
@@ -353,6 +411,10 @@ export class DefaultAudioModule implements AudioModule {
     this.themeLoads.clear();
     this.themeFailed.clear();
     this.themeWarned.clear();
+    this.pendingCues.length = 0;
+    this.pendingCueSet.clear();
+    this.preloaded.clear();
+    this.preloading.clear();
 
     this.musicBus?.disconnect();
     this.musicBus = null;
@@ -360,6 +422,8 @@ export class DefaultAudioModule implements AudioModule {
 
     const context = this.context;
     this.context = null;
+    this.preloadContext = null;
+
     if (!context || context.state === "closed") {
       return;
     }
@@ -640,6 +704,57 @@ export class DefaultAudioModule implements AudioModule {
         `AUDIO_CONTEXT_UNAVAILABLE: ${error instanceof Error ? error.message : String(error)}. Audio stays silent.`,
       );
       return null;
+    }
+  }
+
+  private preloadContextForDecode(): BaseAudioContext | null {
+    if (
+      this.preloadContext &&
+      this.preloadContext.state !== "closed"
+    ) {
+      return this.preloadContext;
+    }
+    if (this.context && this.context.state !== "closed") {
+      return this.context;
+    }
+    if (typeof OfflineAudioContext !== "undefined") {
+      try {
+        this.preloadContext = new OfflineAudioContext(
+          1,
+          1,
+          PRELOAD_SAMPLE_RATE,
+        );
+        return this.preloadContext;
+      } catch {
+        // Fall through to the real context when the browser lacks offline decode.
+      }
+    }
+    return this.ensureContext();
+  }
+
+  private queueCue(cueId: string): void {
+    if (this.pendingCueSet.has(cueId)) {
+      return;
+    }
+    if (this.pendingCues.length >= PENDING_CUE_LIMIT) {
+      const dropped = this.pendingCues.shift();
+      if (dropped) {
+        this.pendingCueSet.delete(dropped);
+      }
+    }
+    this.pendingCues.push(cueId);
+    this.pendingCueSet.add(cueId);
+  }
+
+  private flushPendingCues(): void {
+    if (this.pendingCues.length === 0) {
+      return;
+    }
+    const cues = [...this.pendingCues];
+    this.pendingCues.length = 0;
+    this.pendingCueSet.clear();
+    for (const cueId of cues) {
+      this.play(cueId);
     }
   }
 

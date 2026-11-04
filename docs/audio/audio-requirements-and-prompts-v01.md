@@ -105,6 +105,12 @@ background; later plays use the decoded file. Fetch/decode failures warn once
 and keep the placeholder path. Dropping files into `public/` and adding `src`
 entries to the manifests now makes them play.
 
+Cue files are frontloaded before gameplay: hub cues are decoded while the hub
+mounts, and pack cues are decoded during pack preparation before
+`runtime.start()`. The first jump, land, scan and event cue therefore play the
+decoded file. A direct boot has no start gesture, so its first cue is queued and
+flushed when the first input unlocks the audio context.
+
 ADR-0077 theme playback is also implemented in `src/audio/audio.ts`: the music
 bus, looped buffers, crossfade, pending-until-unlock queue, pause/resume, and
 warn-once silence. The four room/menu theme files are installed as MP3s
@@ -112,9 +118,13 @@ warn-once silence. The four room/menu theme files are installed as MP3s
 `theme-interrupt-loop`) and the wired `room.music` / `theme.audio.music` IDs
 now resolve to files.
 
-### 3.3 First pack cue may be silent
+### 3.3 First pack cue is preloaded and unlocked
 
-`installAudioUnlock()` unlocks `this.activeAudio` on the first keydown/pointerdown. The hub audio is created before that gesture, but the pack audio is created after the start click. The first `boot` cue can therefore play before the pack audio context is unlocked, and `play()` returns silently. Verify this in the browser; if it happens, unlock the newly created pack audio inside the same start gesture before playing `boot`.
+The menu start path passes `fromGesture: true`, unlocks the new pack audio
+before `runtime.start()`, then preloads every cue ID from the theme. The first
+`boot` cue therefore plays the decoded MP3 instead of being dropped. Direct
+boot has no gesture; its first cue is queued and flushes when the first input
+unlocks the context.
 
 ### 3.4 Cue labels drift from the runtime
 
@@ -1135,7 +1145,7 @@ Do not batch all 18 before the pilot is approved. The pilot is the audio style a
 
 - [x] Implement `ManifestAudioProvider`: fetch, decode, cache, play; keep the synth fallback.
 - [x] Add a test that a manifest audio asset with `src` plays a buffer and does not emit `AUDIO_FILE_PROVIDER_STUB`.
-- [ ] Verify the first `boot` cue after pack start. If it is silent, unlock the new pack audio inside the start gesture.
+- [x] Verify the first `boot` cue after pack start; pack audio is unlocked and cues are preloaded before `runtime.start()`.
 - [ ] Verify mute and volume apply to hub and pack audio.
 - [ ] Verify mute/volume persist across reload (`shrinkonauts.audio` and settings).
 - [ ] Verify a missing file falls back to the synth without crashing.

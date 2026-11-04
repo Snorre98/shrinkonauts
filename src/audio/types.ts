@@ -63,6 +63,11 @@ export interface CreateAudioOptions {
 export interface AudioModule {
   /** Must be called from a user gesture. Returns true once running. */
   unlock(): Promise<boolean>;
+  /**
+   * Fetch and decode file-backed cues ahead of playback. Safe before unlock;
+   * failures are warned once and leave the normal fallback path intact.
+   */
+  preload(assetIds: readonly AssetId[]): Promise<void>;
   play(cueId: AssetId): void;
   /** Plays a loopable room/menu theme through the music bus. */
   playTheme(assetId: AssetId, options?: AudioThemeOptions): void;

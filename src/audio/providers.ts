@@ -123,8 +123,17 @@ export class ManifestAudioProvider implements AudioProvider {
     void this.load(context, asset);
   }
 
+  /**
+   * Fetch and decode a cue ahead of its first play. Failures keep the normal
+   * warn-once fallback behaviour; this never throws into gameplay.
+   */
+  async preload(context: BaseAudioContext, asset: ResolvedAsset): Promise<void> {
+    if (!asset.src) return;
+    await this.load(context, asset);
+  }
+
   private async load(
-    context: AudioContext,
+    context: BaseAudioContext,
     asset: ResolvedAsset,
   ): Promise<void> {
     if (this.failed.has(asset.id) || !asset.src) return;
@@ -144,7 +153,7 @@ export class ManifestAudioProvider implements AudioProvider {
   }
 
   private async decode(
-    context: AudioContext,
+    context: BaseAudioContext,
     asset: ResolvedAsset,
   ): Promise<void> {
     try {

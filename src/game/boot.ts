@@ -516,6 +516,9 @@ export class AppController {
     if (menuTheme) {
       this.hubAudio?.playTheme(menuTheme, { fadeInMs: 800 });
     }
+    await this.hubAudio?.preload(
+      Object.values(this.hubContent.theme.audio?.cues ?? {}),
+    );
 
     this.hubContainer?.remove();
     this.hubContainer = document.createElement("div");
@@ -526,10 +529,10 @@ export class AppController {
         onSelectPack: (id) => this.selectPack(id),
         onModeChange: (mode) => this.selectMode(mode),
         onStart: () => {
-          void this.startSelected({ resume: true });
+          void this.startSelected({ resume: true, fromGesture: true });
         },
         onNewCycle: () => {
-          void this.startSelected({ resume: false });
+          void this.startSelected({ resume: false, fromGesture: true });
         },
         onMute: () => this.toggleMute(),
         onTextScale: (scale) => this.setTextScale(scale),
@@ -589,6 +592,7 @@ export class AppController {
   private async startSelected(options: {
     resume: boolean;
     skipIntro?: boolean;
+    fromGesture?: boolean;
   }): Promise<void> {
     if (!this.state || this.state.busy) return;
     const entry = selectedPack(this.state);
@@ -643,7 +647,11 @@ export class AppController {
             reducedMotion: this.saveData.settings.accessibility.reducedMotion,
           }) ?? Promise.resolve();
 
-      const bundlePromise = this.preparePack(entry.id, options.resume);
+      const bundlePromise = this.preparePack(
+        entry.id,
+        options.resume,
+        options.fromGesture === true,
+      );
       [bundle] = await Promise.all([bundlePromise, launch]);
       this.state = markLaunching(this.state);
       this.refreshHub();
@@ -666,6 +674,7 @@ export class AppController {
   private async preparePack(
     packId: string,
     resume: boolean,
+    fromGesture = false,
   ): Promise<PackBundle> {
     const entry = catalogEntry(this.catalogData, packId);
     if (!entry) throw new Error(`PACK_NOT_FOUND: ${packId}`);
@@ -750,6 +759,10 @@ export class AppController {
     });
     audio.setMuted(this.saveData.settings.audio.muted);
     audio.setVolume(this.saveData.settings.audio.volume);
+    if (fromGesture) {
+      await audio.unlock();
+    }
+    await audio.preload(Object.values(content.theme.audio?.cues ?? {}));
 
     try {
       const audioPort: AudioPort = {

@@ -533,11 +533,12 @@ jump, land, wrong
 
 Web Audio is unlocked on the first keydown/pointerdown, mute and volume persist
 through the save-owned storage seam, and missing/failed media warns and falls
-back to a synth or silence. File-backed cues fetch and decode once, then play a
-cached buffer. Room/menu themes use a dedicated music bus, looped buffers,
-gain-ramp crossfades, and warn-once silence. The menu and three authored room
-themes are installed and `room.music` / `theme.audio.music` resolve to files. A
-separate ambience loop is deferred.
+back to a synth or silence. Cue files are preloaded during hub mount and pack
+preparation, then play a cached buffer on their first occurrence. Room/menu
+themes use a dedicated music bus, looped buffers, gain-ramp crossfades, and
+warn-once silence. The menu and three authored room themes are installed and
+`room.music` / `theme.audio.music` resolve to files. A separate ambience loop is
+deferred.
 
 ## Validation
 

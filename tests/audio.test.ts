@@ -297,6 +297,52 @@ describe("audio providers", () => {
   });
 });
 
+describe("audio preloading", () => {
+  it("loads decoded cues before the first play", async () => {
+    const fake = new FakeContext();
+    const fetchImpl = fetchOk();
+    const audio = createAudio({
+      assets: assetsFor((id) =>
+        descriptor({ id, src: `https://example.test/${id}.mp3` }),
+      ),
+      storage: null,
+      logger: silentLogger,
+      fetchImpl,
+      contextFactory: () => context(fake),
+    });
+
+    await audio.preload(["audio.cue.jump", "audio.cue.land"]);
+    await expect(audio.unlock()).resolves.toBe(true);
+    audio.play("audio.cue.jump");
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fake.oscillators).toHaveLength(0);
+    expect(fake.bufferSources).toHaveLength(1);
+  });
+
+  it("queues cues until unlock and flushes the decoded buffer", async () => {
+    const fake = new FakeContext();
+    const audio = createAudio({
+      assets: assetsFor((id) =>
+        descriptor({ id, src: `https://example.test/${id}.mp3` }),
+      ),
+      storage: null,
+      logger: silentLogger,
+      fetchImpl: fetchOk(),
+      contextFactory: () => context(fake),
+    });
+
+    await audio.preload(["audio.cue.jump"]);
+    audio.play("audio.cue.jump");
+    expect(fake.bufferSources).toHaveLength(0);
+
+    await expect(audio.unlock()).resolves.toBe(true);
+
+    expect(fake.oscillators).toHaveLength(0);
+    expect(fake.bufferSources).toHaveLength(1);
+  });
+});
+
 describe("audio themes", () => {
   it("queues a theme until unlock, then plays a loop through the music bus", async () => {
     const fake = new FakeContext();
@@ -640,9 +686,11 @@ describe("audio failures", () => {
     fake.state = "running";
     await expect(audio.unlock()).resolves.toBe(true);
     expect(audio.unlocked).toBe(true);
+    // The first play was queued while blocked and flushed on successful unlock.
+    expect(fake.oscillators).toHaveLength(1);
 
     audio.play("audio.cue.jump");
-    expect(fake.oscillators).toHaveLength(1);
+    expect(fake.oscillators).toHaveLength(2);
   });
 
   it("warns and stays silent for missing or silent cues", () => {
