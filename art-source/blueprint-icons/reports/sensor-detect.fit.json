@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "id": "ui.blueprint.symbol.sensor-detect",
+  "class": "ui-1x",
+  "status": "accepted",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 32,
+    "height": 32
+  },
+  "notes": "Accepted at 1x: fitted 28x26 in 32x32 with 2px margins. The sensor eye, radiating ticks and forward bead read in the Silicon palette.",
+  "config": "fit.config.json",
+  "source": {
+    "path": "art-source/blueprint-icons/keyed/sensor-detect.png",
+    "width": 1311,
+    "height": 1228,
+    "edgeContact": {
+      "top": 42,
+      "bottom": 82,
+      "left": 205,
+      "right": 72
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/ui/blueprint-symbols/sensor-detect.png",
+    "runtime": true,
+    "written": true,
+    "width": 32,
+    "height": 32,
+    "bytes": 1262
+  },
+  "cell": {
+    "width": 32,
+    "height": 32
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 180,
+    "maxPaletteDistance": 32,
+    "maxDownscale": 64
+  },
+  "sourceScale": 47.231,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1311,
+    "height": 1228
+  },
+  "fit": {
+    "width": 28,
+    "height": 26,
+    "offsetX": 2,
+    "offsetY": 4,
+    "scale": 0.021358,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 4,
+    "width": 28,
+    "height": 26
+  },
+  "margins": {
+    "top": 4,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 294,
+    "maxDistance": 53.61,
+    "offPalettePixels": 294,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 294
+  },
+  "rampHistogram": {
+    "teal": 58,
+    "boneShadow": 56,
+    "ink": 54,
+    "joint": 25,
+    "bone": 75,
+    "sage": 26
+  },
+  "warnings": [
+    "source content touches the image border (t 42, b 82, l 205, r 72); the concept plate may be clipped",
+    "max palette quantisation distance 53.6 exceeds 32"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/blueprint-icons/sensor-detect-1x.png",
+    "scale2x": "art-source/previews/blueprint-icons/sensor-detect-2x.png",
+    "scale4x": "art-source/previews/blueprint-icons/sensor-detect-4x.png",
+    "tint2x": "art-source/previews/blueprint-icons/sensor-detect-tint-2x.png"
+  }
+}

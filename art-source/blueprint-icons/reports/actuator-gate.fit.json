@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "id": "ui.blueprint.symbol.actuator-gate",
+  "class": "ui-1x",
+  "status": "accepted",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 32,
+    "height": 32
+  },
+  "notes": "Accepted at 1x: fitted 26x28 in 32x32 with 2px margins. The arch and diagonal actuator strut read in the Silicon palette.",
+  "config": "fit.config.json",
+  "source": {
+    "path": "art-source/blueprint-icons/keyed/actuator-gate.png",
+    "width": 1230,
+    "height": 1313,
+    "edgeContact": {
+      "top": 231,
+      "bottom": 408,
+      "left": 818,
+      "right": 818
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/ui/blueprint-symbols/actuator-gate.png",
+    "runtime": true,
+    "written": true,
+    "width": 32,
+    "height": 32,
+    "bytes": 1086
+  },
+  "cell": {
+    "width": 32,
+    "height": 32
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 180,
+    "maxPaletteDistance": 32,
+    "maxDownscale": 64
+  },
+  "sourceScale": 47.308,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1230,
+    "height": 1313
+  },
+  "fit": {
+    "width": 26,
+    "height": 28,
+    "offsetX": 3,
+    "offsetY": 2,
+    "scale": 0.021325,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 3,
+    "y": 2,
+    "width": 26,
+    "height": 28
+  },
+  "margins": {
+    "top": 2,
+    "right": 3,
+    "bottom": 2,
+    "left": 3
+  },
+  "quantization": {
+    "changedPixels": 274,
+    "maxDistance": 49.739,
+    "offPalettePixels": 274,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 274
+  },
+  "rampHistogram": {
+    "teal": 52,
+    "ink": 49,
+    "sage": 26,
+    "bone": 83,
+    "boneShadow": 57,
+    "joint": 7
+  },
+  "warnings": [
+    "source content touches the image border (t 231, b 408, l 818, r 818); the concept plate may be clipped",
+    "max palette quantisation distance 49.7 exceeds 32"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/blueprint-icons/actuator-gate-1x.png",
+    "scale2x": "art-source/previews/blueprint-icons/actuator-gate-2x.png",
+    "scale4x": "art-source/previews/blueprint-icons/actuator-gate-4x.png",
+    "tint2x": "art-source/previews/blueprint-icons/actuator-gate-tint-2x.png"
+  }
+}
