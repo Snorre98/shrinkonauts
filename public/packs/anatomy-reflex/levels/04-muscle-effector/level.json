@@ -87,7 +87,8 @@
             "label": "Nicotinic receptor"
           },
           "wrong-receptor": {
-            "label": "Wrong receptor"
+            "label": "Wrong receptor",
+            "placement": "hidden"
           },
           "pulse-terminal": {
             "label": "Motor terminal"
@@ -96,7 +97,8 @@
             "label": "ACh clearance"
           },
           "response-relay": {
-            "label": "Muscle response"
+            "label": "Muscle response",
+            "placement": "hidden"
           },
           "muscle-gate": {
             "label": "Muscle gate",

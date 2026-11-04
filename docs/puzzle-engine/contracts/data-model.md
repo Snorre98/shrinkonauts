@@ -110,7 +110,9 @@ Rules:
 - a puzzle with no hints produces a warning, not a validation failure.
 
 Feedback is ephemeral: it is never written to a save. Sticky surfaces are rebuilt
-from puzzle/world state after restore.
+from puzzle/world state after restore. Persistent surfaces carry a `placement`
+(`world`, `hud`, or `hidden`), an optional `icon`, and a `content.title` used by
+world markers, HUD chips, and the inspect panel.
 
 ### 2.3 Deferred level fields
 
@@ -305,10 +307,11 @@ interface GameSettings {
 }
 ```
 
-`feedback.showShared` controls shared-owned transient cues, shared persistent
-state surfaces, the beat tracker, and the requested shared help surface. It does
-not enter the run snapshot's feedback state and is never serialized with cues.
-The runtime filters shared surfaces and beats from `RuntimeSnapshot.feedback`
+`feedback.showShared` controls shared-owned transient cues, shared state markers,
+rings, HUD chips, the beat tracker, the inspect panel, and the requested shared
+help surface. It does not enter the run snapshot's feedback state and is never
+serialized with cues. The runtime filters shared surfaces and beats from
+`RuntimeSnapshot.feedback`
 while the setting is off, but keeps the director's effects running. Settings
 updates preserve the other settings groups; an old settings document without
 `feedback` loads with `showShared: true`.

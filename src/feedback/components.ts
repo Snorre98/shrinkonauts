@@ -9,6 +9,7 @@ import type {
   FeedbackContent,
   FeedbackLifetime,
   FeedbackOwnership,
+  FeedbackPlacement,
   FeedbackPresentation,
   FeedbackState,
   FeedbackVisual,
@@ -22,6 +23,8 @@ export const ActorRef = defineComponent<PlayerId | null>("feedback.actor");
 export const Anchor = defineComponent<FeedbackAnchor>("feedback.anchor");
 export const Presentation =
   defineComponent<FeedbackPresentation>("feedback.presentation");
+export const Placement =
+  defineComponent<FeedbackPlacement>("feedback.placement");
 export const Content = defineComponent<FeedbackContent>("feedback.content");
 export const Ownership =
   defineComponent<FeedbackOwnership>("feedback.ownership");

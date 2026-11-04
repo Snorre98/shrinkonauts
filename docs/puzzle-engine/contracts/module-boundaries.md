@@ -56,15 +56,17 @@ modules.
 | `curriculum` | `debriefPrompts(syllabus, objectiveIds)` | Build syllabus-derived prompts | 0006 | Implemented |
 | `curriculum` | `debriefPrompts(..., overrides)` | Level prompt overrides | 0006 | Deferred |
 | `ui` | `GameUiCallbacks.onMapTravel(levelId)` | Keyboard map travel action | 0007 | Deferred |
-| `ui` | `mountFeedbackSurfaces` / surface renderer | Anchored surfaces, beats, live region, surface actions | 0010, 0011 | Implemented |
+| `ui` | `mountFeedbackSurfaces` / surface renderer | Anchored surfaces, markers, rings, chips, beats, live region, surface actions | 0010, 0011, 0023 | Implemented |
 | `ecs` | `createEcsWorld` / `defineComponent` / `createEntityId` | Generic deterministic kernel | 0009 | Implemented |
 | `feedback` | `createFeedbackDirector` / `projectSignal` | Facts, projection, cues, effects | 0009, 0012, 0013 | Implemented |
 | `feedback` | `NODE_FEEDBACK` / `LINK_FEEDBACK` / `CAPABILITY_DEFAULTS` | Exhaustive descriptor coverage | 0012 | Implemented |
+| `feedback` | `defaultPlacement` / `visualKind` | Resolve marker/ring/chip/card form without DOM or game imports | 0023 | Implemented |
 | `feedback` | `EFFECT_PRESETS` / `effectPresetIds` / `NODE_EFFECT_SOCKETS` | Named cosmetic recipes and conventional sockets | 0013 | Implemented |
 | `game` | `routeSurfaceInput` / `SurfaceInputRouter` | Per-player soft-surface input routing | 0010 | Implemented |
+| `game` | `GameRuntime.toggleInspect` / `SurfaceAction.inspect` | One shared inspect panel for markers, rings, and chips | 0023 | Implemented |
 | `game` | `GameRuntime.conversations` / `startConversation` | Concurrent entity conversations | 0011 | Implemented |
 | `feedback` | `setSharedFeedbackEnabled` | Drop/clear/despawn shared transient cues without touching persistent surfaces or player cues | 0021 | Implemented |
-| `game` | `GameRuntime.toggleSharedFeedback` | Persist the global setting, clear shared cues/help, and filter shared state/beats from the snapshot | 0021, 0022 | Implemented |
+| `game` | `GameRuntime.toggleSharedFeedback` | Persist the global setting, clear shared cues/help/panel, and filter shared state/beats from the snapshot | 0021, 0022, 0023 | Implemented |
 | `save` | `updateFeedback(patch)` | Persist `feedback.showShared` in the settings slot | 0021 | Implemented |
 | `ui` | `GameUiCallbacks.onToggleSharedFeedback` | Accessible pause-settings toggle | 0021 | Implemented |
 | `world` | `WorldEffectPort` / `TileVisualPort` / `simplifyForReducedMotion` | Narrow cosmetic rendering ports | 0013 | Implemented |

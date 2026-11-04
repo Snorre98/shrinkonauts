@@ -18,6 +18,7 @@
     {
       "id": "terminal-plate",
       "type": "plate",
+      "entityId": "pad-terminal",
       "rect": {
         "x": 320,
         "y": 184,
@@ -33,6 +34,7 @@
     {
       "id": "ca-timer",
       "type": "timer",
+      "entityId": "ca-gate",
       "durationTicks": 72,
       "repeat": false
     },
@@ -106,6 +108,7 @@
     {
       "id": "ache-timer",
       "type": "timer",
+      "entityId": "nicotinic-receptor",
       "durationTicks": 150,
       "repeat": false
     },

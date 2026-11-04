@@ -331,7 +331,7 @@ export function mountGameUi(
   const rows: ReadonlyArray<[string, string]> = [
     ["Player 1", "A / D · W / Space · Shift · E/Enter · Q · F · 1–5 choices"],
     ["Player 2", "← / → · ↑ · / · , confirm · . · ' · ; · Delete cancel"],
-    ["Shared", "P join · Tab map · C log · Esc pause · M mute"],
+    ["Shared", "P join · Tab map · C log · I inspect · Esc pause · M mute"],
   ];
 
   const prompt = el("div", "hud__prompt");
@@ -371,6 +371,14 @@ export function mountGameUi(
       onSurfaceAction: (surfaceId, action) =>
         callbacks.onSurfaceAction(surfaceId, action),
     },
+    options.resolveBlueprintSymbol
+      ? {
+          resolveIcon: (symbol: string) => {
+            const asset = options.resolveBlueprintSymbol?.(symbol);
+            return asset?.src ? { src: asset.src } : null;
+          },
+        }
+      : {},
   );
 
   function canvasRect(): CanvasRect {

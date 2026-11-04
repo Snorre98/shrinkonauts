@@ -94,6 +94,7 @@ const HOST_ACTIONS: HostActions = {
   pause: false,
   mute: false,
   toggleP2: false,
+  inspect: false,
 };
 
 function frame(

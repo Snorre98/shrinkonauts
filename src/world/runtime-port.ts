@@ -47,6 +47,8 @@ export interface FrameActions {
   pause: boolean;
   mute: boolean;
   toggleP2: boolean;
+  /** Shared inspect toggle for the nearest state marker/chip. */
+  inspect: boolean;
 }
 
 export interface RuntimeInput {
@@ -107,6 +109,7 @@ export function emptyRuntimeInput(): RuntimeInput {
       pause: false,
       mute: false,
       toggleP2: false,
+      inspect: false,
     },
   };
 }

@@ -24,6 +24,7 @@ const HOST_ACTIONS: HostActions = {
   pause: true,
   mute: false,
   toggleP2: true,
+  inspect: true,
 };
 
 function frame(

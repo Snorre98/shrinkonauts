@@ -65,7 +65,8 @@ current branch.
 | Q11 | Material language without gameplay authority | Given a room mixes materials, patterns, variants, or UI slots, when it is validated and rendered, then its visual language is data-driven and deterministic, while `layers.tiles` alone decides collision and materials add no save fields. | ADR-0014–0017; `material-patterns.feature` |
 | Q12 | Deliberate information request | Given a player is inside an authored info area, when they press scan and no unrevealed scan target is in range, then the shared help surface appears temporarily; it never appears from an idle or proximity timer, and choosing a hint or reset follows the existing hint/reset behavior. | ADR-0019; `requested-hints.feature` |
 | Q13 | On-demand transient feedback | Given a player action or puzzle event produces transient feedback, when the player has not pressed scan, then no feedback box appears and the live region stays quiet; pressing scan reveals and consumes the newest pending message for that player, while persistent state and cosmetic effects remain immediate. | ADR-0020; `on-demand-feedback.feature` |
-| Q14 | Shared feedback visibility | Given shared feedback is turned off, when shared cues are produced, shared state is projected, or the player asks for help, then shared state boxes, cues, help, and the beat tracker are hidden, pending shared copies are cleared, and the setting persists; player cues and cosmetic effects keep working. | ADR-0021, ADR-0022; `shared-feedback-toggle.feature` |
+| Q14 | Shared feedback visibility | Given shared feedback is turned off, when shared cues are produced, shared state is projected, or the player asks for help, then shared state markers/rings/chips, cues, help, the inspect panel, and the beat tracker are hidden, pending shared copies are cleared, and the setting persists; player cues and cosmetic effects keep working. | ADR-0021, ADR-0022, ADR-0023; `shared-feedback-toggle.feature` |
+| Q15 | Compact shared state and inspection | Given a physical node projects persistent state, when it has a world anchor, then it renders as a small marker or progress ring; unanchored logical state is hidden or becomes a HUD chip; clicking a marker or pressing I opens one shared inspect panel while effects keep running. | ADR-0023; `state-markers.feature` |
 
 ### 1.3 Stakeholders
 
@@ -464,6 +465,7 @@ planned.
 | [0020](adr/0020-on-demand-transient-feedback.md) | On-demand transient feedback via scan and compact captions | Accepted |
 | [0021](adr/0021-shared-feedback-visibility-toggle.md) | Persisted global visibility for shared transient feedback | Accepted |
 | [0022](adr/0022-hide-shared-state-and-beats.md) | Hide shared state surfaces and beat progress with shared feedback | Accepted |
+| [0023](adr/0023-compact-state-markers.md) | Compact state markers, progress rings, and on-demand inspection | Accepted |
 
 Material and pattern architecture:
 
@@ -550,7 +552,7 @@ flowchart TD
 | Q11 | Material/pattern changes are visual and deterministic; collision, puzzle, and save state stay owned by their existing modules | `material-patterns.feature` |
 | Q12 | Shared help is request-only, info-area gated, and temporary | `requested-hints.feature` |
 | Q13 | Transient cues are deferred, latest-wins, and revealed by scan; effects stay immediate | `on-demand-feedback.feature` |
-| Q14 | Shared state boxes, transient cues, help, and beats can be globally hidden while player cues and effects keep working | `shared-feedback-toggle.feature` |
+| Q14 | Shared state markers/rings/chips, transient cues, help, the inspect panel, and beats can be globally hidden while player cues and effects keep working | `shared-feedback-toggle.feature` |
 
 ### 10.2b Functional behavior contracts
 
@@ -559,7 +561,8 @@ flowchart TD
 | `behaviors/feedback-surfaces.feature` | Persistent state, transient cues, ownership, anchors, input, player caption slot | 0009, 0010, 0012, 0018 | Implemented |
 | `behaviors/requested-hints.feature` | Request-only shared help, info areas, temporary surface | 0019 | Implemented |
 | `behaviors/on-demand-feedback.feature` | Deferred cues, latest-wins inbox, scan reveal, immediate effects | 0020 | Implemented |
-| `behaviors/shared-feedback-toggle.feature` | Persisted shared-feedback visibility, shared state/beats filtering, cue/inbox/help clearing, player-cue preservation | 0021, 0022 | Implemented |
+| `behaviors/shared-feedback-toggle.feature` | Persisted shared-feedback visibility, shared state/beats filtering, cue/inbox/help clearing, player-cue preservation | 0021, 0022, 0023 | Implemented |
+| `behaviors/state-markers.feature` | Compact markers/rings/chips, hidden logical state, shared inspect panel, I/click | 0023 | Implemented |
 | `behaviors/entity-conversations.feature` | Concurrent conversations, save/restore, recovery | 0011 | Implemented |
 | `behaviors/capability-coverage.feature` | Descriptor coverage, rejection reasons, event coverage | 0012 | Implemented |
 | `behaviors/cosmetic-effects.feature` | Direction/path/follow/cancel, tile visuals, reduced motion | 0013 | Implemented |

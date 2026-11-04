@@ -39,6 +39,7 @@ export class KeyboardIntentSource {
   private readonly pauseKey: Phaser.Input.Keyboard.Key;
   private readonly muteKey: Phaser.Input.Keyboard.Key;
   private readonly toggleP2Key: Phaser.Input.Keyboard.Key;
+  private readonly inspectKey: Phaser.Input.Keyboard.Key;
   private readonly navState: Record<
     PlayerId,
     { up: boolean; down: boolean }
@@ -121,6 +122,7 @@ export class KeyboardIntentSource {
     this.pauseKey = latch(plain(Phaser.Input.Keyboard.KeyCodes.ESC));
     this.muteKey = latch(plain(Phaser.Input.Keyboard.KeyCodes.M));
     this.toggleP2Key = latch(plain(Phaser.Input.Keyboard.KeyCodes.P));
+    this.inspectKey = latch(plain(Phaser.Input.Keyboard.KeyCodes.I));
   }
 
   /** Drops latched actions when a text field takes focus. */
@@ -172,6 +174,7 @@ export class KeyboardIntentSource {
       pause: this.consume(this.pauseKey),
       mute: this.consume(this.muteKey),
       toggleP2: this.consume(this.toggleP2Key),
+      inspect: this.consume(this.inspectKey),
     };
   }
 

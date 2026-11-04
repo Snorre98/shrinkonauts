@@ -115,6 +115,7 @@ implementation.
 | Request-gated shared help and authored info areas | `requested-hints.feature` | interface, data-model, state-machine |
 | On-demand transient cues, latest-wins inbox, compact captions | `on-demand-feedback.feature` | interface, state-machine, failure-semantics |
 | Shared feedback visibility, shared state/beat filtering, cue/inbox/help clearing, settings persistence | `shared-feedback-toggle.feature` | interface, data-model, state-machine, failure-semantics |
+| Compact state markers/rings/chips, hidden logical state, shared inspect panel, `I`/click | `state-markers.feature` | interface, data-model, state-machine, failure-semantics, module-boundaries |
 | Co-op ownership and per-player input | `feedback-surfaces.feature` | interface, state-machine |
 | Entity conversations | `entity-conversations.feature` | interface, data-model, state-machine |
 | Capability descriptors, event coverage, reasons | `capability-coverage.feature` | interface, module-boundaries, data-model |

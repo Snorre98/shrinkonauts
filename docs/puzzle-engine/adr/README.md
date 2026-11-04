@@ -36,6 +36,7 @@ as runtime behavior.
 | [0020](0020-on-demand-transient-feedback.md) | On-demand transient feedback via scan and compact captions | Accepted |
 | [0021](0021-shared-feedback-visibility-toggle.md) | Persisted global visibility for shared transient feedback | Accepted |
 | [0022](0022-hide-shared-state-and-beats.md) | Hide shared state surfaces and beat progress with shared feedback | Accepted |
+| [0023](0023-compact-state-markers.md) | Compact state markers, progress rings, and on-demand inspection | Accepted |
 
 ## Material and pattern architecture
 

@@ -188,6 +188,7 @@ describe("anchors", () => {
       audience: "both",
       anchor,
       presentation,
+      placement: "world",
       content: { text: id },
       state: "active",
       severity: "neutral",
@@ -218,6 +219,8 @@ describe("anchors", () => {
     const items = surfaces.map((surface) => ({
       id: surface.id,
       presentation: surface.presentation,
+      placement: surface.placement,
+      kind: "card" as const,
       owner: surface.owner,
       priority: surface.priority,
       width: 160,
@@ -246,6 +249,8 @@ describe("anchors", () => {
         {
           id: "offscreen",
           presentation: "speechBubble",
+          placement: "world",
+          kind: "card",
           owner: "p1",
           priority: 10,
           width: 200,
@@ -259,5 +264,71 @@ describe("anchors", () => {
     expect(boxes[0]).toMatchObject({ docked: true });
     expect(boxes[0]?.x).toBeGreaterThanOrEqual(16);
     expect(boxes[0]?.y).toBeGreaterThanOrEqual(96);
+  });
+
+  it("hides off-screen world markers instead of docking them", () => {
+    const offscreen = worldToScreen(
+      { kind: "world", point: { x: 5000, y: 5000 } },
+      world,
+      canvas,
+    );
+    const boxes = layoutSurfaces(
+      [
+        {
+          id: "offscreen-marker",
+          presentation: "stateSwap",
+          placement: "world",
+          kind: "marker",
+          owner: "shared",
+          priority: 10,
+          width: 32,
+          height: 32,
+          anchor: offscreen,
+        },
+      ],
+      { canvasRect: canvas, width: 1280, height: 720 },
+      { top: 96, right: 16, bottom: 84, left: 16 },
+    );
+    expect(boxes[0]).toMatchObject({ visible: false, docked: true });
+  });
+
+  it("stacks a marker and a timer ring on the same anchor", () => {
+    const anchor = worldToScreen(
+      { kind: "entity", entityId: "agent-neuron" },
+      world,
+      canvas,
+    );
+    const boxes = layoutSurfaces(
+      [
+        {
+          id: "marker",
+          presentation: "stateSwap",
+          placement: "world",
+          kind: "marker",
+          owner: "shared",
+          priority: 10,
+          width: 32,
+          height: 32,
+          anchor,
+        },
+        {
+          id: "ring",
+          presentation: "hudMeter",
+          placement: "world",
+          kind: "ring",
+          owner: "shared",
+          priority: 30,
+          width: 40,
+          height: 40,
+          anchor,
+        },
+      ],
+      { canvasRect: canvas, width: 1280, height: 720 },
+      { top: 96, right: 16, bottom: 84, left: 16 },
+    );
+    const byId = new Map(boxes.map((box) => [box.id, box]));
+    expect(byId.get("marker")?.visible).toBe(true);
+    expect(byId.get("ring")?.visible).toBe(true);
+    expect(byId.get("marker")?.y).not.toBe(byId.get("ring")?.y);
   });
 });

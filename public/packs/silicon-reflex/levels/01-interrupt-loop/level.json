@@ -72,7 +72,8 @@
           },
           "sensor-trigger": {
             "label": "Sensor trigger",
-            "text": "Sensor latched."
+            "text": "Sensor latched.",
+            "placement": "hidden"
           },
           "route-plug": {
             "label": "Route plug"
@@ -82,11 +83,12 @@
             "text": "Controller active \u2014 CPU wake signal sent."
           },
           "cpu-socket": {
-            "label": "CPU socket (decoy)",
+            "label": "CPU socket",
             "text": "No controller signal \u2014 the CPU never woke."
           },
           "controller-relay": {
-            "label": "Interrupt controller"
+            "label": "Interrupt controller",
+            "placement": "hidden"
           },
           "cpu-timer": {
             "label": "CPU wake timer",

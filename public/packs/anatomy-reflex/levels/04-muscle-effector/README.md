@@ -9,10 +9,10 @@
 **Win:** `gateOpen gate-muscle`
 **Transition:** [`ADR-0046`](../../../../../docs/adr-m1.5/0046-level-transitions.md)
 
-> The feedback/effect layer now provides authored labels, beats, persistent
-> state surfaces, socket-anchored effects, tile visuals, and the ACh clearance
-> state. Physical gate collision, final art, and final audio remain out of
-> scope; see [`docs/puzzle-engine/`](../../../../../docs/puzzle-engine/README.md).
+> The feedback/effect layer now provides authored labels, beats, compact state
+> markers/rings/chips, socket-anchored effects, tile visuals, and the ACh
+> clearance state. Physical gate collision, final art, and final audio remain out
+> of scope; see [`docs/puzzle-engine/`](../../../../../docs/puzzle-engine/README.md).
 
 ## Player-facing goal
 
@@ -184,8 +184,8 @@ the caveat rather than adding a curriculum/schema change without an ADR.
 | P2 | `←` / `→` | `↑` | `.` | `,` | — | `'` | `;` |
 | Solo | `A` / `D` | `W` or `Space` | `Q` | `E` | `F` | `G` | `H` |
 
-Shared: `P` player 2 at a checkpoint, `Tab` map, `C` concept log, `Esc`
-pause/close, `M` mute.
+Shared: `P` player 2 at a checkpoint, `Tab` map, `C` concept log, `I` inspect
+state, `Esc` pause/close, `M` mute.
 
 ## Authoring notes and deviations
 
@@ -214,6 +214,11 @@ pause/close, `M` mute.
   state, so the two outcomes are not collapsed into one toast.
 - Puzzle labels come from the level feedback block, so the HUD uses "ACh packet"
   and "Nicotinic receptor" rather than the room entity's longer fallback label.
+- State feedback uses compact markers and rings. The Ca²⁺ timer ring is anchored
+  to the Ca²⁺ gate, the ACh clearance ring to the nicotinic receptor, and the
+  pulse cooldown ring to the motor terminal. The wrong receptor and response
+  relay are intentionally hidden from the marker layer; the wrong-socket cue
+  still explains a mismatched placement.
 - `ca-gate` and `muscle-gate` are `puzzleGate` entities without collision. Gate
   state projects to persistent surfaces and cosmetic bursts/waves. The lever is
   decor; the exit is the actual level transition.

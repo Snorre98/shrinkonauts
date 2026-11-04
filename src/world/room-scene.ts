@@ -122,6 +122,7 @@ function emptyActions(input: RuntimeInput): RuntimeInput {
       pause: false,
       mute: false,
       toggleP2: false,
+      inspect: false,
     },
   };
 }

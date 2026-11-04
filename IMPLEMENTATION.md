@@ -243,11 +243,11 @@ director. It returns gameplay cues (`jump`, `land`, `dash`). Transient feedback
 cues are deferred into per-player inboxes and only appear when a player presses
 scan; cosmetic effects still run immediately. The scan button also opens the
 shared hint/reset affordance inside an authored info area. A persisted global
-“Shared feedback” pause setting hides shared-owned transient cues, persistent
-state surfaces, the beat tracker, and the requested help surface without
-affecting player cues; cosmetic effects keep running. Actions are latched by the
-input source, so an `E` tap is consumed exactly once by the next fixed step even
-when several render frames occur first.
+“Shared feedback” pause setting hides shared-owned transient cues, state
+markers/rings/chips, the beat tracker, the inspect panel, and the requested help
+surface without affecting player cues; cosmetic effects keep running. Actions
+are latched by the input source, so an `E` tap is consumed exactly once by the
+next fixed step even when several render frames occur first.
 
 ### State machine
 
@@ -313,10 +313,12 @@ relevant entity/player, and cues carry P1/P2 attribution.
 - `beats.ts` derives authored or win-graph beat progress.
 
 `GameRuntime` ingests facts and projects sticky surfaces once per fixed step.
+Persistent state uses compact markers/rings/chips; surfaces with a hidden
+placement are omitted from the snapshot while their effects keep running.
 `RuntimeSnapshot.feedback` contains surfaces, cues, beats, and effect instances;
-while shared feedback is off, it omits shared-owned surfaces and beats. The scene
-consumes only `WorldEffectPlan`/tile ports through `drainEffects()`, which still
-receives the unfiltered effect list.
+while shared feedback is off, it also omits shared-owned surfaces and beats. The
+scene consumes only `WorldEffectPlan`/tile ports through `drainEffects()`, which
+still receives the unfiltered effect list.
 
 ### Accessibility contract
 
@@ -528,8 +530,8 @@ The accessibility baseline is:
   simplifies movement effects while keeping surfaces/text.
 - Mute toggle (`M`) from gameplay and from every overlay, with HUD status.
 - Persisted global “Shared feedback” toggle in the pause settings; it hides
-  shared transient cues, shared persistent state surfaces, beats, and shared
-  help while keeping player cues and cosmetic effects.
+  shared transient cues, state markers/rings/chips, beats, the inspect panel,
+  and shared help while keeping player cues and cosmetic effects.
 - Focus management: overlays are `role="dialog"`, `aria-modal`, labelled,
   autofocus the first meaningful control, trap `Tab`/`Shift+Tab`, and restore
   focus to the previous element on close.

@@ -194,8 +194,8 @@ branch and `scan-actuator` on the actuator ledge.
 | P1 | `A` / `D` | `W` or `Space` | `Q` | `E` | `G` | `H` |
 | P2 | `←` / `→` | `↑` | `.` | `,` | `'` | `;` |
 
-Shared: `P` player 2 at a checkpoint, `Tab` map, `C` concept log, `Esc`
-pause/close, `M` mute.
+Shared: `P` player 2 at a checkpoint, `Tab` map, `C` concept log, `I` inspect
+state, `Esc` pause/close, `M` mute.
 
 ## Asset register
 
@@ -311,6 +311,11 @@ Expected warnings, recorded rather than suppressed:
 
 ## Authoring notes
 
+- **State markers:** the sensor pad, route plug, controller socket, CPU socket
+  and actuator gate use compact markers. The 60-tick CPU timer is a progress
+  ring anchored to the controller socket, where the relay starts it; the CPU
+  core is now at the entrance and is not the timer's visual host. The CPU socket
+  marker remains inspectable so its decoy explanation is available.
 - **Geometry pass 2 (exploration):** the room is a three-zone loop. A clear
   sensor-bus ground corridor runs from the spawn to the exit-chamber doorway.
   The first climb is a one-tile step at the far-left wall, followed by a

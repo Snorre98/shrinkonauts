@@ -16,6 +16,7 @@ function surface(
     audience: "both",
     anchor: { kind: "entity", entityId: id },
     presentation: "speechBubble",
+    placement: "world",
     content: {
       text: id,
       choices: [

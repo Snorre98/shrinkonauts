@@ -187,7 +187,8 @@ export interface WorldView {
 export type SurfaceAction =
   | { type: "confirm" }
   | { type: "cancel" }
-  | { type: "choose"; choiceId: string };
+  | { type: "choose"; choiceId: string }
+  | { type: "inspect" };
 
 /**
  * Presentation contract for a phone-controller session that is not active.

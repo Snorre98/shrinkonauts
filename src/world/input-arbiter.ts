@@ -61,6 +61,7 @@ export class InputArbiter implements IntentSource {
         pause: host.pause,
         mute: host.mute,
         toggleP2: host.toggleP2,
+        inspect: host.inspect,
       },
     };
   }

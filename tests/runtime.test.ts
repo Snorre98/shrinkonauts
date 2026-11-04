@@ -1337,9 +1337,15 @@ describe("game runtime", () => {
     ).toBe("ACh packet is free.");
     expect(
       snapshot.feedback.surfaces.find(
+        (surface) => surface.id === "fb:binary:terminal-plate",
+      )?.content.title,
+    ).toBe("Terminal plate");
+    // Idle meters are intentionally hidden; the ring appears when running.
+    expect(
+      snapshot.feedback.surfaces.some(
         (surface) => surface.id === "fb:meter:ca-timer",
-      )?.content.text,
-    ).toBe("Ca²⁺ window is idle.");
+      ),
+    ).toBe(false);
     expect(snapshot.blueprint?.puzzleId).toBe("puzzle-endplate-ferry");
     expect(snapshot.blueprint?.components.map((component) => component.id)).toEqual([
       "trigger",
@@ -1823,6 +1829,126 @@ describe("game runtime", () => {
     const after = runtime.snapshot().feedback;
     expect(after.surfaces.map((surface) => surface.id)).toEqual(surfaceIds);
     expect(after.beats.map((beat) => beat.label)).toEqual(beatLabels);
+  });
+
+  it("hides unanchored logical state but keeps physical markers", () => {
+    const { runtime } = makeRuntime();
+    const surfaces = runtime.snapshot().feedback.surfaces;
+    expect(surfaces.some((surface) => surface.id === "fb:binary:input-a")).toBe(
+      true,
+    );
+    expect(
+      surfaces.some((surface) => surface.id === "fb:binary:input-a-trigger"),
+    ).toBe(false);
+    expect(
+      surfaces.some((surface) => surface.id === "fb:conductor:spike-relay"),
+    ).toBe(false);
+    expect(surfaces.every((surface) => surface.placement !== "hidden")).toBe(
+      true,
+    );
+  });
+
+  it("keeps effects for hidden logical surfaces", () => {
+    const { runtime } = makeRuntime();
+    solveNodeRun(runtime);
+    expect(
+      runtime
+        .drainEffects()
+        .some((effect) => effect.id.includes("fb:conductor:spike-relay")),
+    ).toBe(true);
+  });
+
+  it("opens one inspect panel and closes it with cancel", () => {
+    const { runtime } = makeRuntime();
+    const source = runtime
+      .snapshot()
+      .feedback.surfaces.find((surface) => surface.id === "fb:binary:input-a");
+    expect(source?.content.title).toBe("Dendrite input A");
+
+    runtime.surfaceAction("fb:binary:input-a", { type: "inspect" });
+    const panel = runtime
+      .snapshot()
+      .feedback.surfaces.find(
+        (surface) => surface.presentation === "anchoredPanel",
+      );
+    expect(panel).toMatchObject({
+      placement: "hud",
+      interaction: { mode: "none" },
+      content: { title: "Dendrite input A" },
+    });
+    expect(panel?.content.text).toContain("Dendrite input A is ready.");
+
+    runtime.surfaceAction(panel?.id ?? "", { type: "cancel" });
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(false);
+  });
+
+  it("toggles the nearest inspect panel with I", () => {
+    const { runtime } = makeRuntime();
+    runtime.step(1 / 60, input({ inspect: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(true);
+
+    runtime.step(1 / 60, input({ inspect: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(false);
+  });
+
+  it("closes the inspect panel when shared feedback is disabled", () => {
+    const { runtime } = makeRuntime();
+    runtime.surfaceAction("fb:binary:input-a", { type: "inspect" });
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(true);
+
+    runtime.toggleSharedFeedback();
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(false);
+  });
+
+  it("shows a running timer as a world ring", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    activateEndplate(runtime);
+    walkPlayerTo(runtime, "p1", "pad-terminal");
+    stepWith(runtime);
+
+    const timer = runtime
+      .snapshot()
+      .feedback.surfaces.find(
+        (surface) => surface.id === "fb:meter:ca-timer",
+      );
+    expect(timer).toMatchObject({
+      placement: "world",
+      presentation: "hudMeter",
+      state: "progress",
+    });
+    expect(timer?.content.title).toBe("Ca²⁺ window");
+    expect(timer?.content.progress?.value).toBeGreaterThan(0);
   });
 
   it("keeps player feedback and skips shared help while disabled", () => {

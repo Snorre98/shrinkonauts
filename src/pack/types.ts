@@ -456,6 +456,12 @@ export interface LevelFeedbackNodeOverride {
   text?: string;
   effectPreset?: string;
   tileTarget?: LevelFeedbackTileTarget;
+  /** Override the default marker/chip/hidden choice. */
+  placement?: "world" | "hud" | "hidden";
+  /** Entity socket for a world marker. */
+  socket?: string;
+  /** Pixel offset for a world marker. */
+  offset?: { x: number; y: number };
 }
 
 export type LevelBlueprintActor = "p1" | "p2" | "both" | "shared";

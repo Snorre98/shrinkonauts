@@ -17,6 +17,7 @@
     {
       "id": "input-a",
       "type": "plate",
+      "entityId": "pad-input-a",
       "rect": {
         "x": 160,
         "y": 504,
@@ -37,6 +38,7 @@
     {
       "id": "input-b",
       "type": "plate",
+      "entityId": "pad-input-b",
       "rect": {
         "x": 320,
         "y": 472,
@@ -92,6 +94,7 @@
     {
       "id": "terminal-zone",
       "type": "zone",
+      "entityId": "pad-terminal",
       "rect": {
         "x": 1120,
         "y": 472,

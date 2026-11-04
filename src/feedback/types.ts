@@ -58,6 +58,13 @@ export type FeedbackPresentation =
   | "modal"
   | "anchoredPanel";
 
+/**
+ * Presentation placement. `world` items are compact object markers/rings,
+ * `hud` items are compact chips or cards, and `hidden` items stay in the
+ * director for effects but never reach the runtime snapshot.
+ */
+export type FeedbackPlacement = "world" | "hud" | "hidden";
+
 export type RejectionReason =
   | "empty"
   | "wrong-shape"
@@ -128,6 +135,8 @@ export interface FeedbackProgress {
 }
 
 export interface FeedbackContent {
+  /** Human label for state markers, chips, and the inspect panel. */
+  title?: string;
   speaker?: string;
   text?: string;
   choices?: readonly FeedbackChoice[];
@@ -386,6 +395,8 @@ export interface FeedbackSurface {
   audience: FeedbackAudience;
   anchor: FeedbackAnchor;
   presentation: FeedbackPresentation;
+  placement: FeedbackPlacement;
+  icon?: string;
   content: FeedbackContent;
   state: FeedbackState;
   reason?: RejectionReason;
@@ -457,6 +468,8 @@ export interface FeedbackSignal {
   state: FeedbackState;
   content: FeedbackContent;
   presentation?: FeedbackPresentation;
+  placement?: FeedbackPlacement;
+  icon?: string;
   reason?: RejectionReason;
   severity?: FeedbackSeverity;
   priority?: number;
@@ -475,6 +488,8 @@ export interface FeedbackSurfaceSpec {
   audience?: FeedbackAudience;
   anchor: FeedbackAnchor;
   presentation: FeedbackPresentation;
+  placement?: FeedbackPlacement;
+  icon?: string;
   content: FeedbackContent;
   state: FeedbackState;
   reason?: RejectionReason;
@@ -533,6 +548,10 @@ export interface FeedbackProjectionContext {
   anchor: FeedbackAnchor;
   label: string;
   text?: string;
+  icon?: string;
+  placement?: FeedbackPlacement;
+  socket?: string;
+  offset?: Vec2;
   effectPreset?: string;
   tileTarget?: TileTarget;
 }
@@ -563,6 +582,9 @@ export interface FeedbackNodeOverride {
   text?: string;
   effectPreset?: string;
   tileTarget?: TileTarget;
+  placement?: FeedbackPlacement;
+  socket?: string;
+  offset?: Vec2;
 }
 
 export interface FeedbackProjection {
@@ -570,6 +592,8 @@ export interface FeedbackProjection {
   state: PuzzleRunState;
   beats?: readonly BeatSpec[];
   overrides?: Readonly<Record<string, FeedbackNodeOverride>>;
+  /** Node id to presentation icon asset/key, usually from the level blueprint. */
+  icons?: Readonly<Record<string, string>>;
 }
 
 export type FeedbackFact =

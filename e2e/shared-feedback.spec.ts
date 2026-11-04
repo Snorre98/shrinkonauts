@@ -65,22 +65,54 @@ test("pause settings toggle shared feedback and persist it", async ({ page }) =>
   );
 });
 
+test("state markers and HUD chips open one shared inspect panel", async ({
+  page,
+}) => {
+  await boot(page);
+
+  const marker = page.locator(
+    '.feedback-surface--stateMarker[data-surface-id="fb:binary:input-a"]',
+  );
+  await expect(marker).toBeVisible();
+  await expect(marker).toHaveAttribute(
+    "aria-label",
+    /Dendrite input A is ready/,
+  );
+
+  await marker.click();
+  const panel = page.locator(".feedback-surface--anchoredPanel");
+  await expect(panel).toBeVisible();
+  await expect(panel).toContainText("Dendrite input A is ready.");
+
+  await page.keyboard.press("i");
+  await expect(panel).toHaveCount(0);
+
+  const chip = page.locator(
+    '.feedback-surface--hudChip[data-surface-id="fb:counter:stimulus-counter"]',
+  );
+  await expect(chip).toBeVisible();
+  await chip.click();
+  await expect(panel).toContainText("Stimulus counter");
+  await panel.getByRole("button", { name: "Close information" }).click();
+  await expect(panel).toHaveCount(0);
+});
+
 test("shared feedback hides state, beats, and help while player feedback works", async ({
   page,
 }) => {
   await boot(page);
 
-  const stateBox = page.locator(".feedback-surface", {
-    hasText: "Dendrite input A is ready.",
-  });
-  await expect(stateBox).toBeVisible();
+  const stateMarker = page.locator(
+    '.feedback-surface--stateMarker[data-surface-id="fb:binary:input-a"]',
+  );
+  await expect(stateMarker).toBeVisible();
   await expect(page.locator(".feedback-beats__item").first()).toBeVisible();
 
   await page.keyboard.press("Escape");
   await sharedFeedbackToggle(page).click();
   await page.getByRole("button", { name: "Resume" }).click();
 
-  await expect(stateBox).toHaveCount(0);
+  await expect(stateMarker).toHaveCount(0);
   await expect(page.locator(".feedback-beats__item")).toHaveCount(0);
 
   await teleportToInfoArea(page);
@@ -95,7 +127,7 @@ test("shared feedback hides state, beats, and help while player feedback works",
   await page.keyboard.press("Escape");
   await sharedFeedbackToggle(page).click();
   await page.getByRole("button", { name: "Resume" }).click();
-  await expect(stateBox).toBeVisible();
+  await expect(stateMarker).toBeVisible();
   await expect(page.locator(".feedback-beats__item").first()).toBeVisible();
 
   await page.keyboard.press("q");

@@ -212,11 +212,22 @@ function parseNode(
     return err(`${code}: nodes[${index}].type "${type.value}" is not supported`);
   }
 
-  const base = { id: id.value };
+  const entityId = readOptionalString(
+    value,
+    "entityId",
+    code,
+    `nodes[${index}].entityId`,
+  );
+  if (!entityId.ok) return err(entityId.error);
+
+  const base = {
+    id: id.value,
+    ...(entityId.value ? { entityId: entityId.value } : {}),
+  };
   switch (type.value) {
     case "prop": {
-      const entityId = readNonEmptyString(value, "entityId", code, `nodes[${index}].entityId`);
-      if (!entityId.ok) return err(entityId.error);
+      const propEntityId = readNonEmptyString(value, "entityId", code, `nodes[${index}].entityId`);
+      if (!propEntityId.ok) return err(propEntityId.error);
       const tags = readStringArray(value, "tags", code, `nodes[${index}].tags`);
       if (!tags.ok) return err(tags.error);
       const shape = readNonEmptyString(value, "shape", code, `nodes[${index}].shape`);
@@ -230,7 +241,7 @@ function parseNode(
       return ok({
         ...base,
         type: "prop",
-        entityId: entityId.value,
+        entityId: propEntityId.value,
         tags: tags.value,
         shape: shape.value,
         ...(spawn ? { spawn } : {}),

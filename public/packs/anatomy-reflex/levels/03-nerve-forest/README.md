@@ -75,8 +75,9 @@ requirement real rather than relying on a physical threshold door.
 
 `level.json` owns the player-facing labels and the five-step beat tracker:
 press a dendrite input, reach threshold, run the axon, reach the terminal, open
-the exit. Persistent surfaces show plate, counter, gate, zone and relay state
-without relying on a toast.
+the exit. Persistent state is a set of compact world markers (plates, gates,
+zones) and one HUD chip for the stimulus counter; hovering or pressing `I` opens
+the shared inspect panel for the full state sentence.
 
 The feedback layer also drives the cosmetic effect coverage:
 
@@ -151,8 +152,8 @@ authored in this chunk.
 | P2 | `←` / `→` | `↑` | `.` | `,` | `/` |
 | Solo | `A` / `D` | `W` or `Space` | `Q` | `E` | `Shift` |
 
-Shared: `P` player 2 at a checkpoint, `Tab` map, `C` concept log, `Esc`
-pause/close, `M` mute.
+Shared: `P` player 2 at a checkpoint, `Tab` map, `C` concept log, `I` inspect
+state, `Esc` pause/close, `M` mute.
 
 ## Authoring notes and deviations
 

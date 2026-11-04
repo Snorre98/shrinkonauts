@@ -32,6 +32,7 @@ export interface HostActions {
   pause: boolean;
   mute: boolean;
   toggleP2: boolean;
+  inspect: boolean;
 }
 
 export interface IntentSource {
