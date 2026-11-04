@@ -19,10 +19,12 @@ import {
 } from "../materials";
 import {
   catalogEntry,
+  collectLevelBlueprintAssetIds,
   collectMaterialAssetIds,
   collectRoomAssetIds,
   collectRoomMaterialAssetIds,
   collectThemeAssetIds,
+  isAssetId,
   loadPackCatalog,
   loadPackContent,
   type PackCatalog,
@@ -734,6 +736,7 @@ export class AppController {
       ...Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds),
       ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
+      ...collectLevelBlueprintAssetIds(content.levels),
       ...Object.values(PLAYER_ASSET_IDS),
       ...Object.values(PLAYER_ANIMATION_ASSET_IDS)
         .flatMap((clips) => Object.values(clips))
@@ -852,6 +855,10 @@ export class AppController {
         ? bundle.assets.image(bundle.content.theme.ui.assets.badge)
         : undefined,
       diagnostics,
+      resolveBlueprintSymbol: (symbol) =>
+        isAssetId(symbol)
+          ? bundle.assets.resolveById(symbol)
+          : null,
       callbacks: {
         onSurfaceAction: (surfaceId, action) =>
           bundle.runtime.surfaceAction(surfaceId, action),

@@ -348,6 +348,42 @@
       "url": "https://stability.ai/license",
       "modified": "2026-11-04; source 01-interrupt-loop.wav sha256 3c989bf2224016cdc4469298a959916c76d235e2eeb05414f33e242945d99c9b; trimmed to last musical bar; 1.278 s tail-to-head loop crossfade; 48 kHz stereo; -17.3 LUFS; true peak -5.6 dBFS; MP3 192 kbps; loop 27.664 s",
       "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/sensor-detect.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 7fd7df4deea61ac6649e818b727fd2fbb6edb0deb21e14a44785a8c206df9d8e; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x26 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 a11b1c001116f3988b8eb01426a7b9d3de38b0f053669532e65c32cd8a745a25",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/route-integrate.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation; graphite wire hand-clean colour remap",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 7434310265d59c4793985c308a85f08c0d02fb5eb4b7e2ff544add851c2fde80; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; hand-cleaned graphite wires #7a8f8a before fit; fitted 28x13 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 669dea138dfad45dabba6494e704a467cd9db1c9c34b8854221ec35d4a0e3a5c",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/cpu-wake.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 577fd0840b5f016b3dc464391c67c6288d0a1823013c99ae4a61e5032c797ed1; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 25x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 e135ce4558e48f13add8e3a0946f193d0f3a3a3200fbe75de81a8fe899195ce9",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/actuator-gate.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 ee89c4b238e6573c7c39c175b2d29320a0f9755915b6d3a7f745e99b3a658a2c; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 26x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 bf04d984139dc1ddaa60d5463f89548192c1d0d42d440107342a7e7803e63664",
+      "aiGenerated": true
     }
   ]
 }

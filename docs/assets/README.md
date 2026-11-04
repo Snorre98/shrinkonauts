@@ -1,6 +1,6 @@
 # Assets — cross-discipline index
 
-**Status:** Draft, 3 November 2026  
+**Status:** Draft, 4 November 2026
 **Owner:** Snorre  
 **Scope:** Graphics and audio asset inventory, prompt routing, placeholder status, and completion order
 
@@ -10,10 +10,12 @@ truth for completion status** is the
 Discipline documents own prompt text; update the matrix first when an asset moves
 through `source-generated → processed → wired → accepted`.
 
-Current state: the seven 2026-11-03 04 Nano Banana plates are processed, wired
-and accepted. The runtime loads the final 04 sky, four coloured atlases, gate
-and exit. The remaining visible placeholders are the 03 scans, the Silicon
-interrupt/exit, and the HUD badge; the hub logo uses the approved CSS fallback.
+Current state: the seven 2026-11-03 04 Nano Banana plates and the 12 M3.75
+blueprint symbols are processed, wired and accepted. The runtime loads the final
+04 sky, four coloured atlases, gate and exit, plus the anatomy and Silicon
+32×32 blueprint PNGs. The remaining visible placeholders are the 03 scans, the
+Silicon interrupt/exit, and the HUD badge; the hub logo uses the approved CSS
+fallback.
 
 The full prompt text remains in the discipline documents:
 

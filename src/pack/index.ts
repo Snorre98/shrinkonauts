@@ -1,4 +1,5 @@
 export {
+  collectLevelBlueprintAssetIds,
   collectMaterialAssetIds,
   collectRoomAssetIds,
   collectRoomMaterialAssetIds,
@@ -130,6 +131,12 @@ export type {
   GateType,
   LevelBundle,
   LevelCoop,
+  LevelBlueprint,
+  LevelBlueprintActor,
+  LevelBlueprintComponent,
+  LevelBlueprintEdge,
+  LevelBlueprintEdgeType,
+  LevelBlueprintStep,
   LevelDocument,
   LevelEvidenceRule,
   LevelMapEdge,

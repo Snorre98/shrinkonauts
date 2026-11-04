@@ -289,7 +289,7 @@ export const CAPTURE_STATES: readonly CaptureState[] = [
   },
   {
     id: "03-map",
-    title: "03 — system map",
+    title: "03 — blueprint",
     flow: "03-nerve-forest",
     pack: "anatomy",
     level: "03-nerve-forest",
@@ -300,10 +300,10 @@ export const CAPTURE_STATES: readonly CaptureState[] = [
     conceptIds: ["CON-3", "CON-5"],
     relatedAssets: ["bg.nerve_forest.sky", "sprite.scan.pathway"],
     whatToNotice:
-      "The map exposes the current node and revealed connections. It is a navigation aid, not a minimap; unknown paths stay unlabeled.",
+      "The expanded blueprint shows the puzzle components and their states. The system chain keeps room-to-room context secondary; unknown paths stay unlabeled.",
     art: "final",
     order: 12,
-    alt: "System map overlay showing the Nerve Forest node",
+    alt: "Blueprint overlay showing the Nerve Forest puzzle components and system chain",
     docs: ["GDD-MAP", "learning-design-brief"],
   },
   {

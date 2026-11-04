@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 2,
+  "palette": "art-source/nanobanan/palette.json",
+  "classes": {
+    "ui-1x": {
+      "cell": [
+        32,
+        32
+      ],
+      "display": [
+        32,
+        32
+      ],
+      "margin": 2,
+      "minReadablePx": 24,
+      "minOpaquePixels": 180,
+      "maxPaletteDistance": 32,
+      "maxDownscale": 64,
+      "treatment": "ui-1x"
+    }
+  },
+  "alphaThreshold": 128,
+  "maxBytes": 4096,
+  "preview": {
+    "scales": [
+      1,
+      2,
+      4
+    ],
+    "background": "#101a20"
+  },
+  "reportDir": "art-source/blueprint-icons/reports",
+  "previewDir": "art-source/previews/blueprint-icons",
+  "assets": [
+    {
+      "id": "ui.blueprint.symbol.input-pair",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/input-pair.png",
+      "output": "public/packs/anatomy-reflex/shared/ui/blueprint-symbols/input-pair.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 28x22 in 32x32 with 2px margins. Two terminals and the shared junction read on #101a20. Below the 180-opaque target (114 px) because the glyph is thin line art; silhouette unaffected.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "nerve",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.threshold-gauge",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/threshold-gauge.png",
+      "output": "public/packs/anatomy-reflex/shared/ui/blueprint-symbols/threshold-gauge.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 16x28 in 32x32 with 2px margins. The fill/notch relationship remains visible; narrow tall gauge, no joint-ramp accent.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "nerve",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.axon-flow",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/axon-flow.png",
+      "output": "public/packs/anatomy-reflex/shared/ui/blueprint-symbols/axon-flow.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 9x28 in 32x32 with 2px margins. Weakest source: a narrow vertical flow channel rather than the prompted horizontal conduit. It remains distinct in the 03 chain; documented as the set exception.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "nerve",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.exit-gate",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/exit-gate.png",
+      "output": "public/packs/anatomy-reflex/shared/ui/blueprint-symbols/exit-gate.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 28x28 in 32x32 with 2px margins. The opened exit arch reads by silhouette.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "nerve",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.ca-window",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/ca-window.png",
+      "output": "public/packs/anatomy-reflex/shared/ui/blueprint-symbols/ca-window.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 28x28 in 32x32 with 2px margins. The window arc, pointer and cross read as a timed Ca2+ window.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "nerve",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.ach-carry",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/ach-carry.png",
+      "output": "public/packs/anatomy-reflex/shared/ui/blueprint-symbols/ach-carry.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 28x23 in 32x32 with 2px margins. The packet loop and motion dashes read as carry.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "nerve",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.receptor-bind",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/receptor-bind.png",
+      "output": "public/packs/anatomy-reflex/shared/ui/blueprint-symbols/receptor-bind.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 17x28 in 32x32 with 2px margins. The socket and matching key read as receptor binding.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "nerve",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.response-clear",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/response-clear.png",
+      "output": "public/packs/anatomy-reflex/shared/ui/blueprint-symbols/response-clear.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 28x14 in 32x32 with 2px margins. The two-input response merge stays legible. Below the 180-opaque target (88 px) because the glyph is thin line art; silhouette unaffected.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "nerve",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.sensor-detect",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/sensor-detect.png",
+      "output": "public/packs/silicon-reflex/shared/ui/blueprint-symbols/sensor-detect.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 28x26 in 32x32 with 2px margins. The sensor eye, radiating ticks and forward bead read in the Silicon palette.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.route-integrate",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/route-integrate.cleaned.png",
+      "output": "public/packs/silicon-reflex/shared/ui/blueprint-symbols/route-integrate.png",
+      "runtime": true,
+      "notes": "Accepted at 1x after hand-clean: fitted 28x13 in 32x32 with 2px margins. The graphite wires were remapped to #7a8f8a so the L-shaped route and junction read on the dark HUD. Below the 180-opaque target (85 px); silhouette unaffected.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.cpu-wake",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/cpu-wake.png",
+      "output": "public/packs/silicon-reflex/shared/ui/blueprint-symbols/cpu-wake.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 25x28 in 32x32 with 2px margins. The wake tick, CPU arch and chip read in the Silicon palette.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    },
+    {
+      "id": "ui.blueprint.symbol.actuator-gate",
+      "class": "ui-1x",
+      "status": "accepted",
+      "source": "art-source/blueprint-icons/keyed/actuator-gate.png",
+      "output": "public/packs/silicon-reflex/shared/ui/blueprint-symbols/actuator-gate.png",
+      "runtime": true,
+      "notes": "Accepted at 1x: fitted 26x28 in 32x32 with 2px margins. The arch and diagonal actuator strut read in the Silicon palette.",
+      "ramps": [
+        "teal",
+        "bone",
+        "boneShadow",
+        "joint",
+        "sage",
+        "ink"
+      ]
+    }
+  ]
+}

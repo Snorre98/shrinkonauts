@@ -57,13 +57,14 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Local co-op, tether, checkpoint P2 toggle | Working |
 | Solo start with P2 inactive | Working |
 | Pause, text scale, reduced motion, mute, focus management | Working |
+| M3.75 in-room HUD, blueprint, hint strip, player cards | Working; final 32×32 image symbols |
 | Placeholder asset pipeline (44/44 anatomy, 15/15 bathroom) | Working |
 | Pure validator with injected feedback vocabulary | Working |
 | Headless runtime smoke | Working |
 | Playwright browser smoke on system Chrome | Working |
 | Human hub visual/accessibility playtest | **Pending** |
 | Human solo/co-op playtest | **Pending** |
-| Final art files | Deferred |
+| Remaining final art files (03 scans, Silicon interrupt/exit, deferred backgrounds/UI) | Deferred |
 | Audio cues and room/menu themes | Installed from the 2026-11-03/04 Stable Audio passes |
 | 04 Nano Banana source batch | 7 plates processed, wired and accepted |
 | M3.5 bathroom hub art pass | Deferred |
@@ -80,7 +81,7 @@ Run from `shrinkonauts/`:
 ```bash
 npm install
 npm run dev             # http://127.0.0.1:5173/
-npm test                # 45 files, 423 unit/integration tests
+npm test                # 56 files, 588 unit/integration tests
 npm run smoke           # room boot + module boundary tests
 npm run build           # tsc --noEmit + Vite production build
 npm run pack:validate   # dev fixture + anatomy + catalog/hub validation
@@ -99,9 +100,9 @@ bundled browser.
 Asset modes:
 
 ```text
-/                  # anatomy pack, procedural placeholders
+/                  # hub + final manifests by default
 /?assets=fixture   # anatomy fixture manifest if present, else warn + placeholders
-/?assets=final     # final manifest (current entries are placeholders)
+/?assets=final     # final manifests (POC/final entries; deferred IDs stay placeholders)
 ```
 
 Unknown `?assets=` values fall back to placeholder mode. The app does not boot
@@ -324,8 +325,8 @@ public/packs/anatomy-reflex/
   theme.json                palette, fonts, parallax, UI assets, audio cues/music
   mapping.json              concept → objective/level coverage
   licenses.json             licence entries
-  assets.placeholder.json   placeholder manifest
-  assets.final.json         final manifest (currently placeholder entries)
+  assets.placeholder.json   placeholder/fallback manifest
+  assets.final.json         final manifest (POC/final entries; deferred IDs stay placeholders)
   levels/03-nerve-forest/
     level.json              objectives, concepts, puzzleIds, feedback, map, evidence
     room.json               tiles, entities, anchors, checkpoints, triggers, exits
@@ -472,16 +473,35 @@ cues, beat progress, and the `.feedback-live` polite live region. Surfaces are
 diffed by stable ID, sorted by priority, and laid out by anchor with safe-area
 docking and P1/P2 caption lanes.
 
-M3.75 (specified, not yet implemented) changes this split: the puzzle beats move
-into the three-zone header checklist, the header gains a compact 2–4-component
-puzzle blueprint and hint strip, and the bottom corners gain player-coloured
-control cards. The blueprint is a conceptual solution schematic, not the
-pack-level system map; `Tab` opens the expanded blueprint with the room-to-room
-context. The design and data model are in
+M3.75 implements the three-zone header: identity on the left, the compact
+2–4-component puzzle blueprint in the centre, the puzzle checklist on the right,
+and the hint/status strip below. The header checklist owns the beat rendering
+(`.feedback-beats__item` is retained) and the header hint button cycles the
+authored hints with `aria-live` text. Bottom-left P1 and bottom-right P2 control
+cards use the shared `--color-player-p1`/`--color-player-p2` tokens; P2 is hidden
+in solo. The pause menu keeps the full shared and per-player control list and no
+longer owns the puzzle hint.
+
+`src/game/blueprint.ts` builds the compact component view from authored level
+data with a deterministic beat/nodes/solution fallback. `src/ui/blueprint.ts`
+renders the compact icon strip and the labelled Tab popup; the popup also carries
+the system chain, legend, and hint history. The pack-level system map is
+popup-only context and is not consumed by the compact blueprint. Header density
+is exposed as `data-hud-density` (`full`, `compact`, `minimal`), and measured
+header/card insets feed the feedback safe area so prompts, toasts, and anchored
+surfaces stay clear of the HUD.
+
+The design and data model are in
 [`docs/m3.75/README.md`](docs/m3.75/README.md), with the symbol brief in
 [`docs/m3.75/blueprint-symbol-asset-brief-v01.md`](docs/m3.75/blueprint-symbol-asset-brief-v01.md)
 and the decision in
 [ADR-0080](docs/adr-presentation/0080-hud-blueprint-and-player-colors.md).
+The 12 authored puzzle symbols resolve to final 32×32 `ui-1x` PNGs under each
+pack's `shared/ui/blueprint-symbols/` directory. The CSS code glyph remains the
+fallback for unresolved IDs; the old generic v01 entries remain for the fallback
+builder, while the v02 placeholder entries were removed once the final assets
+were wired. The assets, key/fit reports and 1×/2×/4× previews are committed under
+`art-source/blueprint-icons/` and `art-source/previews/blueprint-icons/`.
 
 The accessibility baseline is:
 
@@ -498,8 +518,12 @@ The accessibility baseline is:
   focus to the previous element on close.
 - Owner-aware soft surfaces; P1/P2 can operate conversations concurrently.
 - Live regions for toasts, gate feedback, and feedback cues with actor
-  attribution.
-- Semantic buttons and labels for gate reordering, choices, and debrief.
+  attribution; the header hint text is a polite live region and the active beat
+  uses `aria-current="step"`.
+- Semantic buttons and labels for gate reordering, choices, and debrief; compact
+  blueprint components are labelled buttons and the Tab popup traps focus.
+- Density states at `data-hud-density` keep content reachable through the
+  expanded blueprint, pause controls, and text scaling at 1/1.25/1.5/2.
 
 Full key rebinding is deferred. Settings changes update the mounted pause
 overlay in place, so buttons reflect their new state without recreating the
@@ -625,6 +649,8 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/app-state.test.ts` | Hub phases, cycle/mode selection, start eligibility, error recovery |
 | `tests/hub.test.ts` | Bathroom document parsing, IDs, manifests, validation |
 | `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, shared-feedback state/beat filtering, solo start, overlays |
+| `tests/blueprint.test.ts` | Authored/fallback blueprint components, states, edges, actors, and grouping |
+| `tests/pack-feedback.test.ts` | Level feedback/beat/blueprint parsing and malformed shapes |
 | `tests/puzzle.test.ts`, `puzzle-dispatch.test.ts`, `endplate-ferry.test.ts` | Puzzle schema/dataflow, dispatch, timers, gate recovery |
 | `tests/recoverability.test.ts` | Exhaustive stable-state reachability |
 | `tests/ecs.test.ts` | Spawn/despawn/query/system order/determinism |
@@ -643,6 +669,7 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, materials purity, module graph |
 | `e2e/hub.spec.ts` | Browser: bathroom, cycle selection, launch skip, solo start, return |
 | `e2e/m1.spec.ts` | Browser: 03 → 04, conversations, attribution, reduced motion, live region, export |
+| `e2e/hud.spec.ts` | Browser: three-zone header, checklist, hint strip, cards, blueprint popup, image-backed 03/04/01 symbols, density, safe area |
 | `e2e/shared-feedback.spec.ts` | Browser: shared-feedback pause toggle, persistence, shared state/beat/help suppression and restoration |
 
 `npm run smoke` runs the room-boot and boundary suites. `pack:smoke` adds a
@@ -651,6 +678,34 @@ regression. `smoke:e2e` runs the Playwright smoke project against the dev server
 using system Chrome.
 
 ## Verification performed
+
+On 2026-11-04, after the M3.75 final symbol pass:
+
+```text
+npm test             56 files, 588 tests passed
+npm run build        tsc clean + Vite production build
+npm run pack:validate  dev placeholder/fixture PASS; anatomy 59 IDs / 16 placeholders; Silicon 52 IDs / 16 placeholders; catalog + bathroom hub 21 IDs / 1 placeholder PASS
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (59 IDs, 16 placeholders); Silicon runtime PASS (48 IDs, 16 placeholders)
+npm run smoke:e2e      17/17 passed
+git diff --check      clean
+```
+
+The 12 source plates were keyed with `#ff00ff`, fitted to 32×32 `ui-1x`, and
+reviewed at 1× on `#101a20`. `route-integrate` was hand-cleaned by remapping its
+graphite wires to `#7a8f8a`; `axon-flow` remains the narrowest source. The 03,
+04 and 01 headers were captured at 1280×720 and checked for image glyphs,
+done/active/pending rings and P1/P2 markers. Human HUD playtest remains pending.
+
+On 2026-11-04, after the M3.75 HUD pass (before final symbol integration):
+
+```text
+npm test             56 files, 588 tests passed
+npm run build        tsc clean + Vite production build
+npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (59 IDs, 24 placeholders); Silicon PASS (48 IDs, 20 placeholders)
+npm run smoke:e2e      16/16 passed
+git diff --check      clean
+```
 
 On 2026-11-03, after the additive 04/tile-atlas pass:
 

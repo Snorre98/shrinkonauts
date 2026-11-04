@@ -1,6 +1,6 @@
 # M3.75 — Blueprint Symbol Asset Brief and Prompt Pack v01
 
-**Status:** proposed asset brief — no final art generated yet
+**Status:** approved asset brief — 12/12 final symbols processed, wired and accepted
 **Date:** 2026-11-04
 **Scope:** the abstract symbol kit used by the in-room puzzle blueprint
 **Depends on:** M3 palette, ADR-0049, ADR-0072, ADR-0073, ADR-0080
@@ -91,20 +91,47 @@ an ID is unresolved.
 
 ### 3.1 Core glyphs
 
+These generic IDs remain available to the fallback builder for future
+un-authored puzzles. The three current puzzles use the puzzle-specific IDs in
+§3.1a instead.
+
 | Logical ID | Concept | Visual description | Used by |
 |---|---|---|---|
-| `ui.blueprint.symbol.inputs` | Two inputs | Two small circles feeding a single line; asymmetric spacing | 03 "Two inputs" |
-| `ui.blueprint.symbol.threshold` | Threshold / accumulator | A vertical gauge with a fill line and a notch; reads as "enough" | 03 "Threshold" |
-| `ui.blueprint.symbol.flow` | One-way flow | A short conduit with a bead and a forward arrow; no cell body | 03 "One-way flow", generic flow |
-| `ui.blueprint.symbol.terminal` | Terminal / destination | A forked end or socket receiving a line | Optional 03 terminal |
-| `ui.blueprint.symbol.gate` | Gate / exit | A barrier that has opened into an arch; not a door illustration | 03 "Terminal / exit", generic gates |
-| `ui.blueprint.symbol.relay` | Relay / junction | Two lines merging into one, with a small switch node | 04 "Response + clearance" |
-| `ui.blueprint.symbol.timer` | Timer / window | A partial arc with a tick mark; suggests a window, not a clock face | 04 "Trigger + Ca²⁺ window" |
-| `ui.blueprint.symbol.carry` | Carry / packet | A capsule or packet with a motion trail | 04 "Carry ACh" |
-| `ui.blueprint.symbol.receptor` | Receptor / bind | A socket with a matching key/capsule shape | 04 "Bind receptor" |
-| `ui.blueprint.symbol.pulse` | Pulse / wave | A compact spark or wave emitted from a point | Optional 04 terminal pulse |
-| `ui.blueprint.symbol.clear` | Clearance / decay | A fading particle or broken line returning to neutral | Optional 04 clearance |
+| `ui.blueprint.symbol.inputs` | Two inputs | Two small circles feeding a single line; asymmetric spacing | Fallback only |
+| `ui.blueprint.symbol.threshold` | Threshold / accumulator | A vertical gauge with a fill line and a notch; reads as "enough" | Fallback only |
+| `ui.blueprint.symbol.flow` | One-way flow | A short conduit with a bead and a forward arrow; no cell body | Fallback only |
+| `ui.blueprint.symbol.terminal` | Terminal / destination | A forked end or socket receiving a line | Fallback/optional |
+| `ui.blueprint.symbol.gate` | Gate / exit | A barrier that has opened into an arch; not a door illustration | Fallback only |
+| `ui.blueprint.symbol.relay` | Relay / junction | Two lines merging into one, with a small switch node | Fallback only |
+| `ui.blueprint.symbol.timer` | Timer / window | A partial arc with a tick mark; suggests a window, not a clock face | Fallback only |
+| `ui.blueprint.symbol.carry` | Carry / packet | A capsule or packet with a motion trail | Fallback only |
+| `ui.blueprint.symbol.receptor` | Receptor / bind | A socket with a matching key/capsule shape | Fallback only |
+| `ui.blueprint.symbol.pulse` | Pulse / wave | A compact spark or wave emitted from a point | Fallback only |
+| `ui.blueprint.symbol.clear` | Clearance / decay | A fading particle or broken line returning to neutral | Fallback/optional |
 | `ui.blueprint.symbol.goal` | Goal / beacon | A small beacon or flag with radiating ticks | Optional final component |
+
+### 3.1a Authored puzzle symbols (v02)
+
+Every component in the three current puzzles has its own symbol. No glyph is
+reused across puzzles.
+
+| Logical ID | Puzzle | Concept | Prompt |
+|---|---|---|---|
+| `ui.blueprint.symbol.input-pair` | 03 | Two inputs | BPV2-01 |
+| `ui.blueprint.symbol.threshold-gauge` | 03 | Threshold | BPV2-02 |
+| `ui.blueprint.symbol.axon-flow` | 03 | One-way flow | BPV2-03 |
+| `ui.blueprint.symbol.exit-gate` | 03 | Terminal / exit | BPV2-04 |
+| `ui.blueprint.symbol.ca-window` | 04 | Trigger + Ca²⁺ window | BPV2-05 |
+| `ui.blueprint.symbol.ach-carry` | 04 | Carry ACh | BPV2-06 |
+| `ui.blueprint.symbol.receptor-bind` | 04 | Bind receptor | BPV2-07 |
+| `ui.blueprint.symbol.response-clear` | 04 | Response + clearance | BPV2-08 |
+| `ui.blueprint.symbol.sensor-detect` | 01 | Detect change | BPV2-09 |
+| `ui.blueprint.symbol.route-integrate` | 01 | Route + integrate | BPV2-10 |
+| `ui.blueprint.symbol.cpu-wake` | 01 | Wake CPU | BPV2-11 |
+| `ui.blueprint.symbol.actuator-gate` | 01 | Actuate response | BPV2-12 |
+
+The standalone prompts and puzzle coverage matrix are in
+[`blueprint-symbol-prompts-v02.md`](blueprint-symbol-prompts-v02.md).
 
 ### 3.2 Markers and utility glyphs
 
@@ -133,38 +160,59 @@ visual components.
 
 | Component | Groups beats | Symbol |
 |---|---|---|
-| Two inputs | `input` | `ui.blueprint.symbol.inputs` |
-| Threshold | `threshold` | `ui.blueprint.symbol.threshold` |
-| One-way flow | `axon` | `ui.blueprint.symbol.flow` |
-| Terminal / exit | `terminal`, `exit` | `ui.blueprint.symbol.gate` |
+| Two inputs | `input` | `ui.blueprint.symbol.input-pair` |
+| Threshold | `threshold` | `ui.blueprint.symbol.threshold-gauge` |
+| One-way flow | `axon` | `ui.blueprint.symbol.axon-flow` |
+| Terminal / exit | `terminal`, `exit` | `ui.blueprint.symbol.exit-gate` |
 
 ### 4.2 04 Muscle Effector — 4 components
 
 | Component | Groups beats | Symbol |
 |---|---|---|
-| Trigger + Ca²⁺ window | `trigger`, `release` | `ui.blueprint.symbol.timer` |
-| Carry ACh | `carry` | `ui.blueprint.symbol.carry` |
-| Bind receptor | `bind` | `ui.blueprint.symbol.receptor` |
-| Response + clearance | `respond`, `clear` | `ui.blueprint.symbol.relay` |
+| Trigger + Ca²⁺ window | `trigger`, `release` | `ui.blueprint.symbol.ca-window` |
+| Carry ACh | `carry` | `ui.blueprint.symbol.ach-carry` |
+| Bind receptor | `bind` | `ui.blueprint.symbol.receptor-bind` |
+| Response + clearance | `respond`, `clear` | `ui.blueprint.symbol.response-clear` |
 
-The `goal`, `pulse`, `clear`, and `terminal` glyphs are optional alternatives for
-future puzzles or for a final component that needs a stronger destination read.
+### 4.3 01 Interrupt Loop — 4 components
+
+| Component | Groups beats | Symbol |
+|---|---|---|
+| Detect change | `detect` | `ui.blueprint.symbol.sensor-detect` |
+| Route + integrate | `route`, `integrate` | `ui.blueprint.symbol.route-integrate` |
+| Wake CPU | `wake` | `ui.blueprint.symbol.cpu-wake` |
+| Actuate response | `actuate` | `ui.blueprint.symbol.actuator-gate` |
+
+The generic `goal`, `clear`, and `terminal` glyphs remain optional fallback
+alternatives for future puzzles.
 
 ---
 
 ## 5. Prompt pack
 
+The canonical standalone copy/paste prompts for the 12 puzzle-specific symbols
+are in
+[`blueprint-symbol-prompts-v02.md`](blueprint-symbol-prompts-v02.md). Every
+component in 03, 04, and 01 has its own symbol; no glyph is reused across
+puzzles. The earlier `v01` files are superseded and retained only as historical
+references.
+
 ### 5.1 Base prompt template
 
-Use the existing nanobanana style block and palette block, then add:
+Use the canonical v02 prompts for current work. The template below remains the
+shape for future symbols:
 
 ```text
 A single 32×32 pixel-art glyph for a technical biological blueprint.
 Subject: {SYMBOL_DESCRIPTION}.
 Style: abstract circuit/process symbol, 1-bit bone line art with a subtle teal
-shadow, 2 px maximum stroke, centered in a 32×32 cell, transparent background,
-no text, no letters, no numbers, no frame, no border, no literal anatomy, no
-organs, no cells, no room objects, no perspective, no shading gradient.
+shadow, 2 px maximum stroke, centered in a 32×32 cell, flat solid magenta
+#FF00FF background, no text, no letters, no numbers, no frame, no border, no
+literal anatomy, no organs, no cells, no room objects, no perspective, no
+shading gradient.
+All non-glyph areas, including the surrounding margin and every interior gap that
+should be transparent, use the same flat solid magenta #FF00FF. Nano Banana must
+not draw a checkerboard, alpha grid, or scene background.
 Readable at 32×32 when displayed 1:1 on a dark #101a20 panel.
 Palette: bone #f2e8d5, bone shadow #7a8f8a, teal dark #05090b, optional nerve
 #ffd166 and joint #7bdff2 accents.
@@ -174,21 +222,22 @@ Pixel grid: crisp, no anti-aliasing, no blur, no noise.
 ### 5.2 Negative prompt
 
 ```text
-text, letters, numbers, labels, captions, frame, border, card, panel, background,
-gradient, drop shadow, glow, blur, anti-aliasing, 3D, perspective, photorealistic,
-literal anatomy, organ, cell, neuron, muscle, room, platform, character, UI
-chrome, multiple glyphs, sprite sheet, grid lines
+text, letters, numbers, labels, captions, frame, border, card, panel, scene
+background, gradient, drop shadow, glow, blur, anti-aliasing, checkerboard,
+alpha checkerboard, transparency grid, non-magenta background, off-magenta
+background, uneven magenta, 3D, perspective, photorealistic, literal anatomy,
+organ, cell, neuron, muscle, room, platform, character, UI chrome, multiple
+glyphs, sprite sheet, grid lines
 ```
 
 ### 5.3 Batch order
 
-Generate in this order so the visual language settles before the long tail:
+Generate in the v02 order:
 
-1. `inputs`, `threshold`, `flow` — the core 03 vocabulary.
-2. `gate`, `terminal`, `goal` — the 03 destination/final-component vocabulary.
-3. `timer`, `carry`, `receptor` — the 04 transport/binding vocabulary.
-4. `relay`, `pulse`, `clear` — the 04 response/clearance vocabulary.
-5. `marker.p1`, `marker.p2`, `check`, `lock`, `unknown` — utility glyphs.
+1. `input-pair`, `threshold-gauge`, `axon-flow` — the 03 core.
+2. `exit-gate`, `ca-window`, `ach-carry` — 03 exit and 04 transport.
+3. `receptor-bind`, `response-clear` — 04 binding and response.
+4. `sensor-detect`, `route-integrate`, `cpu-wake`, `actuator-gate` — Silicon.
 
 Generate four variations per symbol and choose one. Do not mix stroke weights
 across batches; if a later batch looks heavier, regenerate the earlier batch or
@@ -247,6 +296,9 @@ Preferred: one atlas `ui.blueprint.symbols` at 256×128 px, 8 columns × 4 rows 
 
 The exact region map is finalised when the sheet is sliced. If atlas generation
 is unreliable, ship individual PNGs with the same logical IDs and 32×32 display.
+The shipped M3.75 set uses individual 32×32 PNGs under
+`public/packs/<pack>/shared/ui/blueprint-symbols/`, with one final manifest entry
+per logical ID.
 
 ### 6.2 Manifest and theme wiring
 
@@ -254,7 +306,7 @@ is unreliable, ship individual PNGs with the same logical IDs and 32×32 display
   with CSS placeholder specs (a short label and a simple shape).
 - Add final entries to `assets.final.json` when art is accepted.
 - The blueprint data references logical IDs such as
-  `ui.blueprint.symbol.inputs`.
+  `ui.blueprint.symbol.input-pair`.
 - The UI resolves them through the asset provider. If unresolved, it renders a
   CSS fallback glyph with the component's short label.
 

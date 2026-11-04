@@ -387,6 +387,78 @@
       "url": "https://stability.ai/license",
       "modified": "2026-11-04; source 04-muscle-effector-best.wav sha256 94e2e4aa1810f21abcc6158efe5d475a4ee0f583259609ea009ed0135d4f39a5; trimmed to last musical bar; 1.289 s tail-to-head loop crossfade; 48 kHz stereo; -17.3 LUFS; true peak -3.2 dBFS; MP3 192 kbps; loop 27.685 s",
       "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/input-pair.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 2b3c0456b4bf4a795d0ee9805e2dd0b9707389f71f21e9896c92cc4ec4fe9e87; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x22 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 427b8f1ed843106794836cbd45946c16dc61d7a6325ca7c3fee5ef39f463b9ff",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/threshold-gauge.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 80a4b204c8e996719040ce26cd8a970391fae342d42495167ee726ae1a861c2d; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 16x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 46637ec39cae026f30eac1180b808401e5168f10f428c813e788afc89ad8e86e",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/axon-flow.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 ec94c18d65c8a5bcd093e66cd27744bfd2eebffa3318e17dbc24db1b54fbcf3e; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 9x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 f64f150c71b99026cd0b9d6af3464a60b02e71935e2cb2f64f768cf435eda2d9",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/exit-gate.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 14c60abe641ba4dd78de58de91737c1fef56e545affb97582f8bd1dca7ec0a29; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 a1411daeb704ad5ed310c9d817b0ece1832851c7ebffb73d1edc2ed5f355842c",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/ca-window.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 3a8c9625f90f807c98cd6823f50817f4590c504f0a9d2bb7b422a0a02c000002; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 57182ca84836d101323e2bcf27673da5bfac721ddece9a29d70e13bc81002fbe",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/ach-carry.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 8ce7d3a9eceafc9d25f8d2e874df37ff7ab855f08ee59b0d6c7e2329efef93b2; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x23 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 8e8264be13900b7a13a874af5e0a80858be25a04e5cf9c26926249364b7b8914",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/receptor-bind.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 3ffde09f9123762d07afba17e5f35abc56f70f36b9ace169472c599f333fe88c; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 17x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 fe23e598f0e2f4cdee1dc9678d6d328de7f847aff8bd791ac44a1780f304987e",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/response-clear.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 c35072c8b80ef0be7e12396326a15efc83ff226623732e12322a26e1dfbc71a8; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x14 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 5209e6fd3acb0f62ffcf524723d2e1e30904cbb184011a652967298215b88f66",
+      "aiGenerated": true
     }
   ]
 }

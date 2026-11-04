@@ -133,7 +133,7 @@ test("03 Nerve Forest and 04 Muscle Effector", async ({ page }) => {
   await closeOverlay(page, "overlay--concept-log");
 
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("dialog", { name: "System map" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Blueprint" })).toBeVisible();
   await captureShot(page, "03-map");
   await closeOverlay(page, "overlay--map");
 

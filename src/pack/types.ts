@@ -458,9 +458,41 @@ export interface LevelFeedbackNodeOverride {
   tileTarget?: LevelFeedbackTileTarget;
 }
 
+export type LevelBlueprintActor = "p1" | "p2" | "both" | "shared";
+
+export type LevelBlueprintEdgeType = "flow" | "oneWay";
+
+export interface LevelBlueprintComponent {
+  id: string;
+  label?: string;
+  symbol: string;
+  beatIds: string[];
+  /** Column/order index, not a world coordinate. */
+  x: number;
+}
+
+export interface LevelBlueprintEdge {
+  from: string;
+  to: string;
+  type: LevelBlueprintEdgeType;
+}
+
+export interface LevelBlueprintStep {
+  componentId: string;
+  actor: LevelBlueprintActor;
+}
+
+export interface LevelBlueprint {
+  title?: string;
+  components: LevelBlueprintComponent[];
+  edges?: LevelBlueprintEdge[];
+  steps?: LevelBlueprintStep[];
+}
+
 export interface LevelFeedbackPuzzle {
   beats?: LevelFeedbackBeat[];
   nodes?: Record<string, LevelFeedbackNodeOverride>;
+  blueprint?: LevelBlueprint;
 }
 
 export interface LevelFeedback {

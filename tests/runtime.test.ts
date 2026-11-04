@@ -11,6 +11,7 @@ import {
 import { loadContent, packDirectory } from "../scripts/content-loader";
 
 const content = loadContent(packDirectory("anatomy-reflex"));
+const siliconContent = loadContent(packDirectory("silicon-reflex"));
 
 class FakeAudio implements AudioPort {
   muted = false;
@@ -526,11 +527,18 @@ describe("game runtime", () => {
     const { runtime } = makeRuntime();
     expect(runtime.snapshot().puzzle?.canHint).toBe(true);
     expect(runtime.snapshot().puzzle?.pulse).toBeNull();
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(0);
+    expect(runtime.snapshot().puzzle?.hintsTotal).toBe(3);
+    expect(runtime.snapshot().puzzle?.revealedHints).toEqual([]);
 
     runtime.puzzleHint();
     expect(runtime.snapshot().puzzle?.hint).toBe(
       "One input is below threshold. The trigger gate needs a second dendrite input.",
     );
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(1);
+    expect(runtime.snapshot().puzzle?.revealedHints).toEqual([
+      "One input is below threshold. The trigger gate needs a second dendrite input.",
+    ]);
     stepWith(runtime);
     runtime.requestFeedback("p1");
     expect(
@@ -551,11 +559,24 @@ describe("game runtime", () => {
       "The axon is one-way: dendrite → trigger zone → axon → terminal.",
     );
     expect(runtime.snapshot().puzzle?.canHint).toBe(false);
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(3);
+    expect(runtime.snapshot().puzzle?.revealedHints).toHaveLength(3);
     expect(
       runtime
         .exportEvidence()
         .events.filter((event) => event.type === "hint_used"),
     ).toHaveLength(3);
+  });
+
+  it("allows the Blueprint popup to reveal the next hint", () => {
+    const { runtime } = makeRuntime();
+    runtime.step(1 / 60, input({ map: true }));
+    expect(runtime.state).toBe("map");
+
+    runtime.puzzleHint();
+    expect(runtime.state).toBe("map");
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(1);
+    expect(runtime.snapshot().puzzle?.revealedHints).toHaveLength(1);
   });
 
   it("does not solve on one input and resets the counter", () => {
@@ -1253,6 +1274,26 @@ describe("game runtime", () => {
       x: 48,
       y: 48,
     });
+    expect(snapshot.blueprint?.puzzleId).toBe("puzzle-node-run");
+    expect(snapshot.blueprint?.components.map((component) => component.id)).toEqual([
+      "inputs",
+      "threshold",
+      "axon",
+      "exit",
+    ]);
+    expect(snapshot.blueprint?.components.map((component) => component.actor)).toEqual([
+      "both",
+      "both",
+      "p1",
+      "shared",
+    ]);
+    expect(snapshot.blueprint?.components.map((component) => component.state)).toEqual([
+      "active",
+      "pending",
+      "pending",
+      "pending",
+    ]);
+    expect(snapshot.blueprint?.edges).toHaveLength(3);
     expect(runtime.drainEffects()).toEqual([]);
   });
 
@@ -1279,6 +1320,49 @@ describe("game runtime", () => {
         (surface) => surface.id === "fb:meter:ca-timer",
       )?.content.text,
     ).toBe("Ca²⁺ window is idle.");
+    expect(snapshot.blueprint?.puzzleId).toBe("puzzle-endplate-ferry");
+    expect(snapshot.blueprint?.components.map((component) => component.id)).toEqual([
+      "trigger",
+      "carry",
+      "bind",
+      "response",
+    ]);
+    expect(snapshot.blueprint?.components.map((component) => component.actor)).toEqual([
+      "p1",
+      "p2",
+      "p2",
+      "p1",
+    ]);
+    expect(snapshot.blueprint?.components[0]?.state).toBe("active");
+  });
+
+  it("projects the authored Silicon interrupt-loop blueprint after activation", () => {
+    const { runtime } = makeRuntimeWithContent(siliconContent);
+    const consolePoint = runtime.entityPixel("sensor-console");
+    if (!consolePoint) throw new Error("sensor-console missing");
+    runtime.placePlayer("p1", consolePoint.x, consolePoint.y);
+    expect(runtime.snapshot().interaction).toMatchObject({
+      kind: "puzzle",
+      label: "Start Interrupt Loop",
+    });
+
+    stepWith(runtime, playerActions({ interact: true }));
+    const blueprint = runtime.snapshot().blueprint;
+    expect(blueprint?.puzzleId).toBe("puzzle-interrupt-loop");
+    expect(blueprint?.title).toBe("Interrupt route");
+    expect(blueprint?.components.map((component) => component.id)).toEqual([
+      "detect",
+      "route",
+      "wake",
+      "actuate",
+    ]);
+    expect(blueprint?.components.map((component) => component.actor)).toEqual([
+      "p1",
+      "p1",
+      "p1",
+      "p1",
+    ]);
+    expect(blueprint?.components[0]?.state).toBe("active");
   });
 
   it("delivers effect plans idempotently with attribution", () => {

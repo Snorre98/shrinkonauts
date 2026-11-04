@@ -33,6 +33,12 @@ import type {
   LevelFeedbackNodeOverride,
   LevelFeedbackPuzzle,
   LevelFeedbackTileTarget,
+  LevelBlueprint,
+  LevelBlueprintActor,
+  LevelBlueprintComponent,
+  LevelBlueprintEdge,
+  LevelBlueprintEdgeType,
+  LevelBlueprintStep,
   LevelMapEdge,
   LevelUnlock,
   LevelUnlockType,
@@ -70,6 +76,16 @@ const UNLOCK_TYPES: readonly LevelUnlockType[] = [
   "item",
 ];
 const LEVEL_STATUSES = ["draft", "validated", "playtested", "done"] as const;
+const BLUEPRINT_ACTORS: readonly LevelBlueprintActor[] = [
+  "p1",
+  "p2",
+  "both",
+  "shared",
+];
+const BLUEPRINT_EDGE_TYPES: readonly LevelBlueprintEdgeType[] = [
+  "flow",
+  "oneWay",
+];
 
 function readRecordStringMap(
   value: unknown,
@@ -411,6 +427,203 @@ function parseFeedbackNodeOverride(
   });
 }
 
+function parseBlueprintComponent(
+  value: unknown,
+  label: string,
+): Result<LevelBlueprintComponent> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(
+    value,
+    ["id", "label", "symbol", "beatIds", "x"],
+    LEVEL_CODE,
+    label,
+  );
+  if (!keys.ok) return err(keys.error);
+  const id = readNonEmptyString(value, "id", LEVEL_CODE, `${label}.id`);
+  if (!id.ok) return err(id.error);
+  const componentLabel = readOptionalString(
+    value,
+    "label",
+    LEVEL_CODE,
+    `${label}.label`,
+  );
+  if (!componentLabel.ok) return err(componentLabel.error);
+  const symbol = readNonEmptyString(
+    value,
+    "symbol",
+    LEVEL_CODE,
+    `${label}.symbol`,
+  );
+  if (!symbol.ok) return err(symbol.error);
+  const beatIds = readStringArray(
+    value,
+    "beatIds",
+    LEVEL_CODE,
+    `${label}.beatIds`,
+  );
+  if (!beatIds.ok) return err(beatIds.error);
+  const x = readInteger(value, "x", LEVEL_CODE, `${label}.x`);
+  if (!x.ok) return err(x.error);
+  if (x.value < 0) {
+    return err(`${LEVEL_CODE}: ${label}.x must be non-negative`);
+  }
+  return ok({
+    id: id.value,
+    ...(componentLabel.value ? { label: componentLabel.value } : {}),
+    symbol: symbol.value,
+    beatIds: beatIds.value,
+    x: x.value,
+  });
+}
+
+function parseBlueprintEdge(
+  value: unknown,
+  label: string,
+): Result<LevelBlueprintEdge> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(
+    value,
+    ["from", "to", "type"],
+    LEVEL_CODE,
+    label,
+  );
+  if (!keys.ok) return err(keys.error);
+  const from = readNonEmptyString(value, "from", LEVEL_CODE, `${label}.from`);
+  if (!from.ok) return err(from.error);
+  const to = readNonEmptyString(value, "to", LEVEL_CODE, `${label}.to`);
+  if (!to.ok) return err(to.error);
+  const type = readNonEmptyString(value, "type", LEVEL_CODE, `${label}.type`);
+  if (!type.ok) return err(type.error);
+  if (!BLUEPRINT_EDGE_TYPES.includes(type.value as LevelBlueprintEdgeType)) {
+    return err(
+      `${LEVEL_CODE}: ${label}.type "${type.value}" is not supported`,
+    );
+  }
+  return ok({
+    from: from.value,
+    to: to.value,
+    type: type.value as LevelBlueprintEdgeType,
+  });
+}
+
+function parseBlueprintStep(
+  value: unknown,
+  label: string,
+): Result<LevelBlueprintStep> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(
+    value,
+    ["componentId", "actor"],
+    LEVEL_CODE,
+    label,
+  );
+  if (!keys.ok) return err(keys.error);
+  const componentId = readNonEmptyString(
+    value,
+    "componentId",
+    LEVEL_CODE,
+    `${label}.componentId`,
+  );
+  if (!componentId.ok) return err(componentId.error);
+  const actor = readNonEmptyString(
+    value,
+    "actor",
+    LEVEL_CODE,
+    `${label}.actor`,
+  );
+  if (!actor.ok) return err(actor.error);
+  if (!BLUEPRINT_ACTORS.includes(actor.value as LevelBlueprintActor)) {
+    return err(
+      `${LEVEL_CODE}: ${label}.actor "${actor.value}" is not supported`,
+    );
+  }
+  return ok({
+    componentId: componentId.value,
+    actor: actor.value as LevelBlueprintActor,
+  });
+}
+
+function parseLevelBlueprint(
+  value: unknown,
+  label: string,
+): Result<LevelBlueprint> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(
+    value,
+    ["title", "components", "edges", "steps"],
+    LEVEL_CODE,
+    label,
+  );
+  if (!keys.ok) return err(keys.error);
+
+  const title = readOptionalString(
+    value,
+    "title",
+    LEVEL_CODE,
+    `${label}.title`,
+  );
+  if (!title.ok) return err(title.error);
+
+  if (!Array.isArray(value.components)) {
+    return err(`${LEVEL_CODE}: ${label}.components must be an array`);
+  }
+  const components: LevelBlueprintComponent[] = [];
+  const componentIds = new Set<string>();
+  for (const [index, raw] of value.components.entries()) {
+    const componentLabel = `${label}.components[${index}]`;
+    const parsed = parseBlueprintComponent(raw, componentLabel);
+    if (!parsed.ok) return err(parsed.error);
+    if (componentIds.has(parsed.value.id)) {
+      return err(
+        `${LEVEL_CODE}: ${componentLabel}.id "${parsed.value.id}" is duplicated`,
+      );
+    }
+    componentIds.add(parsed.value.id);
+    components.push(parsed.value);
+  }
+
+  let edges: LevelBlueprintEdge[] | undefined;
+  if (value.edges !== undefined) {
+    if (!Array.isArray(value.edges)) {
+      return err(`${LEVEL_CODE}: ${label}.edges must be an array`);
+    }
+    edges = [];
+    for (const [index, raw] of value.edges.entries()) {
+      const parsed = parseBlueprintEdge(raw, `${label}.edges[${index}]`);
+      if (!parsed.ok) return err(parsed.error);
+      edges.push(parsed.value);
+    }
+  }
+
+  let steps: LevelBlueprintStep[] | undefined;
+  if (value.steps !== undefined) {
+    if (!Array.isArray(value.steps)) {
+      return err(`${LEVEL_CODE}: ${label}.steps must be an array`);
+    }
+    steps = [];
+    for (const [index, raw] of value.steps.entries()) {
+      const parsed = parseBlueprintStep(raw, `${label}.steps[${index}]`);
+      if (!parsed.ok) return err(parsed.error);
+      steps.push(parsed.value);
+    }
+  }
+
+  return ok({
+    ...(title.value ? { title: title.value } : {}),
+    components,
+    ...(edges ? { edges } : {}),
+    ...(steps ? { steps } : {}),
+  });
+}
+
 function parseFeedbackPuzzle(
   value: unknown,
   label: string,
@@ -418,7 +631,12 @@ function parseFeedbackPuzzle(
   if (!isRecord(value)) {
     return err(`${LEVEL_CODE}: ${label} must be an object`);
   }
-  const keys = rejectUnknownKeys(value, ["beats", "nodes"], LEVEL_CODE, label);
+  const keys = rejectUnknownKeys(
+    value,
+    ["beats", "nodes", "blueprint"],
+    LEVEL_CODE,
+    label,
+  );
   if (!keys.ok) return err(keys.error);
 
   let beats: LevelFeedbackBeat[] | undefined;
@@ -478,9 +696,17 @@ function parseFeedbackPuzzle(
     }
   }
 
+  let blueprint: LevelBlueprint | undefined;
+  if (value.blueprint !== undefined) {
+    const parsed = parseLevelBlueprint(value.blueprint, `${label}.blueprint`);
+    if (!parsed.ok) return err(parsed.error);
+    blueprint = parsed.value;
+  }
+
   return ok({
     ...(beats ? { beats } : {}),
     ...(nodes ? { nodes } : {}),
+    ...(blueprint ? { blueprint } : {}),
   });
 }
 

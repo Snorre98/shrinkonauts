@@ -289,13 +289,13 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await page.keyboard.press("p");
   await expect(page.locator(".hud__meta")).toContainText("co-op");
 
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
-
-  await page.getByRole("button", { name: "Show puzzle hint" }).click();
-  await expect(page.locator(".pause__hint")).toContainText(
+  await page.getByRole("button", { name: "Hint", exact: true }).click();
+  await expect(page.locator(".hud__hint")).toContainText(
     "One input is below threshold. The trigger gate needs a second dendrite input.",
   );
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
 
   await page.getByRole("button", { name: "Reset puzzle" }).click();
   await expect(page.locator(".hud__save")).toContainText("Puzzle reset");
@@ -324,7 +324,7 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await expect(page.locator(".overlay--pause")).toHaveCount(0);
 
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("dialog", { name: "System map" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Blueprint" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.locator(".overlay--map")).toHaveCount(0);
 
