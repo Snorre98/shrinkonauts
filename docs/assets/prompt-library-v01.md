@@ -280,7 +280,8 @@ longer an optional future asset.
 | Asset family | Prompt source | Notes |
 |---|---|---|
 | Shared sprites, scans, gates, props, receptors, badge | [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) | M3 style blocks, per-asset prompts, atlas maps, prompt log |
-| M3.75 blueprint symbols | [`blueprint-symbol-prompts-v01.md`](../m3.75/blueprint-symbol-prompts-v01.md) | Nine standalone prompts covering 03 Node Run, 04 Endplate Ferry, and 01 Interrupt Loop; placeholder-first, final art pending |
+| M3.75 anatomy blueprint symbols | [`blueprint-symbol-prompts-v01.md`](../m3.75/blueprint-symbol-prompts-v01.md) | Nine standalone anatomy-pack prompts covering 03 Node Run and 04 Endplate Ferry; placeholder-first, final art pending |
+| M3.75 Silicon blueprint symbols | [`blueprint-symbol-prompts-silicon-v01.md`](../m3.75/blueprint-symbol-prompts-silicon-v01.md) | Four Silicon-specific prompts for `pulse`, `relay`, `timer`, and `gate`; same logical IDs, separate graphite/ceramic/cyan art |
 | 03 background layers | [`docs/m3/background-asset-requirements-v01.md`](../m3/background-asset-requirements-v01.md) | Current 03 sky wired; far/mid/near future |
 | 04 sky, four atlases, gate, exit | [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md) | Accepted 2026-11-03; evidence in §12 |
 | Hub scene/props/UI | [`docs/m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md) | Nano Banana first, Ludo fallback |

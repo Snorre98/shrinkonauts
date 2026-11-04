@@ -106,6 +106,14 @@ an ID is unresolved.
 | `ui.blueprint.symbol.clear` | Clearance / decay | A fading particle or broken line returning to neutral | Optional 04 clearance |
 | `ui.blueprint.symbol.goal` | Goal / beacon | A small beacon or flag with radiating ticks | Optional final component |
 
+**Pack-specific raster variants:** `01-interrupt-loop` reuses the
+`pulse`, `relay`, `timer`, and `gate` logical IDs, but the Silicon manifest must
+resolve them to a separate Silicon glyph set. The anatomy prompts do not apply
+to Silicon; use
+[`blueprint-symbol-prompts-silicon-v01.md`](blueprint-symbol-prompts-silicon-v01.md).
+Silicon uses graphite/ink, ceramic, and signal-cyan only; nerve amber, orange,
+and muscle pink are forbidden.
+
 ### 3.2 Markers and utility glyphs
 
 | Logical ID | Concept | Visual description |
@@ -163,10 +171,11 @@ future puzzles or for a final component that needs a stronger destination read.
 
 ## 5. Prompt pack
 
-The standalone copy/paste prompts for the nine symbols used by the three current
-puzzles are in
-[`blueprint-symbol-prompts-v01.md`](blueprint-symbol-prompts-v01.md). That file
-contains the full positive and negative prompt for each symbol plus the
+The standalone copy/paste prompts for the nine anatomy-pack symbols are in
+[`blueprint-symbol-prompts-v01.md`](blueprint-symbol-prompts-v01.md). The four
+Silicon-specific prompts are in
+[`blueprint-symbol-prompts-silicon-v01.md`](blueprint-symbol-prompts-silicon-v01.md).
+Both files contain full positive and negative prompts plus the relevant
 puzzle-to-component coverage matrix. The template and register below remain the
 design contract for future symbols.
 

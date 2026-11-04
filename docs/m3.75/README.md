@@ -367,7 +367,11 @@ should have authored blueprint data.
 
 The nanobanana symbol kit is specified in
 [`blueprint-symbol-asset-brief-v01.md`](blueprint-symbol-asset-brief-v01.md).
-The short version:
+Standalone prompts live in
+[`blueprint-symbol-prompts-v01.md`](blueprint-symbol-prompts-v01.md) for the
+anatomy pack and
+[`blueprint-symbol-prompts-silicon-v01.md`](blueprint-symbol-prompts-silicon-v01.md)
+for Silicon. The short version:
 
 - 32×32 `ui-1x` pixel-art glyphs, transparent PNG, locked theme palette.
 - Abstract circuit/process symbols, no literal anatomy, no text.
@@ -507,9 +511,13 @@ Each phase must leave the game playable and the test suite green.
   density state, and measured safe-area plumbing.
 - The 03/04/01 blueprints are authored in their `level.json` feedback blocks
   and validated by `src/pack/validate.ts`.
-- The nine standalone symbol prompts used by the three current puzzles are in
+- The nine anatomy-pack symbol prompts are in
   [`blueprint-symbol-prompts-v01.md`](blueprint-symbol-prompts-v01.md), with a
   puzzle-to-component coverage matrix.
+- The four Silicon-specific prompts are in
+  [`blueprint-symbol-prompts-silicon-v01.md`](blueprint-symbol-prompts-silicon-v01.md).
+  Silicon reuses the `pulse`, `relay`, `timer`, and `gate` logical IDs but
+  resolves them to separate graphite/ceramic/signal-cyan masters.
 - Blueprint symbols resolve through the asset provider; unresolved IDs render
   the CSS code glyph. `assets.placeholder.json` carries the placeholder entries.
   Final nanobanana art is not fabricated in this milestone.
