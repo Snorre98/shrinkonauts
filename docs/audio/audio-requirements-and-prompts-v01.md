@@ -31,11 +31,11 @@
 | M3 anatomy cues | **11** — shared by `03-nerve-forest` and `04-muscle-effector`; Silicon reuses them |
 | M3.5 hub cues | **6** — bathroom hub launch and menu |
 | Optional cue | **1** — `audio.cue.wrong`; adding it makes the M3 total 33 |
-| Music | **Not in this document** — the SFX pass has no music. Room/menu themes are proposed separately. |
-| Themes | **4 proposed** — menu, `03`, `04`, Silicon; see [`room-and-menu-themes-v01.md`](room-and-menu-themes-v01.md) |
-| Ambience | Only `audio.cue.hub.hum`, a short room-tone cue; the proposed menu theme would own the ambience bed |
-| Current delivery state | **3/18 installed (`scan`, `jump`, `land`); `boot` declared placeholder; remaining 14 pending the mixer/compiler** |
-| Next step | Audio mixer/compiler — research, design, implement; boot first |
+| Music | **Not in this document** — the SFX pass has no music. Room/menu themes are separate. |
+| Themes | **4 installed** — menu, `03`, `04`, Silicon; see [`room-and-menu-themes-v01.md`](room-and-menu-themes-v01.md) |
+| Ambience | Only `audio.cue.hub.hum`, a short one-shot room-tone cue; the menu theme owns the ambience bed |
+| Current delivery state | **18/18 installed** — all anatomy, Silicon and hub cues have `src`, licence and prompt-log rows |
+| Next step | Manual cue and theme loop QA; no remaining mixer/compiler work for the installed assets |
 | Target format | 48 kHz, **MP3 160 kbps mono**, ≤ 120 KB each |
 | Target tone | Diegetic, dry, tactile, gross-cute, small-scale; sci-fi suit plus wet organic body (M3); retro laundry lab plus soft sci-fi (M3.5) |
 
@@ -107,8 +107,10 @@ entries to the manifests now makes them play.
 
 ADR-0077 theme playback is also implemented in `src/audio/audio.ts`: the music
 bus, looped buffers, crossfade, pending-until-unlock queue, pause/resume, and
-warn-once silence. The four theme files are still missing, so the wired
-`room.music` / `theme.audio.music` IDs currently resolve to silence.
+warn-once silence. The four room/menu theme files are installed as MP3s
+(`theme-menu`, `theme-nerve-forest`, `theme-muscle-effector`,
+`theme-interrupt-loop`) and the wired `room.music` / `theme.audio.music` IDs
+now resolve to files.
 
 ### 3.3 First pack cue may be silent
 

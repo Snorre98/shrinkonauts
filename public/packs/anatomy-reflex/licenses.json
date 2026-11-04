@@ -367,6 +367,26 @@
       "url": "https://stability.ai/license",
       "modified": "2026-11-03; seeds wrong=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/wrong/wrong.receipt.json sha256 40961e163d3afe9fd203db5002bafeb0787d1a613d7bc48224a39b8c9f9168d6",
       "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/theme-nerve-forest.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 2.5 (local)",
+      "author": "AI-generated with Stable Audio 2.5; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-04; source 03-nerve-forest-best.wav sha256 c3b7f48a6863acfa396bda397ace3418bf386eb496a1df6993d0c78e6cfcf679; trimmed to last musical bar; 0.641 s tail-to-head loop crossfade; 48 kHz stereo; -17.3 LUFS; true peak -3.2 dBFS; MP3 192 kbps; loop 29.331 s",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/theme-muscle-effector.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 2.5 (local)",
+      "author": "AI-generated with Stable Audio 2.5; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-04; source 04-muscle-effector-best.wav sha256 94e2e4aa1810f21abcc6158efe5d475a4ee0f583259609ea009ed0135d4f39a5; trimmed to last musical bar; 1.289 s tail-to-head loop crossfade; 48 kHz stereo; -17.3 LUFS; true peak -3.2 dBFS; MP3 192 kbps; loop 27.685 s",
+      "aiGenerated": true
     }
   ]
 }

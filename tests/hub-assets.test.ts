@@ -123,7 +123,7 @@ describe("bathroom hub final art", () => {
     }
   });
 
-  it("approves the logo CSS fallback, cuts the toy astronaut, and keeps missing art/audio explicit", () => {
+  it("approves the logo CSS fallback, cuts the toy astronaut, and ships hub audio", () => {
     expect(manifest.assets["ui.logo.shrinkonauts"]?.placeholder).toBe(true);
     expect(manifest.assets["ui.logo.shrinkonauts"]?.src).toBeUndefined();
     expect(manifest.assets["ui.logo.shrinkonauts"]?.license).toContain(
@@ -138,6 +138,7 @@ describe("bathroom hub final art", () => {
       "audio.cue.hub.shrink",
       "audio.cue.hub.arrive",
       "audio.cue.hub.hum",
+      "audio.music.menu",
     ]) {
       const entry = manifest.assets[id];
       expect(entry?.src).toMatch(/^shared\/audio\/[a-z-]+\.mp3$/);
@@ -145,6 +146,5 @@ describe("bathroom hub final art", () => {
       expect(entry?.placeholder).toBeUndefined();
       expect(existsSync(join(HUB_DIR, entry?.src as string))).toBe(true);
     }
-    expect(manifest.assets["audio.music.menu"]?.placeholder).toBe(true);
   });
 });

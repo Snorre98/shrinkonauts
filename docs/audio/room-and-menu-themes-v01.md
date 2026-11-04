@@ -1,13 +1,13 @@
 # Room and Menu Audio Themes — Requirements and Generation Prompts
 
-> **Status:** Proposed extension · adventure-tone revision · biological cyberpunk + tempo revision · 4 November 2026  
+> **Status:** Proposed extension · files delivered 2026-11-04 with Stable Audio 2.5<br>
 > **Owner:** Snorre  
 > **Scope:** Four loopable themes — bathroom hub/menu, `03-nerve-forest`, `04-muscle-effector`, `01-interrupt-loop`  
 > **Prompt version:** `audio-themes-2026-11-04.4`  
 > **Depends on:** [ADR-0076](../adr-audio/0076-room-and-menu-audio-themes.md), [ADR-0077](../adr-audio/0077-audio-theme-playback-and-mixing.md)  
 > **Related:** [`audio-requirements-and-prompts-v01.md`](audio-requirements-and-prompts-v01.md) — the 18 SFX cues · [`../assets/prompt-library-v01.md`](../assets/prompt-library-v01.md) — cross-discipline inventory and completion gates
-> **Primary tool:** Ludo.ai Audio Generator (Music mode)  
-> **Fallback tool:** Stability AI Stable Audio 2.5
+> **Primary tool:** Stability AI Stable Audio 2.5 (local)<br>
+> **Alternate tool:** Ludo.ai Audio Generator (Music mode)
 
 **Sources**
 
@@ -39,7 +39,7 @@
 | Room themes | `audio.music.nerve_forest`, `audio.music.muscle_effector`, `audio.music.interrupt_loop` — 30–45 s loops |
 | Future themes | `01-bone-gate`, `02-joint-chamber`, `05-reflex-core` only when authored |
 | Separate ambience | **None in v1**; the theme includes ambient texture. `room.ambience` stays reserved. |
-| Format | 48 kHz stereo OGG Vorbis; MP3 fallback |
+| Format | 48 kHz stereo OGG Vorbis; MP3 fallback; delivered as MP3 192 kbps |
 | File budget | ≤ 1.5 MB per theme; ≤ 5 MB total target |
 | Mix | Music bus at ~0.30–0.35 of master; SFX cues above |
 | Music slider | **Deferred**; master mute/volume only in v1 |
@@ -57,10 +57,10 @@
 
 | Scope | Asset ID | File | Length | Tempo | Priority |
 |---|---|---|---:|---:|---:|
-| Menu / bathroom hub | `audio.music.menu` | `public/hub/bathroom/shared/audio/theme-menu.ogg` | 45–60 s | 108–116 BPM (112) | P0 |
-| `03-nerve-forest` | `audio.music.nerve_forest` | `public/packs/anatomy-reflex/shared/audio/theme-nerve-forest.ogg` | 30–45 s | 100–108 BPM (104) | P0 |
-| `04-muscle-effector` | `audio.music.muscle_effector` | `public/packs/anatomy-reflex/shared/audio/theme-muscle-effector.ogg` | 30–45 s | 108–116 BPM (110) | P1 |
-| `01-interrupt-loop` | `audio.music.interrupt_loop` | `public/packs/silicon-reflex/shared/audio/theme-interrupt-loop.ogg` | 30–45 s | 112–120 BPM (116) | P1/P2 |
+| Menu / bathroom hub | `audio.music.menu` | `public/hub/bathroom/shared/audio/theme-menu.mp3` | 45–60 s | 108–116 BPM (112) | P0 |
+| `03-nerve-forest` | `audio.music.nerve_forest` | `public/packs/anatomy-reflex/shared/audio/theme-nerve-forest.mp3` | 30–45 s | 100–108 BPM (104) | P0 |
+| `04-muscle-effector` | `audio.music.muscle_effector` | `public/packs/anatomy-reflex/shared/audio/theme-muscle-effector.mp3` | 30–45 s | 108–116 BPM (110) | P1 |
+| `01-interrupt-loop` | `audio.music.interrupt_loop` | `public/packs/silicon-reflex/shared/audio/theme-interrupt-loop.mp3` | 30–45 s | 112–120 BPM (116) | P1/P2 |
 
 ### 2.2 Out of scope
 
@@ -488,7 +488,7 @@ Stable-specific rules:
 |---|---|
 | Sample rate | **48 kHz** |
 | Channels | **Stereo** |
-| Format | **OGG Vorbis q4–q6**; MP3 fallback |
+| Format | **MP3 192 kbps stereo** (delivered 2026-11-04; OGG Vorbis q4–q6 remains the preferred target if a libvorbis encoder is available) |
 | Length | 30–45 s rooms; 45–60 s menu |
 | File size | **≤ 1.5 MB per theme** |
 | Total theme budget | **≤ 5 MB target** |
@@ -508,18 +508,20 @@ Stable-specific rules:
 
 **Bar math.** At 4/4, seconds per bar = **240 ÷ BPM**. Current targets: menu **112 BPM × 24 bars = 51.4 s**; `03` **104 × 16 = 36.9 s**; `04` **110 × 16 = 34.9 s**; `01` **116 × 20 = 41.4 s**. If the structure changes, recalculate before generation.
 
+**Delivered loops (2026-11-04):** menu **112 BPM × 23 bars ≈ 49.3 s**, `03` **104 × 13 ≈ 30.0 s**, `04` **116 × 14 ≈ 29.0 s**, `01` **116 × 14 ≈ 29.0 s**, each with a short tail-to-head crossfade. The room themes are therefore shorter than the original bar targets; see §11 for the exact installed lengths.
+
 ### 7.3 File naming and destinations
 
 ```text
 public/hub/bathroom/
-  shared/audio/theme-menu.ogg
+  shared/audio/theme-menu.mp3
 
 public/packs/anatomy-reflex/
-  shared/audio/theme-nerve-forest.ogg
-  shared/audio/theme-muscle-effector.ogg
+  shared/audio/theme-nerve-forest.mp3
+  shared/audio/theme-muscle-effector.mp3
 
 public/packs/silicon-reflex/
-  shared/audio/theme-interrupt-loop.ogg
+  shared/audio/theme-interrupt-loop.mp3
 ```
 
 Use lowercase kebab-case, no spaces, no dots in filenames. If the final format is MP3, use `.mp3` consistently and update the manifest paths.
@@ -529,8 +531,8 @@ Use lowercase kebab-case, no spaces, no dots in filenames. If the final format i
 ```json
 "audio.music.menu": {
   "type": "audio",
-  "src": "shared/audio/theme-menu.ogg",
-  "license": "Ludo AI Commercial (paid)"
+  "src": "shared/audio/theme-menu.mp3",
+  "license": "Stability AI Community License"
 }
 ```
 
@@ -555,13 +557,13 @@ Add a `licenses.json` entry for each theme:
 
 ```json
 {
-  "file": "shared/audio/theme-menu.ogg",
+  "file": "shared/audio/theme-menu.mp3",
   "type": "audio",
-  "source": "Ludo.ai Audio Generator (Music mode)",
-  "author": "AI-generated in Ludo.ai; sound direction by Snorre",
-  "license": "Ludo AI Commercial (paid)",
-  "url": "https://ludo.ai/terms-of-service",
-  "modified": "Generated 2026-11-04; trimmed to 52 s; 48 kHz stereo; loop-checked; OGG Vorbis",
+  "source": "Stability AI Stable Audio 2.5 (local)",
+  "author": "AI-generated with Stable Audio 2.5; sound direction by Snorre",
+  "license": "Stability AI Community License",
+  "url": "https://stability.ai/license",
+  "modified": "2026-11-04; trimmed to last musical bar; tail-to-head loop crossfade; 48 kHz stereo; MP3 192 kbps",
   "aiGenerated": true
 }
 ```
@@ -647,31 +649,31 @@ Do not generate all four before the menu/03 pilot passes. The menu is the produc
 
 ### 10.1 Runtime
 
-- [ ] Implement `ManifestAudioProvider` (fetch, decode, cache, play); it is still a stub.
-- [ ] Add `playTheme`/`stopTheme`/`pauseTheme`/`resumeTheme` to `AudioModule` and `AudioPort`.
-- [ ] Add the music gain bus at 0.30–0.35.
-- [ ] Queue the theme until the first gesture; start the menu theme on first interaction.
-- [ ] Crossfade room themes over 800–1500 ms; fade hub → pack and pack → hub.
-- [ ] Pause/resume music without restarting the loop.
-- [ ] Missing/failed theme is silent + warned; no synth music fallback.
-- [ ] Add unit tests and a browser smoke check.
+- [x] Implement `ManifestAudioProvider` (fetch, decode, cache, play).
+- [x] Add `playTheme`/`stopTheme`/`pauseTheme`/`resumeTheme` to `AudioModule` and `AudioPort`.
+- [x] Add the music gain bus at 0.30–0.35.
+- [x] Queue the theme until the first gesture; start the menu theme on first interaction.
+- [x] Crossfade room themes over 800–1500 ms; fade hub → pack and pack → hub.
+- [x] Pause/resume music without restarting the loop.
+- [x] Missing/failed theme is silent + warned; no synth music fallback.
+- [x] Add unit tests and a browser smoke check.
 
 ### 10.2 Content
 
-- [ ] Add `audio.music.menu` to `public/hub/bathroom/assets.final.json` and `theme.json`.
-- [ ] Add `audio.music.nerve_forest` to `03-nerve-forest/room.json` + anatomy manifest.
-- [ ] Add `audio.music.muscle_effector` to `04-muscle-effector/room.json` + anatomy manifest.
-- [ ] Add `audio.music.interrupt_loop` to `01-interrupt-loop/room.json` + Silicon manifest.
-- [ ] Add licence entries for every theme.
-- [ ] Do not add `room.ambience` in v1.
+- [x] Add `audio.music.menu` to `public/hub/bathroom/assets.final.json` and `theme.json`.
+- [x] Add `audio.music.nerve_forest` to `03-nerve-forest/room.json` + anatomy manifest.
+- [x] Add `audio.music.muscle_effector` to `04-muscle-effector/room.json` + anatomy manifest.
+- [x] Add `audio.music.interrupt_loop` to `01-interrupt-loop/room.json` + Silicon manifest.
+- [x] Add licence entries for every theme.
+- [x] Do not add `room.ambience` in v1.
 - [ ] Decide `hub.hum`: one-shot or retire.
 
 ### 10.3 Documentation
 
 - [ ] Update M3 §2.2 and M3.5 §0/§11 “no music” claims.
-- [ ] Update `docs/gdd/ASSET-LIST-GBL.md` §5 and `docs/gdd/GDD-MAP.md`.
+- [x] Update `docs/gdd/ASSET-LIST-GBL.md` §5 and `docs/gdd/GDD-MAP.md`.
 - [ ] Update the video storyboard note that says the game has no music.
-- [ ] Update root `README.md` and `IMPLEMENTATION.md` deferred rows.
+- [x] Update root `README.md` and `IMPLEMENTATION.md` deferred rows.
 - [ ] Link this document from the SFX audio document and ADR-0076.
 
 ### 10.4 Verification
@@ -692,10 +694,10 @@ Then manually listen to the menu theme, each room theme, the three-loop seam, th
 
 | Asset ID | Tool / model | Seed | Length | BPM | Loop points | Chosen file | Post-processing | Dungeon/cyberpunk / motif check | Verdict | Licence |
 |---|---|---|---:|---:|---|---|---|---|---|---|
-| `audio.music.menu` | | | | | | | | | | |
-| `audio.music.nerve_forest` | | | | | | | | | | |
-| `audio.music.muscle_effector` | | | | | | | | | | |
-| `audio.music.interrupt_loop` | | | | | | | | | | |
+| `audio.music.menu` | Stable Audio 2.5 (local) | — | 48.323 s | 112 | 0–48.323 s; 0.961 s tail→head | `theme-menu.mp3` | Trim last musical bar; tail→head crossfade; 48 kHz stereo; −17.2 LUFS; TP −4.4 dBFS; MP3 192 kbps | Automated seam check; manual listen pending | Installed; manual loop QA pending | Stability AI Community License |
+| `audio.music.nerve_forest` | Stable Audio 2.5 (local) | — | 29.331 s | 104 | 0–29.331 s; 0.641 s tail→head | `theme-nerve-forest.mp3` | Trim last musical bar; tail→head crossfade; 48 kHz stereo; −17.3 LUFS; TP −3.2 dBFS; MP3 192 kbps | Automated seam check; manual listen pending | Installed; manual loop QA pending | Stability AI Community License |
+| `audio.music.muscle_effector` | Stable Audio 2.5 (local) | — | 27.685 s | 116 | 0–27.685 s; 1.289 s tail→head | `theme-muscle-effector.mp3` | Trim last musical bar; tail→head crossfade; 48 kHz stereo; −17.3 LUFS; TP −3.2 dBFS; MP3 192 kbps | Automated seam check; manual listen pending | Installed; manual loop QA pending | Stability AI Community License |
+| `audio.music.interrupt_loop` | Stable Audio 2.5 (local) | — | 27.664 s | 116 | 0–27.664 s; 1.278 s tail→head | `theme-interrupt-loop.mp3` | Trim last musical bar; tail→head crossfade; 48 kHz stereo; −17.3 LUFS; TP −5.6 dBFS; MP3 192 kbps | Automated seam check; manual listen pending | Installed; manual loop QA pending | Stability AI Community License |
 
 **Minimum fields:** prompt version, asset ID, tool/plan, model/seed, duration, BPM, loop points, bars, tempo/bar math, variations, chosen file, post-processing, runtime check, dungeon/cyberpunk check (biomechanical grime vs synthwave/industrial), motif shape (menu/anatomy short repeating three-note; Silicon repeating two-note), adventure check (gross-cute vs horror), verdict, licence, notes.
 

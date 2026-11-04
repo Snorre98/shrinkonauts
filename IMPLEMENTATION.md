@@ -63,10 +63,11 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Playwright browser smoke on system Chrome | Working |
 | Human hub visual/accessibility playtest | **Pending** |
 | Human solo/co-op playtest | **Pending** |
-| Final art/audio files | Deferred |
+| Final art files | Deferred |
+| Audio cues and room/menu themes | Installed from the 2026-11-03/04 Stable Audio passes |
 | 04 Nano Banana source batch | 7 plates processed, wired and accepted |
 | M3.5 bathroom hub art pass | Deferred |
-| Theme playback (menu/room music) | Working; silent placeholders until theme files land |
+| Theme playback (menu/room music) | Working; menu and room theme files installed |
 | Levels 5+, capture mode, ambience loops | Deferred |
 | Full key rebinding | Deferred |
 | Physical gate bodies, `locked`/`unlock`, conditional links | Deferred |
@@ -534,8 +535,8 @@ Web Audio is unlocked on the first keydown/pointerdown, mute and volume persist
 through the save-owned storage seam, and missing/failed media warns and falls
 back to a synth or silence. File-backed cues fetch and decode once, then play a
 cached buffer. Room/menu themes use a dedicated music bus, looped buffers,
-gain-ramp crossfades, and warn-once silence. Theme files are not delivered yet,
-so `room.music` and `theme.audio.music` currently resolve to placeholders. A
+gain-ramp crossfades, and warn-once silence. The menu and three authored room
+themes are installed and `room.music` / `theme.audio.music` resolve to files. A
 separate ambience loop is deferred.
 
 ## Validation
@@ -667,11 +668,11 @@ procedural placeholder:
 ## Deferred
 
 - Human solo and co-op playtest of the M1.75 feedback flow.
-- Final art and final audio; only procedural placeholders exist.
+- Final art; procedural placeholders remain for deferred art.
 - The Silicon fixture/pack (visible as a gated cycle).
 - Levels 5+ and the second core gate.
 - Capture mode.
-- Music and ambience loops.
+- A separate ambience loop.
 - Full key rebinding.
 - Conditional dialogue-node skipping; M1 supports linear nodes, choices, and
   effects only.

@@ -1,6 +1,7 @@
 # ADR-0076: Per-room and menu audio themes
 
 - **Status:** Proposed
+- **Implementation:** Menu and three room theme files installed 2026-11-04; manual loop QA pending
 - **Date:** 2026-11-03
 - **Deciders:** Snorre
 - **Related:** ADR-0020, ADR-0027, ADR-0029, ADR-0032, ADR-0033, ADR-0058, ADR-0059, ADR-0078
@@ -9,7 +10,7 @@
 
 ## Context
 
-The current build has 18 short SFX cues and no music. All cues are placeholders, and the room/theme data already has the fields needed to select audio by room:
+At proposal time, the build had 18 short SFX cues and no music. All cues were placeholders, and the room/theme data already has the fields needed to select audio by room:
 
 - `room.music?: AssetId` and `room.ambience?: AssetId` in `src/pack/types.ts`.
 - `theme.audio.music?: AssetId` in `src/pack/types.ts`.
@@ -49,10 +50,10 @@ Add **four loopable themes** for the authored content:
 
 | Scope | Asset ID | File | Length |
 |---|---|---|---:|
-| Menu / bathroom hub | `audio.music.menu` | `public/hub/bathroom/shared/audio/theme-menu.ogg` | 45–60 s |
-| `03-nerve-forest` | `audio.music.nerve_forest` | `public/packs/anatomy-reflex/shared/audio/theme-nerve-forest.ogg` | 30–45 s |
-| `04-muscle-effector` | `audio.music.muscle_effector` | `public/packs/anatomy-reflex/shared/audio/theme-muscle-effector.ogg` | 30–45 s |
-| `01-interrupt-loop` | `audio.music.interrupt_loop` | `public/packs/silicon-reflex/shared/audio/theme-interrupt-loop.ogg` | 30–45 s |
+| Menu / bathroom hub | `audio.music.menu` | `public/hub/bathroom/shared/audio/theme-menu.mp3` | 45–60 s |
+| `03-nerve-forest` | `audio.music.nerve_forest` | `public/packs/anatomy-reflex/shared/audio/theme-nerve-forest.mp3` | 30–45 s |
+| `04-muscle-effector` | `audio.music.muscle_effector` | `public/packs/anatomy-reflex/shared/audio/theme-muscle-effector.mp3` | 30–45 s |
+| `01-interrupt-loop` | `audio.music.interrupt_loop` | `public/packs/silicon-reflex/shared/audio/theme-interrupt-loop.mp3` | 30–45 s |
 
 `01-bone-gate`, `02-joint-chamber`, and `05-reflex-core` are **not** in this pass. They get themes when they are authored, using the template in the prompt pack.
 

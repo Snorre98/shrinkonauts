@@ -292,15 +292,12 @@ longer an optional future asset.
 
 ### 7.1 Current state
 
-- **18 SFX cues** are declared across the anatomy, Silicon and hub manifests.
-- **3 cues are installed** (`scan`, `jump`, `land`) from the 2026-11-03 pilot;
-  **15 remain placeholders with no `src`**.
-- **Four themes** are proposed in ADR-0076; no files exist.
+- **18 SFX cues** are installed across the anatomy, Silicon and hub manifests.
+- **Four themes** are installed as MP3s for the menu and the three authored rooms.
 - `ManifestAudioProvider` is implemented: it fetches, decodes, caches and plays
   file-backed cues, keeping the synth fallback for missing or failed files.
-  ADR-0077 theme playback is also implemented; missing themes resolve to
-  silence.
-- Licence records exist for the three installed SFX; no theme licences exist.
+  ADR-0077 theme playback is also implemented.
+- Licence records exist for every installed SFX and theme.
 
 ### 7.2 SFX index
 
@@ -373,8 +370,8 @@ The seven source plates are processed, wired and accepted:
 ### P2 — audio
 
 8. ~~Implement `ManifestAudioProvider` and theme playback.~~ Done.
-9. Generate and wire the 18 SFX cues. **3/18 installed; 15 remain.**
-10. Generate and wire the four themes.
+9. Generate and wire the 18 SFX cues. **18/18 installed.**
+10. Generate and wire the four themes. **Installed; manual loop QA remains.**
 
 ### P3 — deferred graphics
 

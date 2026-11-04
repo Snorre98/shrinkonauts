@@ -121,10 +121,9 @@ placeholder). The hub adds 6 cues. None have files.
 | Anatomy | `boot`, `dialogue`, `scan`, `dash`, `gate`, `map`, `debrief`, `checkpoint`, `unlock`, `wrong`, `jump`, `land` |
 | Hub | `click`, `door`, `spin`, `shrink`, `arrive`, `hum` |
 
-In the GDD Sound & Music page, state: **“The cue vocabulary is implemented as
-placeholders. Cue/theme playback is implemented, but no audio or theme files
-ship; the menu and room themes are silent until files land, and there is no
-separate ambience loop.”**
+In the GDD Sound & Music page, state: **“The cue vocabulary is implemented
+with shipped audio. Cue/theme playback is implemented, the menu and three room
+themes are installed, and there is no separate ambience loop.”**
 
 ---
 
@@ -143,8 +142,8 @@ separate ambience loop.”**
 6. **Final art approval** is pending for POC-integrated sprites and the sky.
 7. **Placeholders** must not be described as final: badge, `scan.neuron`,
    `scan.pathway`, `scan.reflex`, the Silicon interrupt/exit, the 03/04
-   far/mid/near layers, the Silicon circuit atlas, the hub logo CSS fallback,
-   and the 15 remaining SFX plus four themes. The toy astronaut is cut.
+   far/mid/near layers, the Silicon circuit atlas, and the hub logo CSS
+   fallback. The toy astronaut is cut.
 8. **04 source batch** is processed and wired; the final files and licences are
    in the runtime manifest. Do not list the raw JPEGs as runtime assets.
 

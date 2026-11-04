@@ -158,9 +158,9 @@ ephemeral and are rebuilt from puzzle/world state after restore.
 - Online co-op is a disabled M4 placeholder; no Worker/DO client is wired yet.
 - Two authored levels; `05-reflex-core` and later map nodes are forward
   references reported as warnings.
-- Audio supports short cues plus per-room/menu theme playback. Theme audio
-  files are not delivered yet, so themes currently resolve to silence. There is
-  no separate ambience loop.
+- Audio supports short cues plus per-room/menu theme playback. The menu and
+  the three authored room themes are installed as MP3s; there is no separate
+  ambience loop.
 - Full key rebinding is deferred.
 - Final art/audio, the bathroom hub art pass (M3.5), and human M1.8 visual
   review are deferred. The seven-plate 04 Nano Banana batch is processed, wired
@@ -336,5 +336,5 @@ human performs the checks in the M1.75 milestone document.
 Final audio files, the Silicon fixture, levels 5+, capture mode, a separate
 ambience loop, the M3.5 hub art pass, full key rebinding, and the deferred
 puzzle-engine ADR features remain out of scope for this branch. The 2026-11-03
-04 batch is processed and wired; theme playback is implemented but theme files
-are pending.
+04 batch is processed and wired; the four room/menu themes are installed and
+wired.

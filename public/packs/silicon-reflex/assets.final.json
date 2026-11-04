@@ -488,7 +488,8 @@
     },
     "audio.music.interrupt_loop": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/theme-interrupt-loop.mp3",
+      "license": "Stability AI Community License"
     }
   }
 }

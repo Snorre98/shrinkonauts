@@ -78,14 +78,13 @@ source and was not referenced by `hub.json`.
 
 ## 4. Audio
 
-Playback code is implemented: file-backed cues, music bus, theme loop,
-crossfade, unlock queue, pause/resume, mute, and warn-once silence. The remaining
-work is content and licensing, not engine wiring.
+Playback code and all 18 SFX cues plus the four themes are installed. The
+remaining audio work is manual loop/transition QA, not engine wiring.
 
 | Group | Runtime | Stage | What remains |
 |---|---|---|---|
 | 18 SFX cues — anatomy 11 + `wrong` + hub 6 | 3 final / 15 `placeholder-only` | in progress | `scan`, `jump` and `land` are installed in the Anatomy and Silicon packs with licences and prompt-log rows. The remaining 15 cues (including all six hub cues) need approved takes, manifest `src`, licence and prompt-log rows. |
-| 4 music themes — menu, nerve forest, muscle effector, interrupt loop | `placeholder-only` | `prompt-ready` | Generate, loop-QA three consecutive plays, wire `room.music` / `theme.audio.music`, add licences and prompt-log rows; runtime IDs are already wired and currently resolve to silence |
+| 4 music themes — menu, nerve forest, muscle effector, interrupt loop | `installed` | loop QA pending | Files, manifests and licences are installed. Manual three-loop listen and the crossfade/room-transition check remain. |
 | Separate ambience loop | `deferred` | — | Not in v1; the room/menu theme owns the ambient texture |
 
 Audio prompt sources:

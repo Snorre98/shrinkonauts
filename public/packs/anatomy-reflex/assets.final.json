@@ -996,11 +996,13 @@
     },
     "audio.music.nerve_forest": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/theme-nerve-forest.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.music.muscle_effector": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/theme-muscle-effector.mp3",
+      "license": "Stability AI Community License"
     },
     "sprite.prop.tracer": {
       "type": "sprite",

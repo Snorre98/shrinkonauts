@@ -146,13 +146,12 @@ JPEGs are failed references — do not use them.
 
 ### Sound & Music
 
-Three pilot SFX exist (`scan`, `jump`, `land`); the other 15 cues and all four themes are placeholders. Cue playback and the
-ADR-0077 music bus/theme player are implemented, but the four charted themes are
-proposed and no theme files exist, so music is silent. The cue vocabulary is in
+All 18 SFX cues and the four menu/room themes are installed. Cue playback and the
+ADR-0077 music bus/theme player are implemented. The cue vocabulary is in
 `final/anatomy/metadata/theme.json` and
-`final/hub/metadata/theme.json`. Use those lists to write the cue table, and
-state clearly that the prototype has no shipped music or ambience; the theme
-player exists but resolves to silence until files land.
+`final/hub/metadata/theme.json`. Use those lists to write the cue table. The
+prototype has shipped music but no separate ambience loop; `audio.cue.hub.hum`
+is a one-shot accent.
 
 ### Accessibility
 

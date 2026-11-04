@@ -185,7 +185,7 @@ entity animation; the generalized entity animation system remains deferred.
 | `bg.nerve_forest.far`, `.mid`, `.near` | 3 | Processed sources/reports/previews are retained, but the layered stack is future work and is not wired; near's 1024×512 tile repeats vertically at screen y≈512 and the hanging canopy lands across the play band |
 | `audio.cue.wrong` | 1 | Declared in the theme and manifest; outside the 11-cue M3 scope |
 | Generalized runtime animation / GIF loops | — | POC player and Neuron Keeper idle animation is in scope; other entity/background animation, a generalized descriptor, and GIF playback remain deferred |
-| Music loop / ambience | — | Music playback is implemented, but no theme files exist; a separate ambience loop is deferred |
+| Music loop / ambience | — | Menu and room theme files are installed; a separate ambience loop is deferred |
 | Levels `01-bone-gate`, `02-joint-chamber`, `05-reflex-core` | 3 | Design proposals exist in [`docs/m2/nervous-puzzles/`](../m2/nervous-puzzles/), but the pack content is not implemented |
 | Silicon fixture | 1 | Design proposal exists; not implemented in the pack |
 | Full key rebinding, capture-mode UI, new UI layout | — | Engine/UI tasks, not art-pass tasks |

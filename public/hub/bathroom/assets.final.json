@@ -144,7 +144,8 @@
     },
     "audio.music.menu": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/theme-menu.mp3",
+      "license": "Stability AI Community License"
     }
   }
 }
