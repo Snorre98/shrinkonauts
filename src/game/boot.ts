@@ -294,6 +294,10 @@ export class AppController {
   private hostPlan: InputPlan | null = null;
   private hostRunError: HostRunError | null = null;
   private hostRunStartAttempted = false;
+  private readonly hostControlSignatures: Record<PlayerSlot, string> = {
+    p1: "",
+    p2: "",
+  };
   private hostGeneration = 0;
 
   constructor(options: BootOptions = {}) {
@@ -1038,6 +1042,7 @@ export class AppController {
         onStateChange: (view) => {
           if (this.hostRun !== run) return;
           this.hostRunView = view;
+          this.sendHostControls(this.runtimeInstance, true);
           this.syncHostRunUi();
         },
         onError: (error) => {
@@ -1093,6 +1098,8 @@ export class AppController {
     this.hostPlan = null;
     this.hostRunError = null;
     this.hostRunStartAttempted = false;
+    this.hostControlSignatures.p1 = "";
+    this.hostControlSignatures.p2 = "";
     this.hostGeneration += 1;
 
     if (run) {
@@ -1182,6 +1189,7 @@ export class AppController {
     }
 
     run.fallbackToKeyboard(slot);
+    this.gameUi?.setInputSources(this.uiInputSources());
     const view = this.hostRunView;
     const allClosed = run.phoneSlots.every(
       (phoneSlot) => view?.slots[phoneSlot].status === "closed",
@@ -1205,9 +1213,14 @@ export class AppController {
     void this.returnToHub();
   }
 
-  private handleHostRuntimeSnapshot(snapshot: RuntimeSnapshot): void {
+  private handleHostRuntimeSnapshot(
+    snapshot: RuntimeSnapshot,
+    runtime: GameRuntime,
+  ): void {
+    this.flushControlActions(runtime);
     const run = this.hostRun;
     if (!run) return;
+    this.sendHostControls(runtime);
     if (snapshot.state === "pause") {
       if (run.view.state === "active") run.pause("host-paused");
       return;
@@ -1217,6 +1230,35 @@ export class AppController {
       run.view.pausedReason === "host-paused"
     ) {
       run.resume();
+    }
+  }
+
+  private sendHostControls(
+    runtime: GameRuntime | null,
+    force = false,
+  ): void {
+    const run = this.hostRun;
+    if (!run || !runtime) return;
+    for (const slot of run.phoneSlots) {
+      if (run.view.slots[slot].status === "closed") continue;
+      const descriptor = runtime.controlDescriptor(slot);
+      const signature = JSON.stringify(descriptor);
+      if (!force && this.hostControlSignatures[slot] === signature) {
+        continue;
+      }
+      this.hostControlSignatures[slot] = signature;
+      run.sendControl(slot, descriptor);
+    }
+  }
+
+  private flushControlActions(runtime: GameRuntime): void {
+    const actions = runtime.drainControlActions();
+    const run = this.hostRun;
+    if (!run) return;
+    for (const action of actions) {
+      if (!run.phoneSlots.includes(action.slot)) continue;
+      if (run.view.slots[action.slot].status === "closed") continue;
+      run.sendAction(action.slot, action.feedback);
     }
   }
 
@@ -1407,6 +1449,7 @@ export class AppController {
         ? bundle.assets.image(bundle.content.theme.ui.assets.badge)
         : undefined,
       diagnostics,
+      inputSources: this.uiInputSources(),
       resolveBlueprintSymbol: (symbol) =>
         isAssetId(symbol)
           ? bundle.assets.resolveById(symbol)
@@ -1446,12 +1489,12 @@ export class AppController {
     });
     this.gameUi.applySettings(this.saveData.settings);
     this.gameUi.update(bundle.runtime.snapshot());
+    this.runtimeInstance = bundle.runtime;
+    this.handleHostRuntimeSnapshot(bundle.runtime.snapshot(), bundle.runtime);
     this.unsubscribe = bundle.runtime.subscribe((snapshot) => {
       this.gameUi?.update(snapshot);
-      this.handleHostRuntimeSnapshot(snapshot);
+      this.handleHostRuntimeSnapshot(snapshot, bundle.runtime);
     });
-
-    this.runtimeInstance = bundle.runtime;
     await this.mountRoomScene(bundle);
     this.state = markPlaying(this.state!);
     this.refreshHub();
@@ -1460,6 +1503,24 @@ export class AppController {
       `#${this.parentId} canvas`,
     );
     canvas?.focus();
+  }
+
+  private uiInputSources(): Record<
+    PlayerSlot,
+    "keyboard" | "controller"
+  > {
+    const view = this.hostRun?.view ?? this.hostRunView;
+    if (view) {
+      return {
+        p1: view.slots.p1.source,
+        p2: view.slots.p2.source,
+      };
+    }
+    const plan = this.state?.inputPlan;
+    return {
+      p1: plan?.p1 === "controller" ? "controller" : "keyboard",
+      p2: plan?.p2 === "controller" ? "controller" : "keyboard",
+    };
   }
 
   private diagnosticsFor(bundle: PackBundle): GameUiDiagnostics {

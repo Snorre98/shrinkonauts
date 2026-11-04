@@ -17,7 +17,12 @@ import {
   ControllerSession,
   type ControllerSessionView,
 } from "./controller-session";
-import { mountControllerUi, type ControllerUi } from "./controller-ui";
+import {
+  HAPTICS_STORAGE_KEY,
+  mountControllerUi,
+  type ControllerUi,
+} from "./controller-ui";
+import type { DashDirection } from "./touch-gestures";
 import { TouchInputModel, type TouchControl } from "./touch-layout";
 
 const BUILD_ID = import.meta.env.VITE_BUILD_ID ?? "dev";
@@ -41,6 +46,7 @@ let joinGeneration = 0;
 
 function pulse(): void {
   try {
+    if (window.localStorage.getItem(HAPTICS_STORAGE_KEY) === "off") return;
     navigator.vibrate?.(8);
   } catch {
     // Haptics are optional and unavailable on many browsers.
@@ -62,6 +68,11 @@ ui = mountControllerUi(root, {
     } else {
       touch.release(control, pointerId);
     }
+    sendInputNow();
+  },
+  onDash: (direction: DashDirection) => {
+    touch.triggerDash(direction);
+    pulse();
     sendInputNow();
   },
   onReload: () => {

@@ -1,14 +1,14 @@
 # M4 — Same-room co-op (phone controllers)
 
-- **Status:** M4.0a active, 2026-11-04; Phases 1–6 complete; Phase 7 pending;
-  M4.0b/M4.1 not planned (ADR-0081)
+- **Status:** M4.0a active, 2026-11-04; Phases 1–6 and Phase 6.5 complete;
+  Phase 7 pending; M4.0b/M4.1 not planned (ADR-0081)
 - **Owner:** Snorre
 - **Scope:** phone-controller, same-room, shared-screen co-op; host-authoritative
   input relay; keyboard remains the default and fallback
 - **Depends on:** M1.75 per-player input; M1.8/M2/M3 are content dependencies for
   the final pack, not for M4.0a
 - **ADR domain:** [`../adr-controller/README.md`](../adr-controller/README.md) —
-  ADR-0066–0069, ADR-0081, and ADR-0082
+  ADR-0066–0069, ADR-0081, ADR-0082, and ADR-0083–0087
 - **Plan:** [`phone-coop-implementation-plan.md`](phone-coop-implementation-plan.md)
 - **Baseline:** the current local co-op slice; `03-nerve-forest` and the M2 pack
   are the visual/content baseline, not a network dependency
@@ -91,8 +91,8 @@ shared screen; they do not change the controller architecture.
 
 ### M4.0a — Phone co-op
 
-- [ ] [ADR-0066–0069, ADR-0081, and ADR-0082](../adr-controller/README.md) are
-  the active controller domain.
+- [ ] [ADR-0066–0069, ADR-0081, ADR-0082, and ADR-0083–0087](../adr-controller/README.md)
+  are the active controller domain.
 - [ ] [`phone-coop-implementation-plan.md`](phone-coop-implementation-plan.md) is
   the M4.0a authority.
 - [ ] Local co-op exposes `P1: Keyboard | Phone` and `P2: Keyboard | Phone`;
@@ -123,6 +123,15 @@ shared screen; they do not change the controller architecture.
   QR or six-character code.
 - [ ] The controller page is a separate static entry with no Phaser, pack
   loader, game assets, or game state.
+- [ ] The phone uses a left-thumb movement zone and a right-thumb Jump/action
+  cluster; Jump is the largest bottom-right target.
+- [ ] Dash is a double-tap gesture on the ◀ / ▶ buttons with a visible
+  ready/cooldown indicator, a one-time coach mark, and a controls-sheet entry;
+  no Dash button is rendered.
+- [ ] Dialogue auto-switches the owning phone to Continue/Back or numbered
+  choices; no dialogue text appears on the phone.
+- [ ] The phone shows only unlocked verbs, highlights the contextual verb
+  without remapping, and confirms action results.
 - [ ] Controller input uses the ADR-0049 `NetInput` subset, is validated for
   shape/rate/sequence/ownership, and preserves edge actions across fixed steps.
 - [ ] Controller disconnect pauses the run; reconnect within 60 seconds restores
@@ -147,8 +156,8 @@ shared screen; they do not change the controller architecture.
 
 M4.0a is done when:
 
-1. ADR-0066–0069, ADR-0081, and ADR-0082 are accepted and the M4.0a
-   implementation plan is the authority for the controller phase.
+1. ADR-0066–0069, ADR-0081, ADR-0082, and ADR-0083–0087 are accepted and the
+   M4.0a implementation plan is the authority for the controller phase.
 2. Keyboard/keyboard local co-op is unchanged, is the default, and passes the
    existing regression suite.
 3. Keyboard/phone, phone/keyboard, and phone/phone each start from the hub and
@@ -182,6 +191,9 @@ M4.0a is done when:
     server-issued device IDs, one host plus two controllers, 5-minute sessions,
     room message and controller rate caps, and Workers Logs disabled
     (ADR-0082).
+17. The controller layout, double-tap Dash gesture, dialogue modes, and ability
+    affordances meet ADR-0083–0087; the Phase 7 playtest is run against that
+    layout.
 
 ### 5.2 Not planned
 
@@ -204,11 +216,12 @@ range.
 | 5 | Controller web app, touch layout, reconnect | 1.5–2 d | Phone joins and controls one slot |
 | 5.5 | Remove obsolete online placeholder and catalog flag (done 2026-11-04) | 0.25–0.5 d | No online mode/panel/flag remains |
 | 6 | Hub input setup, QR pairing, explicit Start gate | 1–1.5 d | All four plans start from the hub only after readiness; no auto-start |
+| 6.5 | Controller ergonomics: left movement, right jump/actions, double-tap dash, auto dialogue, progressive abilities (done 2026-11-04) | 4.5–6 d | Jump right; double-tap dash; auto dialogue; only unlocked verbs; keyboard regression clean |
 | 7 | Latency measurement, coyote/buffer, playtest, docs | 1–1.5 d | DoD met or fallback documented |
 
-**Total:** roughly **10–14 focused days**, including the Worker/DO and the demo
+**Total:** roughly **14.5–20 focused days**, including the Worker/DO and the demo
 quota guard. If the Worker/DO is already deployed, the incremental controller
-work is roughly **7–10 focused days**.
+work is roughly **9.5–13 focused days**.
 
 ## 7. Compatibility with planned features
 
@@ -238,7 +251,8 @@ work is roughly **7–10 focused days**.
 |---|---|
 | Phone controller feels laggy | Measure input-to-photon; cloud-first then local relay if needed; coyote/jump buffer; keyboard fallback. No prediction. |
 | Wi-Fi AP isolation blocks phone↔laptop | Cloud WSS is the default; local relay is optional; add a connection test and clear error. |
-| Touch ergonomics are poor for a platformer | Large fixed targets, contextual verbs, haptics, landscape layout, playtest, keyboard fallback. |
+| Touch ergonomics are poor for a platformer | Thumb-zone layout, large fixed targets, double-tap dash, progressive verbs, haptics, landscape layout, playtest, keyboard fallback. |
+| Double-tap Dash is inaccessible to some players | Documented limitation; the keyboard slot is the fallback; revisit after a wider playtest. |
 | Phone sleep/lock drops the socket | Wake lock when available; reconnect; pause; explicit screen-lock guidance. |
 | Two-slot hub becomes confusing | K/K default; per-slot QR/status; Start gating; "Use keyboard instead" escape. |
 | Input ownership bug or stale latch | Pure arbiter tests; discard on every source change; no double sampling. |
@@ -282,6 +296,14 @@ Manual — M4.0a:
   fallback resumes that slot;
 - host tab hidden/resumed; host leaves; controllers return to the join screen;
 - phone screen lock/wake, landscape, multi-touch, wake lock, accessibility;
+- phone layout: move + Jump two-thumb test, reach test, Jump on the right;
+- dash gesture: double-tap the ◀ / ▶ buttons, single tap does not dash,
+  direction matches the tap, first-tap/cooldown/rejection feedback, coach mark,
+  controls sheet, keyboard-slot fallback documented;
+- dialogue: auto talk/choice, N-to-N choice mapping, no text on phone;
+- abilities: locked/unlocked, Dash gesture cooldown, accepted/rejected feedback,
+  Throw only while carrying;
+- host HUD: phone-slot prompts show action names, not keyboard keys;
 - latency measurement on 2.4 GHz, 5 GHz, TV/laptop, cloud in-region, with a
   keyboard baseline;
 - free-tier usage after several full 5-minute phone sessions;
@@ -383,9 +405,15 @@ The same-room decision is closed: no remote guest, no fourth device.
 ## 12. Relationship to other documents
 
 - [`../adr-controller/README.md`](../adr-controller/README.md) — active
-  controller domain, including ADR-0081 and ADR-0082.
+  controller domain, including ADR-0081, ADR-0082, and ADR-0083–0087.
 - [`../adr-controller/0082-demo-quota-guard-and-device-admission.md`](../adr-controller/0082-demo-quota-guard-and-device-admission.md)
   — demo quota guard, signed tickets, device admission, and the three-socket cap.
+- [`../adr-controller/0083-controller-thumb-zone-layout.md`](../adr-controller/0083-controller-thumb-zone-layout.md),
+  [`0084`](../adr-controller/0084-ephemeral-controller-control-state.md),
+  [`0085`](../adr-controller/0085-dialogue-control-and-choice-presentation.md),
+  [`0086`](../adr-controller/0086-ability-disclosure-and-feedback.md), and
+  [`0087`](../adr-controller/0087-controller-gesture-vocabulary.md) — Phase 6.5
+  controller ergonomics, control descriptors, dialogue, abilities, and gestures.
 - [`phone-coop-implementation-plan.md`](phone-coop-implementation-plan.md) —
   M4.0a implementation plan.
 - [`../adr-online/README.md`](../adr-online/README.md) — historical remote-guest

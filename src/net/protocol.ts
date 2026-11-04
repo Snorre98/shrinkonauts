@@ -1,7 +1,22 @@
 import { err, ok, type Result } from "../core/result";
+import type {
+  HostActionFeedback,
+  HostActionReason,
+  HostActionResult,
+  HostControlDescriptor,
+  HostControlMode,
+  HostControlVerb,
+} from "../game/host-run-port";
 
 /** Wire mirror of the two player slots; the relay must not import the game. */
 export type PlayerSlot = "p1" | "p2";
+
+export type ControlMode = HostControlMode;
+export type ControlVerb = HostControlVerb;
+export type ActionResult = HostActionResult;
+export type ActionReason = HostActionReason;
+export type ControlDescriptor = HostControlDescriptor;
+export type ActionFeedback = HostActionFeedback;
 
 export interface NetUiActions {
   confirm: boolean;
@@ -12,12 +27,15 @@ export interface NetUiActions {
   choose: number | null;
 }
 
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 export const MAX_CONTROLLER_MESSAGE_BYTES = 8 * 1024;
 export const MAX_HOST_MESSAGE_BYTES = 128 * 1024;
 export const MAX_INPUT_MESSAGES_PER_SECOND = 120;
 export const HEARTBEAT_SECONDS = 25;
 export const MAX_CONTROLLER_SLOTS = 2;
+export const MAX_CONTROL_MESSAGE_BYTES = 2 * 1024;
+export const MAX_CONTROL_MESSAGES_PER_SECOND = 10;
+export const MAX_ACTION_MESSAGES_PER_SECOND = 20;
 
 export type ErrorCode =
   | "BAD_MESSAGE"
@@ -149,6 +167,18 @@ export interface HostPongMessage extends Envelope {
   t0: number;
 }
 
+export interface HostControlMessage extends Envelope {
+  t: "control";
+  slot: PlayerSlot;
+  control: ControlDescriptor;
+}
+
+export interface HostActionMessage extends Envelope {
+  t: "action";
+  slot: PlayerSlot;
+  feedback: ActionFeedback;
+}
+
 export interface RoomSlotState {
   slot: PlayerSlot;
   connected: boolean;
@@ -187,6 +217,8 @@ export type ControllerClientMessage =
 export type ControllerServerMessage =
   | ControllerWelcomeMessage
   | ControllerPongMessage
+  | HostControlMessage
+  | HostActionMessage
   | PauseMessage
   | ResumeMessage
   | SessionEndMessage
@@ -196,6 +228,8 @@ export type HostClientMessage =
   | HostHelloMessage
   | HostCloseSlotMessage
   | HostPongMessage
+  | HostControlMessage
+  | HostActionMessage
   | PauseMessage
   | ResumeMessage
   | SessionEndMessage;
@@ -236,6 +270,35 @@ const PAUSE_REASONS: ReadonlySet<string> = new Set<PauseReason>([
   "host-hidden",
   "controller-left",
   "reconnecting",
+]);
+
+const CONTROL_MODES: ReadonlySet<string> = new Set<ControlMode>([
+  "explore",
+  "talk",
+  "choice",
+]);
+
+const CONTROL_VERBS: ReadonlySet<string> = new Set<ControlVerb>([
+  "jump",
+  "dash",
+  "interact",
+  "scan",
+  "pulse",
+  "carry",
+  "throw",
+]);
+
+const ACTION_RESULTS: ReadonlySet<string> = new Set<ActionResult>([
+  "accepted",
+  "rejected",
+  "cooldown",
+]);
+
+const ACTION_REASONS: ReadonlySet<string> = new Set<ActionReason>([
+  "out-of-range",
+  "locked",
+  "empty",
+  "cooldown",
 ]);
 
 const encoder = new TextEncoder();
@@ -644,6 +707,158 @@ function parsePong(
   return ok({ v: PROTOCOL_VERSION, t: "pong", t0: t0.value });
 }
 
+function parseControl(
+  value: unknown,
+): Result<ControlDescriptor, ProtocolError> {
+  if (!isRecord(value)) return bad("control must be an object");
+  if (typeof value.mode !== "string" || !CONTROL_MODES.has(value.mode)) {
+    return bad("control.mode is not a known controller mode");
+  }
+  const mode = value.mode as ControlMode;
+
+  let choices: number | undefined;
+  if (mode === "choice") {
+    if (
+      !Number.isInteger(value.choices) ||
+      (value.choices as number) < 1 ||
+      (value.choices as number) > 5
+    ) {
+      return bad("control.choices must be 1-5 in choice mode");
+    }
+    choices = value.choices as number;
+  } else if (value.choices !== undefined) {
+    return bad("control.choices is only valid in choice mode");
+  }
+
+  let selected: number | undefined;
+  if (value.selected !== undefined) {
+    if (
+      choices === undefined ||
+      !Number.isInteger(value.selected) ||
+      (value.selected as number) < 1 ||
+      (value.selected as number) > choices
+    ) {
+      return bad("control.selected must be within the choice count");
+    }
+    selected = value.selected as number;
+  }
+
+  if (!Array.isArray(value.verbs)) {
+    return bad("control.verbs must be an array");
+  }
+  const verbs: ControlVerb[] = [];
+  for (const rawVerb of value.verbs) {
+    if (typeof rawVerb !== "string" || !CONTROL_VERBS.has(rawVerb)) {
+      return bad("control.verbs contains an unknown verb");
+    }
+    if (verbs.includes(rawVerb as ControlVerb)) {
+      return bad("control.verbs must be unique");
+    }
+    verbs.push(rawVerb as ControlVerb);
+  }
+  for (const required of ["jump", "interact", "scan"] as const) {
+    if (!verbs.includes(required)) {
+      return bad(`control.verbs must include ${required}`);
+    }
+  }
+
+  let activeVerb: ControlVerb | undefined;
+  if (value.activeVerb !== undefined) {
+    if (
+      typeof value.activeVerb !== "string" ||
+      !CONTROL_VERBS.has(value.activeVerb) ||
+      !verbs.includes(value.activeVerb as ControlVerb)
+    ) {
+      return bad("control.activeVerb must be one of control.verbs");
+    }
+    activeVerb = value.activeVerb as ControlVerb;
+  }
+
+  if (!booleanValue(value.dashReady)) {
+    return bad("control.dashReady must be boolean");
+  }
+
+  return ok({
+    mode,
+    ...(choices !== undefined ? { choices } : {}),
+    ...(selected !== undefined ? { selected } : {}),
+    verbs,
+    ...(activeVerb !== undefined ? { activeVerb } : {}),
+    dashReady: value.dashReady === true,
+  });
+}
+
+function parseActionFeedback(
+  value: unknown,
+): Result<ActionFeedback, ProtocolError> {
+  if (!isRecord(value)) return bad("feedback must be an object");
+  if (
+    typeof value.verb !== "string" ||
+    !CONTROL_VERBS.has(value.verb)
+  ) {
+    return bad("feedback.verb is not a known controller verb");
+  }
+  if (
+    typeof value.result !== "string" ||
+    !ACTION_RESULTS.has(value.result)
+  ) {
+    return bad("feedback.result is not a known action result");
+  }
+  let reason: ActionReason | undefined;
+  if (value.reason !== undefined) {
+    if (
+      typeof value.reason !== "string" ||
+      !ACTION_REASONS.has(value.reason)
+    ) {
+      return bad("feedback.reason is not a known action reason");
+    }
+    reason = value.reason as ActionReason;
+  }
+  let retryAfterMs: number | undefined;
+  if (value.retryAfterMs !== undefined) {
+    if (!finiteNumber(value.retryAfterMs) || value.retryAfterMs < 0) {
+      return bad("feedback.retryAfterMs must be a non-negative number");
+    }
+    retryAfterMs = value.retryAfterMs;
+  }
+  return ok({
+    verb: value.verb as ControlVerb,
+    result: value.result as ActionResult,
+    ...(reason !== undefined ? { reason } : {}),
+    ...(retryAfterMs !== undefined ? { retryAfterMs } : {}),
+  });
+}
+
+function parseControlMessage(
+  value: Record<string, unknown>,
+): Result<HostControlMessage, ProtocolError> {
+  const slot = parseSlot(value.slot);
+  if (!slot.ok) return slot;
+  const control = parseControl(value.control);
+  if (!control.ok) return control;
+  return ok({
+    v: PROTOCOL_VERSION,
+    t: "control",
+    slot: slot.value,
+    control: control.value,
+  });
+}
+
+function parseActionMessage(
+  value: Record<string, unknown>,
+): Result<HostActionMessage, ProtocolError> {
+  const slot = parseSlot(value.slot);
+  if (!slot.ok) return slot;
+  const feedback = parseActionFeedback(value.feedback);
+  if (!feedback.ok) return feedback;
+  return ok({
+    v: PROTOCOL_VERSION,
+    t: "action",
+    slot: slot.value,
+    feedback: feedback.value,
+  });
+}
+
 function parseMessage(
   value: unknown,
 ): Result<ProtocolMessage, ProtocolError> {
@@ -684,6 +899,10 @@ function parseMessage(
       return parseHostHello(value);
     case "close-slot":
       return parseCloseSlot(value);
+    case "control":
+      return parseControlMessage(value);
+    case "action":
+      return parseActionMessage(value);
     case "room-state":
       return parseRoomState(value);
     default:
@@ -739,6 +958,8 @@ export function isHostClientMessage(
   switch (message.t) {
     case "host-hello":
     case "close-slot":
+    case "control":
+    case "action":
     case "pause":
     case "resume":
     case "session-end":
@@ -755,6 +976,8 @@ export function isControllerServerMessage(
 ): message is ControllerServerMessage {
   switch (message.t) {
     case "welcome":
+    case "control":
+    case "action":
     case "pause":
     case "resume":
     case "session-end":

@@ -2068,6 +2068,34 @@ kbd {
   outline-offset: 2px;
 }
 
+.feedback-surface__choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.feedback-surface__choice-index {
+  display: inline-flex;
+  width: 1.35rem;
+  height: 1.35rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.feedback-surface__choice-label {
+  text-align: left;
+}
+
+.feedback-surface--speechBubble .feedback-surface__owner {
+  font-weight: 800;
+}
+
 .feedback-surface__continue {
   margin-top: 0.4rem;
 }

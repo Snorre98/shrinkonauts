@@ -132,24 +132,27 @@ co-op and M4.1 are not planned.
 
 Required work:
 
-- [ ] Implement the Worker, Durable Object, room code, controller role, and
+- [x] Implement the Worker, Durable Object, room code, controller role, and
   heartbeat as an input-only relay (ADR-0066–0069, ADR-0081, ADR-0082).
-- [ ] Add per-slot `P1: Keyboard | Phone` and `P2: Keyboard | Phone` under Local
+- [x] Add per-slot `P1: Keyboard | Phone` and `P2: Keyboard | Phone` under Local
   co-op; default K/K.
-- [ ] Create or reuse the host session while still in the hub, before Start.
-- [ ] Show one QR and six-character code per phone slot; show waiting/connected/
+- [x] Create or reuse the host session while still in the hub, before Start.
+- [x] Show one QR and six-character code per phone slot; show waiting/connected/
   ready/error status and “Use keyboard instead.”
-- [ ] Gate Start until every phone slot is ready or explicitly downgraded;
+- [x] Gate Start until every phone slot is ready or explicitly downgraded;
   readiness must not auto-start the run.
-- [ ] Add the disconnect/pause overlay: wait for reconnect, continue with
+- [x] Add the disconnect/pause overlay: wait for reconnect, continue with
   keyboard, or end session.
 - [x] Remove the disabled Online co-op block, `online` hub mode, and `online`
   pack catalog flag (2026-11-04).
-- [ ] Keep the Worker/DO input relay, controller page, input arbiter, host
+- [x] Keep the Worker/DO input relay, controller page, input arbiter, host
   session, and phone input plan.
-- [ ] Add the phone-controller browser smoke with one and two phones.
-- [ ] Do not add remote guest rendering, game-state snapshots, interpolation,
+- [x] Add the phone-controller browser smoke with one and two phones.
+- [x] Do not add remote guest rendering, game-state snapshots, interpolation,
   prediction, or a fourth device.
+- [x] Add the Phase 6.5 controller ergonomics pass: thumb-zone layout,
+  double-tap Dash, auto dialogue, progressive abilities, and action feedback
+  (ADR-0083–0087).
 
 **M1.9 code expected for M4:** the hub gains a local-co-op phone setup panel; the
 obsolete online placeholder is removed. Do not add online state to

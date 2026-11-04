@@ -1,6 +1,7 @@
 # Phone Controller Co-op — Implementation Plan (M4.0a)
 
-**Status:** M4.0a authority, 2026-11-01; same-room scope confirmed 2026-11-04
+**Status:** M4.0a authority, 2026-11-01; same-room scope confirmed 2026-11-04;
+Phase 6.5 implemented 2026-11-04
 **Owner:** Snorre
 **Source decisions:** [ADR-0066–0069, ADR-0081, and ADR-0082](../adr-controller/README.md)
 **Milestone:** [M4](../m4/README.md) — M4.0a, the complete multiplayer scope
@@ -32,6 +33,8 @@ and the [online ADR domain](../adr-online/README.md) for historical precedent.
   (same-room product boundary; no remote guest).
 - [ ] Accept [ADR-0082](../adr-controller/0082-demo-quota-guard-and-device-admission.md)
   (demo quota guard, signed tickets, device admission, three-socket cap).
+- [ ] Accept [ADR-0083–0087](../adr-controller/README.md) for the Phase 6.5
+  controller ergonomics, gesture, dialogue, and ability pass.
 - [ ] Resolve or defer the open decisions in §13.
 - [ ] Approve this plan as the M4.0a authority.
 
@@ -294,6 +297,8 @@ subset is:
 | controller → host | `ping` | `t0` |
 | host → controller | `pong` | `t0` |
 | host → controller | `pause` / `resume` | `reason`, state |
+| host → controller | `control` | ephemeral mode, choice count, verbs, active verb, dash readiness (ADR-0084) |
+| host → controller | `action` | accepted/rejected/cooldown result code (ADR-0084) |
 | host → controller | `session-end` | `reason` |
 | either | `error` | `code`, `message` |
 
@@ -306,10 +311,13 @@ Host ↔ DO control messages:
 | controller → DO | `hello` | claim a reserved slot |
 | DO → controller | `welcome` | slot accepted; relay begins |
 | host → DO | `close-slot` | keyboard fallback or host revocation |
+| host → DO | `control` / `action` | relay a control descriptor or result to one slot |
 | host → DO | `session-end` | end the room cleanly |
 
-Explicitly absent: `run`, `world`, `ui`, `session` pack config, snapshot
-interpolation, pack/content versions, and asset data.
+Explicitly absent: `run`, `world`, `ui` content, `session` pack config,
+dialogue text, snapshot interpolation, pack/content versions, and asset data.
+The `control`/`action` messages are control descriptors only, not game state
+(ADR-0084).
 
 `NetInput` for one player:
 
@@ -870,6 +878,172 @@ Exit criteria:
 
 ---
 
+### Phase 6.5 — Controller ergonomics, gestures, dialogue, and ability affordances
+
+**Status:** Implemented 2026-11-04; ADR-0083–0087 accepted.
+**Estimate:** 4.5–6 focused days.
+**Source decisions:** ADR-0083, ADR-0084, ADR-0085, ADR-0086, ADR-0087.
+
+Goal: make the phone controller comfortable for a full co-op session. Movement
+stays under the left thumb; Jump and actions sit under the right thumb; Dash is
+a double-tap movement gesture with a visible indicator and keyboard-slot
+fallback;
+dialogue appears automatically when the owned conversation needs input; and
+abilities appear only when unlocked and confirm their result.
+
+Non-goals: no new verbs, abilities, puzzles, levels, art, audio, or save fields;
+no dialogue text or world state on the phone; no phone-side prediction; no
+replacement of keyboard co-op; no remote guest; no gesture beyond Dash in this
+phase.
+
+Files:
+
+- `src/controller/controller-ui.ts`
+- `src/controller/touch-layout.ts`
+- `src/controller/touch-gestures.ts` (new, pure double-tap detector)
+- `src/controller/controller.css`
+- `src/controller/main.ts`
+- `src/controller/controller-session.ts`
+- `src/net/protocol.ts`
+- `src/net/session.ts`
+- `worker/src/room-core.ts`
+- `src/game/boot.ts`
+- `src/game/runtime.ts`
+- `src/ui/game-ui.ts`
+- `src/ui/feedback-renderer.ts`
+- `src/ui/styles.css`
+- `tests/controller/*`
+- `tests/net/*`
+- `tests/worker/*`
+- `e2e/controller.spec.ts`
+- `docs/adr-controller/*`, `docs/m4/*`, `IMPLEMENTATION.md`
+
+Tasks:
+
+1. Accept ADR-0083–0087 and add them to the controller ADR index. Add
+   “Later decision” notes to ADR-0068 and ADR-0069 where appropriate. Do not
+   rewrite accepted record bodies.
+2. Rebuild the controller board per ADR-0083:
+   - left thumb zone: left/right movement only;
+   - right thumb zone: Jump (largest, bottom-right), Interact, Scan, role verb,
+     conditional Throw;
+   - no Dash button; leave the space free for larger Jump/Interact;
+   - 56 CSS px minimum targets, 10–12 px gaps, safe-area insets;
+   - stable positions; no context remapping;
+   - optional left-handed mirror and optional slide-between-directions.
+3. Add the double-tap Dash gesture per ADR-0087:
+   - add a pure `src/controller/touch-gestures.ts` detector with injected
+     clock, tap/double-tap thresholds, same-button rule, pointer-slop limit,
+     and reset API;
+   - listen only on the ◀ / ▶ button hit areas; the surrounding movement zone
+     does not trigger Dash;
+   - detect on the controller page, not the host;
+   - send one `NetInput` snapshot with `moveX` and `dash: true`; clear the
+     pulse after that send;
+   - suppress recognition when Dash is locked, paused, in choice mode, or the
+     board is disabled;
+   - add the `» DASH` indicator states: hidden/locked, ready, first-tap `2×`,
+     recognized, cooldown, rejected, disabled;
+   - add the one-time coach mark, persistent “Hold to move · Double-tap to
+     dash” hint, and controls sheet;
+   - make the host resolve dash direction from `moveX` before applying the
+     dash, with tests for both directions.
+4. Add the control-state channel per ADR-0084:
+   - define `ControlMode`, `ControlVerb`, `ControllerControlMessage`, and
+     `ControllerActionMessage`;
+   - validate closed vocabularies, choice counts, selection, size, and rate;
+   - bump `PROTOCOL_VERSION` and update fixtures/build assumptions;
+   - add host session APIs to send descriptors and action results;
+   - relay host messages only to the bound slot in the Durable Object;
+   - reject controller-originated `control`/`action` messages;
+   - ignore malformed descriptors without breaking input;
+   - resend the current descriptor on reconnect, resume, and slot bind.
+5. Implement dialogue control per ADR-0085:
+   - remove the manual Dialogue toggle and nine-button panel;
+   - add `talk` mode: Continue/Back, movement and Jump remain, Dash gesture
+     remains enabled;
+   - add `choice` mode: exactly `choiceCount` numbered buttons plus Back;
+   - hide or disable Jump and disable/reset the Dash gesture while the owner is
+     frozen;
+   - send `ui.choose = N` for choice N; keep `interact` as confirm;
+   - add number badges, owner emphasis, and selected-state clarity to the
+     shared-screen choice renderer;
+   - restore `explore` mode on close, cancel, completion, and level change.
+6. Implement ability disclosure per ADR-0086:
+   - derive the visible verb set from `abilitiesFor(slot)` and the active mode;
+   - enable the Dash gesture only after `signal-dash` unlocks;
+   - hide Throw unless the player is carrying;
+   - send `activeVerb` from the nearest actionable target; dash emphasis goes
+     to the movement zone/indicator;
+   - send `action` results with closed reasons and optional `retryAfterMs`;
+   - add Dash cooldown and action-result feedback on the movement-zone Dash
+     indicator;
+   - add the local haptics toggle;
+   - show P1/P2 ability differences without dead buttons.
+7. Make the shared HUD input-aware:
+   - show keyboard keys only for keyboard slots;
+   - show action names for phone slots in the control cards and prompt;
+   - keep locked keyboard abilities dimmed as today.
+8. Tests:
+   - unit: touch model, layout geometry, gesture timing/direction, mode
+     switching, choice mapping, verb filtering, action result mapping, protocol
+     validation;
+   - integration: host → DO → controller targeting, reconnect resend, slot
+     isolation, malformed descriptor fallback, no controller-originated
+     control messages, deterministic dash direction;
+   - browser: Jump is on the right; move + Jump works; double-tap Dash works
+     left and right; single taps do not dash; dialogue auto-switches; choice N
+     selects N; only unlocked verbs appear; Dash cooldown and action feedback;
+     no canvas/assets/dialogue text on the controller page;
+   - regression: K/K, solo, pause, reconnect, keyboard fallback, existing
+     controller and e2e suites.
+9. Update docs: controller ADR index, ADR-0068/0069 later-decision notes, M4
+   README phase table/status/deliverables, this plan, `IMPLEMENTATION.md`, and
+   the Phase 7 playtest note.
+
+Exit criteria:
+
+- Jump is bottom-right; movement is left-only; move + Jump works with two
+  thumbs.
+- Dash is a double-tap movement gesture in both directions, with no default
+  Dash button; a single tap does not dash; the host dashes in the tapped
+  direction.
+- The Dash indicator communicates locked/ready/first-tap/recognized/cooldown/
+  rejected states; the coach mark and controls sheet make the gesture
+  discoverable.
+- There is no on-phone Dash button; the keyboard slot remains the documented
+  fallback for players who cannot double-tap.
+- The controller board meets the target-size and spacing floor on the target
+  phone in landscape.
+- Dialogue switches automatically within ~150 ms of the owned surface
+  starting; choice buttons match the shared-screen count; tapping N chooses N;
+  no dialogue text appears on the phone; the Dash gesture is disabled in choice
+  mode.
+- Only unlocked abilities appear; cooldown and accepted/rejected feedback are
+  visible; Throw appears only while carrying.
+- The controller falls back to the stable explore layout if no descriptor
+  arrives.
+- Keyboard/keyboard and solo behaviour are unchanged.
+- All existing tests, the new controller tests, the build, and `git diff
+  --check` pass.
+- Phase 7 records latency and manual playtest results against this final
+  layout.
+
+Risks and mitigations:
+
+| Risk | Mitigation |
+|---|---|
+| Control-state channel expands the phone boundary | Closed vocabulary; no text/world/save fields; ADR-0084 review; DOM assertions |
+| Right cluster overcrowds on small phones | Progressive disclosure; compact tier; 56 px floor; two-phone manual test |
+| Double-tap Dash fires accidentally during normal movement taps | Same-half rule, 220 ms tap cap, 12 px slop, 300 ms window; first-tap hint; test single taps |
+| Double-tap is inaccessible to some players | Accepted limitation for this phase; keyboard slot fallback; controls sheet; revisit if playtest includes motor-impaired players |
+| Dash direction differs from the tapped direction | Host resolves facing from `moveX` before dash; left/right integration tests |
+| Descriptor loss leaves the phone in the wrong mode | Same transport as input; resend on reconnect/resume; default explore fallback; `interact` confirm parity |
+| Host runtime and net layer become coupled | Build descriptors in the presentation/boot seam; `net` stays content-free |
+| Dialogue choice mapping drifts from shared screen | Single source: host sends `choices`; shared screen renders the same count; test N-to-N |
+| Gesture language grows into hidden controls | Closed set in ADR-0087; new gesture requires ADR, coach mark, legend entry, and a documented fallback |
+| Phase creeps into new mechanics | Non-goals: no new verbs, cooldowns, ranges, or content |
+
 ### Phase 7 — Latency, game feel, playtest, and close-out
 
 **Estimate:** 1–1.5 focused days.
@@ -938,6 +1112,11 @@ Exit criteria:
 | Device ID / three-socket cap | Yes | Yes | Yes | Yes |
 | Quota, session, message caps | Yes | Yes | — | Free-tier math |
 | Edge coalescing | Yes | Yes | — | — |
+| Thumb-zone layout | Yes | — | Yes | Yes |
+| Double-tap dash timing/direction | Yes | Yes | Yes | Yes |
+| Dialogue auto modes / N-to-N | Yes | Yes | Yes | Yes |
+| Ability disclosure / feedback | Yes | Yes | Yes | Yes |
+| No dialogue text on phone | — | Yes | DOM assertion | Yes |
 | Protocol/version | Yes | Yes | Yes | — |
 | QR/code join | URL parser | Session | Yes | Yes |
 | Disconnect/reconnect | — | Yes | Yes | Yes |
@@ -1030,6 +1209,7 @@ npm run smoke:controller
 | ADR-0066–0069 | Accepted phone-controller records |
 | ADR-0081 | Same-room, shared-screen product boundary; no remote guest |
 | ADR-0082 | Demo quota guard, signed room tickets, device admission, and three-socket cap |
+| ADR-0083–0087 | Thumb-zone layout, control descriptors, dialogue modes, ability disclosure, and gesture vocabulary |
 | `docs/m4/README.md` | M4.0a-only scope, deliverables, DoD, risks, verification; M4.0b/M4.1 historical appendix |
 | `docs/adr-online/README.md` | Historical status; no rewrite of record bodies |
 | `docs/adr-hub/README.md` | Local co-op phone setup; obsolete online block removed |
@@ -1050,7 +1230,8 @@ npm run smoke:controller
 |---|---|
 | Wi-Fi AP client isolation blocks phone↔laptop | Cloud WSS is the default; local relay is optional; add a connection test |
 | Cloud latency is noticeable | Measure; use local relay if needed; keep keyboard fallback; add coyote/buffer |
-| Touch ergonomics are poor for platforming | Large fixed targets, contextual verbs, haptics, playtest, allow keyboard fallback |
+| Touch ergonomics are poor for platforming | Thumb-zone layout, large fixed targets, double-tap dash, progressive verbs, haptics, playtest, allow keyboard fallback |
+| Double-tap Dash is inaccessible to some players | Documented limitation; the keyboard slot is the fallback; revisit after a wider playtest |
 | Phone screen sleeps and drops the socket | Wake lock when available; reconnect; pause; clear guidance |
 | Two-slot hub is confusing | K/K default, per-slot QR/status, explicit ready/error copy, "use keyboard" escape |
 | Input ownership bugs | Pure arbiter tests; discard on every source change; no double sampling |
@@ -1070,8 +1251,8 @@ npm run smoke:controller
 
 M4.0a is done when:
 
-1. ADR-0066–0069, ADR-0081, and ADR-0082 are accepted and indexed; this plan
-   is approved.
+1. ADR-0066–0069, ADR-0081, ADR-0082, and ADR-0083–0087 are accepted and
+   indexed; this plan is approved.
 2. Keyboard/keyboard local co-op is unchanged, is the default, and passes the
    existing regression suite.
 3. Keyboard/phone, phone/keyboard, and phone/phone each start from the hub and
@@ -1104,6 +1285,9 @@ M4.0a is done when:
     server-issued device IDs, one host plus two controllers, 5-minute sessions,
     room message and controller rate caps, and Workers Logs disabled
     (ADR-0082).
+17. The controller layout, double-tap Dash gesture, dialogue modes, and ability
+    affordances meet ADR-0083–0087; the Phase 7 playtest is run against that
+    layout.
 
 ---
 
@@ -1113,7 +1297,7 @@ M4.0a is done when:
 |---|---|---|
 | 1 | QR per phone slot or one QR plus a slot picker? | One QR per slot; clearer for a demo |
 | 2 | Remember the last input plan or reset to K/K on return? | Reset to K/K; less surprise |
-| 3 | Show dialogue choices on the phone or keep them on the shared screen? | Buttons only on the phone; shared screen for reading |
+| 3 | Show dialogue choices on the phone or keep them on the shared screen? | Shared screen for text; phone gets mode, choice count, and numbered buttons only (ADR-0085) |
 | 4 | Allow mid-run keyboard↔phone hot-swap beyond disconnect fallback? | No; only the pause/disconnect fallback |
 | 5 | Build a local relay now? | No; cloud-first, add only if measurements require it |
 | 6 | Allow pause from the phone? | No; host-only in M4.0a |
@@ -1147,6 +1331,11 @@ M4.1 (ADR-0081).
 | Signed room ticket and edge admission | 0082 | 3.5 | Router tests; invalid joins never call `ROOMS` |
 | Device IDs and three-socket cap | 0082 | 3.5 | DO admission tests; separate-device browser smoke |
 | Daily budgets, session/message caps, logs off | 0082 | 3.5 | Gate/config tests; `wrangler deploy --dry-run`; free-tier math |
+| Thumb-zone layout and right-thumb jump | 0083 | 6.5 | Geometry/browser tests; move + Jump manual test |
+| Ephemeral control descriptors | 0084 | 6.5 | Protocol/DO/session tests; no text/world fields |
+| Auto dialogue and N-to-N choices | 0085 | 6.5 | Runtime/controller/browser tests; no phone text |
+| Progressive abilities and result feedback | 0086 | 6.5 | Verb-filter, cooldown, and action-result tests |
+| Double-tap Dash gesture | 0087 | 6.5 | Gesture timing/direction tests; coach mark/controls sheet |
 | Cloud-first, local relay optional | 0066, 0068, 0069 | 0, 3, 7 | Deployment check; measurement decision |
 
 ---
@@ -1170,9 +1359,9 @@ M4.1 (ADR-0081).
 
 ## 16. Next action
 
-Phases 1–6 are implemented, Phase 5.5 is complete, Phase 3.5 (ADR-0082) is
-implemented, and the Cloudflare deployment spike passed. The next action is
-Phase 7:
+Phases 1–6 and Phase 6.5 are implemented, Phase 5.5 is complete, Phase 3.5
+(ADR-0082) is implemented, and the Cloudflare deployment spike passed. The next
+action is Phase 7:
 
 1. Add controller/host latency instrumentation for the playtest HUD.
 2. Add coyote time and jump buffering without changing keyboard/solo behavior.

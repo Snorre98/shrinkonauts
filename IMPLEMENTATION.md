@@ -12,9 +12,11 @@ controller page, touch input, host session, room relay, hub pairing, QR/code
 setup, and explicit Start gate are implemented. The relay now has the ADR-0082
 demo quota guard: signed room tickets, server-issued device IDs, a one-host/
 two-controller admission cap, a 5-minute session alarm, message/rate caps, and
-Workers Logs disabled. Phase 7 latency/game-feel measurement and the playtest
-record remain. The obsolete Online co-op placeholder and `online` catalog flag
-were removed.
+Workers Logs disabled. Phase 6.5 adds the controller thumb-zone layout,
+client-side double-tap Dash, ephemeral dialogue/ability control descriptors,
+auto dialogue controls, progressive ability disclosure, and action feedback.
+Phase 7 latency/game-feel measurement and the playtest record remain. The
+obsolete Online co-op placeholder and `online` catalog flag were removed.
 
 M1.8 adds `materials.json`, material grids and autotiling, deterministic tile
 variants, atlas regions, world/object/background pattern projection, and UI
@@ -41,7 +43,7 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Anatomy cycle start, launch, and return | Working |
 | Silicon cycle | Available |
 | Online co-op lobby | Removed; same-room multiplayer only (ADR-0081) |
-| Phone controller co-op | Input-only relay, controller page, host session, hub pairing/QR setup, explicit Start gate, signed tickets, device admission, and demo quota guard working; Phase 7 latency/game-feel pending (M4.0a) |
+| Phone controller co-op | Input-only relay, controller page, host session, hub pairing/QR setup, explicit Start gate, signed tickets, device admission, and demo quota guard working; Phase 6.5 thumb-zone/double-tap/dialogue/ability pass working; Phase 7 latency/game-feel pending (M4.0a) |
 | Direct boot into `03-nerve-forest` | Working via `?skipMenu=1` |
 | 03 → 04 transition through debrief | Working |
 | Pack + syllabus loading from `public/` | Working |
@@ -88,7 +90,7 @@ Run from `shrinkonauts/`:
 ```bash
 npm install
 npm run dev             # http://127.0.0.1:5173/
-npm test                # 68 files, 706 unit/integration tests
+npm test                # 74 files, 788 unit/integration tests
 npm run smoke           # room boot + module boundary tests
 npm run build           # tsc --noEmit + Vite production build
 npm run pack:validate   # dev fixture + anatomy + catalog/hub validation
@@ -137,6 +139,9 @@ hub ──> assets, core, pack
 progression, narrative ──> pack
 curriculum ──> core, pack, syllabus
 save ──> curriculum, progression, puzzle
+controller ──> net
+net ──> game, save, ui, world
+platform ──> net
 ```
 
 | Module | Responsibility | May import |
@@ -155,8 +160,10 @@ save ──> curriculum, progression, puzzle
 | `hub` | Bathroom hub document, loader, validation | `assets`, `core`, `pack` |
 | `ui` | HUD, bathroom menu, overlays, anchored surfaces, live region, settings | `assets`, `core`, `curriculum`, `feedback`, `pack` |
 | `world` | Phaser hub/room scenes, fixed-step simulation, effects, tile visuals, input | `assets`, `core`, `hub`, `pack`, `puzzle` |
+| `controller` | Standalone phone input surface, touch layout, double-tap gesture, control descriptors | `core`, `net` |
+| `net` | Protocol, transport, host session, relay adapter, remote input source | `core`, `game`, `save`, `ui`, `world` |
 | `game` | App shell, pack runtime orchestrator, feedback integration, conversations, effect mapping, browser boot | all domain/adapters |
-| `platform` | Browser entry point | `core`, `game`, `ui` |
+| `platform` | Browser entry point | `core`, `game`, `ui`, `net` |
 
 `tests/boundaries.test.ts` enforces the graph: no Phaser or Matter outside
 `world`, no media paths outside `assets`, no direct media imports in
@@ -173,6 +180,9 @@ Three deliberate seams keep the graph acyclic:
   on `game`.
 - `pack/validate.ts` receives `FeedbackValidationVocabulary` from scripts/tests
   instead of importing `feedback`.
+- `src/game/host-run-port.ts` defines the game-owned host-session seam and the
+  ephemeral control-descriptor types. `net` implements the seam; `controller`
+  consumes protocol types only and imports no game runtime or pack content.
 
 The one documented dependency exception is `pack/validate.ts` importing
 `../assets`. Validation must answer the same question the renderer asks — does
@@ -689,14 +699,23 @@ using system Chrome.
 On 2026-11-04, after merging `add-missing-04-03-assets` into `feat/m4.0a-phone-coop`:
 
 ```text
-npm test               68 files, 706 tests passed
+npm test               74 files, 788 tests passed
 npm run build          tsc clean + Vite production build + controller bundle check
 npm run pack:validate  dev placeholder/fixture PASS; anatomy 59 IDs / 16 placeholders; Silicon 52 IDs / 16 placeholders; catalog + bathroom hub 21 IDs / 1 placeholder PASS
 npm run pack:smoke     dev modes PASS; anatomy runtime PASS (59 IDs, 16 placeholders); Silicon runtime PASS (48 IDs, 16 placeholders)
-npm run smoke:e2e      17/17 passed
-npm run smoke:controller 1/1 passed
+npm run smoke:e2e      18/18 passed
+npm run smoke:controller 2/2 passed
+npm run worker:typecheck PASS
+npm run worker:dry-run PASS
+git diff --check      clean
 conflict markers       none
 ```
+
+Phase 6.5 adds the thumb-zone controller, double-tap Dash gesture, control
+descriptors, auto dialogue modes, progressive ability disclosure, and action
+feedback. The controller browser smoke now covers right-side Jump, controls
+sheet, automatic talk/choice modes, N-to-N choice mapping, and no dialogue text
+on the phone.
 
 On 2026-11-04, after the M3.75 final symbol pass:
 

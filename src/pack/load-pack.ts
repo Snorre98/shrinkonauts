@@ -75,11 +75,13 @@ export async function loadPackContent(
   options: LoadPackContentOptions,
 ): Promise<Result<LoadedPackContent>> {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const packUrl = new URL(options.packUrl, globalThis.location?.href);
-  const syllabusBase = new URL(
-    options.syllabusBaseUrl,
-    globalThis.location?.href,
-  );
+  const baseHref = (
+    globalThis as typeof globalThis & {
+      location?: { href?: string };
+    }
+  ).location?.href;
+  const packUrl = new URL(options.packUrl, baseHref);
+  const syllabusBase = new URL(options.syllabusBaseUrl, baseHref);
   const warnings: string[] = [];
 
   const packJson = await json(new URL("pack.json", packUrl), fetchImpl);

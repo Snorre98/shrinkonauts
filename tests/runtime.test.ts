@@ -1244,12 +1244,25 @@ describe("game runtime", () => {
     expect(runtime.simulation.players.p1.x).toBe(startX);
 
     solveNodeRun(runtime);
+    expect(runtime.controlDescriptor("p1").verbs).toContain("dash");
+    expect(runtime.controlDescriptor("p1").dashReady).toBe(true);
+
     const before = runtime.simulation.players.p1.x;
     runtime.step(1 / 60, {
       ...input(),
       intents: { ...input().intents, p1: { moveX: 0, jump: false, dash: true } },
     });
     expect(runtime.simulation.players.p1.x).toBeGreaterThan(before);
+
+    runtime.simulation.players.p1.facing = 1;
+    runtime.simulation.players.p1.dashTime = 0;
+    runtime.simulation.players.p1.dashCooldown = 0;
+    const facingRight = runtime.simulation.players.p1.x;
+    runtime.step(1 / 60, {
+      ...input(),
+      intents: { ...input().intents, p1: { moveX: -1, jump: false, dash: true } },
+    });
+    expect(runtime.simulation.players.p1.x).toBeLessThan(facingRight);
   });
 
   it("projects persistent feedback and beat progress at boot", () => {
@@ -1952,5 +1965,56 @@ describe("game runtime", () => {
         .snapshot()
         .feedback.cues.some((cue) => cue.content.text?.includes("no longer here")),
     ).toBe(true);
+  });
+});
+
+describe("controller control descriptors", () => {
+  it("exposes talk and choice modes, verbs, and action feedback without text", () => {
+    const { runtime } = makeRuntime();
+    walkTo(runtime, "agent-neuron");
+    runtime.interact();
+
+    const talk = runtime.controlDescriptor("p1");
+    expect(talk.mode).toBe("talk");
+    expect(talk.verbs).toEqual(
+      expect.arrayContaining(["jump", "interact", "scan", "pulse"]),
+    );
+    expect(talk.verbs).not.toContain("carry");
+    expect(talk).not.toHaveProperty("text");
+
+    const conversation = [...runtime.conversations.values()][0]!;
+    runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+    runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+    runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+
+    const choice = runtime.controlDescriptor("p1");
+    expect(choice.mode).toBe("choice");
+    expect(choice.choices).toBe(2);
+    expect(choice.selected).toBe(1);
+    expect(choice.activeVerb).toBe("interact");
+
+    expect(JSON.stringify(runtime.controlDescriptor("p1"))).not.toContain(
+      "Neuron Keeper",
+    );
+  });
+});
+
+describe("controller action feedback", () => {
+  it("records a rejected interact with a closed reason code", () => {
+    const { runtime } = makeRuntime();
+    runtime.placePlayer("p1", 8, 8);
+    runtime.interact();
+    expect(runtime.drainControlActions()).toEqual(
+      expect.arrayContaining([
+        {
+          slot: "p1",
+          feedback: {
+            verb: "interact",
+            result: "rejected",
+            reason: "out-of-range",
+          },
+        },
+      ]),
+    );
   });
 });

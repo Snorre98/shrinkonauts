@@ -769,3 +769,88 @@ describe("RoomCore demo limits", () => {
     expect(core.nextAlarmAt()).toBe(20_000);
   });
 });
+
+describe("RoomCore controller control state", () => {
+  it("relays host control and action messages only to the target slot", () => {
+    const { core, host } = setup(["p1", "p2"]);
+    const p1 = join(core, "p1");
+    const p2 = join(core, "p2");
+    ready(core, p1);
+    ready(core, p2);
+    host.takeSent();
+    p1.takeSent();
+    p2.takeSent();
+
+    const control: HostClientMessage = {
+      v: PROTOCOL_VERSION,
+      t: "control",
+      slot: "p1",
+      control: {
+        mode: "choice",
+        choices: 2,
+        selected: 1,
+        verbs: ["jump", "interact", "scan", "pulse"],
+        activeVerb: "interact",
+        dashReady: true,
+      },
+    };
+    core.onMessage(host, JSON.stringify(control));
+    expect(p1.takeSent()).toEqual([
+      {
+        v: PROTOCOL_VERSION,
+        t: "control",
+        slot: "p1",
+        control: control.control,
+      },
+    ]);
+    expect(p2.takeSent()).toEqual([]);
+
+    const action: HostClientMessage = {
+      v: PROTOCOL_VERSION,
+      t: "action",
+      slot: "p2",
+      feedback: {
+        verb: "dash",
+        result: "cooldown",
+        reason: "cooldown",
+        retryAfterMs: 300,
+      },
+    };
+    core.onMessage(host, JSON.stringify(action));
+    expect(p2.takeSent()).toEqual([
+      {
+        v: PROTOCOL_VERSION,
+        t: "action",
+        slot: "p2",
+        feedback: action.feedback,
+      },
+    ]);
+    expect(p1.takeSent()).toEqual([]);
+  });
+
+  it("rejects controller-originated control state", () => {
+    const { core } = setup(["p1"]);
+    const p1 = join(core, "p1");
+    ready(core, p1);
+    p1.takeSent();
+
+    core.onMessage(
+      p1,
+      JSON.stringify({
+        v: PROTOCOL_VERSION,
+        t: "control",
+        slot: "p1",
+        control: {
+          mode: "explore",
+          verbs: ["jump", "interact", "scan"],
+          dashReady: false,
+        },
+      }),
+    );
+
+    expect(p1.lastSent()).toMatchObject({
+      t: "error",
+      code: "BAD_MESSAGE",
+    });
+  });
+});

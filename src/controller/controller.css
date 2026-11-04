@@ -544,3 +544,415 @@ button {
     transition: none;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Phase 6.5 thumb-zone layout, gesture indicator, and controls sheet   */
+/* ------------------------------------------------------------------ */
+
+.controller__bar {
+  flex-wrap: wrap;
+}
+
+.controller__help {
+  width: 34px;
+  height: 34px;
+  margin-left: 2px;
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.controller__board {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 14px;
+  padding-bottom: 20px;
+}
+
+.controller__cluster {
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.controller__cluster--left {
+  align-items: stretch;
+  justify-content: flex-end;
+}
+
+.controller__cluster--right {
+  align-items: stretch;
+  justify-content: flex-end;
+}
+
+.controller__move {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.controller__key--move {
+  min-width: 0;
+  min-height: 92px;
+  font-size: 2.1rem;
+}
+
+.controller__dash {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: center;
+  min-height: 34px;
+  padding: 4px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel));
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.controller__dash[data-ready="false"] {
+  color: var(--muted);
+  border-color: var(--line);
+  background: var(--panel);
+}
+
+.controller__dash[data-active="true"] {
+  outline: 2px solid var(--accent-cool);
+  outline-offset: 2px;
+}
+
+.controller__dash[data-pending="true"] {
+  animation: controller-dash-pending 340ms ease-out;
+}
+
+.controller__dash[data-recognized="true"] {
+  background: var(--accent-cool);
+  color: #061014;
+  animation: controller-dash-recognized 260ms ease-out;
+}
+
+.controller__dash[data-result="accepted"] {
+  background: var(--accent-cool);
+  color: #061014;
+}
+
+.controller__dash[data-result="rejected"] {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #1b0505;
+  animation: controller-reject 280ms ease-out;
+}
+
+.controller__dash[data-result="cooldown"] {
+  border-color: var(--accent);
+  animation: controller-cooldown var(--cooldown-ms, 450ms) linear;
+}
+
+.controller__dash-glyph {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.controller__dash-hint {
+  color: var(--text);
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+}
+
+.controller__dash[data-ready="false"] .controller__dash-hint {
+  color: var(--muted);
+}
+
+.controller__action-area {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.controller__actions {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.controller__key--wide {
+  grid-column: 1 / -1;
+  min-height: 72px;
+  font-size: 1.05rem;
+}
+
+.controller__key--jump {
+  width: 100%;
+  min-width: 0;
+  min-height: 92px;
+  margin-top: 2px;
+  font-size: 1.25rem;
+}
+
+.controller__dialogue {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.controller__talk,
+.controller__choice-panel {
+  width: 100%;
+}
+
+.controller__dialogue-row {
+  grid-template-columns: 1fr 0.7fr;
+  gap: 10px;
+}
+
+.controller__dialogue-row .controller__key {
+  min-height: 68px;
+  font-size: 0.98rem;
+}
+
+.controller__choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.controller__key--choice {
+  min-width: 0;
+  min-height: 64px;
+  font-size: 1.2rem;
+}
+
+.controller__key--choice-back {
+  grid-column: 1 / -1;
+  min-height: 52px;
+  font-size: 0.9rem;
+}
+
+.controller__key[data-active="true"] {
+  outline: 2px solid var(--accent-cool);
+  outline-offset: 2px;
+}
+
+.controller__key[data-result="accepted"] {
+  background: var(--accent-cool);
+  color: #061014;
+}
+
+.controller__key[data-result="rejected"] {
+  background: var(--danger);
+  color: #1b0505;
+  animation: controller-reject 280ms ease-out;
+}
+
+.controller__key[data-result="cooldown"] {
+  animation: controller-cooldown var(--cooldown-ms, 450ms) linear;
+}
+
+.controller__coach {
+  position: absolute;
+  right: 8%;
+  bottom: 130px;
+  left: 4%;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  background: rgb(8 20 25 / 94%);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 45%);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-align: center;
+  pointer-events: none;
+}
+
+.controller__coach-glyph {
+  color: var(--accent);
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.controller__coach[data-visible="true"] {
+  animation: controller-coach-in 220ms ease-out;
+}
+
+.controller__sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    max(18px, env(safe-area-inset-right))
+    max(18px, env(safe-area-inset-bottom))
+    max(18px, env(safe-area-inset-left));
+  background: rgb(5 12 15 / 96%);
+  overflow-y: auto;
+}
+
+.controller__sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.controller__sheet-title {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.controller__sheet-close {
+  min-height: 44px;
+  padding: 6px 18px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.controller__sheet-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 18px;
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.controller__sheet-label {
+  color: var(--accent);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.controller__sheet-keys {
+  margin: 0;
+  color: var(--text);
+}
+
+@keyframes controller-dash-pending {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes controller-dash-recognized {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+@keyframes controller-reject {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes controller-cooldown {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+
+@keyframes controller-coach-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 700px), (max-height: 380px) {
+  .controller__board {
+    gap: 8px;
+    padding-bottom: 14px;
+  }
+
+  .controller__key--move {
+    min-height: 78px;
+  }
+
+  .controller__key--jump {
+    min-height: 78px;
+  }
+
+  .controller__key {
+    min-height: 56px;
+  }
+
+  .controller__key--wide {
+    min-height: 60px;
+  }
+
+  .controller__actions {
+    gap: 8px;
+  }
+
+  .controller__coach {
+    bottom: 110px;
+    font-size: 0.74rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controller__dash,
+  .controller__key,
+  .controller__coach {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.controller__sheet-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.controller__sheet-toggle input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+}
+
+.controller__sheet-toggle-label {
+  color: var(--text);
+}

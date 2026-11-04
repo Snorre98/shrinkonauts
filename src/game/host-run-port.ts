@@ -24,6 +24,44 @@ export type HostRunSource = "keyboard" | "controller";
 
 export type HostRunPauseReason = "host-paused" | "host-hidden";
 
+/** Ephemeral controller affordance; never game content. */
+export type HostControlMode = "explore" | "talk" | "choice";
+
+export type HostControlVerb =
+  | "jump"
+  | "dash"
+  | "interact"
+  | "scan"
+  | "pulse"
+  | "carry"
+  | "throw";
+
+export interface HostControlDescriptor {
+  mode: HostControlMode;
+  /** Required for choice mode; 1-5. */
+  choices?: number;
+  /** 1-based selected choice, when known. */
+  selected?: number;
+  verbs: HostControlVerb[];
+  activeVerb?: HostControlVerb;
+  dashReady: boolean;
+}
+
+export type HostActionResult = "accepted" | "rejected" | "cooldown";
+
+export type HostActionReason =
+  | "out-of-range"
+  | "locked"
+  | "empty"
+  | "cooldown";
+
+export interface HostActionFeedback {
+  verb: HostControlVerb;
+  result: HostActionResult;
+  reason?: HostActionReason;
+  retryAfterMs?: number;
+}
+
 export interface HostRunSlotView {
   status: HostRunSlotStatus;
   source: HostRunSource;
@@ -63,6 +101,8 @@ export interface HostRunPort {
   pause(reason?: HostRunPauseReason): boolean;
   resume(): boolean;
   fallbackToKeyboard(slot: PlayerSlot): boolean;
+  sendControl(slot: PlayerSlot, control: HostControlDescriptor): void;
+  sendAction(slot: PlayerSlot, feedback: HostActionFeedback): void;
   end(reason?: string): void;
   destroy(): void;
 }

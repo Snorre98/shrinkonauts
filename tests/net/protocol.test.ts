@@ -3,12 +3,14 @@ import {
   MAX_CONTROLLER_MESSAGE_BYTES,
   PROTOCOL_VERSION,
   decodeControllerClientMessage,
+  decodeControllerServerMessage,
   decodeHostServerMessage,
   decodeMessage,
   encodeMessage,
   parseNetInput,
   type ControllerHelloMessage,
   type ControllerInputMessage,
+  type ControllerServerMessage,
   type NetInput,
   type RelayInputMessage,
 } from "../../src/net/protocol";
@@ -280,5 +282,104 @@ describe("controller protocol", () => {
       ok: false,
       error: { code: "BAD_MESSAGE" },
     });
+  });
+});
+
+describe("controller control-state messages", () => {
+  it("round-trips a control descriptor", () => {
+    const message: ControllerServerMessage = {
+      v: PROTOCOL_VERSION,
+      t: "control",
+      slot: "p1",
+      control: {
+        mode: "choice",
+        choices: 3,
+        selected: 2,
+        verbs: ["jump", "interact", "scan", "pulse"],
+        activeVerb: "interact",
+        dashReady: true,
+      },
+    };
+
+    expect(
+      decodeControllerClientMessage(encodeMessage(message)),
+    ).toMatchObject({ ok: false, error: { code: "BAD_MESSAGE" } });
+    expect(
+      decodeControllerServerMessage(encodeMessage(message)),
+    ).toEqual({ ok: true, value: message });
+  });
+
+  it("round-trips an action result", () => {
+    const message: ControllerServerMessage = {
+      v: PROTOCOL_VERSION,
+      t: "action",
+      slot: "p2",
+      feedback: {
+        verb: "dash",
+        result: "cooldown",
+        reason: "cooldown",
+        retryAfterMs: 420,
+      },
+    };
+
+    expect(
+      decodeControllerServerMessage(encodeMessage(message)),
+    ).toEqual({ ok: true, value: message });
+  });
+
+  it("rejects invalid control descriptors", () => {
+    const base = {
+      v: PROTOCOL_VERSION,
+      t: "control",
+      slot: "p1",
+      control: {
+        mode: "explore",
+        verbs: ["jump", "interact", "scan"],
+        dashReady: false,
+      },
+    };
+    const invalid = [
+      { ...base, control: { ...base.control, mode: "unknown" } },
+      {
+        ...base,
+        control: { ...base.control, mode: "choice", choices: 6 },
+      },
+      {
+        ...base,
+        control: { ...base.control, verbs: ["jump", "interact"] },
+      },
+      {
+        ...base,
+        control: { ...base.control, activeVerb: "dash" },
+      },
+    ];
+    for (const message of invalid) {
+      expect(
+        decodeControllerServerMessage(JSON.stringify(message)),
+      ).toMatchObject({ ok: false, error: { code: "BAD_MESSAGE" } });
+    }
+  });
+
+  it("rejects invalid action feedback", () => {
+    const base = {
+      v: PROTOCOL_VERSION,
+      t: "action",
+      slot: "p1",
+      feedback: { verb: "scan", result: "accepted" },
+    };
+    const invalid = [
+      { ...base, feedback: { ...base.feedback, verb: "unknown" } },
+      { ...base, feedback: { ...base.feedback, result: "maybe" } },
+      { ...base, feedback: { ...base.feedback, reason: "free-text" } },
+      {
+        ...base,
+        feedback: { ...base.feedback, retryAfterMs: -1 },
+      },
+    ];
+    for (const message of invalid) {
+      expect(
+        decodeControllerServerMessage(JSON.stringify(message)),
+      ).toMatchObject({ ok: false, error: { code: "BAD_MESSAGE" } });
+    }
   });
 });

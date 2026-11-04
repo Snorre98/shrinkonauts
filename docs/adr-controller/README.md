@@ -1,6 +1,7 @@
 # Phone Controller Co-op — ADR domain
 
-**Status:** Accepted, 2026-11-01; same-room scope confirmed 2026-11-04
+**Status:** Accepted, 2026-11-01; same-room scope confirmed 2026-11-04;
+Phase 6.5 ergonomics records accepted 2026-11-04
 **Owner:** Snorre
 **Scope:** phone-as-controller for same-screen co-op (M4.0a), per-player
 input slots, pairing and trust, controller latency policy, and the same-room
@@ -39,6 +40,10 @@ renumber these records before acceptance; accepted records are immutable.
 | Controller page with no game assets | Chat, voice, profiles, PII |
 | Demo quota guard, signed room tickets, server-issued device IDs | Accounts, identity providers, anti-cheat |
 | Host-owned save, evidence, and P1/P2 attribution | Trusted public assessment |
+| Controller layout, dialogue mode, ability affordances | New gameplay verbs, abilities, or content |
+| Ephemeral control descriptors (mode, verbs, results) | Dialogue text, world state, snapshots, save/evidence |
+| Stable verb positions with contextual highlight | Contextual remapping or a single “do everything” button |
+| Closed gesture vocabulary with visual affordances and a documented fallback | Hidden, gesture-only, or timing-ladder controls |
 
 ## Index
 
@@ -50,6 +55,11 @@ renumber these records before acceptance; accepted records are immutable.
 | [0069](0069-controller-latency-and-input-feel.md) | Controller latency budget and input-feel policy | Accepted |
 | [0081](0081-same-room-shared-screen-multiplayer.md) | Same-room, shared-screen multiplayer; no remote guest | Accepted |
 | [0082](0082-demo-quota-guard-and-device-admission.md) | Demo quota guard and device admission | Accepted |
+| [0083](0083-controller-thumb-zone-layout.md) | Controller thumb-zone layout | Accepted |
+| [0084](0084-ephemeral-controller-control-state.md) | Ephemeral controller control-state channel | Accepted |
+| [0085](0085-dialogue-control-and-choice-presentation.md) | Dialogue control and choice presentation | Accepted |
+| [0086](0086-ability-disclosure-and-feedback.md) | Ability disclosure and feedback on the controller | Accepted |
+| [0087](0087-controller-gesture-vocabulary.md) | Controller gesture vocabulary and discoverability | Accepted |
 
 ## Relationship to other decisions
 
@@ -70,6 +80,11 @@ renumber these records before acceptance; accepted records are immutable.
   controller arbiter preserves the existing P1/P2 routing.
 - **ADR-0037, ADR-0043 (puzzle-engine):** per-player abilities, tether, and
   camera. These remain host-owned and unchanged.
+- **ADR-0083–0087:** extend the controller page from an input grid to a
+  thumb-zone surface with one clearly communicated movement gesture. ADR-0084
+  narrowly amends ADR-0068 for ephemeral control descriptors; no dialogue text
+  or world state crosses the wire. ADR-0087 keeps the gesture set closed and
+  requires a documented fallback for any future gesture.
 
 ## Acceptance
 
@@ -86,6 +101,14 @@ M4.0a Phase 0 accepts this domain when:
    record set.
 7. The demo quota guard, signed room tickets, and device admission are explicit
    and configurable (ADR-0082).
+
+Phase 6.5 accepts ADR-0083–0087 when:
+
+1. The phone layout, gesture, dialogue, and ability decisions are explicit.
+2. Control descriptors remain a closed, text-free vocabulary.
+3. Keyboard/keyboard and solo paths remain unchanged.
+4. The gesture set is closed and has a documented fallback.
+5. Every new decision has tests and a visual/accessibility fallback.
 
 ## Status vocabulary
 

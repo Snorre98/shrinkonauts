@@ -385,3 +385,73 @@ describe("ControllerSession", () => {
     expect(context.views).toHaveLength(viewCount);
   });
 });
+
+describe("ControllerSession control state", () => {
+  it("stores control descriptors and sequenced action feedback", async () => {
+    const context = setup("p2");
+    const transport = await connectReady(context);
+    transport.takeSent();
+
+    transport.emit({
+      v: PROTOCOL_VERSION,
+      t: "control",
+      slot: "p2",
+      control: {
+        mode: "choice",
+        choices: 2,
+        selected: 1,
+        verbs: ["jump", "interact", "scan", "carry"],
+        activeVerb: "interact",
+        dashReady: false,
+      },
+    });
+    expect(context.session.view.control).toMatchObject({
+      mode: "choice",
+      choices: 2,
+      selected: 1,
+    });
+
+    transport.emit({
+      v: PROTOCOL_VERSION,
+      t: "action",
+      slot: "p2",
+      feedback: { verb: "carry", result: "accepted" },
+    });
+    expect(context.session.view.action).toEqual({
+      seq: 1,
+      feedback: { verb: "carry", result: "accepted" },
+    });
+
+    transport.emit({
+      v: PROTOCOL_VERSION,
+      t: "action",
+      slot: "p2",
+      feedback: {
+        verb: "pulse",
+        result: "cooldown",
+        reason: "cooldown",
+      },
+    });
+    expect(context.session.view.action?.seq).toBe(2);
+  });
+
+  it("rejects control state for another slot", async () => {
+    const context = setup("p2");
+    const transport = await connectReady(context);
+
+    transport.emit({
+      v: PROTOCOL_VERSION,
+      t: "control",
+      slot: "p1",
+      control: {
+        mode: "explore",
+        verbs: ["jump", "interact", "scan"],
+        dashReady: false,
+      },
+    });
+    expect(context.session.state).toBe("error");
+    expect(context.session.view.error).toMatchObject({
+      code: "PROTOCOL_ERROR",
+    });
+  });
+});

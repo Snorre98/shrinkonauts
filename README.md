@@ -23,7 +23,7 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 68 files, 706 unit/integration tests
+npm test               # 74 files, 788 unit/integration tests
 npm run smoke          # room boot + module boundary tests
 npm run build          # type check and production build
 npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
@@ -94,6 +94,12 @@ CI runs on Node 24 (pinned by `.nvmrc`) and installs with `npm ci`, so
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P1 | `A` / `D` | `W` or `Space` | `E` | `Q` | `Shift` | `F` | `G` | `H` |
 | P2 | `←` / `→` | `↑` | `,` | `.` | `/` | — | `'` | `;` |
+
+Phone: hold the left `◀` / `▶` buttons to move, tap `Jump` with the right thumb,
+and double-tap `◀` or `▶` to dash. Dialogue switches the owning phone to
+`Continue` / `Back` or numbered choices automatically; the shared screen keeps
+the dialogue text. Only unlocked verbs are shown, and throw appears while
+carrying. The `?` button opens the full controls sheet.
 
 Hub: `Tab` / `Shift+Tab` move focus, `Enter` / `Space` activate, `M` mute,
 `Esc` / `Space` / `Enter` skip the launch cinematic.
@@ -329,8 +335,9 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
   pre-game shell and save/catalog model.
 - [`docs/adr-controller/README.md`](docs/adr-controller/README.md) — ADR-0066–0069,
-  ADR-0081, and ADR-0082 for same-room phone-controller co-op (M4.0a); the
-  [`docs/adr-online/README.md`](docs/adr-online/README.md) domain is historical.
+  ADR-0081, ADR-0082, and ADR-0083–0087 for same-room phone-controller co-op
+  (M4.0a); the [`docs/adr-online/README.md`](docs/adr-online/README.md) domain is
+  historical.
 
 `docs/puzzle-engine/` and `docs/adr-m1.5/` are maintained in this repository.
 `docs/shrinkonauts` is a symlink into the read-only Obsidian vault and is not
@@ -341,14 +348,16 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (73 files / 770 tests), pack validation/smoke pass, the browser
-smoke passes 17/17, and the controller browser smoke passes 2/2. The hub starts
+suite passes (74 files / 788 tests), pack validation/smoke pass, the browser
+smoke passes 18/18, and the controller browser smoke passes 2/2. The hub starts
 Anatomy in Solo or Local co-op, returns to the bathroom, and preserves per-pack
 saves. Silicon is available. Multiplayer is same-room, shared-screen co-op:
 phone-controller M4.0a has its host session, input-only Cloudflare relay,
 standalone controller page, hub pairing, QR/code setup, explicit Start gate,
 signed room tickets, server-issued device IDs, and the ADR-0082 demo quota guard
-working. Phase 7 latency/game-feel measurement and the playtest record remain.
+working. Phase 6.5 adds the thumb-zone controller layout, double-tap Dash,
+dialogue control descriptors, progressive abilities, and action feedback.
+Phase 7 latency/game-feel measurement and the playtest record remain.
 Remote online co-op, M4.0b, and M4.1 are not planned (ADR-0081). See
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
 

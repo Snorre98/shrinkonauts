@@ -177,17 +177,24 @@ export function mountFeedbackSurfaces(
       const list = el("div", "feedback-surface__choices");
       list.setAttribute("role", "group");
       list.setAttribute("aria-label", "Choices");
-      for (const choice of item.content.choices) {
+      for (const [index, choice] of item.content.choices.entries()) {
         const selected = choice.id === item.content.selectedChoiceId;
         const button = el(
           "button",
           "button button--choice feedback-surface__choice",
-          choice.label,
         );
         button.type = "button";
         button.dataset.choiceId = choice.id;
         button.dataset.selected = String(selected);
         button.setAttribute("aria-pressed", String(selected));
+        button.append(
+          el(
+            "span",
+            "feedback-surface__choice-index",
+            String(index + 1),
+          ),
+          el("span", "feedback-surface__choice-label", choice.label),
+        );
         button.addEventListener("click", () => {
           callbacks.onSurfaceAction(item.id, {
             type: "choose",

@@ -12,6 +12,10 @@ import {
 import { RemotePlayerSource } from "./remote-player-source";
 import type { RoomTransport } from "./transport";
 import type { PlayerSlot } from "../world/intent-source";
+import type {
+  HostActionFeedback,
+  HostControlDescriptor,
+} from "../game/host-run-port";
 
 const PLAYER_SLOTS: readonly PlayerSlot[] = ["p1", "p2"];
 
@@ -255,6 +259,50 @@ export class HostSession {
     this.updateReadiness();
     this.notify();
     return true;
+  }
+
+  sendControl(slot: PlayerSlot, control: HostControlDescriptor): void {
+    const record = this.slots.get(slot);
+    if (!record || !record.remote || record.status === "closed") return;
+    this.send({
+      v: PROTOCOL_VERSION,
+      t: "control",
+      slot,
+      control: {
+        mode: control.mode,
+        ...(control.choices !== undefined
+          ? { choices: control.choices }
+          : {}),
+        ...(control.selected !== undefined
+          ? { selected: control.selected }
+          : {}),
+        verbs: [...control.verbs],
+        ...(control.activeVerb !== undefined
+          ? { activeVerb: control.activeVerb }
+          : {}),
+        dashReady: control.dashReady,
+      },
+    });
+  }
+
+  sendAction(slot: PlayerSlot, feedback: HostActionFeedback): void {
+    const record = this.slots.get(slot);
+    if (!record || !record.remote || record.status === "closed") return;
+    this.send({
+      v: PROTOCOL_VERSION,
+      t: "action",
+      slot,
+      feedback: {
+        verb: feedback.verb,
+        result: feedback.result,
+        ...(feedback.reason !== undefined
+          ? { reason: feedback.reason }
+          : {}),
+        ...(feedback.retryAfterMs !== undefined
+          ? { retryAfterMs: feedback.retryAfterMs }
+          : {}),
+      },
+    });
   }
 
   end(reason = "host-left"): void {

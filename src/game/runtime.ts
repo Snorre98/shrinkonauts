@@ -26,6 +26,11 @@ import {
 import { toWorldEffectPlan } from "./effect-mapper";
 import { buildBlueprint } from "./blueprint";
 import type {
+  HostActionFeedback,
+  HostControlDescriptor,
+  HostControlVerb,
+} from "./host-run-port";
+import type {
   DialogueDocument,
   DialogueEffect,
   GateAnswer,
@@ -370,6 +375,10 @@ export class GameRuntime implements WorldRuntime {
   private lastExitWarning = 0;
   private lastEmitSignature: string | null = null;
   private helpSurfaceId: SurfaceId | null = null;
+  private controlActions: Array<{
+    slot: PlayerId;
+    feedback: HostActionFeedback;
+  }> = [];
   private effectFrameSeq = -1;
   private effectPlans: readonly WorldEffectPlan[] = [];
 
@@ -709,12 +718,32 @@ export class GameRuntime implements WorldRuntime {
       if (playerActions.scan) this.scan(id);
     }
 
+    const dashRequests = new Set<PlayerId>();
+    if (hasAbility(this.progression, "signal-dash")) {
+      for (const id of ["p1", "p2"] as const) {
+        if (!this.world.players[id].active || !input.intents[id].dash) {
+          continue;
+        }
+        const player = this.world.players[id];
+        if (player.dashTime > 0 || player.dashCooldown > 0) {
+          this.recordControlAction(id, "dash", "blocked", "cooldown");
+        } else {
+          dashRequests.add(id);
+        }
+      }
+    }
+
     const cues = stepRoomSimulationWithCues(
       this.world,
       this.frozenIntents(input.intents),
       dt,
       this.progression.abilities,
     );
+    for (const id of dashRequests) {
+      if (this.world.players[id].dashTime > 0) {
+        this.recordControlAction(id, "dash", "accepted");
+      }
+    }
     let hazardRespawned = false;
     for (const cue of cues) {
       if (cue === "hazard") {
@@ -2731,6 +2760,35 @@ export class GameRuntime implements WorldRuntime {
       ...(options.target ? { target: options.target } : {}),
       ...(options.text ? { text: options.text } : {}),
     });
+    this.recordControlAction(actor, action, result, options.reason);
+  }
+
+  private recordControlAction(
+    slot: PlayerId,
+    action: string,
+    result: "accepted" | "rejected" | "blocked" | "completed" | "started",
+    reason?: string,
+  ): void {
+    const verb = controlVerbForAction(action);
+    if (!verb) return;
+    const feedback: HostActionFeedback = {
+      verb,
+      result:
+        reason === "cooldown"
+          ? "cooldown"
+          : result === "accepted" ||
+              result === "completed" ||
+              result === "started"
+            ? "accepted"
+            : "rejected",
+      ...(reason === "out-of-range" ||
+      reason === "locked" ||
+      reason === "empty" ||
+      reason === "cooldown"
+        ? { reason }
+        : {}),
+    };
+    this.controlActions.push({ slot, feedback });
   }
 
   /**
@@ -3078,9 +3136,14 @@ export class GameRuntime implements WorldRuntime {
   }
 
   private interactionView(): InteractionView | null {
-    if (this.machine.state !== "level") return null;
+    return this.interactionViewFor();
+  }
 
-    const activation = this.nearestInactivePuzzle();
+  private interactionViewFor(actor?: PlayerId): InteractionView | null {
+    if (this.machine.state !== "level") return null;
+    const abilityActor = actor ?? (this.activeP2 ? "p2" : "p1");
+
+    const activation = this.nearestInactivePuzzle(actor);
     if (activation) {
       return {
         kind: "puzzle",
@@ -3090,7 +3153,11 @@ export class GameRuntime implements WorldRuntime {
       };
     }
 
-    const target = this.nearestEntity(["agent", "gate"], INTERACT_RANGE);
+    const target = this.nearestEntity(
+      ["agent", "gate"],
+      INTERACT_RANGE,
+      actor,
+    );
     if (target?.entity.type === "agent" && target.entity.dialogueId) {
       return {
         kind: "dialogue",
@@ -3111,32 +3178,31 @@ export class GameRuntime implements WorldRuntime {
       };
     }
 
-    const actor: PlayerId = this.activeP2 ? "p2" : "p1";
-    const abilities = this.abilitiesFor(actor);
+    const abilities = this.abilitiesFor(abilityActor);
     if (abilities.includes("carry")) {
-      const carried = this.carriedProp(actor);
+      const carried = this.carriedProp(abilityActor);
       if (carried) {
-        const receptor = this.nearestReceptor(actor);
+        const receptor = this.nearestReceptor(abilityActor);
         const label = this.entityLabel(carried.id);
         return {
           kind: "prop",
           id: carried.id,
           label: receptor ? `Place ${label}` : `Drop ${label}`,
-          key: this.activeP2 ? "'" : "G",
+          key: abilityActor === "p2" ? "'" : "G",
         };
       }
-      const prop = this.nearestProp(actor);
+      const prop = this.nearestProp(abilityActor);
       if (prop) {
         return {
           kind: "prop",
           id: prop.id,
           label: `Pick up ${this.entityLabel(prop.id)}`,
-          key: this.activeP2 ? "'" : "G",
+          key: abilityActor === "p2" ? "'" : "G",
         };
       }
     }
     if (abilities.includes("pulse")) {
-      const pulse = this.nearestPulseSource(actor);
+      const pulse = this.nearestPulseSource(abilityActor);
       if (pulse) {
         return {
           kind: "pulse",
@@ -3148,6 +3214,69 @@ export class GameRuntime implements WorldRuntime {
     }
 
     return null;
+  }
+
+  /** Ephemeral control affordance for one controller slot. */
+  controlDescriptor(id: PlayerId): HostControlDescriptor {
+    const abilities = this.abilitiesFor(id);
+    const verbs: HostControlVerb[] = ["jump", "interact", "scan"];
+    if (abilities.includes("signal-dash")) verbs.push("dash");
+    if (abilities.includes("pulse")) verbs.push("pulse");
+    if (abilities.includes("carry")) verbs.push("carry");
+    if (abilities.includes("carry") && this.carriedProp(id)) {
+      verbs.push("throw");
+    }
+
+    const conversation =
+      [...this.conversations.values()].find(
+        (candidate) => candidate.owner === id,
+      ) ?? null;
+    let mode: HostControlDescriptor["mode"] = "explore";
+    let choices: number | undefined;
+    let selected: number | undefined;
+    if (conversation) {
+      const node = currentNode(conversation.document, conversation.session);
+      if (node?.choices && node.choices.length > 0) {
+        mode = "choice";
+        choices = node.choices.length;
+        selected = conversation.selectedChoiceIndex + 1;
+      } else if (node) {
+        mode = "talk";
+      }
+    }
+
+    let activeVerb: HostControlVerb | undefined;
+    if (mode !== "explore") {
+      activeVerb = "interact";
+    } else {
+      const interaction = this.interactionViewFor(id);
+      if (interaction?.kind === "pulse") activeVerb = "pulse";
+      else if (interaction) activeVerb = "interact";
+      else if (this.nearestEntity(["scanTarget"], SCAN_RANGE, id)) {
+        activeVerb = "scan";
+      }
+    }
+    if (activeVerb && !verbs.includes(activeVerb)) activeVerb = undefined;
+
+    return {
+      mode,
+      ...(choices !== undefined ? { choices } : {}),
+      ...(selected !== undefined ? { selected } : {}),
+      verbs,
+      ...(activeVerb !== undefined ? { activeVerb } : {}),
+      dashReady:
+        abilities.includes("signal-dash") &&
+        this.world.players[id].dashCooldown === 0,
+    };
+  }
+
+  drainControlActions(): ReadonlyArray<{
+    slot: PlayerId;
+    feedback: HostActionFeedback;
+  }> {
+    const actions = this.controlActions;
+    this.controlActions = [];
+    return actions;
   }
 
   snapshot(): RuntimeSnapshot {
@@ -3268,6 +3397,30 @@ export class GameRuntime implements WorldRuntime {
   /** Structural `WorldRuntime` hook used by the renderer's highlight. */
   interactionId(): string | null {
     return this.interactionView()?.id ?? null;
+  }
+}
+
+function controlVerbForAction(action: string): HostControlVerb | null {
+  switch (action) {
+    case "interact":
+    case "puzzle.activate":
+    case "exit":
+      return "interact";
+    case "pickup":
+    case "place":
+    case "drop":
+    case "carry":
+      return "carry";
+    case "throw":
+      return "throw";
+    case "pulse":
+      return "pulse";
+    case "scan":
+      return "scan";
+    case "dash":
+      return "dash";
+    default:
+      return null;
   }
 }
 

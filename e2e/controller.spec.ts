@@ -244,10 +244,32 @@ test("two phones join through the hub, start explicitly, reconnect, fall back, a
   );
   expect(forbidden).toEqual([]);
 
-  await p1.page.locator(".controller__dialogue-toggle").click();
-  await expect(p1.page.locator('[data-role="dialogue"]')).toBeVisible();
-  await p1.page.locator(".controller__dialogue-close").click();
-  await expect(p1.page.locator('[data-role="dialogue"]')).toBeHidden();
+  await expect(p1.page.locator(".controller__dialogue-toggle")).toHaveCount(0);
+  await expect(
+    p1.page.locator('[data-control="dash"]'),
+  ).toHaveCount(0);
+  const jumpBox = await p1.page
+    .locator('[data-control="jump"]')
+    .boundingBox();
+  const moveBox = await p1.page
+    .locator('[data-control="move-left"]')
+    .boundingBox();
+  expect(jumpBox).not.toBeNull();
+  expect(moveBox).not.toBeNull();
+  expect(jumpBox!.x).toBeGreaterThan(moveBox!.x + moveBox!.width);
+  expect(moveBox!.x).toBeLessThan(844 / 2);
+
+  await p1.page.locator('[data-role="controls-open"]').click();
+  await expect(
+    p1.page.locator('[data-role="controls-sheet"]'),
+  ).toBeVisible();
+  await expect(
+    p1.page.locator('[data-role="controls-sheet"]'),
+  ).toContainText("Double-tap");
+  await p1.page.locator('[data-role="controls-close"]').click();
+  await expect(
+    p1.page.locator('[data-role="controls-sheet"]'),
+  ).toBeHidden();
 
   await expect(p1.page.locator('[data-role="rtt"]')).toBeVisible({
     timeout: 12_000,
@@ -261,6 +283,44 @@ test("two phones join through the hub, start explicitly, reconnect, fall back, a
   const p2Start = await playerX(page, "p2");
   await holdTouch(p2.page, "move-right", 450);
   expect(await playerX(page, "p2")).toBeGreaterThan(p2Start + 2);
+
+  // The owning phone switches to dialogue controls automatically. Choices are
+  // numbered on the phone; dialogue text stays on the shared screen.
+  const agent = await page.evaluate(() => {
+    const app = (window as any).__shrinkonauts;
+    const entity = app?.runtime?.snapshot().world.entities["agent-neuron"];
+    if (!entity || !app?.runtime) return null;
+    app.runtime.placePlayer("p1", entity.x, entity.y);
+    app.runtime.interact();
+    return { x: entity.x, y: entity.y };
+  });
+  expect(agent).not.toBeNull();
+  await expect(
+    p1.page.locator('[data-role="talk-panel"]'),
+  ).toBeVisible({ timeout: 5_000 });
+  await expect(
+    p1.page.locator('[data-role="actions"]'),
+  ).toBeHidden();
+
+  for (let i = 0; i < 3; i += 1) {
+    await p1.page.getByRole("button", { name: "Continue dialogue" }).click();
+  }
+  await expect(
+    p1.page.locator('[data-role="choice-panel"]'),
+  ).toBeVisible({ timeout: 5_000 });
+  await expect(
+    p1.page.locator('[data-role="choice-panel"] [data-control^="choice-"]:visible'),
+  ).toHaveCount(2);
+  const controllerText = await p1.page
+    .locator(".controller__board")
+    .innerText();
+  expect(controllerText).not.toContain("Neuron Keeper");
+  expect(controllerText).not.toContain("threshold");
+
+  await p1.page.locator('[data-control="choice-2"]').click();
+  await expect(
+    p1.page.locator('[data-role="choice-panel"]'),
+  ).toBeHidden({ timeout: 5_000 });
 
   const overlay = page.locator(".overlay--host-run");
   await p1.page.close();

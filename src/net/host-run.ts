@@ -1,4 +1,6 @@
 import type {
+  HostActionFeedback,
+  HostControlDescriptor,
   HostRunFactory,
   HostRunFactoryOptions,
   HostRunPauseReason,
@@ -129,6 +131,14 @@ export class HostRunAdapter implements HostRunPort {
       this.session.resume();
     }
     return true;
+  }
+
+  sendControl(slot: PlayerSlot, control: HostControlDescriptor): void {
+    this.session.sendControl(slot, control);
+  }
+
+  sendAction(slot: PlayerSlot, feedback: HostActionFeedback): void {
+    this.session.sendAction(slot, feedback);
   }
 
   end(reason = "host-left"): void {

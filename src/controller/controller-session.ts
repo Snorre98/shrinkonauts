@@ -1,5 +1,7 @@
 import {
   PROTOCOL_VERSION,
+  type ActionFeedback,
+  type ControlDescriptor,
   type ControllerClientMessage,
   type ControllerServerMessage,
   type ErrorCode,
@@ -37,6 +39,8 @@ export interface ControllerSessionView {
   rttMs: number | null;
   endReason: string | null;
   error: ProtocolError | null;
+  control: ControlDescriptor | null;
+  action: { seq: number; feedback: ActionFeedback } | null;
 }
 
 export interface ControllerSessionOptions {
@@ -90,6 +94,9 @@ export class ControllerSession {
   private firstDisconnectAt: number | null = null;
   private nextReconnectAt = 0;
   private rttMs: number | null = null;
+  private controlValue: ControlDescriptor | null = null;
+  private actionValue: { seq: number; feedback: ActionFeedback } | null = null;
+  private actionSeq = 0;
   private pingSentAt: number | null = null;
   private lastPingAt = 0;
   private uiReady = false;
@@ -135,6 +142,8 @@ export class ControllerSession {
       rttMs: this.rttMs,
       endReason: this.endReason,
       error: this.lastError ? { ...this.lastError } : null,
+      control: this.controlValue,
+      action: this.actionValue,
     };
   }
 
@@ -352,11 +361,41 @@ export class ControllerSession {
         this.rttMs = null;
         this.lastError = null;
         this.pausedReason = null;
+        this.controlValue = null;
+        this.actionValue = null;
         if (this.uiReady) {
           this.sendReady();
         } else {
           this.setState("connected");
         }
+        return;
+
+      case "control":
+        if (message.slot !== this.slotValue) {
+          this.fail({
+            code: "PROTOCOL_ERROR",
+            message: "The host sent control state for another slot",
+          });
+          return;
+        }
+        this.controlValue = message.control;
+        this.notify();
+        return;
+
+      case "action":
+        if (message.slot !== this.slotValue) {
+          this.fail({
+            code: "PROTOCOL_ERROR",
+            message: "The host sent action feedback for another slot",
+          });
+          return;
+        }
+        this.actionSeq += 1;
+        this.actionValue = {
+          seq: this.actionSeq,
+          feedback: message.feedback,
+        };
+        this.notify();
         return;
 
       case "pause":
@@ -448,6 +487,8 @@ export class ControllerSession {
 
     this.readySent = false;
     this.pausedReason = null;
+    this.controlValue = null;
+    this.actionValue = null;
     this.pingSentAt = null;
     this.rttMs = null;
     if (this.firstDisconnectAt === null) {

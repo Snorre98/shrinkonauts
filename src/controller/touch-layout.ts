@@ -1,4 +1,5 @@
 import type { NetInput, NetUiActions } from "../net/protocol";
+import type { DashDirection } from "./touch-gestures";
 
 /** Every touch target the controller page can emit. */
 export type TouchControl =
@@ -49,6 +50,8 @@ function emptyUi(): NetUiActions {
  */
 export class TouchInputModel {
   private readonly pointers = new Map<number, TouchControl>();
+  private dashPulse = false;
+  private dashDirection: DashDirection | null = null;
 
   press(control: TouchControl, pointerId: number): boolean {
     if (!Number.isFinite(pointerId)) {
@@ -102,12 +105,20 @@ export class TouchInputModel {
     return null;
   }
 
+  triggerDash(direction: DashDirection): void {
+    this.dashPulse = true;
+    this.dashDirection = direction;
+  }
+
   snapshot(): NetInput {
-    return {
+    const direction = this.dashDirection;
+    const moveX =
+      direction === "left" ? -1 : direction === "right" ? 1 : this.moveX;
+    const input: NetInput = {
       intents: {
-        moveX: this.moveX,
+        moveX,
         jump: this.isPressed("jump"),
-        dash: this.isPressed("dash"),
+        dash: this.dashPulse || this.isPressed("dash"),
       },
       actions: {
         interact: this.isPressed("interact"),
@@ -128,9 +139,14 @@ export class TouchInputModel {
       },
       clientTick: 0,
     };
+    this.dashPulse = false;
+    this.dashDirection = null;
+    return input;
   }
 
   clear(): void {
     this.pointers.clear();
+    this.dashPulse = false;
+    this.dashDirection = null;
   }
 }

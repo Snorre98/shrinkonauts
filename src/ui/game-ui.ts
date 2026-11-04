@@ -56,17 +56,21 @@ export interface GameUiCallbacks {
   onHostEnd(): void;
 }
 
+export type InputSourceKind = "keyboard" | "controller";
+
 export interface GameUiOptions {
   badge?: ResolvedAsset;
   diagnostics: GameUiDiagnostics;
   callbacks: GameUiCallbacks;
   resolveBlueprintSymbol?: (symbol: string) => ResolvedAsset | null;
+  inputSources?: Record<PlayerId, InputSourceKind>;
 }
 
 export interface GameUi {
   update(snapshot: RuntimeSnapshot): void;
   applySettings(settings: SettingsView): void;
   setDiagnostics(diagnostics: GameUiDiagnostics): void;
+  setInputSources(sources: Record<PlayerId, InputSourceKind>): void;
   setHostRun(view: HostRunOverlayView | null): void;
   warn(message: string): void;
   fatal(error: Error): void;
@@ -202,7 +206,16 @@ const PLAYER_CONTROLS: Record<"p1" | "p2", readonly HudControl[]> = {
   ],
 };
 
-function controlCard(player: "p1" | "p2"): {
+function phoneControlKey(control: HudControl): string {
+  if (control.label === "Move") return "Hold";
+  if (control.label === "Dash") return "2×";
+  return "Tap";
+}
+
+function controlCard(
+  player: "p1" | "p2",
+  source: () => InputSourceKind,
+): {
   root: HTMLElement;
   update: (snapshot: RuntimeSnapshot) => void;
 } {
@@ -218,15 +231,17 @@ function controlCard(player: "p1" | "p2"): {
     player === "p1" ? "P1" : "P2",
   );
   const list = el("ul", "hud__control-list");
-  const items: Array<{ node: HTMLElement; control: HudControl }> = [];
+  const items: Array<{
+    node: HTMLElement;
+    control: HudControl;
+    keys: HTMLElement;
+  }> = [];
   for (const control of PLAYER_CONTROLS[player]) {
     const item = el("li", "hud__control");
     item.dataset.ability = control.ability ?? "";
-    item.append(
-      el("span", "hud__control-label", control.label),
-      el("kbd", "hud__control-keys", control.keys),
-    );
-    items.push({ node: item, control });
+    const keys = el("kbd", "hud__control-keys", control.keys);
+    item.append(el("span", "hud__control-label", control.label), keys);
+    items.push({ node: item, control, keys });
     list.append(item);
   }
   root.append(heading, list);
@@ -235,11 +250,17 @@ function controlCard(player: "p1" | "p2"): {
     root,
     update(snapshot) {
       const abilities = snapshot.players[player].abilities;
+      const input = source();
+      root.dataset.source = input;
       for (const entry of items) {
         const available =
           entry.control.ability === undefined ||
           abilities.includes(entry.control.ability);
         entry.node.dataset.available = String(available);
+        entry.keys.textContent =
+          input === "controller"
+            ? phoneControlKey(entry.control)
+            : entry.control.keys;
       }
       if (player === "p2") {
         root.hidden = !snapshot.activeP2;
@@ -324,8 +345,10 @@ export function mountGameUi(
   toast.setAttribute("role", "status");
   toast.setAttribute("aria-live", "polite");
 
-  const p1Card = controlCard("p1");
-  const p2Card = controlCard("p2");
+  let inputSources: Record<PlayerId, InputSourceKind> =
+    options.inputSources ?? { p1: "keyboard", p2: "keyboard" };
+  const p1Card = controlCard("p1", () => inputSources.p1);
+  const p2Card = controlCard("p2", () => inputSources.p2);
   const cards = el("div", "hud__cards");
   cards.append(p1Card.root, p2Card.root);
 
@@ -1311,7 +1334,11 @@ export function mountGameUi(
 
     if (next.interaction) {
       prompt.hidden = false;
-      promptKey.textContent = next.interaction.key ?? "E";
+      const actor = next.activeP2 ? "p2" : "p1";
+      promptKey.textContent =
+        inputSources[actor] === "controller"
+          ? "Tap"
+          : next.interaction.key ?? "E";
       promptText.textContent =
         next.interaction.kind === "gate"
           ? `Open ${next.interaction.label}`
@@ -1363,6 +1390,11 @@ export function mountGameUi(
     },
 
     applySettings,
+
+    setInputSources(next) {
+      inputSources = { ...next };
+      if (snapshot) updateHud(snapshot);
+    },
 
     setDiagnostics(next) {
       diagnostics = next;

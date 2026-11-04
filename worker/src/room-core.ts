@@ -726,6 +726,32 @@ export class RoomCore {
         return;
       }
 
+      case "control": {
+        const controller = this.controllerForSlot(message.slot);
+        if (controller) {
+          this.send(controller, {
+            v: PROTOCOL_VERSION,
+            t: "control",
+            slot: message.slot,
+            control: message.control,
+          });
+        }
+        return;
+      }
+
+      case "action": {
+        const controller = this.controllerForSlot(message.slot);
+        if (controller) {
+          this.send(controller, {
+            v: PROTOCOL_VERSION,
+            t: "action",
+            slot: message.slot,
+            feedback: message.feedback,
+          });
+        }
+        return;
+      }
+
       case "session-end": {
         this.endRoom(message.reason);
         return;

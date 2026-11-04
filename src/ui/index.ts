@@ -33,6 +33,7 @@ export type {
   GameUiCallbacks,
   GameUiDiagnostics,
   GameUiOptions,
+  InputSourceKind,
 } from "./game-ui";
 export type {
   BlueprintComponentView,
