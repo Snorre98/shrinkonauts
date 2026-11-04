@@ -526,11 +526,18 @@ describe("game runtime", () => {
     const { runtime } = makeRuntime();
     expect(runtime.snapshot().puzzle?.canHint).toBe(true);
     expect(runtime.snapshot().puzzle?.pulse).toBeNull();
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(0);
+    expect(runtime.snapshot().puzzle?.hintsTotal).toBe(3);
+    expect(runtime.snapshot().puzzle?.revealedHints).toEqual([]);
 
     runtime.puzzleHint();
     expect(runtime.snapshot().puzzle?.hint).toBe(
       "One input is below threshold. The trigger gate needs a second dendrite input.",
     );
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(1);
+    expect(runtime.snapshot().puzzle?.revealedHints).toEqual([
+      "One input is below threshold. The trigger gate needs a second dendrite input.",
+    ]);
     stepWith(runtime);
     runtime.requestFeedback("p1");
     expect(
@@ -551,6 +558,8 @@ describe("game runtime", () => {
       "The axon is one-way: dendrite → trigger zone → axon → terminal.",
     );
     expect(runtime.snapshot().puzzle?.canHint).toBe(false);
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(3);
+    expect(runtime.snapshot().puzzle?.revealedHints).toHaveLength(3);
     expect(
       runtime
         .exportEvidence()
@@ -1253,6 +1262,15 @@ describe("game runtime", () => {
       x: 48,
       y: 48,
     });
+    expect(snapshot.blueprint?.puzzleId).toBe("puzzle-node-run");
+    expect(snapshot.blueprint?.components).toHaveLength(4);
+    expect(snapshot.blueprint?.components.map((component) => component.state)).toEqual([
+      "active",
+      "pending",
+      "pending",
+      "pending",
+    ]);
+    expect(snapshot.blueprint?.edges).toHaveLength(3);
     expect(runtime.drainEffects()).toEqual([]);
   });
 
@@ -1279,6 +1297,9 @@ describe("game runtime", () => {
         (surface) => surface.id === "fb:meter:ca-timer",
       )?.content.text,
     ).toBe("Ca²⁺ window is idle.");
+    expect(snapshot.blueprint?.puzzleId).toBe("puzzle-endplate-ferry");
+    expect(snapshot.blueprint?.components).toHaveLength(4);
+    expect(snapshot.blueprint?.components[0]?.state).toBe("active");
   });
 
   it("delivers effect plans idempotently with attribution", () => {
