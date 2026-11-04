@@ -1,5 +1,90 @@
-import { expect, test } from "@playwright/test";
-import { boot, teleport } from "./support";
+import { expect, test, type Page } from "@playwright/test";
+import {
+  boot,
+  bootSilicon,
+  teleport,
+  waitForRoom,
+  type ShrinkonautsWindow,
+} from "./support";
+
+interface GlyphProbe {
+  text: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
+async function expectImageBackedGlyphs(
+  page: Page,
+  expectedSymbols: readonly string[],
+): Promise<void> {
+  const glyphs = page.locator(".hud__blueprint .blueprint__glyph--image");
+  await expect(glyphs).toHaveCount(expectedSymbols.length);
+  await expect(
+    page.locator(
+      ".hud__blueprint .blueprint__glyph:not(.blueprint__glyph--image)",
+    ),
+  ).toHaveCount(0);
+
+  const probes = await glyphs.evaluateAll((nodes): GlyphProbe[] =>
+    nodes.map((node) => {
+      const background = getComputedStyle(node).backgroundImage;
+      const url = background
+        .replace(/^url\(["']?/, "")
+        .replace(/["']?\)$/, "");
+      const box = node.getBoundingClientRect();
+      return {
+        text: node.textContent ?? "",
+        url,
+        width: box.width,
+        height: box.height,
+      };
+    }),
+  );
+
+  expect(probes.map((probe) => probe.text)).toEqual(
+    expectedSymbols.map(() => ""),
+  );
+  expect(
+    probes.map((probe) => new URL(probe.url).pathname.split("/").pop()),
+  ).toEqual(expectedSymbols.map((symbol) => `${symbol}.png`));
+  for (const probe of probes) {
+    expect(probe.url).toContain("/shared/ui/blueprint-symbols/");
+    expect(probe.width).toBe(32);
+    expect(probe.height).toBe(32);
+  }
+
+  const loaded = await page.evaluate(
+    async (urls: string[]) =>
+      Promise.all(
+        urls.map(async (url) => {
+          const image = new Image();
+          image.src = url;
+          await image.decode();
+          const canvas = document.createElement("canvas");
+          canvas.width = image.naturalWidth;
+          canvas.height = image.naturalHeight;
+          const context = canvas.getContext("2d");
+          if (!context) return null;
+          context.drawImage(image, 0, 0);
+          return {
+            width: image.naturalWidth,
+            height: image.naturalHeight,
+            cornerAlpha: context.getImageData(0, 0, 1, 1).data[3],
+          };
+        }),
+      ),
+    probes.map((probe) => probe.url),
+  );
+
+  expect(loaded).toEqual(
+    expectedSymbols.map(() => ({
+      width: 32,
+      height: 32,
+      cornerAlpha: 0,
+    })),
+  );
+}
 
 test("header carries the checklist, hint strip, and player-coloured cards", async ({
   page,
@@ -233,4 +318,76 @@ test("density states switch with text scale and viewport width", async ({
   await expect(hud).toHaveAttribute("data-hud-density", "minimal");
 
   expect(consoleErrors).toEqual([]);
+});
+
+test("authored puzzles render final image-backed blueprint glyphs", async ({
+  page,
+}) => {
+  const anatomyErrors = await boot(page);
+  await expectImageBackedGlyphs(page, [
+    "input-pair",
+    "threshold-gauge",
+    "axon-flow",
+    "exit-gate",
+  ]);
+
+  // Finish Node Run so the 04 header is authoritative.
+  await teleport(page, "pad-input-a", "pad-input-b");
+  await teleport(page, "pad-terminal", "pad-input-b");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (window as ShrinkonautsWindow).__shrinkonauts?.runtime?.snapshot()
+            .abilities ?? [],
+      ),
+    )
+    .toContain("signal-dash");
+  await page.evaluate(() => {
+    const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
+    if (!runtime) throw new Error("runtime bridge is missing");
+    const exit = runtime.entityPixel("exit-nerve");
+    if (!exit) throw new Error("exit-nerve is missing");
+    runtime.placePlayer("p1", exit.x, exit.y + 48);
+    runtime.placePlayer("p2", exit.x - 32, exit.y + 48);
+  });
+  await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
+  await page
+    .getByRole("textbox")
+    .fill(
+      "One input is below threshold, so no spike fires. Two inputs reach threshold and the spike is all-or-none; it travels one way along the axon to the terminal.",
+    );
+  await page.getByRole("button", { name: "Record answer" }).click();
+  await page.getByRole("button", { name: "Finish level" }).click();
+  await expect(page.locator(".hud__title")).toHaveText("Muscle Effector");
+  await waitForRoom(page, "room-muscle-effector");
+  await teleport(page, "motor-terminal");
+  await expect(page.locator(".hud__prompt")).toContainText(
+    "Start Endplate Ferry",
+  );
+  await page.keyboard.press("e");
+  await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry");
+  await expectImageBackedGlyphs(page, [
+    "ca-window",
+    "ach-carry",
+    "receptor-bind",
+    "response-clear",
+  ]);
+
+  const siliconErrors = await bootSilicon(page);
+  await teleport(page, "sensor-console");
+  await expect(page.locator(".hud__prompt")).toContainText(
+    "Start Interrupt Loop",
+  );
+  await page.keyboard.press("e");
+  await expect(page.locator(".hud__meta")).toContainText("Interrupt Loop");
+  await expectImageBackedGlyphs(page, [
+    "sensor-detect",
+    "route-integrate",
+    "cpu-wake",
+    "actuator-gate",
+  ]);
+
+  expect(anatomyErrors).toEqual([]);
+  expect(siliconErrors).toEqual([]);
 });
