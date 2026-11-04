@@ -14,6 +14,8 @@ export interface EntityIdleAnimatorOptions {
   sprite: Phaser.GameObjects.Sprite;
   staticTexture: string;
   asset: EntityIdleAnimationAsset;
+  /** Resolved display size in world pixels; defaults to the legacy 36×36. */
+  display?: { width: number; height: number };
   isReducedMotion?: () => boolean;
 }
 
@@ -37,12 +39,16 @@ export class EntityIdleAnimator {
   private readonly staticTexture: string;
   private readonly animationKey: string;
   private readonly isReducedMotion?: () => boolean;
+  private readonly displayWidth: number;
+  private readonly displayHeight: number;
   private reduced: boolean;
 
   constructor(options: EntityIdleAnimatorOptions) {
     this.scene = options.scene;
     this.sprite = options.sprite;
     this.staticTexture = options.staticTexture;
+    this.displayWidth = options.display?.width ?? ENTITY_DISPLAY_SIZE;
+    this.displayHeight = options.display?.height ?? ENTITY_DISPLAY_SIZE;
     this.animationKey = entityIdleAnimationKey(
       options.entityId,
       options.asset.textureKey,
@@ -80,12 +86,12 @@ export class EntityIdleAnimator {
 
   private play(): void {
     this.sprite.play(this.animationKey, true);
-    this.sprite.setDisplaySize(ENTITY_DISPLAY_SIZE, ENTITY_DISPLAY_SIZE);
+    this.sprite.setDisplaySize(this.displayWidth, this.displayHeight);
   }
 
   private showStatic(): void {
     this.sprite.anims.stop();
     this.sprite.setTexture(this.staticTexture);
-    this.sprite.setDisplaySize(ENTITY_DISPLAY_SIZE, ENTITY_DISPLAY_SIZE);
+    this.sprite.setDisplaySize(this.displayWidth, this.displayHeight);
   }
 }

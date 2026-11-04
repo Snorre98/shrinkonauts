@@ -87,6 +87,7 @@ export {
   placePlayer,
   PLAYER_HEIGHT,
   PLAYER_WIDTH,
+  resizeRoomSimulation,
   respawnPlayer,
   roomPixelHeight,
   roomPixelWidth,
@@ -110,6 +111,19 @@ export type {
   Solid,
   Viewport,
 } from "./simulation";
+export {
+  cameraScrollForView,
+  cameraWorldView,
+  resolvePresentation,
+} from "./presentation";
+export type {
+  CameraViewLike,
+  CameraWorldView,
+  ResolvedPresentation,
+  ResolvePresentationInput,
+  RoomPresentationInput,
+  ViewportLike,
+} from "./presentation";
 export { COLLISION_LAYERS, RoomPhysics, TETHER_LENGTHS } from "./physics";
 export {
   ensurePlaceholderTexture,

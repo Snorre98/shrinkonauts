@@ -220,7 +220,7 @@ Human playtest and final-art review remain pending.
 - [`docs/puzzle-engine/adr/0016-pattern-projection-surfaces.md`](../puzzle-engine/adr/0016-pattern-projection-surfaces.md)
 - [`docs/puzzle-engine/adr/0017-tile-variant-atlas-manifest.md`](../puzzle-engine/adr/0017-tile-variant-atlas-manifest.md)
 - [`docs/puzzle-engine/material-pattern-implementation-plan.md`](../puzzle-engine/material-pattern-implementation-plan.md)
-- [`docs/m3/asset-requirements.md`](../m3/asset-requirements.md) — must be
+- [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) — must be
   re-baselined against this layer.
 - [`docs/m4/README.md`](../m4/README.md) — proposed online co-op; both clients
   load the same material/atlas content and no textures cross the wire.

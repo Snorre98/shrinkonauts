@@ -4,7 +4,7 @@ import { parseManifest } from "../src/assets/manifest";
 import { createAssets } from "../src/assets/assets";
 import type { AssetManifest } from "../src/assets";
 import { silentLogger } from "../src/core/logger";
-import { parseAssetMode } from "../src/game/asset-mode";
+import { parseAssetMode, resolveAssetMode } from "../src/game/asset-mode";
 import {
   collectRoomAssetIds,
   collectThemeAssetIds,
@@ -102,6 +102,51 @@ describe("dev room content", () => {
     }
   });
 
+  it("parses authored info areas and rejects invalid TTL values", () => {
+    const raw = structuredClone(readJson("room.json")) as Record<string, unknown>;
+    raw.infoAreas = [
+      {
+        id: "info-test",
+        x: 2,
+        y: 25,
+        width: 10,
+        height: 3,
+        ttlTicks: 120,
+      },
+    ];
+    const parsed = parseRoom(raw);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value.infoAreas).toEqual([
+        {
+          id: "info-test",
+          x: 2,
+          y: 25,
+          width: 10,
+          height: 3,
+          ttlTicks: 120,
+        },
+      ]);
+    }
+
+    const invalid = structuredClone(raw);
+    invalid.infoAreas = [
+      {
+        id: "info-test",
+        x: 2,
+        y: 25,
+        width: 10,
+        height: 3,
+        ttlTicks: 0,
+      },
+    ];
+    const rejected = parseRoom(invalid);
+    expect(rejected.ok).toBe(false);
+    if (!rejected.ok) {
+      expect(rejected.error).toContain("ttlTicks must be positive");
+    }
+  });
+
   it("declares every content and player asset ID in the final manifest", () => {
     const declared = new Set(Object.keys(finalManifest.assets));
     for (const id of allIds) {
@@ -162,6 +207,10 @@ describe("dev room content", () => {
     expect(parseAssetMode("?assets=placeholder")).toBe("placeholder");
     expect(parseAssetMode("?assets=unknown")).toBe("placeholder");
     expect(parseAssetMode("")).toBe("placeholder");
+    expect(resolveAssetMode("")).toBe("final");
+    expect(resolveAssetMode("?assets=final")).toBe("final");
+    expect(resolveAssetMode("?assets=placeholder")).toBe("placeholder");
+    expect(resolveAssetMode("?assets=unknown")).toBe("placeholder");
   });
 });
 
@@ -272,8 +321,8 @@ describe("anatomy level anchors", () => {
     for (const gateId of ["gate-threshold", "gate-behind", "gate-exit"]) {
       const gate = nerve.entities?.find((entity) => entity.id === gateId);
       expect(gate?.components?.anchors?.center, gateId).toEqual({
-        x: 18,
-        y: 18,
+        x: 32,
+        y: 32,
       });
     }
 
@@ -282,8 +331,8 @@ describe("anatomy level anchors", () => {
       (entity) => entity.id === "motor-terminal",
     );
     expect(terminal?.components?.anchors?.muzzle).toEqual({
-      x: 32,
-      y: 16,
+      x: 56,
+      y: 32,
       direction: 0,
     });
     for (const receptorId of ["nicotinic-receptor", "wrong-receptor"]) {
@@ -291,16 +340,16 @@ describe("anatomy level anchors", () => {
         (entity) => entity.id === receptorId,
       );
       expect(receptor?.components?.anchors?.mouth, receptorId).toEqual({
-        x: 4,
-        y: 16,
+        x: 7,
+        y: 28,
         direction: 3.14159,
       });
     }
     for (const gateId of ["ca-gate", "muscle-gate"]) {
       const gate = muscle.entities?.find((entity) => entity.id === gateId);
       expect(gate?.components?.anchors?.center, gateId).toEqual({
-        x: 18,
-        y: 18,
+        x: 32,
+        y: 32,
       });
     }
   });
@@ -339,14 +388,14 @@ describe("anatomy level anchors", () => {
     );
     expect(
       entityAnchorPoint(
-        36,
-        36,
+        64,
+        64,
         terminal?.components?.anchors,
         "muzzle",
       ),
-    ).toEqual({ x: 32, y: 16, direction: 0 });
+    ).toEqual({ x: 56, y: 32, direction: 0 });
     expect(
-      entityAnchorPoint(36, 36, terminal?.components?.anchors, "missing"),
-    ).toEqual({ x: 18, y: 18 });
+      entityAnchorPoint(64, 64, terminal?.components?.anchors, "missing"),
+    ).toEqual({ x: 32, y: 32 });
   });
 });

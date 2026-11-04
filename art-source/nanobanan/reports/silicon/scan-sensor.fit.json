@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.scan.sensor",
+  "class": "ui-1x",
+  "status": "fit-preview",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "notes": "Flat sensor icon with cyan sensing eye, contact pins, waveform dash and scan rim.",
+  "config": "fit.silicon.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/silicon/scan-sensor.png",
+    "width": 1024,
+    "height": 1025,
+    "edgeContact": {
+      "top": 944,
+      "bottom": 165,
+      "left": 944,
+      "right": 944
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/sprites/scan-sensor.png",
+    "runtime": true,
+    "written": false,
+    "width": 36,
+    "height": 36,
+    "bytes": 1148
+  },
+  "cell": {
+    "width": 36,
+    "height": 36
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 32.031,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1024,
+    "height": 1025
+  },
+  "fit": {
+    "width": 32,
+    "height": 32,
+    "offsetX": 2,
+    "offsetY": 2,
+    "scale": 0.03122,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 2,
+    "width": 32,
+    "height": 32
+  },
+  "margins": {
+    "top": 2,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 1012,
+    "maxDistance": 60.869,
+    "offPalettePixels": 1012,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 1012
+  },
+  "rampHistogram": {
+    "ink": 468,
+    "teal": 254,
+    "boneShadow": 71,
+    "joint": 209,
+    "sage": 6,
+    "bone": 4
+  },
+  "warnings": [
+    "source content touches the image border (t 944, b 165, l 944, r 944); the concept plate may be clipped",
+    "source-to-fit scale 32.0:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 60.9 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/scan-sensor-1x.png",
+    "scale2x": "art-source/previews/nanobanan/silicon/scan-sensor-2x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/scan-sensor-4x.png",
+    "tint2x": "art-source/previews/nanobanan/silicon/scan-sensor-tint-2x.png"
+  }
+}

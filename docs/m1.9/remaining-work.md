@@ -181,6 +181,6 @@ session UI and wire the `SessionSetupPort` behind it. Do not add online state to
 - [`../adr-hub/README.md`](../adr-hub/README.md) — ADR-0058–0059.
 - [`../m2/nervous-puzzles/silicon-fixture.md`](../m2/nervous-puzzles/silicon-fixture.md)
   — Silicon room/puzzle design.
-- [`../m3/asset-requirements.md`](../m3/asset-requirements.md) — M3 scope and the
+- [`../m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) — M3 scope and the
   M3.5 hub note.
 - [`../m4/README.md`](../m4/README.md) — M4 online co-op and lobby phase.

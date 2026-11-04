@@ -97,7 +97,7 @@ export function createPatternProvider(
           kind: "procedural",
           textureKey: `pattern:${key}`,
           bitmap,
-          cssBackground: `url("${bitmapToSvgDataUrl(bitmap)}")`,
+          cssBackground: `url("${bitmapToSvgDataUrl(bitmap, placement.opacity)}")`,
           cssSize: `${bitmap.width * placement.scale}px ${bitmap.height * placement.scale}px`,
           cssPosition: "0 0",
           cssRepeat: "repeat",

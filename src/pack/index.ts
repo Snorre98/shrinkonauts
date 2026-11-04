@@ -1,4 +1,5 @@
 export {
+  collectLevelBlueprintAssetIds,
   collectMaterialAssetIds,
   collectRoomAssetIds,
   collectRoomMaterialAssetIds,
@@ -15,12 +16,14 @@ export {
   collectGateAssetIds,
   entityConcepts,
   loadDialogue,
+  loadFacts,
   loadGate,
   loadLevel,
   loadLicences,
   loadMapping,
   loadPack,
   parseDialogue,
+  parseFacts,
   parseGate,
   parseLevel,
   parseLicences,
@@ -39,6 +42,41 @@ export type {
   PackCatalogEntry,
 } from "./catalog";
 export { parsePuzzle } from "./parse-puzzle";
+export {
+  DEFAULT_ROLE_BY_ENTITY_TYPE,
+  DEFAULT_ROLE_DISPLAY,
+  DEFAULT_ROLE_FIDELITY,
+  LEGACY_ENTITY_DISPLAY_SIZE,
+  inferEntityRole,
+  presentationSizeToDisplay,
+  resolveEntityDisplay,
+} from "./entity-presentation";
+export type {
+  DisplaySize,
+  ResolvedEntityDisplay,
+} from "./entity-presentation";
+export {
+  parseEntityPresentation,
+  parsePackPresentation,
+  parseRoomPresentation,
+  PRESENTATION_ROLES,
+} from "./parse-presentation";
+export {
+  DEFAULT_CAMERA_PADDING,
+  DEFAULT_MAX_ZOOM,
+  PRESENTATION_CANVAS,
+  TETHER_VIEW_MARGIN,
+  autoZoomFor,
+  derivePlayBand,
+  mergeCameraSettings,
+  zoomFitsPlayBand,
+} from "./presentation";
+export type {
+  AutoZoomFailure,
+  AutoZoomInput,
+  AutoZoomResult,
+  MergedCameraSettings,
+} from "./presentation";
 export {
   loadMaterials,
   parseAtlasFrameRef,
@@ -69,6 +107,10 @@ export type {
 export type {
   BackgroundBlend,
   BackgroundFit,
+  CameraFollowX,
+  CameraFollowY,
+  CameraFraming,
+  CameraZoom,
   ConceptMapping,
   DialogueChoice,
   DialogueCondition,
@@ -89,6 +131,12 @@ export type {
   GateType,
   LevelBundle,
   LevelCoop,
+  LevelBlueprint,
+  LevelBlueprintActor,
+  LevelBlueprintComponent,
+  LevelBlueprintEdge,
+  LevelBlueprintEdgeType,
+  LevelBlueprintStep,
   LevelDocument,
   LevelEvidenceRule,
   LevelMapEdge,
@@ -104,6 +152,16 @@ export type {
   PackAssetManifests,
   PackContent,
   PackDocument,
+  ScanFact,
+  FactsDocument,
+  FactDepth,
+  PresentationCameraConfig,
+  PresentationConfig,
+  PresentationRect,
+  PresentationRoleConfig,
+  PresentationRoleName,
+  PresentationSize,
+  EntityPresentationConfig,
   RecordEvidenceEffect,
   RoomBackgroundLayer,
   RoomCheckpoint,
@@ -112,6 +170,8 @@ export type {
   RoomEntityComponents,
   RoomEntityType,
   RoomExit,
+  RoomInfoArea,
+  RoomPresentationConfig,
   RoomPropertyValue,
   RoomSpawn,
   RoomTrigger,

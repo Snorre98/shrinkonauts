@@ -29,8 +29,8 @@ const room = (() => {
   return parsed.value;
 })();
 
-const NICOTINIC = { x: 720, y: 620 };
-const WRONG = { x: 848, y: 620 };
+const NICOTINIC = { x: 1104, y: 268 };
+const WRONG = { x: 1008, y: 268 };
 
 function player(
   x: number,

@@ -1,9 +1,9 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const PACK_DIR = "public/packs/anatomy-reflex";
-const DEFERRED_LAYERS = [
+const PLACEHOLDER_LAYERS = [
   "bg.nerve_forest.far",
   "bg.nerve_forest.mid",
   "bg.nerve_forest.near",
@@ -19,6 +19,11 @@ interface ManifestEntry {
 interface BackgroundLayer {
   assetId: string;
   fit?: string;
+  depth?: number;
+  parallaxX?: number;
+  parallaxY?: number;
+  materialId?: string;
+  pattern?: { patternId?: string; opacity?: number };
 }
 
 interface RoomDocument {
@@ -38,6 +43,13 @@ const licences = JSON.parse(
 const room = JSON.parse(
   readFileSync(
     join(PACK_DIR, "levels/03-nerve-forest/room.json"),
+    "utf8",
+  ),
+) as RoomDocument;
+
+const muscleRoom = JSON.parse(
+  readFileSync(
+    join(PACK_DIR, "levels/04-muscle-effector/room.json"),
     "utf8",
   ),
 ) as RoomDocument;
@@ -72,14 +84,21 @@ function webpInfo(buffer: Buffer): {
   throw new Error(`Unsupported WebP chunk ${chunk}`);
 }
 
-describe("03 sky-only background", () => {
-  it("uses only the sky layer and keeps far/mid/near unreferenced", () => {
-    expect(room.background.layers).toHaveLength(1);
-    const layer = room.background.layers[0];
-    expect(layer?.assetId).toBe("bg.nerve_forest.sky");
-    expect(layer?.fit).toBe("cover");
+describe("03 background", () => {
+  it("wires only the pretty sky and keeps the layered plates as placeholders", () => {
+    expect(room.background.layers.map((layer) => layer.assetId)).toEqual([
+      "bg.nerve_forest.sky",
+    ]);
 
-    for (const id of DEFERRED_LAYERS) {
+    const [sky] = room.background.layers;
+    expect(sky?.fit).toBe("cover");
+    expect(sky?.depth).toBe(-40);
+    expect(sky?.parallaxX).toBe(0.05);
+    expect(sky?.parallaxY).toBe(0.02);
+    expect(sky?.materialId).toBeUndefined();
+    expect(sky?.pattern).toBeUndefined();
+
+    for (const id of PLACEHOLDER_LAYERS) {
       const entry = manifest.assets[id];
       expect(entry?.type).toBe("background");
       expect(entry?.placeholder).toBe(true);
@@ -90,7 +109,7 @@ describe("03 sky-only background", () => {
     }
   });
 
-  it("ships the sky as a 640x368 lossless WebP with a matching licence", () => {
+  it("ships the pretty sky as a 1280x736 lossless WebP with a matching licence", () => {
     const entry = manifest.assets["bg.nerve_forest.sky"];
     expect(entry).toBeDefined();
     if (!entry) return;
@@ -101,12 +120,14 @@ describe("03 sky-only background", () => {
 
     const path = join(PACK_DIR, entry.src as string);
     expect(existsSync(path)).toBe(true);
-    expect(statSync(path).size).toBeLessThanOrEqual(300 * 1024);
+
+    // The pretty sky is a recorded exception to the 300 KB pixel-asset
+    // budget; its actual size is reported in the background requirements doc.
     const info = webpInfo(readFileSync(path));
     expect(info.chunk).toBe("VP8L");
     expect({ width: info.width, height: info.height }).toEqual({
-      width: 640,
-      height: 368,
+      width: 1280,
+      height: 736,
     });
 
     expect(
@@ -115,5 +136,72 @@ describe("03 sky-only background", () => {
           licence.file === entry.src && licence.license === entry.license,
       ),
     ).toBe(true);
+  });
+
+  it("does not reference raw source JPEGs", () => {
+    const runtime = JSON.stringify({ manifest, room });
+    expect(runtime).not.toContain(".jpeg");
+    expect(runtime).not.toContain("art-source/");
+  });
+});
+
+describe("04 background", () => {
+  it("wires the final 04 sky and keeps far/mid/near declared placeholders", () => {
+    expect(muscleRoom.background.layers.map((layer) => layer.assetId)).toEqual([
+      "bg.muscle_endplate.sky",
+      "bg.muscle_endplate.far",
+      "bg.muscle_endplate.mid",
+      "bg.muscle_endplate.near",
+    ]);
+
+    const [sky] = muscleRoom.background.layers;
+    expect(sky?.fit).toBe("cover");
+    expect(sky?.depth).toBe(-40);
+    expect(sky?.parallaxX).toBe(0.05);
+    expect(sky?.parallaxY).toBe(0.02);
+
+    for (const id of [
+      "bg.muscle_endplate.far",
+      "bg.muscle_endplate.mid",
+      "bg.muscle_endplate.near",
+    ] as const) {
+      const entry = manifest.assets[id];
+      expect(entry?.type).toBe("background");
+      expect(entry?.placeholder).toBe(true);
+      expect(entry?.src).toBeUndefined();
+    }
+  });
+
+  it("ships the final 04 sky as a 1280x720 lossless WebP with a matching licence", () => {
+    const entry = manifest.assets["bg.muscle_endplate.sky"];
+    expect(entry).toBeDefined();
+    if (!entry) return;
+    expect(entry.type).toBe("background");
+    expect(entry.src).toBe("shared/backgrounds/muscle-endplate-sky.webp");
+    expect(entry.license).toBe("Nano Banana / Google Gemini (plan TBD)");
+    expect(entry.placeholder).toBeUndefined();
+
+    const path = join(PACK_DIR, entry.src as string);
+    expect(existsSync(path)).toBe(true);
+
+    const info = webpInfo(readFileSync(path));
+    expect(info.chunk).toBe("VP8L");
+    expect({ width: info.width, height: info.height }).toEqual({
+      width: 1280,
+      height: 720,
+    });
+
+    expect(
+      licences.assets.some(
+        (licence) =>
+          licence.file === entry.src && licence.license === entry.license,
+      ),
+    ).toBe(true);
+  });
+
+  it("does not reference raw source JPEGs", () => {
+    const runtime = JSON.stringify({ manifest, muscleRoom });
+    expect(runtime).not.toContain(".jpeg");
+    expect(runtime).not.toContain("art-source/");
   });
 });

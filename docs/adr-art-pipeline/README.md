@@ -17,10 +17,12 @@ accepted history.
 
 The repository currently has domain-local numbering collisions: M3 uses
 ADR-0047–0049, the online domain uses ADR-0047–0057, the hub domain uses
-ADR-0058–0059, and the controller domain uses ADR-0066–0069. This domain starts
-at **ADR-0060** to avoid adding another collision. If the project later
-reconciles a single global sequence, renumber these records before acceptance;
-accepted records are immutable.
+ADR-0058–0059, the controller domain uses ADR-0066–0069, and the presentation
+domain uses ADR-0070–0074. This domain starts at **ADR-0060**. ADR-0075 is the
+last record in this domain; ADR-0076–0077 are audio records, and ADR-0078 is the
+cross-discipline asset prompt-library record in `docs/adr-assets/`. If the
+project later reconciles a single global sequence, renumber these records
+before acceptance; accepted records are immutable.
 
 ## Index
 
@@ -32,6 +34,7 @@ accepted records are immutable.
 | [0063](adr-0063-build-time-animation-previews.md) | Build-time animation previews, not runtime GIFs | Accepted |
 | [0064](adr-0064-orange-p2-suit-palette-swap.md) | Orange P2 suit and visor palette swap | Superseded by 0065 |
 | [0065](adr-0065-p2-bone-suit-joint-visor.md) | P2 bone suit and joint-cyan visor | Accepted |
+| [0075](adr-0075-hero-asset-treatment.md) | Hero-asset treatment profiles and per-class fit pipeline | Proposed |
 
 ## Implementation status
 
@@ -52,6 +55,10 @@ accepted records are immutable.
   strip previews from the same runtime sheets and clip timing.
 - **Background keying:** `npm run art:key` removes flat magenta backgrounds from
   concept JPEGs with a hard-alpha RGB key and magenta despill.
+- **ADR-0075:** proposed. It adds per-class fit cells, the `hero-1x` treatment,
+  source-scale gates, and stage-scale contact sheets. The hero configs
+  (`fit.new.config.json`, `fit.silicon.config.json`) are schema 2; the legacy
+  `fit.config.json` and badge config remain schema 1.
 
 ## Relationship to existing decisions
 
@@ -61,6 +68,17 @@ accepted records are immutable.
 - ADR-0047: pixel-art visual direction.
 - ADR-0048: half-resolution authoring with 2× nearest-neighbour display.
 - ADR-0049: pixel UI chrome and typography.
+- ADR-0071: background space, sampling, and composition (proposed). Adds
+  screen/world space and per-layer composition to the background pipeline.
+- ADR-0072: asset fidelity tiers, display sizes, and lossless encoding
+  (proposed). Adds readability gates, per-asset display sizes, and the
+  `fit-preview` / `hand-cleaned` status split.
+- ADR-0075: hero-asset treatment profiles and per-class fit pipeline
+  (proposed). Adds per-class cells, source-scale gates, and the `hero-1x`
+  treatment.
+- ADR-0078: cross-discipline asset prompt-library governance and placeholder
+  completion. The umbrella inventory lives at
+  `docs/assets/prompt-library-v01.md`.
 - `docs/m3/asset-requirements-v01.md`: asset register, palette, source sizes,
   and acceptance criteria.
 

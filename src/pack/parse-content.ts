@@ -1,5 +1,6 @@
 import { isLearningEventType } from "../core/learning-events";
 import { err, ok, type Result } from "../core/result";
+import { parsePackPresentation } from "./parse-presentation";
 import {
   isRecord,
   isSchemaVersionSupported,
@@ -32,6 +33,12 @@ import type {
   LevelFeedbackNodeOverride,
   LevelFeedbackPuzzle,
   LevelFeedbackTileTarget,
+  LevelBlueprint,
+  LevelBlueprintActor,
+  LevelBlueprintComponent,
+  LevelBlueprintEdge,
+  LevelBlueprintEdgeType,
+  LevelBlueprintStep,
   LevelMapEdge,
   LevelUnlock,
   LevelUnlockType,
@@ -43,6 +50,8 @@ import type {
   PackDocument,
   RecordEvidenceEffect,
   RoomPropertyValue,
+  FactsDocument,
+  ScanFact,
 } from "./types";
 
 const PACK_CODE = "PACK_SCHEMA_INVALID";
@@ -51,6 +60,7 @@ const DIALOGUE_CODE = "DIALOGUE_SCHEMA_INVALID";
 const GATE_CODE = "GATE_SCHEMA_INVALID";
 const MAPPING_CODE = "MAPPING_SCHEMA_INVALID";
 const LICENCE_CODE = "LICENCES_SCHEMA_INVALID";
+const FACT_CODE = "FACTS_SCHEMA_INVALID";
 
 const MAP_EDGE_TYPES: readonly MapEdgeType[] = [
   "door",
@@ -66,6 +76,16 @@ const UNLOCK_TYPES: readonly LevelUnlockType[] = [
   "item",
 ];
 const LEVEL_STATUSES = ["draft", "validated", "playtested", "done"] as const;
+const BLUEPRINT_ACTORS: readonly LevelBlueprintActor[] = [
+  "p1",
+  "p2",
+  "both",
+  "shared",
+];
+const BLUEPRINT_EDGE_TYPES: readonly LevelBlueprintEdgeType[] = [
+  "flow",
+  "oneWay",
+];
 
 function readRecordStringMap(
   value: unknown,
@@ -132,6 +152,8 @@ export function parsePack(value: unknown): Result<PackDocument> {
   if (!mapping.ok) return err(mapping.error);
   const licenses = readNonEmptyString(value, "licenses", PACK_CODE);
   if (!licenses.ok) return err(licenses.error);
+  const facts = readOptionalString(value, "facts", PACK_CODE);
+  if (!facts.ok) return err(facts.error);
   const materials = readOptionalString(value, "materials", PACK_CODE);
   if (!materials.ok) return err(materials.error);
 
@@ -185,6 +207,9 @@ export function parsePack(value: unknown): Result<PackDocument> {
     return err(`${PACK_CODE}: metadata must be an object`);
   }
 
+  const presentation = parsePackPresentation(value.presentation, PACK_CODE);
+  if (!presentation.ok) return err(presentation.error);
+
   return ok({
     schemaVersion: value.schemaVersion,
     id: id.value,
@@ -198,6 +223,7 @@ export function parsePack(value: unknown): Result<PackDocument> {
     theme: theme.value,
     mapping: mapping.value,
     licenses: licenses.value,
+    ...(facts.value ? { facts: facts.value } : {}),
     ...(materials.value ? { materials: materials.value } : {}),
     assetManifests: {
       ...(placeholder.value ? { placeholder: placeholder.value } : {}),
@@ -207,6 +233,7 @@ export function parsePack(value: unknown): Result<PackDocument> {
     ...(ageRating.value ? { ageRating: ageRating.value } : {}),
     ...(description.value ? { description: description.value } : {}),
     ...(isRecord(value.metadata) ? { metadata: { ...value.metadata } } : {}),
+    ...(presentation.value ? { presentation: presentation.value } : {}),
   });
 }
 
@@ -400,6 +427,203 @@ function parseFeedbackNodeOverride(
   });
 }
 
+function parseBlueprintComponent(
+  value: unknown,
+  label: string,
+): Result<LevelBlueprintComponent> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(
+    value,
+    ["id", "label", "symbol", "beatIds", "x"],
+    LEVEL_CODE,
+    label,
+  );
+  if (!keys.ok) return err(keys.error);
+  const id = readNonEmptyString(value, "id", LEVEL_CODE, `${label}.id`);
+  if (!id.ok) return err(id.error);
+  const componentLabel = readOptionalString(
+    value,
+    "label",
+    LEVEL_CODE,
+    `${label}.label`,
+  );
+  if (!componentLabel.ok) return err(componentLabel.error);
+  const symbol = readNonEmptyString(
+    value,
+    "symbol",
+    LEVEL_CODE,
+    `${label}.symbol`,
+  );
+  if (!symbol.ok) return err(symbol.error);
+  const beatIds = readStringArray(
+    value,
+    "beatIds",
+    LEVEL_CODE,
+    `${label}.beatIds`,
+  );
+  if (!beatIds.ok) return err(beatIds.error);
+  const x = readInteger(value, "x", LEVEL_CODE, `${label}.x`);
+  if (!x.ok) return err(x.error);
+  if (x.value < 0) {
+    return err(`${LEVEL_CODE}: ${label}.x must be non-negative`);
+  }
+  return ok({
+    id: id.value,
+    ...(componentLabel.value ? { label: componentLabel.value } : {}),
+    symbol: symbol.value,
+    beatIds: beatIds.value,
+    x: x.value,
+  });
+}
+
+function parseBlueprintEdge(
+  value: unknown,
+  label: string,
+): Result<LevelBlueprintEdge> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(
+    value,
+    ["from", "to", "type"],
+    LEVEL_CODE,
+    label,
+  );
+  if (!keys.ok) return err(keys.error);
+  const from = readNonEmptyString(value, "from", LEVEL_CODE, `${label}.from`);
+  if (!from.ok) return err(from.error);
+  const to = readNonEmptyString(value, "to", LEVEL_CODE, `${label}.to`);
+  if (!to.ok) return err(to.error);
+  const type = readNonEmptyString(value, "type", LEVEL_CODE, `${label}.type`);
+  if (!type.ok) return err(type.error);
+  if (!BLUEPRINT_EDGE_TYPES.includes(type.value as LevelBlueprintEdgeType)) {
+    return err(
+      `${LEVEL_CODE}: ${label}.type "${type.value}" is not supported`,
+    );
+  }
+  return ok({
+    from: from.value,
+    to: to.value,
+    type: type.value as LevelBlueprintEdgeType,
+  });
+}
+
+function parseBlueprintStep(
+  value: unknown,
+  label: string,
+): Result<LevelBlueprintStep> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(
+    value,
+    ["componentId", "actor"],
+    LEVEL_CODE,
+    label,
+  );
+  if (!keys.ok) return err(keys.error);
+  const componentId = readNonEmptyString(
+    value,
+    "componentId",
+    LEVEL_CODE,
+    `${label}.componentId`,
+  );
+  if (!componentId.ok) return err(componentId.error);
+  const actor = readNonEmptyString(
+    value,
+    "actor",
+    LEVEL_CODE,
+    `${label}.actor`,
+  );
+  if (!actor.ok) return err(actor.error);
+  if (!BLUEPRINT_ACTORS.includes(actor.value as LevelBlueprintActor)) {
+    return err(
+      `${LEVEL_CODE}: ${label}.actor "${actor.value}" is not supported`,
+    );
+  }
+  return ok({
+    componentId: componentId.value,
+    actor: actor.value as LevelBlueprintActor,
+  });
+}
+
+function parseLevelBlueprint(
+  value: unknown,
+  label: string,
+): Result<LevelBlueprint> {
+  if (!isRecord(value)) {
+    return err(`${LEVEL_CODE}: ${label} must be an object`);
+  }
+  const keys = rejectUnknownKeys(
+    value,
+    ["title", "components", "edges", "steps"],
+    LEVEL_CODE,
+    label,
+  );
+  if (!keys.ok) return err(keys.error);
+
+  const title = readOptionalString(
+    value,
+    "title",
+    LEVEL_CODE,
+    `${label}.title`,
+  );
+  if (!title.ok) return err(title.error);
+
+  if (!Array.isArray(value.components)) {
+    return err(`${LEVEL_CODE}: ${label}.components must be an array`);
+  }
+  const components: LevelBlueprintComponent[] = [];
+  const componentIds = new Set<string>();
+  for (const [index, raw] of value.components.entries()) {
+    const componentLabel = `${label}.components[${index}]`;
+    const parsed = parseBlueprintComponent(raw, componentLabel);
+    if (!parsed.ok) return err(parsed.error);
+    if (componentIds.has(parsed.value.id)) {
+      return err(
+        `${LEVEL_CODE}: ${componentLabel}.id "${parsed.value.id}" is duplicated`,
+      );
+    }
+    componentIds.add(parsed.value.id);
+    components.push(parsed.value);
+  }
+
+  let edges: LevelBlueprintEdge[] | undefined;
+  if (value.edges !== undefined) {
+    if (!Array.isArray(value.edges)) {
+      return err(`${LEVEL_CODE}: ${label}.edges must be an array`);
+    }
+    edges = [];
+    for (const [index, raw] of value.edges.entries()) {
+      const parsed = parseBlueprintEdge(raw, `${label}.edges[${index}]`);
+      if (!parsed.ok) return err(parsed.error);
+      edges.push(parsed.value);
+    }
+  }
+
+  let steps: LevelBlueprintStep[] | undefined;
+  if (value.steps !== undefined) {
+    if (!Array.isArray(value.steps)) {
+      return err(`${LEVEL_CODE}: ${label}.steps must be an array`);
+    }
+    steps = [];
+    for (const [index, raw] of value.steps.entries()) {
+      const parsed = parseBlueprintStep(raw, `${label}.steps[${index}]`);
+      if (!parsed.ok) return err(parsed.error);
+      steps.push(parsed.value);
+    }
+  }
+
+  return ok({
+    ...(title.value ? { title: title.value } : {}),
+    components,
+    ...(edges ? { edges } : {}),
+    ...(steps ? { steps } : {}),
+  });
+}
+
 function parseFeedbackPuzzle(
   value: unknown,
   label: string,
@@ -407,7 +631,12 @@ function parseFeedbackPuzzle(
   if (!isRecord(value)) {
     return err(`${LEVEL_CODE}: ${label} must be an object`);
   }
-  const keys = rejectUnknownKeys(value, ["beats", "nodes"], LEVEL_CODE, label);
+  const keys = rejectUnknownKeys(
+    value,
+    ["beats", "nodes", "blueprint"],
+    LEVEL_CODE,
+    label,
+  );
   if (!keys.ok) return err(keys.error);
 
   let beats: LevelFeedbackBeat[] | undefined;
@@ -467,9 +696,17 @@ function parseFeedbackPuzzle(
     }
   }
 
+  let blueprint: LevelBlueprint | undefined;
+  if (value.blueprint !== undefined) {
+    const parsed = parseLevelBlueprint(value.blueprint, `${label}.blueprint`);
+    if (!parsed.ok) return err(parsed.error);
+    blueprint = parsed.value;
+  }
+
   return ok({
     ...(beats ? { beats } : {}),
     ...(nodes ? { nodes } : {}),
+    ...(blueprint ? { blueprint } : {}),
   });
 }
 
@@ -721,6 +958,11 @@ function parseEffect(
       const conceptId = readNonEmptyString(value, "conceptId", code, `${label}.conceptId`);
       if (!conceptId.ok) return err(conceptId.error);
       return ok({ type: "revealConcept", conceptId: conceptId.value });
+    }
+    case "revealFact": {
+      const factId = readNonEmptyString(value, "factId", code, `${label}.factId`);
+      if (!factId.ok) return err(factId.error);
+      return ok({ type: "revealFact", factId: factId.value });
     }
     case "unlockAbility": {
       const id = readNonEmptyString(value, "id", code, `${label}.id`);
@@ -1269,6 +1511,87 @@ export function parseLicences(value: unknown): Result<LicenceDocument> {
 }
 
 /* ------------------------------------------------------------------ */
+/* Facts                                                               */
+/* ------------------------------------------------------------------ */
+
+function parseScanFact(value: unknown, index: number): Result<ScanFact> {
+  if (!isRecord(value)) {
+    return err(`${FACT_CODE}: facts[${index}] must be an object`);
+  }
+  const id = readNonEmptyString(value, "id", FACT_CODE, `facts[${index}].id`);
+  if (!id.ok) return err(id.error);
+  const conceptId = readNonEmptyString(
+    value,
+    "conceptId",
+    FACT_CODE,
+    `facts[${index}].conceptId`,
+  );
+  if (!conceptId.ok) return err(conceptId.error);
+  const title = readNonEmptyString(
+    value,
+    "title",
+    FACT_CODE,
+    `facts[${index}].title`,
+  );
+  if (!title.ok) return err(title.error);
+  const claim = readNonEmptyString(
+    value,
+    "claim",
+    FACT_CODE,
+    `facts[${index}].claim`,
+  );
+  if (!claim.ok) return err(claim.error);
+  const cardId = readOptionalString(
+    value,
+    "cardId",
+    FACT_CODE,
+    `facts[${index}].cardId`,
+  );
+  if (!cardId.ok) return err(cardId.error);
+  let depth: ScanFact["depth"];
+  if (value.depth !== undefined) {
+    if (value.depth !== "core" && value.depth !== "advanced") {
+      return err(`${FACT_CODE}: facts[${index}].depth must be core or advanced`);
+    }
+    depth = value.depth;
+  }
+  return ok({
+    id: id.value,
+    conceptId: conceptId.value,
+    title: title.value,
+    claim: claim.value,
+    ...(cardId.value ? { cardId: cardId.value } : {}),
+    ...(depth ? { depth } : {}),
+  });
+}
+
+export function parseFacts(value: unknown): Result<FactsDocument> {
+  if (!isRecord(value)) {
+    return err(`${FACT_CODE}: facts document must be an object`);
+  }
+  if (!isSchemaVersionSupported(value.schemaVersion)) {
+    return err(
+      `FACTS_SCHEMA_VERSION: expected 1.x, got ${String(value.schemaVersion)}`,
+    );
+  }
+  if (!Array.isArray(value.facts) || value.facts.length === 0) {
+    return err(`${FACT_CODE}: facts must be a non-empty array`);
+  }
+  const facts: ScanFact[] = [];
+  const seen = new Set<string>();
+  for (const [index, raw] of value.facts.entries()) {
+    const fact = parseScanFact(raw, index);
+    if (!fact.ok) return err(fact.error);
+    if (seen.has(fact.value.id)) {
+      return err(`${FACT_CODE}: duplicate fact id "${fact.value.id}"`);
+    }
+    seen.add(fact.value.id);
+    facts.push(fact.value);
+  }
+  return ok({ schemaVersion: value.schemaVersion, facts });
+}
+
+/* ------------------------------------------------------------------ */
 /* URL loaders                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -1324,6 +1647,15 @@ export async function loadLicences(
   const data = await parseJsonUrl(url, fetchImpl);
   if (!data.ok) return err(data.error);
   return parseLicences(data.value);
+}
+
+export async function loadFacts(
+  url: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Result<FactsDocument>> {
+  const data = await parseJsonUrl(url, fetchImpl);
+  if (!data.ok) return err(data.error);
+  return parseFacts(data.value);
 }
 
 /* ------------------------------------------------------------------ */

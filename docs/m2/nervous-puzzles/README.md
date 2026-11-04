@@ -7,6 +7,12 @@
 accepted M1.5 puzzle contract
 **Not implemented:** no code, pack content, schema, engine, or vault changes
 
+> **M2.75 rescope (2026-11-03):** the `03-nerve-forest` concept is under review
+> in [`../../m2.75/README.md`](../../m2.75/README.md). The 03 section in this package
+> is the current implementation baseline, not a final concept decision. Do not
+> commission new 03 scan art or rewrite the 03 learning content until M2.75
+> chooses a model.
+
 ## 1. What this package decides
 
 This package defines one room-scale puzzle for each of the six rooms in the M2
@@ -262,10 +268,10 @@ affected puzzle rules must be rechecked before implementation.
 
 ## 11. Relationship to M4 online co-op (proposed)
 
-M1.9 already shows a **Silicon: Interrupt Loop** card in the bathroom menu as
-`coming-soon`. Implementing this package as the separate `silicon-reflex` pack
-and changing its catalog status to `available` is the only menu-facing step; the
-hub does not hardcode the cycle. See
+M1.9 already shows a **Silicon: Interrupt Loop** card in the bathroom menu.
+Implementing this package as the separate `silicon-reflex` pack and changing
+its catalog status to `available` was the only menu-facing step; the card is
+`available` as of 2026-11-02, and the hub does not hardcode the cycle. See
 [`../../m1.9/README.md`](../../m1.9/README.md).
 
 M4 consumes the frozen M2 content; it does not change any puzzle rule, gate

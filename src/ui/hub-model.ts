@@ -13,6 +13,8 @@ export interface HubPackView {
   online: boolean;
   selected: boolean;
   hasSave: boolean;
+  /** Optional decorative 16×16 cycle icon resolved from the theme. */
+  iconSrc?: string;
 }
 
 export interface HubOnlineView {

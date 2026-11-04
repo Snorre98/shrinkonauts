@@ -1,10 +1,10 @@
 # Silicon Interrupt Loop — asset prompt pack
 
-**Status:** Draft v0.1 · 1 November 2026  
-**Pack:** `silicon-reflex`  
-**Level:** `01-interrupt-loop`  
-**Theme:** [`docs/prompts/silicon-theme.md`](../silicon-theme.md)  
-**Template:** [`docs/prompts/asset-generation-template.md`](../asset-generation-template.md)  
+**Status:** Draft v0.2 · 3 November 2026
+**Pack:** `silicon-reflex`
+**Level:** `01-interrupt-loop`
+**Theme:** [`docs/prompts/silicon-theme.md`](../silicon-theme.md)
+**Template:** [`docs/prompts/asset-generation-template.md`](../asset-generation-template.md)
 **Design:** [`docs/m2/nervous-puzzles/silicon-fixture.md`](../../m2/nervous-puzzles/silicon-fixture.md)
 
 > **The requirement:** this is a graphite/cyan clean-room circuit board, not the
@@ -12,6 +12,16 @@
 > neuron characters, amber ambient glow, or damp teal fog. The shared elements
 > are the pixel grid, the nine ramps, the outline weight, the astronaut
 > players, the HUD, and the audio cue IDs.
+
+> **Completion status (2026-11-03):** the `[DONE]` markers below mean
+> “source generated, processed, and wired as POC”; they do **not** mean final
+> art approval. The Silicon pack still has no new source batch in this pass.
+> `sprite.scan.interrupt` and `sprite.exit.silicon` remain placeholder-only:
+> the interrupt source fits 32×7 and fails the 36×36 read, and no Silicon exit
+> source exists. Reusing the organic/warm anatomy exit was considered and
+> rejected. Use the
+> [completion matrix](../../assets/prompt-library-v01.md#40-completion-matrix)
+> as the cross-discipline status source.
 
 ---
 
@@ -53,7 +63,7 @@ EXPORT SPEC    = FRAME_<CATEGORY> (for Aseprite/Piskel; do not paste into Ludo)
 - Do not paste the 18×18/36×36 export spec into the Ludo prompt.
 - Ludo produces a concept; the final asset is pixel-cleaned at source size.
 
-Prompt version: `silicon-2026-11-01.1`.  
+Prompt version: `silicon-2026-11-01.1`.
 Style version: `style-silicon-v1`.
 
 ---
@@ -188,7 +198,7 @@ Not generated: `sprite.checkpoint`, `sprite.checkpoint.silicon`,
 
 ## 5. Background prompts
 
-### 5.1 `bg.silicon_board.sky`
+### 5.1 `bg.silicon_board.sky` [DONE]
 
 **Style:** `STYLE_BACKGROUND_TECH`. **Frame:** `FRAME_SKY`. **Source:** 640×368
 WebP/PNG, integer 2× cover. **File:**
@@ -208,7 +218,9 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 **Acceptance:** At 1280×720 cover crop, the HUD and player silhouettes read; no hard horizon at player height; no characters or text; no obvious focal landmark; ≤300 KB.
 
-### 5.2 `bg.silicon_board.far`
+**Runtime (2026-11-02):** the supplied 2720×1568 plate was cropped to 2720×1564 at y=2, Lanczos-downscaled to **1280×736 at 1×**, palette-quantised to the six Silicon ramps with a 2×2 Bayer dither, and exported as a 99,538-byte lossless WebP. This deviates from the 640×368/2× source target above. Report: `art-source/nanobanan/reports/silicon/silicon-board-sky.report.json`.
+
+### 5.2 `bg.silicon_board.far` [NOT DONE, DEFFERED]
 
 **Style:** `STYLE_BACKGROUND_TECH`. **Frame:** `FRAME_PARALLAX`. **Source:**
 1024×512, transparent. **File:** `shared/backgrounds/silicon-board-far.webp`.
@@ -227,7 +239,7 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 **Acceptance:** Low contrast, large slow shapes; no focal landmark; both-axis seam check passes; no text; ≤300 KB.
 
-### 5.3 `bg.silicon_board.mid`
+### 5.3 `bg.silicon_board.mid` [NOT DONE, DEFFERED]
 
 **Style:** `STYLE_BACKGROUND_TECH`. **Frame:** `FRAME_PARALLAX`. **Source:**
 1024×512, transparent. **File:** `shared/backgrounds/silicon-board-mid.webp`.
@@ -246,7 +258,7 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 **Acceptance:** Medium contrast; no obvious repeat; no nerve motifs; both-axis seam check passes; no text; ≤300 KB.
 
-### 5.4 `bg.silicon_board.near`
+### 5.4 `bg.silicon_board.near` [NOT DONE, DEFFERED]
 
 **Style:** `STYLE_BACKGROUND_TECH`. **Frame:** `FRAME_PARALLAX`. **Source:**
 1024×512, transparent. **File:** `shared/backgrounds/silicon-board-near.webp`.
@@ -269,7 +281,7 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 
 ## 6. Material atlas prompt
 
-### 6.1 `tile.circuit.atlas`
+### 6.1 `tile.circuit.atlas` [DONE]
 
 **Style:** `STYLE_ATLAS_TECH`. **Frame:** `FRAME_ATLAS`. **Source/export:**
 128×128 PNG, 4×4 grid, 32×32 frames, 2×2 clusters, opaque cells. **File:**
@@ -300,11 +312,17 @@ Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone 
 **Acceptance:** 128×128; 16 regions; each frame tiles 3×3; no seam; variants
 distinct; no text; ≤80 KB.
 
+**Runtime (2026-11-02):** placeholder retained. The supplied plate is a
+continuous 2048×2048 PCB material swatch, not a 4×4 frame atlas. The direct
+downscale destroys the traces; the 16-crop and mask-edge assemblies are
+non-tileable and too bright in the room. See
+`art-source/nanobanan/reports/silicon/circuit-atlas.report.json`.
+
 ---
 
 ## 7. Agent prompt
 
-### 7.1 `sprite.agent.cpu`
+### 7.1 `sprite.agent.cpu` [DONE]
 
 **Style:** `STYLE_SPRITE_TECH`. **Frame:** `FRAME_ENTITY_CONCEPT`. **Source:**
 18×18 PNG; 36×36 display. **File:** `shared/sprites/agent-cpu.png`.
@@ -336,7 +354,7 @@ All scans use `STYLE_ICON_TECH`, `FRAME_ENTITY_CONCEPT`, 18×18 source / 36×36
 display, and `NEGATIVE_TECH` + `face, eyes, character pose, arrow, label, 3D bevel`.
 Each is a flat icon with a thin cyan scan rim, no face.
 
-### 8.1 `sprite.scan.sensor`
+### 8.1 `sprite.scan.sensor` [DONE]
 
 ```text
 SUBJECT: A flat diagrammatic scan icon of a sensor pad: a graphite plate with a cold cyan sensing eye, two small contact pins, and a short waveform dash; a thin cyan scan rim. No face, no character pose, no text, no arrow.
@@ -344,7 +362,7 @@ SUBJECT: A flat diagrammatic scan icon of a sensor pad: a graphite plate with a 
 
 **File:** `shared/sprites/scan-sensor.png`.
 
-### 8.2 `sprite.scan.interrupt`
+### 8.2 `sprite.scan.interrupt` [DONE]
 
 ```text
 SUBJECT: A flat diagrammatic scan icon of an interrupt line: a bright cyan trace running left to right, a connector pin at each end, and a small branch/diode mark; a thin cyan scan rim. No face, no character pose, no text, no arrow.
@@ -352,7 +370,14 @@ SUBJECT: A flat diagrammatic scan icon of an interrupt line: a bright cyan trace
 
 **File:** `shared/sprites/scan-interrupt.png`.
 
-### 8.3 `sprite.scan.controller`
+**Runtime (2026-11-03 audit):** placeholder retained. The 36×36 fit is 32×7
+with 220 opaque pixels (80 ink, 25 joint); the minimum dimension is below the
+24px readability policy, the source-to-fit scale is 46.9:1, and the icon does
+not read as a square scan target. Report:
+`art-source/nanobanan/reports/silicon/scan-interrupt.fit.json`. A new square
+composition is required; do not force the existing plate.
+
+### 8.3 `sprite.scan.controller` [DONE]
 
 ```text
 SUBJECT: A flat diagrammatic scan icon of an interrupt controller: a socketed chip with a cyan-lit slot, a simple logic-gate mark, and two pin rows; a thin cyan scan rim. No face, no character pose, no text.
@@ -360,7 +385,7 @@ SUBJECT: A flat diagrammatic scan icon of an interrupt controller: a socketed ch
 
 **File:** `shared/sprites/scan-controller.png`.
 
-### 8.4 `sprite.scan.cpu`
+### 8.4 `sprite.scan.cpu` [DONE]
 
 ```text
 SUBJECT: A flat diagrammatic scan icon of a CPU: a square ceramic package with two pin rows and a cyan die window; a thin cyan scan rim. No face, no character pose, no text.
@@ -368,7 +393,7 @@ SUBJECT: A flat diagrammatic scan icon of a CPU: a square ceramic package with t
 
 **File:** `shared/sprites/scan-cpu.png`.
 
-### 8.5 `sprite.scan.actuator`
+### 8.5 `sprite.scan.actuator` [DONE]
 
 ```text
 SUBJECT: A flat diagrammatic scan icon of an actuator: a mechanical arm with a cyan piston, a hinge, and a ceramic mount; a thin cyan scan rim. No face, no character pose, no text, no arrow.
@@ -383,7 +408,7 @@ no face; no text; the cyan rim survives; ≤16 KB.
 
 ## 9. Pads and consoles
 
-### 9.1 `sprite.pad.sensor`
+### 9.1 `sprite.pad.sensor` [DONE]
 
 **Style:** `STYLE_SPRITE_TECH`. **Frame:** `FRAME_ENTITY_CONCEPT`. **File:**
 `shared/sprites/pad-sensor.png`.
@@ -394,7 +419,7 @@ SUBJECT: A floor sensor pad: a graphite plate with a cold cyan sensing eye, four
 
 **Negative:** `NEGATIVE_TECH` + `face, character, scene, text, organic curve`.
 
-### 9.2 `sprite.console.sensor`
+### 9.2 `sprite.console.sensor` [DONE]
 
 **Style:** `STYLE_SPRITE_TECH`. **Frame:** `FRAME_ENTITY_CONCEPT`. **File:**
 `shared/sprites/console-sensor.png`.
@@ -405,7 +430,7 @@ SUBJECT: A small sensor console: a graphite box with a cold cyan screen, one dia
 
 **Negative:** `NEGATIVE_TECH` + `face, character, scene, text, organic curve`.
 
-### 9.3 `sprite.console.transfer`
+### 9.3 `sprite.console.transfer` [DONE]
 
 **Style:** `STYLE_SPRITE_TECH`. **Frame:** `FRAME_ENTITY_CONCEPT`. **File:**
 `shared/sprites/console-transfer.png`.
@@ -423,7 +448,7 @@ base at the bottom padding line; warm tint check; no text; ≤16 KB each.
 
 ## 10. Props
 
-### 10.1 `sprite.prop.route_plug`
+### 10.1 `sprite.prop.route_plug` [DONE]
 
 **Style:** `STYLE_SPRITE_TECH`. **Frame:** `FRAME_ENTITY_CONCEPT`. **File:**
 `shared/sprites/prop-route-plug.png`.
@@ -434,7 +459,7 @@ SUBJECT: A small cyan route plug: a jumper connector with two metal pins, a thum
 
 **Negative:** `NEGATIVE_TECH` + `face, eyes, character, scene, text, organic curve`.
 
-### 10.2 `sprite.prop.work_token` (optional)
+### 10.2 `sprite.prop.work_token` (optional) [DONE]
 
 **Style:** `STYLE_SPRITE_TECH`. **Frame:** `FRAME_ENTITY_CONCEPT`. **File:**
 `shared/sprites/prop-work-token.png`.
@@ -450,11 +475,15 @@ language; work token reads as a gear, not a coin; warm tint check; no text;
 ≤16 KB each. The work token is optional; do not add it to the manifest unless
 the room references it.
 
+**Runtime (2026-11-02):** not wired. The room does not reference it; the source
+was processed for review only. Preview:
+`art-source/previews/nanobanan/silicon/prop-work-token-8x.png`.
+
 ---
 
 ## 11. Sockets
 
-### 11.1 `sprite.socket.controller`
+### 11.1 `sprite.socket.controller` [DONE]
 
 **Style:** `STYLE_SPRITE_TECH`. **Frame:** `FRAME_ENTITY_CONCEPT`. **File:**
 `shared/sprites/socket-controller.png`.
@@ -465,7 +494,7 @@ SUBJECT: A controller socket: a bone-white ceramic frame around an open, cold cy
 
 **Negative:** `NEGATIVE_TECH` + `keyhole, lock, mechanical key, face, text, organic valve`.
 
-### 11.2 `sprite.socket.cpu`
+### 11.2 `sprite.socket.cpu` [DONE]
 
 **Style:** `STYLE_SPRITE_TECH`. **Frame:** `FRAME_ENTITY_CONCEPT`. **File:**
 `shared/sprites/socket-cpu.png`.
@@ -484,7 +513,7 @@ check; no text; ≤16 KB each.
 
 ## 12. Gate and exit
 
-### 12.1 `sprite.gate.actuator`
+### 12.1 `sprite.gate.actuator` [DONE]
 
 **Style:** `STYLE_SPRITE_TECH`. **Frame:** `FRAME_ENTITY_CONCEPT`. **File:**
 `shared/sprites/gate-actuator.png`.
@@ -510,8 +539,15 @@ SUBJECT: A Silicon exit port: a graphite ring with a cold cyan-lit interior, two
 
 **Negative:** `NEGATIVE_TECH` + `face, character, text, organic valve, gore`.
 
-**Acceptance:** Reads as a destination at 36×36; cold light is visible; distinct
-from the actuator gate; no character; no text; ≤16 KB.
+**Acceptance:** Reads as a destination at the runtime size; cold light is
+visible; distinct from the actuator gate; no character; no text; ≤16 KB.
+The current manifest uses ADR-0075 `hero-1x` 64×64 for interactables, not the
+older 18×18/36×36 table in §14.1.
+
+**Decision (2026-11-03):** no Silicon-specific source exists, and reusing
+`sprite.exit` is rejected because its organic bone/membrane ring and warm light
+break the Silicon tech style. Keep the placeholder and licence slot open until
+a dedicated source is generated.
 
 ---
 
@@ -541,6 +577,8 @@ text; optional, does not block the level.
 | Type | Source | Runtime | Format |
 |---|---|---|---|
 | Entity / scan / prop / socket / gate / exit | 18×18 | 36×36 at 2× | PNG with alpha |
+| **Superseded by ADR-0075:** hero interactables / gates / exit | — | **64×64 at 1×** | PNG with alpha |
+| **Superseded by ADR-0075:** agents | — | **96×96 at 1×** | PNG with alpha |
 | Background sky | 640×368 | 1280×736 cover at 2× | lossless WebP/PNG |
 | Parallax | 1024×512 | tile 1:1, 2×2 clusters | lossless WebP/PNG with alpha |
 | Atlas | 128×128 | 32×32 frames at 1:1 | PNG, opaque cells |
@@ -709,7 +747,9 @@ In order:
 1. Defer `ui.portrait.cpu` and `sprite.prop.work_token`.
 2. Defer the five scans and `sprite.pad.sensor`; keep the visible pads as
    placeholders.
-3. Defer `sprite.exit.silicon`; reuse `sprite.exit`.
+3. Defer `sprite.exit.silicon`; do **not** reuse the organic/warm anatomy
+   `sprite.exit`. Keep the Silicon placeholder until a dedicated tech-style
+   source exists.
 4. Keep the four backgrounds, the material atlas, the CPU agent, the route
    plug, the controller/CPU sockets, and the actuator gate. Those carry the
    puzzle’s meaning.
@@ -730,3 +770,100 @@ final asset.
 - [ ] The runtime still passes `pack:validate`, `pack:smoke`, `npm test`,
   `npm run build`, and `git diff --check`.
 - [ ] Prompt log complete; failed rows retained.
+
+---
+
+## 19. Asset pass log — 2026-11-02
+
+**Status:** 13 files integrated (sky + 12 entity sprites). `sprite.scan.interrupt`
+and `tile.circuit.atlas` remain placeholders. `sprite.prop.work_token` was
+processed for review only and is not in the manifest. The 2026-11-02 catalog
+phase then flipped the pack to `available` and added the hub/e2e and pack-smoke
+paths; no art files changed after the asset pass.
+
+**Next phase:** completed in the 2026-11-02 catalog/hub phase; see §19.2.
+
+**Source folder:** `art-source/nanobanan/new-silicon/`.
+
+**Palette:** `art-source/nanobanan/palette.json`; Silicon ramps only:
+`teal`, `bone`, `boneShadow`, `joint`, `sage`, `ink`. Nerve amber and muscle
+pink were excluded from the quantiser.
+
+**Key settings:** `npm run art:key`; `#ff00ff`, tolerance `0.18`, softness
+`0.08`, alpha threshold `0.5`, despill on, **no `--trim`**; 512 px previews on
+`#101a20`.
+
+**Fit settings:** `npm run art:fit -- --config
+art-source/nanobanan/fit.silicon.config.json`; cell 18×18, margin 1, alpha
+threshold 128, max bytes 16384, min readable 8 px, max palette distance 64;
+previews at 2× and 8× on `#101a20`; tint preview at 2×.
+
+**Sky cleanup:** 2720×1568 source → crop 2720×1564 at y=2 → Lanczos
+1280×736 → six-ramp palette with 2×2 Bayer dither (`bayer_scale=1`) → lossless
+WebP, 99,538 bytes. No keying, no lossy WebP.
+
+**Atlas cleanup:** direct 2048→128 area downscale, 16-crop sampling, and
+16-crop + mask-edge assemblies were tested with exact palette quantisation and
+2×2 snap. All passed palette/alpha/2×2 checks, but the direct downscale lost the
+traces and the 16-crop assemblies were non-tileable and too bright in a
+1280×736 room simulation. The SVG placeholder is retained; no runtime PNG was
+written.
+
+### 19.1 Per-asset log
+
+| Asset | Source | Key report | Fit/report | Verdict | Licence |
+|---|---|---|---|---|---|
+| `bg.silicon_board.sky` | `bg-silicon_board-sky.jpeg` | — (opaque) | `reports/silicon/silicon-board-sky.report.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.agent.cpu` | `sprite-agent-cpu.jpeg` | `reports/silicon/agent-cpu.key.json` | `reports/silicon/agent-cpu.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.console.sensor` | `sprite-console-sensor.jpeg` | `reports/silicon/console-sensor.key.json` | `reports/silicon/console-sensor.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.console.transfer` | `sprite-console-transfer.jpeg` | `reports/silicon/console-transfer.key.json` | `reports/silicon/console-transfer.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.gate.actuator` | `sprite-gate-actuator.jpeg` | `reports/silicon/gate-actuator.key.json` | `reports/silicon/gate-actuator.fit.json` | integrated; cyan piston lost at 18×18 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.pad.sensor` | `sprite-pad-sensor.jpeg` | `reports/silicon/pad-sensor.key.json` | `reports/silicon/pad-sensor.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.prop.route_plug` | `sprite-prop-route_plug.jpeg` | `reports/silicon/prop-route-plug.key.json` | `reports/silicon/prop-route-plug.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.scan.actuator` | `sprite-scan-actuator.jpeg` | `reports/silicon/scan-actuator.key.json` | `reports/silicon/scan-actuator.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.scan.controller` | `sprite-scan-controller.jpeg` | `reports/silicon/scan-controller.key.json` | `reports/silicon/scan-controller.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.scan.cpu` | `sprite-scan-cpu.jpeg` | `reports/silicon/scan-cpu.key.json` | `reports/silicon/scan-cpu.fit.json` | integrated; palette-distance warning 76.8 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.scan.interrupt` | `sprite-scan-interrupt.jpeg` | `reports/silicon/scan-interrupt.key.json` | `reports/silicon/scan-interrupt.fit.json` | placeholder; 32×7, 220 opaque, 80 ink/25 joint | POC label, not wired |
+| `sprite.scan.sensor` | `sprite-scan-sensor.jpeg` | `reports/silicon/scan-sensor.key.json` | `reports/silicon/scan-sensor.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.socket.controller` | `sprite-socket-controller.jpeg` | `reports/silicon/socket-controller.key.json` | `reports/silicon/socket-controller.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.socket.cpu` | `sprite-socket-cpu.jpeg` | `reports/silicon/socket-cpu.key.json` | `reports/silicon/socket-cpu.fit.json` | integrated 2026-11-02 | `Ludo.ai source (POC; plan TBD)` |
+| `sprite.prop.work_token` | `sprite-prop-work_token.jpeg` | `reports/silicon/prop-work-token.key.json` | `reports/silicon/prop-work-token.fit.json` | review only; not wired | POC label, not wired |
+| `tile.circuit.atlas` | `tile-circuit-atlas.jpeg` | — | `reports/silicon/circuit-atlas.report.json` | placeholder; SVG retained | `CC0-1.0` (SVG placeholder) |
+
+Report paths are relative to `art-source/nanobanan/`. Runtime previews are in
+`art-source/previews/nanobanan/silicon/`; the 2× and 8× contact sheets are
+`contact-2x.png` and `contact-8x.png`. The atlas attempts are
+`circuit-atlas-128-direct-4x.png`, `circuit-atlas-16crop-4x.png`,
+`circuit-atlas-mask-edge-4x.png`, and `circuit-atlas-room-sim.png`.
+
+### 19.2 Catalog, hub, e2e, and pack-smoke — 2026-11-02
+
+This phase did not change art, manifests, licences, reports, or previews.
+
+- **Catalog:** `public/packs/index.json` marks `silicon-reflex` as `available`
+  with `online: false`. The description is present tense. `anatomy-reflex` is
+  unchanged. `pack:validate` now reports `silicon-reflex: available`; the
+  “visible but not installed yet” warning is gone.
+- **Hub and app-state:** `e2e/hub.spec.ts` expects an available, selectable
+  Silicon card, selects it from `/?pack=silicon-reflex`, starts it, and checks
+  the HUD title **Interrupt Loop**. `tests/app-state.test.ts` keeps
+  `anatomy-reflex` as the default and asserts Silicon is selectable with status
+  `available`. The bathroom-hub final-art and anatomy return tests are intact.
+- **Pack smoke:** `scripts/pack-smoke.ts` adds a Silicon runtime path. It
+  resolves the pack assets, boots `01-interrupt-loop` / `room-interrupt-loop`,
+  checks spawn/ground/camera/movement/jump/land cues, runs the CPU Core
+  conversation and sensor scan, activates the puzzle at the sensor console,
+  presses the sensor pad, carries the route plug to the controller socket,
+  waits for the 60-tick timer, asserts `gateOpen gate-actuator`, exits to the
+  debrief, and restores the save. The anatomy path is unchanged.
+- **Validation:** `npm test` passed **49 files / 469 tests**;
+  `npm run pack:validate`, `npm run pack:smoke`, `npm run smoke:e2e`
+  (**8 passed**), `npm run build`, and `git diff --check` passed. The build
+  keeps the existing chunk-size warning.
+- **Warnings:** Silicon keeps `COVERAGE_OBJECTIVE_UNMAPPED` OBJ-1..OBJ-4 and
+  `COVERAGE_CONCEPT_UNMAPPED` CON-1..CON-6. Anatomy forward-reference warnings
+  are unrelated. The catalog warning is gone.
+- **Captures:** no capture-list artifact in the repository required a new
+  still. The Silicon start path asserts the HUD title **Interrupt Loop**.
+- **Still deferred:** far/mid/near backgrounds, exit, portrait, atlas PNG,
+  scan-interrupt icon, audio, human solo/co-op playtests, and 05 Reflex Core.

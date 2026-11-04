@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "character": "neuron-agent",
-  "cell": { "width": 18, "height": 18 },
+  "cell": { "width": 96, "height": 96 },
   "origin": [0.5, 1],
   "requiredClips": ["idle", "idle-loop"],
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
   "ramps": ["teal", "bone", "boneShadow", "nerve", "joint", "sage", "ink"],
-  "previewScale": 8,
+  "previewScale": 2,
   "sources": {
     "idle-36": {
       "sheet": "sprite-max-px-frames-36-rows-6-cols-6/sprite-max-px-frames-36-rows-6-cols-6.png",

@@ -12,7 +12,10 @@
     "text": "#f5f0e6",
     "muted": "#aab8b0",
     "accent": "#7bdff2",
-    "danger": "#ef476f"
+    "danger": "#ef476f",
+    "appliance": "#5f7378",
+    "applianceShadow": "#263236",
+    "applianceHighlight": "#9fb0ae"
   },
   "fonts": {
     "ui": "Pixelify Sans, monospace",
@@ -23,9 +26,13 @@
     "border": 2,
     "fontScale": 1,
     "reducedMotion": false,
-    "assets": {}
+    "assets": {
+      "anatomy-reflex": "ui.icon.cycle.anatomy",
+      "silicon-reflex": "ui.icon.cycle.silicon"
+    }
   },
   "audio": {
+    "music": "audio.music.menu",
     "cues": {
       "click": "audio.cue.hub.click",
       "door": "audio.cue.hub.door",

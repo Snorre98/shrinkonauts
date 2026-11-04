@@ -188,5 +188,5 @@ paths.
 - `docs/m1.8/README.md`
 - `docs/puzzle-engine/material-pattern-implementation-plan.md`
 - `docs/m2/nervous-puzzles/README.md`
-- `docs/m3/asset-requirements.md`
+- `docs/m3/asset-requirements-v01.md`
 - ADR-0009–0017, ADR-0034–0046

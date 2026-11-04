@@ -1,9 +1,14 @@
 {
   "schemaVersion": 1,
   "id": "sprite.scan.reflex",
+  "class": "ui-1x",
   "status": "placeholder",
-  "missingReason": "The two-cell loop reads, but the dorsal/ventral roots and muscle spindle do not read at 36x36. The reserve is not referenced by 03/04.",
-  "notes": "Preview retained as evidence; no room reference and no runtime write.",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "missingReason": "The two-cell loop reads, but the dorsal/ventral roots and muscle spindle do not read at 36×36.",
   "config": "fit.new.config.json",
   "source": {
     "path": "art-source/nanobanan/keyed/scan-reflex.png",
@@ -20,23 +25,29 @@
     "path": "art-source/nanobanan/keyed/fit/scan-reflex.png",
     "runtime": false,
     "written": false,
-    "width": 18,
-    "height": 18,
-    "bytes": 794
+    "width": 36,
+    "height": 36,
+    "bytes": 2084
   },
   "cell": {
-    "width": 18,
-    "height": 18
+    "width": 36,
+    "height": 36
   },
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 57.625,
   "ramps": [
     "teal",
     "bone",
     "boneShadow",
     "nerve",
     "joint",
-    "muscle",
     "sage",
     "ink"
   ],
@@ -47,51 +58,53 @@
     "height": 1702
   },
   "fit": {
-    "width": 16,
-    "height": 15,
-    "offsetX": 1,
-    "offsetY": 2,
-    "scale": 0.008677,
+    "width": 32,
+    "height": 30,
+    "offsetX": 2,
+    "offsetY": 4,
+    "scale": 0.017354,
     "upscaled": false
   },
   "finalBounds": {
-    "x": 1,
-    "y": 2,
-    "width": 16,
-    "height": 15
+    "x": 2,
+    "y": 4,
+    "width": 32,
+    "height": 30
   },
   "margins": {
-    "top": 2,
-    "right": 1,
-    "bottom": 1,
-    "left": 1
+    "top": 4,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
   },
   "quantization": {
-    "changedPixels": 133,
-    "maxDistance": 71.028,
-    "offPalettePixels": 133,
+    "changedPixels": 533,
+    "maxDistance": 81.896,
+    "offPalettePixels": 533,
     "alphaViolations": 0
   },
   "paletteValidation": {
     "offPalettePixels": 0,
     "alphaViolations": 0,
-    "opaquePixels": 133
+    "opaquePixels": 533
   },
   "rampHistogram": {
-    "sage": 45,
-    "nerve": 4,
-    "boneShadow": 69,
-    "muscle": 8,
-    "bone": 7
+    "joint": 34,
+    "sage": 111,
+    "nerve": 69,
+    "boneShadow": 218,
+    "bone": 81,
+    "ink": 20
   },
   "warnings": [
     "source content touches the image border (t 450, b 411, l 267, r 248); the concept plate may be clipped",
-    "no joint-ramp pixels survived; the cyan scan rim may be missing",
-    "max palette quantisation distance 71.0 exceeds 64"
+    "source-to-fit scale 57.6:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 81.9 exceeds 24"
   ],
   "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/scan-reflex-1x.png",
     "scale2x": "art-source/previews/nanobanan/entities/scan-reflex-2x.png",
-    "scale8x": "art-source/previews/nanobanan/entities/scan-reflex-8x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/scan-reflex-4x.png",
     "tint2x": "art-source/previews/nanobanan/entities/scan-reflex-tint-2x.png"
   }
 }

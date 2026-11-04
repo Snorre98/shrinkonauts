@@ -32,6 +32,8 @@
       "text": "Exactly. Press both dendrite inputs to reach threshold, then follow the axon to the terminal. Scan the neuron, myelin, and pathway labels if you want the details.",
       "effects": [
         { "type": "revealConcept", "conceptId": "CON-3" },
+        { "type": "revealConcept", "conceptId": "CON-5" },
+        { "type": "revealFact", "factId": "NERV-01#5" },
         { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-3" },
         { "type": "revealMap", "nodeId": "map-nerve-forest" }
       ],

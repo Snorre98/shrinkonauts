@@ -11,12 +11,28 @@ import {
   stepRoomSimulation,
   stepRoomSimulationWithCues,
 } from "../src/world/simulation";
-import { loadContent, packDirectory } from "../scripts/content-loader";
-
-const content = loadContent(packDirectory("anatomy-reflex"));
-const room = content.rooms["room-nerve-forest"];
-
-if (!room) throw new Error("room-nerve-forest is missing");
+const BORDER_ROW = `#${" ".repeat(38)}#`;
+const GROUND_ROW = "#".repeat(40);
+const room: RoomDocument = {
+  schemaVersion: "1.0",
+  id: "room.physics-test",
+  title: "Physics Test Arena",
+  width: 40,
+  height: 23,
+  tileSize: 32,
+  tileset: "tileset.test",
+  layers: {
+    tiles: [
+      ...Array.from({ length: 20 }, () => BORDER_ROW),
+      ...Array.from({ length: 3 }, () => GROUND_ROW),
+    ],
+  },
+  background: { id: "bg.test", layers: [] },
+  spawns: {
+    player1: { x: 3, y: 20 },
+    player2: { x: 5, y: 20 },
+  },
+};
 
 function settled() {
   const simulation = createRoomSimulation(room, { width: 1280, height: 720 });

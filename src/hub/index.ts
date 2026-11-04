@@ -8,9 +8,13 @@ export { validateHub } from "./validate";
 export type { HubValidationInput, HubValidationResult } from "./validate";
 export type {
   HubAudio,
+  HubCartridgeSlot,
   HubDocument,
+  HubDressing,
+  HubDressingEntry,
   HubIntro,
   HubMachine,
+  HubOrigin,
   HubPlayer,
   HubPoint,
   HubRect,

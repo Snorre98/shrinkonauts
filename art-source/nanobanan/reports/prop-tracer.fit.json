@@ -1,8 +1,14 @@
 {
   "schemaVersion": 1,
   "id": "sprite.prop.tracer",
-  "status": "poc-integrated",
-  "notes": "Triangular ACh packet with rear tabs reads at 36x36. No joint-ramp pixels survived, so the cyan rim is absent.",
+  "class": "hero-prop",
+  "status": "fit-preview",
+  "treatment": "hero-prop",
+  "display": {
+    "width": 48,
+    "height": 48
+  },
+  "notes": "Hero re-fit at 48×48. Triangular ACh packet with rear tabs; the cyan rim is partial.",
   "config": "fit.new.config.json",
   "source": {
     "path": "art-source/nanobanan/keyed/prop-tracer.png",
@@ -18,17 +24,24 @@
   "output": {
     "path": "public/packs/anatomy-reflex/shared/sprites/prop-tracer.png",
     "runtime": true,
-    "written": true,
-    "width": 18,
-    "height": 18,
-    "bytes": 703
+    "written": false,
+    "width": 48,
+    "height": 48,
+    "bytes": 3302
   },
   "cell": {
-    "width": 18,
-    "height": 18
+    "width": 48,
+    "height": 48
   },
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 32,
+    "minOpaquePixels": 600,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 12
+  },
+  "sourceScale": 34,
   "ramps": [
     "teal",
     "bone",
@@ -46,53 +59,55 @@
     "height": 1292
   },
   "fit": {
-    "width": 16,
-    "height": 14,
-    "offsetX": 1,
-    "offsetY": 3,
-    "scale": 0.010695,
+    "width": 44,
+    "height": 38,
+    "offsetX": 2,
+    "offsetY": 8,
+    "scale": 0.029412,
     "upscaled": false
   },
   "finalBounds": {
-    "x": 1,
-    "y": 3,
-    "width": 16,
-    "height": 14
+    "x": 2,
+    "y": 8,
+    "width": 44,
+    "height": 38
   },
   "margins": {
-    "top": 3,
-    "right": 1,
-    "bottom": 1,
-    "left": 1
+    "top": 8,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
   },
   "quantization": {
-    "changedPixels": 127,
-    "maxDistance": 91.241,
-    "offPalettePixels": 127,
+    "changedPixels": 930,
+    "maxDistance": 90.244,
+    "offPalettePixels": 930,
     "alphaViolations": 0
   },
   "paletteValidation": {
     "offPalettePixels": 0,
     "alphaViolations": 0,
-    "opaquePixels": 127
+    "opaquePixels": 930
   },
   "rampHistogram": {
-    "ink": 18,
-    "boneShadow": 47,
-    "sage": 24,
-    "muscle": 17,
-    "bone": 13,
-    "nerve": 6,
-    "teal": 2
+    "teal": 123,
+    "ink": 100,
+    "joint": 9,
+    "boneShadow": 184,
+    "sage": 139,
+    "bone": 161,
+    "muscle": 172,
+    "nerve": 42
   },
   "warnings": [
     "source content touches the image border (t 80, b 124, l 145, r 82); the concept plate may be clipped",
-    "no joint-ramp pixels survived; the cyan scan rim may be missing",
-    "max palette quantisation distance 91.2 exceeds 64"
+    "source-to-fit scale 34.0:1 exceeds the 12:1 treatment limit",
+    "max palette quantisation distance 90.2 exceeds 24"
   ],
   "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/prop-tracer-1x.png",
     "scale2x": "art-source/previews/nanobanan/entities/prop-tracer-2x.png",
-    "scale8x": "art-source/previews/nanobanan/entities/prop-tracer-8x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/prop-tracer-4x.png",
     "tint2x": "art-source/previews/nanobanan/entities/prop-tracer-tint-2x.png"
   }
 }

@@ -8,7 +8,6 @@
   "tileset": "tileset.anatomy",
   "layers": {
     "tiles": [
-      "########################################",
       "#                                      #",
       "#                                      #",
       "#                                      #",
@@ -18,22 +17,22 @@
       "#                                      #",
       "#                                      #",
       "#                                      #",
+      "#                             ######## #",
+      "#                       ######         #",
+      "#                   ###                #",
+      "#               ###                    #",
       "#                                      #",
+      "#            ###                   ### #",
       "#                                      #",
+      "#         ###                          #",
       "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
+      "#      ###                             #",
       "#                                      #",
       "########################################",
       "########################################"
     ]
   },
   "tileMaterials": [
-    "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
     "m                                      m",
     "m                                      m",
     "m                                      m",
@@ -43,22 +42,29 @@
     "m                                      m",
     "m                                      m",
     "m                                      m",
+    "m                             mmmmmmmm m",
+    "m                       eeeeee         m",
+    "m                   eee                m",
+    "m               eee                    m",
     "m                                      m",
+    "m            eee                   mmm m",
     "m                                      m",
+    "m         eee                          m",
     "m                                      m",
-    "m                                      m",
-    "m                                      m",
-    "m                                      m",
-    "m                                      m",
-    "m                                      m",
-    "m                                      m",
+    "m      eee                             m",
     "m                                      m",
     "eeeemmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
     "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
   ],
   "tileMaterialLegend": {
-    "m": { "materialId": "muscle", "autotile": "edge" },
-    "e": { "materialId": "membrane", "autotile": "corner" }
+    "m": {
+      "materialId": "muscle",
+      "autotile": "edge"
+    },
+    "e": {
+      "materialId": "membrane",
+      "autotile": "edge"
+    }
   },
   "defaultMaterialId": "muscle",
   "materialSeed": 7,
@@ -130,13 +136,16 @@
       "sprite": "sprite.agent.neuron",
       "idleAnimation": "sprite.agent.neuron.idle",
       "dialogueId": "dlg-muscle-01",
-      "label": "Muscle Effector"
+      "label": "Muscle Effector",
+      "presentation": {
+        "role": "npc"
+      }
     },
     {
       "id": "motor-terminal",
       "type": "pulseSource",
-      "x": 9,
-      "y": 20,
+      "x": 8,
+      "y": 18,
       "sprite": "sprite.pulse.terminal",
       "label": "Motor terminal",
       "components": {
@@ -144,24 +153,31 @@
           "ability": "pulse"
         },
         "anchors": {
-          "muzzle": { "x": 32, "y": 16, "direction": 0 }
+          "muzzle": {
+            "x": 56,
+            "y": 32,
+            "direction": 0
+          }
         }
       }
     },
     {
       "id": "pad-terminal",
       "type": "scanTarget",
-      "x": 11,
-      "y": 20,
-      "sprite": "sprite.scan.synapse",
+      "x": 14,
+      "y": 14,
+      "sprite": "sprite.pad.terminal",
       "conceptId": "CON-4",
-      "label": "Terminal plate"
+      "label": "Terminal plate",
+      "presentation": {
+        "role": "interactable"
+      }
     },
     {
       "id": "body-ach-packet",
       "type": "body",
-      "x": 13,
-      "y": 20,
+      "x": 17,
+      "y": 12,
       "components": {
         "body": {
           "width": 20,
@@ -176,14 +192,16 @@
     {
       "id": "ach-packet",
       "type": "prop",
-      "x": 13,
-      "y": 20,
+      "x": 17,
+      "y": 12,
       "sprite": "sprite.prop.tracer",
       "label": "ACh packet (signal token)",
       "components": {
         "prop": {
           "bodyId": "body-ach-packet",
-          "tags": ["ach"],
+          "tags": [
+            "ach"
+          ],
           "shape": "triangle",
           "carryable": true,
           "placeable": true,
@@ -195,24 +213,27 @@
     {
       "id": "ca-gate",
       "type": "puzzleGate",
-      "x": 14,
-      "y": 20,
+      "x": 20,
+      "y": 11,
       "sprite": "sprite.gate.nerve",
-      "label": "Ca²⁺ gate",
+      "label": "Ca\u00b2\u207a gate",
       "components": {
         "gate": {
           "gateId": "ca-gate"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": {
+            "x": 32,
+            "y": 32
+          }
         }
       }
     },
     {
       "id": "scan-cleft",
       "type": "scanTarget",
-      "x": 16,
-      "y": 18,
+      "x": 27,
+      "y": 10,
       "sprite": "sprite.scan.synapse",
       "conceptId": "CON-4",
       "label": "Synaptic cleft"
@@ -220,8 +241,8 @@
     {
       "id": "nicotinic-receptor",
       "type": "receptor",
-      "x": 22,
-      "y": 20,
+      "x": 34,
+      "y": 9,
       "sprite": "sprite.receptor.triangle",
       "label": "Nicotinic receptor",
       "components": {
@@ -229,20 +250,24 @@
           "acceptsTag": "ach",
           "acceptsShape": "triangle",
           "snap": {
-            "x": 720,
-            "y": 620
+            "x": 1104,
+            "y": 268
           }
         },
         "anchors": {
-          "mouth": { "x": 4, "y": 16, "direction": 3.14159 }
+          "mouth": {
+            "x": 7,
+            "y": 28,
+            "direction": 3.14159
+          }
         }
       }
     },
     {
       "id": "scan-receptor",
       "type": "scanTarget",
-      "x": 22,
-      "y": 18,
+      "x": 34,
+      "y": 8,
       "sprite": "sprite.scan.synapse",
       "conceptId": "CON-4",
       "label": "Nicotinic receptor"
@@ -250,8 +275,8 @@
     {
       "id": "wrong-receptor",
       "type": "receptor",
-      "x": 26,
-      "y": 20,
+      "x": 31,
+      "y": 9,
       "sprite": "sprite.receptor.circle",
       "label": "Wrong receptor",
       "components": {
@@ -259,20 +284,24 @@
           "acceptsTag": "ach",
           "acceptsShape": "circle",
           "snap": {
-            "x": 848,
-            "y": 620
+            "x": 1008,
+            "y": 268
           }
         },
         "anchors": {
-          "mouth": { "x": 4, "y": 16, "direction": 3.14159 }
+          "mouth": {
+            "x": 7,
+            "y": 28,
+            "direction": 3.14159
+          }
         }
       }
     },
     {
       "id": "scan-muscle",
       "type": "scanTarget",
-      "x": 29,
-      "y": 19,
+      "x": 35,
+      "y": 13,
       "sprite": "sprite.scan.muscle",
       "conceptId": "CON-6",
       "label": "Muscle effector"
@@ -280,8 +309,8 @@
     {
       "id": "muscle-gate",
       "type": "puzzleGate",
-      "x": 33,
-      "y": 20,
+      "x": 37,
+      "y": 9,
       "sprite": "sprite.gate.ferry",
       "label": "Muscle gate",
       "components": {
@@ -289,7 +318,10 @@
           "gateId": "muscle-gate"
         },
         "anchors": {
-          "center": { "x": 18, "y": 18 }
+          "center": {
+            "x": 32,
+            "y": 32
+          }
         },
         "material": {
           "materialId": "muscle",
@@ -306,22 +338,36 @@
     {
       "id": "exit-muscle",
       "type": "decor",
-      "x": 35,
-      "y": 19,
+      "x": 37,
+      "y": 13,
       "sprite": "sprite.exit",
-      "label": "Muscle lever / exit"
+      "label": "Muscle lever / exit",
+      "presentation": {
+        "role": "interactable"
+      }
     }
   ],
   "exits": [
     {
       "id": "exit-to-reflex-core",
-      "x": 36,
-      "y": 19,
+      "x": 37,
+      "y": 13,
       "width": 1,
       "height": 1,
       "toLevelId": "05-reflex-core",
       "puzzleId": "puzzle-endplate-ferry"
     }
   ],
-  "triggers": []
+  "triggers": [],
+  "infoAreas": [
+    {
+      "id": "info-endplate-ferry",
+      "x": 4,
+      "y": 7,
+      "width": 34,
+      "height": 13,
+      "puzzleId": "puzzle-endplate-ferry"
+    }
+  ],
+  "music": "audio.music.muscle_effector"
 }

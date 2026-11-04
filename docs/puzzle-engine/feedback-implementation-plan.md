@@ -498,6 +498,8 @@ Tasks:
 
 - Detect no puzzle-state change for a bounded tick count while unsolved.
 - Surface an inline “Show hint / Reset puzzle” affordance; do not auto-reveal.
+  Superseded by ADR-0019: the affordance is now request-gated by scan inside an
+  authored info area and expires after a short TTL.
 - Record a diagnostic counter or learning event; do not make it evidence.
 - Reset remains available before solve.
 
@@ -839,7 +841,7 @@ top of wrong link dispatch is worse than no feedback.
 | `tests/feedback-effects.test.ts` | direction, path, follow, cancel, attribution |
 | `tests/tile-visuals.test.ts` | apply/revert, no collision change |
 | `tests/anchors.test.ts` | projection, sockets, resize, off-screen fallback |
-| `tests/runtime.test.ts` | facts, surfaces, co-op input, conversations, stuck state |
+| `tests/runtime.test.ts` | facts, surfaces, co-op input, conversations, requested help |
 | `tests/save.test.ts` | conversation save/restore and old dialogue migration |
 | `tests/boundaries.test.ts` | module graph and no feedback in world |
 | `e2e/m1.spec.ts` | browser flow, conversations, reduced motion |

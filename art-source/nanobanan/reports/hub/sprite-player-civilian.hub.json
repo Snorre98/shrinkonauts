@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.player.civilian",
+  "source": {
+    "path": "art-source/nanobanan/keyed/hub-civilian.png",
+    "width": 707,
+    "height": 1434
+  },
+  "crop": null,
+  "masks": [],
+  "cell": {
+    "width": 32,
+    "height": 64
+  },
+  "margin": 0,
+  "align": "bottom-center",
+  "anchor": null,
+  "fit": {
+    "sourceBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 707,
+      "height": 1434
+    },
+    "fit": {
+      "width": 32,
+      "height": 64,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "margins": {
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    }
+  },
+  "quantized": true,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink",
+    "appliance"
+  ],
+  "palette": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 1181
+  },
+  "bytes": 3256,
+  "maxBytes": 16384,
+  "output": "public/hub/bathroom/shared/sprites/civilian.png",
+  "note": null
+}

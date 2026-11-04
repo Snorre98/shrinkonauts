@@ -60,27 +60,24 @@ abstraction, not a literal vesicle carried by the player.
 
 ```text
 +--------------------------------------------------------------+
-|  Motor end plate                                              |
-|                                                              |
-|  [motor terminal]                                             |
-|    [terminal plate] ---> [Ca2+ window timer] ---> [Ca2+ gate]|
-|         |                                             |       |
-|    [pulse terminal]                                  |       |
-|         |                                     [cleft bridge] |
-|         |                                             |       |
-|         +----------------------[nicotinic receptor]---+       |
-|                                      |                       |
-|                              [wrong receptor] (optional)      |
-|                                      |                       |
-|                              [muscle gate]                   |
-|                                      |                       |
-|                              [muscle lever / exit]            |
+|  Presynaptic side                 |  Postsynaptic muscle side |
+|                                   |                           |
+|  [vesicle dock / ACh packet]      |  [nicotinic receptor]     |
+|         |                         |  [wrong receptor]         |
+|  [terminal plate] --Ca2+ gate---> |  [muscle gate]            |
+|         ^                         |        |                  |
+|  [motor terminal / pulse]         |  [exit platform]          |
+|         |                         |                           |
+|  presynaptic tower                |  muscle side              |
 +--------------------------------------------------------------+
 ```
 
-The cleft is visible. The Ca²⁺ gate blocks the bridge until the terminal beat.
-The nicotinic receptor is on the muscle side; the wrong receptor is a nearby
-socket that rejects the ACh packet. The muscle gate is the exit to 05.
+The cleft is the vertical gap between the presynaptic tower and the postsynaptic
+platform. The Ca²⁺ gate sits at the presynaptic edge; the ACh packet is carried
+across the elevated bridge to the receptors. The nicotinic and wrong receptors
+are both on the muscle side, so the packet never has to cross back. The muscle
+gate and exit are beyond the receptors. The motor terminal stays on the
+presynaptic side for the pulse beat, so P1 must descend the tower before pulsing.
 
 ## 5. Puzzle rules
 

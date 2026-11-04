@@ -15,6 +15,7 @@ const ENTITY_IDS = [
   "sprite.scan.neuron",
   "sprite.scan.synapse",
   "sprite.scan.pathway",
+  "sprite.scan.myelin",
   "sprite.scan.muscle",
   "sprite.gate.ferry",
   "sprite.prop.tracer",
@@ -33,6 +34,8 @@ interface ManifestEntry {
   frames?: number;
   fps?: number;
   loop?: boolean;
+  display?: { width: number; height: number };
+  fidelity?: string;
 }
 
 const manifest = JSON.parse(
@@ -91,11 +94,12 @@ describe("integrated entity sprites", () => {
       expect(entry.license).toBe("Ludo.ai source (POC; plan TBD)");
       const path = join(PACK_DIR, entry.src as string);
       expect(existsSync(path)).toBe(true);
-      expect(statSync(path).size).toBeLessThanOrEqual(16 * 1024);
+      expect(statSync(path).size).toBeLessThanOrEqual(64 * 1024);
 
       const image = decode(entry.src as string);
-      expect(image.width).toBe(18);
-      expect(image.height).toBe(18);
+      const display = entry.display ?? { width: 36, height: 36 };
+      expect(image.width).toBe(display.width);
+      expect(image.height).toBe(display.height);
       expectPaletteAndMargins(image);
 
       expect(
@@ -107,26 +111,48 @@ describe("integrated entity sprites", () => {
     });
   }
 
-  it("keeps the reserve and non-M3 entity placeholders", () => {
+  it("keeps the reserve and remaining placeholder entities declared", () => {
     for (const id of [
       "sprite.scan.reflex",
-      "sprite.gate.nerve",
       "sprite.checkpoint",
-      "sprite.exit",
     ]) {
       expect(manifest.assets[id]?.placeholder, id).toBe(true);
+    }
+  });
+
+  it("ships the final 04 gate and exit sprites at 64x64", () => {
+    for (const id of ["sprite.gate.nerve", "sprite.exit"]) {
+      const entry = manifest.assets[id];
+      expect(entry?.placeholder, id).toBeUndefined();
+      expect(entry?.src, id).toBeDefined();
+      expect(entry?.display, id).toEqual({ width: 64, height: 64 });
+      expect(entry?.license, id).toBe("Nano Banana / Google Gemini (plan TBD)");
+      if (!entry?.src) continue;
+      const path = join(PACK_DIR, entry.src);
+      expect(existsSync(path)).toBe(true);
+      expect(statSync(path).size).toBeLessThanOrEqual(64 * 1024);
+      const image = decode(entry.src);
+      expect(image.width).toBe(64);
+      expect(image.height).toBe(64);
+      expectPaletteAndMargins(image);
+      expect(
+        licences.assets.some(
+          (licence) =>
+            licence.file === entry.src && licence.license === entry.license,
+        ),
+      ).toBe(true);
     }
   });
 });
 
 describe("Neuron Keeper idle sheet", () => {
   const entry = manifest.assets["sprite.agent.neuron.idle"];
-  it("is a 36-frame 18x18 looping sheet with a matching licence", () => {
+  it("is a 36-frame 96x96 looping sheet with a matching licence", () => {
     expect(entry).toBeDefined();
     if (!entry) return;
     expect(entry.type).toBe("sheet");
-    expect(entry.frameWidth).toBe(18);
-    expect(entry.frameHeight).toBe(18);
+    expect(entry.frameWidth).toBe(96);
+    expect(entry.frameHeight).toBe(96);
     expect(entry.frames).toBe(36);
     expect(entry.fps).toBeGreaterThan(0);
     expect(entry.loop).toBe(true);
@@ -141,12 +167,12 @@ describe("Neuron Keeper idle sheet", () => {
 
     const path = join(PACK_DIR, entry.src as string);
     expect(existsSync(path)).toBe(true);
-    expect(statSync(path).size).toBeLessThanOrEqual(64 * 1024);
+    expect(statSync(path).size).toBeLessThanOrEqual(512 * 1024);
     const sheet = decode(entry.src as string);
-    expect(sheet.width).toBe(18 * 36);
-    expect(sheet.height).toBe(18);
+    expect(sheet.width).toBe(96 * 36);
+    expect(sheet.height).toBe(96);
     for (let index = 0; index < 36; index += 1) {
-      expectPaletteAndMargins(frame(sheet, index, 18));
+      expectPaletteAndMargins(frame(sheet, index, 96));
     }
   });
 

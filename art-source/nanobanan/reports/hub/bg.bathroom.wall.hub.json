@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "bg.bathroom.wall",
+  "source": {
+    "path": "art-source/nanobanan/new-main-menu/bg-bathroom-wall.jpeg",
+    "width": 2752,
+    "height": 1536,
+    "sha256": "88181e5f44d8e7543217d29bd7c72355a1c6fcabcd068f6686943c24c3a20461"
+  },
+  "crop": {
+    "x": 296,
+    "y": 0,
+    "width": 2456,
+    "height": 1536
+  },
+  "pad": {
+    "right": 296,
+    "color": "#1b2b2c"
+  },
+  "output": {
+    "path": "public/hub/bathroom/shared/backgrounds/bathroom-wall.webp",
+    "width": 640,
+    "height": 360,
+    "bytes": 149618
+  },
+  "palette": null,
+  "exception": "Scene plate is not palette-quantised: the warm lamp, wall grime and grout survive better at 2x, matching the M3 sky exception."
+}

@@ -1,9 +1,15 @@
 {
   "schemaVersion": 1,
   "id": "sprite.scan.neuron",
+  "class": "ui-1x",
   "status": "placeholder",
-  "missingReason": "1886x1004 plate fits to 16x9; the myelin sleeves, nodes and forked terminals are not legible at 36x36, and the cyan rim is largely lost.",
-  "config": "fit.config.json",
+  "treatment": "ui-1x",
+  "display": {
+    "width": 36,
+    "height": 36
+  },
+  "missingReason": "The myelin sleeves, nodes and forked terminals do not read at 36×36; the cyan rim is largely lost.",
+  "config": "fit.new.config.json",
   "source": {
     "path": "art-source/nanobanan/keyed/sprite-scan-neuron.png",
     "width": 1886,
@@ -12,23 +18,30 @@
       "top": 62,
       "bottom": 62,
       "left": 62,
-      "right": 42
+      "right": 54
     }
   },
   "output": {
     "path": "art-source/nanobanan/keyed/fit/scan-neuron.png",
     "runtime": false,
     "written": false,
-    "width": 18,
-    "height": 18,
-    "bytes": 467
+    "width": 36,
+    "height": 36,
+    "bytes": 1111
   },
   "cell": {
-    "width": 18,
-    "height": 18
+    "width": 36,
+    "height": 36
   },
-  "margin": 1,
+  "margin": 2,
   "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 24,
+    "minOpaquePixels": 300,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 59.059,
   "ramps": [
     "teal",
     "bone",
@@ -45,49 +58,55 @@
     "height": 1004
   },
   "fit": {
-    "width": 16,
-    "height": 9,
-    "offsetX": 1,
-    "offsetY": 8,
-    "scale": 0.008484,
+    "width": 32,
+    "height": 17,
+    "offsetX": 2,
+    "offsetY": 17,
+    "scale": 0.016967,
     "upscaled": false
   },
   "finalBounds": {
-    "x": 1,
-    "y": 8,
-    "width": 16,
-    "height": 9
+    "x": 2,
+    "y": 17,
+    "width": 32,
+    "height": 17
   },
   "margins": {
-    "top": 8,
-    "right": 1,
-    "bottom": 1,
-    "left": 1
+    "top": 17,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
   },
   "quantization": {
-    "changedPixels": 52,
-    "maxDistance": 43.977,
-    "offPalettePixels": 52,
+    "changedPixels": 196,
+    "maxDistance": 63.836,
+    "offPalettePixels": 196,
     "alphaViolations": 0
   },
   "paletteValidation": {
     "offPalettePixels": 0,
     "alphaViolations": 0,
-    "opaquePixels": 52
+    "opaquePixels": 196
   },
   "rampHistogram": {
-    "joint": 5,
-    "sage": 19,
-    "boneShadow": 15,
-    "bone": 5,
-    "nerve": 8
+    "joint": 30,
+    "boneShadow": 63,
+    "sage": 48,
+    "bone": 28,
+    "nerve": 25,
+    "ink": 2
   },
   "warnings": [
-    "source content touches the image border (t 62, b 62, l 62, r 42); the concept plate may be clipped"
+    "source content touches the image border (t 62, b 62, l 62, r 54); the concept plate may be clipped",
+    "fitted content is 32x17; minimum dimension 17px is below the 24px readability policy",
+    "fitted content has 196 opaque pixels; below the 300px minimum",
+    "source-to-fit scale 59.1:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 63.8 exceeds 24"
   ],
   "previews": {
+    "scale1x": "art-source/previews/nanobanan/entities/scan-neuron-1x.png",
     "scale2x": "art-source/previews/nanobanan/entities/scan-neuron-2x.png",
-    "scale8x": "art-source/previews/nanobanan/entities/scan-neuron-8x.png",
+    "scale4x": "art-source/previews/nanobanan/entities/scan-neuron-4x.png",
     "tint2x": "art-source/previews/nanobanan/entities/scan-neuron-tint-2x.png"
   }
 }

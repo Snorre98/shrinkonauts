@@ -73,9 +73,23 @@ art-source/**/working/frames/
 art-source/**/working/tmp/
 art-source/nanobanan/keyed/
 
+# --- GDD asset pack ---
+# Local, generated copies of art/screenshots for the game design document.
+/gdd-assets/
+# Generated GH Pages gallery; built from tracked sources by `npm run gdd:site`.
+/public/gdd/
+# Generated Playwright action shots and their sidecar, merged into the gallery.
+/gdd-captures/
+
 # --- Misc ---
 ._*
 *.pid
 *.seed
 /tmp/
 /temp/
+# SFX generation scratch: raw model takes (WAV) and previews (MP3) — never commit
+# raw WAVs; installed cues are copied into public/ by sfx-generate.ts adopt.
+/var/
+
+# Raw M3.5 hub delivery batch; processed exports live under shared/.
+art-source/nanobanan/new-main-menu/

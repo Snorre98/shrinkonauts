@@ -9,6 +9,7 @@ import { silentLogger } from "../src/core/logger";
 import { NODE_EFFECT_SOCKETS, effectPresetIds } from "../src/feedback";
 import { GameRuntime, type AudioPort, type RuntimeInput } from "../src/game/runtime";
 import {
+  collectLevelBlueprintAssetIds,
   collectMaterialAssetIds,
   collectRoomAssetIds,
   collectRoomMaterialAssetIds,
@@ -238,9 +239,26 @@ function runMode(
 class FakeAudio implements AudioPort {
   muted = false;
   readonly played: string[] = [];
+  readonly themes: string[] = [];
 
   play(assetId: string): void {
     this.played.push(assetId);
+  }
+
+  playTheme(assetId: string): void {
+    this.themes.push(assetId);
+  }
+
+  stopTheme(): void {
+    // The smoke test does not model theme teardown.
+  }
+
+  pauseTheme(): void {
+    // The smoke test does not model pause ramps.
+  }
+
+  resumeTheme(): void {
+    // The smoke test does not model resume ramps.
   }
 
   setMuted(muted: boolean): void {
@@ -253,6 +271,16 @@ function frameInput(
 ): RuntimeInput {
   const base = GameRuntime.emptyInput();
   return { ...base, actions: { ...base.actions, ...overrides } };
+}
+
+function frameAction(
+  player: "p1" | "p2",
+  overrides: Partial<RuntimeInput["actions"]["p1"]>,
+): RuntimeInput {
+  const base = GameRuntime.emptyInput();
+  const actions = { ...base.actions };
+  actions[player] = { ...actions[player], ...overrides };
+  return { ...base, actions };
 }
 
 function walkTo(runtime: GameRuntime, entityId: string): void {
@@ -289,13 +317,42 @@ function walkPlayerTo(
   runtime.placePlayer(playerId, point.x, point.y);
 }
 
+function feetForEntity(runtime: GameRuntime, entityId: string): { x: number; y: number } {
+  const point = runtime.entityPixel(entityId);
+  assert(point, `room entity "${entityId}" is missing`);
+  return point;
+}
+
+function placeAtExit(
+  content: ReturnType<typeof loadContent>,
+  roomId: string,
+  exitId: string,
+): { x: number; y: number } {
+  const room = content.rooms[roomId];
+  assert(room, `room "${roomId}" is missing`);
+  const exit = room.exits?.find((entry) => entry.id === exitId);
+  assert(exit, `exit "${exitId}" is missing`);
+  return {
+    x: (exit.x + 0.5) * room.tileSize,
+    y: (exit.y + 1) * room.tileSize,
+  };
+}
+
 function solveNodeRun(
   runtime: GameRuntime,
   content: ReturnType<typeof loadContent>,
 ): void {
+  const pads: Record<string, string> = {
+    "input-a": "pad-input-a",
+    "input-b": "pad-input-b",
+    "terminal-zone": "pad-terminal",
+  };
   for (const nodeId of ["input-a", "input-b", "terminal-zone"]) {
     const point = sensorCenter(content, "puzzle-node-run", nodeId);
-    runtime.placePlayer("p1", point.x, 20 * 32);
+    const pad = pads[nodeId];
+    assert(pad, `node "${nodeId}" has no visible pad`);
+    const standing = feetForEntity(runtime, pad);
+    runtime.placePlayer("p1", point.x, standing.y);
     runtime.step(1 / 60, frameInput());
   }
   runtime.step(1 / 60, frameInput());
@@ -314,9 +371,13 @@ function solveNodeRun(
   );
 }
 
-function finishNodeRunDebrief(runtime: GameRuntime): void {
-  runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
-  runtime.placePlayer("p2", 36.5 * 32, 20 * 32);
+function finishNodeRunDebrief(
+  runtime: GameRuntime,
+  content: ReturnType<typeof loadContent>,
+): void {
+  const exit = placeAtExit(content, "room-nerve-forest", "exit-to-muscle");
+  runtime.placePlayer("p1", exit.x, exit.y);
+  runtime.placePlayer("p2", exit.x - 32, exit.y);
   runtime.step(1 / 60, frameInput());
   assert(
     runtime.snapshot().state === "debrief",
@@ -360,7 +421,8 @@ function solveEndplateFerry(
   );
 
   const plate = sensorCenter(content, "puzzle-endplate-ferry", "terminal-plate");
-  runtime.placePlayer("p1", plate.x, 20 * 32);
+  const platePad = feetForEntity(runtime, "pad-terminal");
+  runtime.placePlayer("p1", plate.x, platePad.y);
   for (let frame = 0; frame < 90; frame += 1) {
     runtime.step(1 / 60, frameInput());
   }
@@ -397,8 +459,16 @@ function solveEndplateFerry(
   );
 }
 
-function finishEndplateDebrief(runtime: GameRuntime): void {
-  runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+function finishEndplateDebrief(
+  runtime: GameRuntime,
+  content: ReturnType<typeof loadContent>,
+): void {
+  const exit = placeAtExit(
+    content,
+    "room-muscle-effector",
+    "exit-to-reflex-core",
+  );
+  runtime.placePlayer("p1", exit.x, exit.y);
   runtime.step(1 / 60, frameInput());
   assert(
     runtime.snapshot().state === "debrief",
@@ -427,7 +497,10 @@ interface RuntimeResult {
   events: number;
 }
 
-function assertAnatomyAssets(content: ReturnType<typeof loadContent>): {
+function assertPackAssets(
+  label: string,
+  content: ReturnType<typeof loadContent>,
+): {
   ids: number;
   placeholders: number;
 } {
@@ -448,6 +521,7 @@ function assertAnatomyAssets(content: ReturnType<typeof loadContent>): {
       ...Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds),
       ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
+      ...collectLevelBlueprintAssetIds(content.levels),
       ...Object.values(PLAYER_ASSET_IDS),
     ]),
   ];
@@ -455,18 +529,18 @@ function assertAnatomyAssets(content: ReturnType<typeof loadContent>): {
   const plan = assets.preload(ids);
   assert(
     plan.missing.length === 0,
-    `[anatomy] unresolved IDs: ${plan.missing.join(", ")}`,
+    `[${label}] unresolved IDs: ${plan.missing.join(", ")}`,
   );
   for (const descriptor of plan.descriptors) {
     assert(
       descriptor.placeholderSpec !== undefined,
-      `[anatomy] ${descriptor.id} has no placeholder fallback`,
+      `[${label}] ${descriptor.id} has no placeholder fallback`,
     );
   }
 
   for (const level of content.levels) {
     const room = content.rooms[level.roomId];
-    assert(room, `[anatomy] room ${level.roomId} is missing`);
+    assert(room, `[${label}] room ${level.roomId} is missing`);
     const validation = validatePack({
       content,
       room,
@@ -480,7 +554,7 @@ function assertAnatomyAssets(content: ReturnType<typeof loadContent>): {
       const issues = validation.issues
         .map((issue) => `${issue.code}: ${issue.message}`)
         .join("\n    ");
-      throw new Error(`[anatomy] validation failed:\n    ${issues}`);
+      throw new Error(`[${label}] validation failed:\n    ${issues}`);
     }
   }
 
@@ -489,7 +563,7 @@ function assertAnatomyAssets(content: ReturnType<typeof loadContent>): {
 
 function runAnatomyRuntime(): RuntimeResult {
   const content = loadContent(packDirectory("anatomy-reflex"));
-  const assetCounts = assertAnatomyAssets(content);
+  const assetCounts = assertPackAssets("anatomy", content);
   const storage = new MemorySaveStorage();
   const save = createSave({
     storage,
@@ -638,7 +712,7 @@ function runAnatomyRuntime(): RuntimeResult {
   );
 
   // Exit -> 03 debrief -> 04 transition.
-  finishNodeRunDebrief(runtime);
+  finishNodeRunDebrief(runtime, content);
 
   const transitioned = runtime.snapshot();
   assert(
@@ -661,7 +735,7 @@ function runAnatomyRuntime(): RuntimeResult {
 
   // 04 puzzle -> debrief -> complete -> evidence.
   solveEndplateFerry(runtime, content);
-  finishEndplateDebrief(runtime);
+  finishEndplateDebrief(runtime, content);
 
   const evidence = runtime.exportEvidence();
   assert(evidence.mode === "co-op", "[anatomy] evidence mode is wrong");
@@ -763,6 +837,387 @@ function runAnatomyRuntime(): RuntimeResult {
   };
 }
 
+function scanSiliconSensor(runtime: GameRuntime, audio: FakeAudio): void {
+  walkTo(runtime, "scan-sensor");
+  runtime.step(1 / 60, frameAction("p1", { scan: true }));
+  assert(
+    runtime.snapshot().knownConceptIds.includes("CON-8"),
+    "[silicon] Q did not reveal the sensor concept",
+  );
+  assert(
+    audio.played.includes("audio.cue.scan"),
+    "[silicon] scan did not play the scan cue",
+  );
+}
+
+function runSiliconConversation(runtime: GameRuntime): void {
+  walkTo(runtime, "agent-cpu");
+  assert(
+    runtime.interactionId() === "agent-cpu",
+    "[silicon] interaction highlight did not find the CPU Core",
+  );
+  runtime.step(1 / 60, frameAction("p1", { interact: true }));
+  const conversation = [...runtime.conversations.values()][0];
+  assert(conversation, "[silicon] E did not start the CPU Core conversation");
+  assert(
+    conversation.session.dialogueId === "dlg-cpu-01",
+    "[silicon] wrong dialogue id",
+  );
+
+  for (let index = 0; index < 3; index += 1) {
+    runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  }
+  const choices = runtime
+    .snapshot()
+    .feedback.surfaces.find((surface) => surface.id === conversation.surfaceId)
+    ?.content.choices;
+  assert(choices?.length === 2, "[silicon] conversation choices missing");
+  runtime.surfaceAction(conversation.surfaceId, {
+    type: "choose",
+    choiceId: "controller",
+  });
+  assert(
+    runtime.snapshot().knownConceptIds.includes("CON-7"),
+    "[silicon] conversation did not reveal CON-7",
+  );
+  assert(
+    runtime.snapshot().knownConceptIds.includes("CON-8"),
+    "[silicon] conversation did not reveal CON-8",
+  );
+
+  for (let index = 0; index < 3 && runtime.conversations.size > 0; index += 1) {
+    runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+  }
+  assert(
+    runtime.conversations.size === 0,
+    "[silicon] final conversation surface did not close",
+  );
+}
+
+function solveInterruptLoop(
+  runtime: GameRuntime,
+  content: ReturnType<typeof loadContent>,
+): void {
+  walkPlayerTo(runtime, "p1", "sensor-console");
+  assert(
+    runtime.interactionId() === "puzzle-interrupt-loop",
+    "[silicon] Interrupt Loop did not offer activation at the sensor console",
+  );
+  runtime.step(1 / 60, frameAction("p1", { interact: true }));
+  assert(
+    runtime.snapshot().puzzle?.id === "puzzle-interrupt-loop",
+    "[silicon] Interrupt Loop did not activate at the sensor console",
+  );
+  assert(
+    runtime.simulation.tetherPolicy === "off",
+    "[silicon] Interrupt Loop tether policy was not applied",
+  );
+
+  const plate = sensorCenter(content, "puzzle-interrupt-loop", "sensor-pad");
+  const pad = feetForEntity(runtime, "pad-sensor");
+  runtime.placePlayer("p1", plate.x, pad.y);
+  for (let frame = 0; frame < 90; frame += 1) {
+    runtime.step(1 / 60, frameInput());
+  }
+  assert(
+    runtime.snapshot().puzzle?.solved === false,
+    "[silicon] the puzzle solved before the route plug was placed",
+  );
+
+  walkPlayerTo(runtime, "p2", "route-plug");
+  runtime.step(1 / 60, frameAction("p2", { carry: true }));
+  assert(
+    runtime.snapshot().players.p2.carrying === "route-plug",
+    "[silicon] P2 did not pick up the route plug",
+  );
+
+  walkPlayerTo(runtime, "p2", "controller-socket");
+  for (let frame = 0; frame < 8; frame += 1) {
+    runtime.step(1 / 60, frameInput());
+  }
+  runtime.step(1 / 60, frameAction("p2", { carry: true }));
+  assert(
+    runtime.snapshot().players.p2.carrying === null,
+    "[silicon] P2 did not release the route plug",
+  );
+
+  for (let frame = 0; frame < 75; frame += 1) {
+    runtime.step(1 / 60, frameInput());
+  }
+
+  const snapshot = runtime.snapshot();
+  assert(
+    snapshot.puzzle?.solved === true,
+    "[silicon] the 60-tick timer did not open the actuator gate",
+  );
+  assert(
+    runtime.requestFeedback("p1"),
+    "[silicon] no deferred feedback was available after solving",
+  );
+  const causes = runtime.snapshot().feedback.cues.map((cue) => cue.cause);
+  assert(
+    causes.some((cause) => cause.startsWith("puzzle:solved")),
+    "[silicon] the solved cue was not revealed on request",
+  );
+}
+
+function finishInterruptLoopDebrief(
+  runtime: GameRuntime,
+  content: ReturnType<typeof loadContent>,
+): void {
+  const exit = placeAtExit(
+    content,
+    "room-interrupt-loop",
+    "exit-to-actuator",
+  );
+  runtime.placePlayer("p1", exit.x, exit.y);
+  runtime.placePlayer("p2", exit.x - 32, exit.y);
+  runtime.step(1 / 60, frameInput());
+  assert(
+    runtime.snapshot().state === "debrief",
+    "[silicon] the actuator exit did not open the debrief",
+  );
+  const prompt = runtime.snapshot().debrief?.prompts[0];
+  assert(prompt, "[silicon] no OBJ-5 debrief prompt");
+  assert(prompt.id === "prompt-obj-5", "[silicon] wrong OBJ-5 debrief prompt");
+  runtime.submitDebrief(
+    prompt.id,
+    "The interrupt controller. It integrates the sensor's interrupt and wakes the CPU; the CPU is the output side, not the brain.",
+  );
+  runtime.finishDebrief();
+  assert(
+    runtime.snapshot().state === "complete",
+    "[silicon] the debrief did not complete the pack",
+  );
+}
+
+function runSiliconRuntime(): RuntimeResult {
+  const content = loadContent(packDirectory("silicon-reflex"));
+  const assetCounts = assertPackAssets("silicon", content);
+  const storage = new MemorySaveStorage();
+  const save = createSave({
+    storage,
+    now: () => new Date("2026-11-02T12:00:00.000Z"),
+  });
+  const audio = new FakeAudio();
+  const runtime = new GameRuntime({
+    content,
+    save,
+    audio,
+    sessionId: "smoke-silicon",
+    now: () => new Date("2026-11-02T12:00:00.000Z"),
+  });
+
+  runtime.resize(VIEWPORT.width, VIEWPORT.height);
+  runtime.start();
+
+  const booted = runtime.snapshot();
+  assert(booted.state === "level", "[silicon] runtime did not boot into a level");
+  assert(booted.level.id === "01-interrupt-loop", "[silicon] wrong start level");
+  assert(booted.roomId === "room-interrupt-loop", "[silicon] wrong room");
+  assert(booted.activeP2, "[silicon] player 2 should be active at boot");
+  assert(booted.mode === "co-op", "[silicon] expected co-op mode at boot");
+  assert(booted.abilities.includes("scan"), "[silicon] scan should be available");
+  assert(
+    booted.puzzle === null,
+    "[silicon] Interrupt Loop should wait for interact activation",
+  );
+  assert(
+    booted.checkpointId === "checkpoint-entry",
+    "[silicon] start checkpoint missing",
+  );
+  assert(
+    storage.getItem(runStorageKey("silicon-reflex"))?.includes("01-interrupt-loop") ===
+      true,
+    "[silicon] boot did not autosave the run",
+  );
+
+  const room = content.rooms["room-interrupt-loop"];
+  assert(room, "[silicon] room-interrupt-loop is missing");
+
+  // Shared overlays.
+  runtime.step(1 / 60, frameInput({ map: true }));
+  assert(runtime.snapshot().state === "map", "[silicon] Tab did not open the map");
+  runtime.step(1 / 60, frameInput({ pause: true }));
+  assert(runtime.snapshot().state === "level", "[silicon] Esc did not close the map");
+  runtime.step(1 / 60, frameInput({ log: true }));
+  assert(
+    runtime.snapshot().state === "conceptLog",
+    "[silicon] C did not open the concept log",
+  );
+  runtime.step(1 / 60, frameInput({ log: true }));
+  assert(
+    runtime.snapshot().state === "level",
+    "[silicon] C did not close the concept log",
+  );
+  runtime.step(1 / 60, frameInput({ pause: true }));
+  assert(runtime.snapshot().state === "pause", "[silicon] Esc did not pause");
+  runtime.step(1 / 60, frameInput({ pause: true }));
+  assert(runtime.snapshot().state === "level", "[silicon] Esc did not resume");
+
+  // Spawn, ground, camera, movement, and cues.
+  let spawnCues: GameplayCue[] = [];
+  for (let frame = 0; frame < 30; frame += 1) {
+    spawnCues = spawnCues.concat(runtime.step(1 / 60, frameInput()));
+  }
+  assert(
+    spawnCues.length === 0,
+    `[silicon] spawn settling emitted cues: ${spawnCues.join(", ")}`,
+  );
+  const p1 = runtime.simulation.players.p1;
+  const p2 = runtime.simulation.players.p2;
+  assert(
+    p1.onGround && p2.onGround,
+    "[silicon] a player did not settle on the ground",
+  );
+  assert(
+    p1.y <= roomPixelHeight(room) &&
+      p2.y <= roomPixelHeight(room) &&
+      p1.x >= 0 &&
+      p2.x >= 0,
+    "[silicon] spawn is outside the room bounds",
+  );
+
+  const startX = p1.x;
+  const startY = p1.y;
+  const p2X = p2.x;
+  const walkRight = GameRuntime.emptyInput();
+  walkRight.intents.p1.moveX = 1;
+  // Keep the movement check short: walking into the route plug would push it
+  // toward the controller socket before the puzzle is activated.
+  for (let frame = 0; frame < 40; frame += 1) {
+    runtime.step(1 / 60, walkRight);
+  }
+  assert(p1.x > startX, "[silicon] player 1 did not move right");
+  assert(p1.facing === 1, "[silicon] player 1 facing did not update");
+  assert(p2.x >= p2X, "[silicon] player 2 moved backwards without input");
+  assert(
+    Math.abs(p1.x - p2.x) <= TETHER_DISTANCE + 8,
+    "[silicon] tether did not keep the players together",
+  );
+
+  const maxX = Math.max(0, roomPixelWidth(room) - VIEWPORT.width);
+  const maxY = Math.max(0, roomPixelHeight(room) - VIEWPORT.height);
+  assert(
+    runtime.simulation.camera.x >= 0 && runtime.simulation.camera.x <= maxX,
+    "[silicon] camera X left the room bounds",
+  );
+  assert(
+    runtime.simulation.camera.y >= 0 && runtime.simulation.camera.y <= maxY,
+    "[silicon] camera Y left the room bounds",
+  );
+
+  const jump = GameRuntime.emptyInput();
+  jump.intents.p1.jump = true;
+  const takeoff = runtime.step(1 / 60, jump);
+  assert(takeoff.includes("jump"), "[silicon] jump cue did not fire");
+  assert(p1.y < startY, "[silicon] player 1 did not leave the ground");
+  assert(!p1.onGround, "[silicon] player 1 is still grounded after jumping");
+
+  let landed = false;
+  for (let frame = 0; frame < 180 && !landed; frame += 1) {
+    const cues = runtime.step(1 / 60, frameInput());
+    landed = cues.includes("land");
+  }
+  assert(landed, "[silicon] land cue did not fire");
+  assert(p1.onGround, "[silicon] player 1 did not land");
+  assert(
+    Math.abs(p1.y - startY) < 64,
+    "[silicon] player 1 did not return to the ground height",
+  );
+
+  // Scan and conversation.
+  scanSiliconSensor(runtime, audio);
+  runSiliconConversation(runtime);
+
+  // Interrupt Loop puzzle.
+  solveInterruptLoop(runtime, content);
+  assert(
+    runtime.snapshot().puzzle?.solved === true,
+    "[silicon] Interrupt Loop did not latch as solved",
+  );
+
+  // Exit, debrief, evidence.
+  finishInterruptLoopDebrief(runtime, content);
+
+  const evidence = runtime.exportEvidence();
+  assert(evidence.mode === "co-op", "[silicon] evidence mode is wrong");
+  assert(
+    evidence.sessionId === "smoke-silicon",
+    "[silicon] evidence session is wrong",
+  );
+  assert(
+    evidence.objectives.some((item) => item.id === "OBJ-5"),
+    "[silicon] OBJ-5 is missing from evidence",
+  );
+  assert(
+    evidence.events.some(
+      (event) =>
+        event.type === "puzzle_solved" &&
+        event.puzzleId === "puzzle-interrupt-loop",
+    ),
+    "[silicon] puzzle_solved event is missing from evidence",
+  );
+  assert(
+    evidence.events.some(
+      (event) =>
+        event.type === "debrief_answered" &&
+        event.promptId === "prompt-obj-5",
+    ),
+    "[silicon] OBJ-5 debrief answer is missing from evidence",
+  );
+  assert(
+    evidence.events.some((event) => event.type === "debrief_completed"),
+    "[silicon] debrief_completed event is missing from evidence",
+  );
+  assert(
+    evidence.events.some((event) => event.type === "pack_completed"),
+    "[silicon] pack_completed event is missing from evidence",
+  );
+
+  // Restore: the debrief autosave keeps the solved gate and revealed concepts.
+  const restored = new GameRuntime({
+    content,
+    save: createSave({ storage }),
+    audio: new FakeAudio(),
+    sessionId: "smoke-silicon-restore",
+  });
+  restored.start();
+  const restoredSnapshot = restored.snapshot();
+  assert(
+    restoredSnapshot.state === "debrief",
+    "[silicon] restore did not return to the debrief",
+  );
+  assert(
+    restoredSnapshot.puzzle?.solved === true,
+    "[silicon] restore lost the solved interrupt loop",
+  );
+  assert(
+    restoredSnapshot.knownConceptIds.includes("CON-7") &&
+      restoredSnapshot.knownConceptIds.includes("CON-8"),
+    "[silicon] restore lost the Interrupt Loop concepts",
+  );
+  assert(
+    restoredSnapshot.debrief?.prompts[0]?.id === "prompt-obj-5",
+    "[silicon] restore lost the OBJ-5 debrief prompt",
+  );
+  assert(
+    restoredSnapshot.map.nodes.find((node) => node.id === "map-interrupt-loop")
+      ?.visited === true,
+    "[silicon] restore lost the Interrupt Loop map node",
+  );
+  assert(
+    restoredSnapshot.toast === "Resumed from checkpoint",
+    "[silicon] restore did not announce the checkpoint",
+  );
+
+  return {
+    assets: assetCounts.ids,
+    placeholders: assetCounts.placeholders,
+    events: evidence.events.length,
+  };
+}
+
 function main(): void {
   try {
     const parsedRoom = parseRoom(readJson("room.json"));
@@ -798,6 +1253,12 @@ function main(): void {
       `  [anatomy runtime] PASS — ${runtime.assets} IDs, ${runtime.placeholders} placeholders, conversation/scan/Node Run/transition/Endplate Ferry/exit/debrief/save/dash/co-op`,
     );
     console.log(`  [anatomy runtime] evidence: ${runtime.events} events exported`);
+
+    const silicon = runSiliconRuntime();
+    console.log(
+      `  [silicon runtime] PASS — ${silicon.assets} IDs, ${silicon.placeholders} placeholders, conversation/scan/sensor pad/route plug/CPU timer/gateOpen/exit/debrief/save`,
+    );
+    console.log(`  [silicon runtime] evidence: ${silicon.events} events exported`);
 
     console.log("\nPASS — pack smoke");
   } catch (error) {

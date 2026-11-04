@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.cartridge.silicon",
+  "source": {
+    "path": "art-source/nanobanan/keyed/hub-cartridge-silicon.png",
+    "width": 1356,
+    "height": 1338
+  },
+  "crop": null,
+  "masks": [],
+  "cell": {
+    "width": 24,
+    "height": 32
+  },
+  "margin": 0,
+  "align": "center",
+  "anchor": null,
+  "fit": {
+    "sourceBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 1356,
+      "height": 1338
+    },
+    "fit": {
+      "width": 24,
+      "height": 24,
+      "offsetX": 0,
+      "offsetY": 4
+    },
+    "margins": {
+      "top": 4,
+      "right": 0,
+      "bottom": 4,
+      "left": 0
+    }
+  },
+  "quantized": true,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink",
+    "appliance"
+  ],
+  "palette": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 531
+  },
+  "bytes": 879,
+  "maxBytes": 8192,
+  "output": "public/hub/bathroom/shared/sprites/cartridge-silicon.png",
+  "note": null
+}

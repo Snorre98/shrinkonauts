@@ -26,6 +26,7 @@ import type {
   EntityPropComponent,
   EntityPulseSourceComponent,
   EntityReceptorComponent,
+  LevelDocument,
   RoomBackgroundLayer,
   RoomCheckpoint,
   RoomDocument,
@@ -33,6 +34,7 @@ import type {
   RoomEntityComponents,
   RoomEntityType,
   RoomExit,
+  RoomInfoArea,
   RoomPropertyValue,
   RoomSpawn,
   RoomTrigger,
@@ -45,6 +47,7 @@ import {
   parsePatternBinding,
   parseTileMaterialRule,
 } from "./parse-materials";
+import { parseEntityPresentation, parseRoomPresentation } from "./parse-presentation";
 import type {
   MaterialId,
   MaterialsDocument,
@@ -81,6 +84,9 @@ const PALETTE_RAMP_KEYS: readonly (keyof ThemePalette)[] = [
   "orange",
   "orangeDark",
   "orangeLight",
+  "appliance",
+  "applianceShadow",
+  "applianceHighlight",
 ];
 
 const FIT_MODES: readonly BackgroundFit[] = [
@@ -354,6 +360,59 @@ function parseTrigger(
     trigger.event = event.value;
   }
   return ok(trigger);
+}
+
+function parseInfoArea(
+  value: unknown,
+  index: number,
+  code: string,
+): Result<RoomInfoArea> {
+  if (!isRecord(value)) {
+    return err(`${code}: infoAreas[${index}] must be an object`);
+  }
+  const id = readNonEmptyString(value, "id", code, `infoAreas[${index}].id`);
+  if (!id.ok) return err(id.error);
+  const x = readNumber(value, "x", code, `infoAreas[${index}].x`);
+  if (!x.ok) return err(x.error);
+  const y = readNumber(value, "y", code, `infoAreas[${index}].y`);
+  if (!y.ok) return err(y.error);
+  const width = readNumber(value, "width", code, `infoAreas[${index}].width`);
+  if (!width.ok) return err(width.error);
+  const height = readNumber(value, "height", code, `infoAreas[${index}].height`);
+  if (!height.ok) return err(height.error);
+
+  const area: RoomInfoArea = {
+    id: id.value,
+    x: x.value,
+    y: y.value,
+    width: width.value,
+    height: height.value,
+  };
+
+  if (value.puzzleId !== undefined) {
+    const puzzleId = readNonEmptyString(
+      value,
+      "puzzleId",
+      code,
+      `infoAreas[${index}].puzzleId`,
+    );
+    if (!puzzleId.ok) return err(puzzleId.error);
+    area.puzzleId = puzzleId.value;
+  }
+  if (value.ttlTicks !== undefined) {
+    const ttlTicks = readInteger(
+      value,
+      "ttlTicks",
+      code,
+      `infoAreas[${index}].ttlTicks`,
+    );
+    if (!ttlTicks.ok) return err(ttlTicks.error);
+    if (ttlTicks.value <= 0) {
+      return err(`${code}: infoAreas[${index}].ttlTicks must be positive`);
+    }
+    area.ttlTicks = ttlTicks.value;
+  }
+  return ok(area);
 }
 
 function parseEntityProperties(
@@ -668,7 +727,7 @@ function parseEntity(
   if (!idleAnimation.ok) return err(idleAnimation.error);
   if (idleAnimation.value) entity.idleAnimation = idleAnimation.value;
 
-  for (const key of ["dialogueId", "gateId", "conceptId", "label"] as const) {
+  for (const key of ["dialogueId", "gateId", "conceptId", "factId", "label"] as const) {
     if (value[key] === undefined) continue;
     const field = readNonEmptyString(
       value,
@@ -688,6 +747,14 @@ function parseEntity(
   if (!properties.ok) return err(properties.error);
   if (properties.value) entity.properties = properties.value;
 
+  const presentation = parseEntityPresentation(
+    value.presentation,
+    code,
+    `entities[${index}].presentation`,
+  );
+  if (!presentation.ok) return err(presentation.error);
+  if (presentation.value) entity.presentation = presentation.value;
+
   const components = parseEntityComponents(value.components, index, code);
   if (!components.ok) return err(components.error);
   if (components.value) entity.components = components.value;
@@ -698,8 +765,8 @@ function parseEntity(
   if (entity.type === "gate" && !entity.gateId) {
     return err(`${code}: entities[${index}] gate needs a gateId`);
   }
-  if (entity.type === "scanTarget" && !entity.conceptId) {
-    return err(`${code}: entities[${index}] scanTarget needs a conceptId`);
+  if (entity.type === "scanTarget" && !entity.conceptId && !entity.factId) {
+    return err(`${code}: entities[${index}] scanTarget needs a conceptId or factId`);
   }
   if ((entity.type === "agent" || entity.type === "gate") && !entity.sprite) {
     return err(`${code}: entities[${index}] ${entity.type} needs a sprite asset ID`);
@@ -823,6 +890,12 @@ export function parseRoom(value: unknown): Result<RoomDocument> {
     materialSeed = parsed.value;
   }
 
+  const presentation = parseRoomPresentation(value.presentation, code, {
+    width: value.width,
+    height: value.height,
+  });
+  if (!presentation.ok) return err(presentation.error);
+
   if (!isRecord(value.background)) {
     return err(`${code}: background must be an object`);
   }
@@ -865,6 +938,7 @@ export function parseRoom(value: unknown): Result<RoomDocument> {
     ...(materialSeed !== undefined ? { materialSeed } : {}),
     background: { id: backgroundId.value, layers },
     spawns: { player1: player1.value, player2: player2.value },
+    ...(presentation.value ? { presentation: presentation.value } : {}),
   };
 
   if (value.checkpoints !== undefined) {
@@ -939,6 +1013,19 @@ export function parseRoom(value: unknown): Result<RoomDocument> {
       triggers.push(parsed.value);
     }
     room.triggers = triggers;
+  }
+
+  if (value.infoAreas !== undefined) {
+    if (!Array.isArray(value.infoAreas)) {
+      return err(`${code}: infoAreas must be an array`);
+    }
+    const areas: RoomInfoArea[] = [];
+    for (const [index, raw] of value.infoAreas.entries()) {
+      const parsed = parseInfoArea(raw, index, code);
+      if (!parsed.ok) return err(parsed.error);
+      areas.push(parsed.value);
+    }
+    room.infoAreas = areas;
   }
 
   if (value.music !== undefined) {
@@ -1201,6 +1288,20 @@ export function collectThemeAssetIds(theme: ThemeDocument): AssetId[] {
   }
   for (const cue of Object.values(theme.audio?.cues ?? {})) {
     ids.add(cue);
+  }
+  return [...ids];
+}
+
+export function collectLevelBlueprintAssetIds(
+  levels: readonly LevelDocument[],
+): AssetId[] {
+  const ids = new Set<AssetId>();
+  for (const level of levels) {
+    for (const puzzle of Object.values(level.feedback?.puzzles ?? {})) {
+      for (const component of puzzle.blueprint?.components ?? []) {
+        if (isAssetId(component.symbol)) ids.add(component.symbol);
+      }
+    }
   }
   return [...ids];
 }

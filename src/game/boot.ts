@@ -19,10 +19,12 @@ import {
 } from "../materials";
 import {
   catalogEntry,
+  collectLevelBlueprintAssetIds,
   collectMaterialAssetIds,
   collectRoomAssetIds,
   collectRoomMaterialAssetIds,
   collectThemeAssetIds,
+  isAssetId,
   loadPackCatalog,
   loadPackContent,
   type PackCatalog,
@@ -68,7 +70,11 @@ import {
   setInputPlan,
   type AppState,
 } from "./app-state";
-import { parseAssetMode, modeLabel, type AssetMode } from "./asset-mode";
+import {
+  modeLabel,
+  resolveAssetMode,
+  type AssetMode,
+} from "./asset-mode";
 import type {
   HostRunFactory,
   HostRunPort,
@@ -305,7 +311,7 @@ export class AppController {
   }
 
   async boot(): Promise<void> {
-    this.mode = parseAssetMode(this.search);
+    this.mode = resolveAssetMode(this.search);
     this.saveData = createSave();
 
     const catalog = await loadPackCatalog(
@@ -329,8 +335,10 @@ export class AppController {
     clearUiMaterialStyles();
     document.title = "Shrinkonauts — The Bathroom";
 
+    const hubFinalManifest =
+      this.mode === "placeholder" ? null : this.hubContent.finalManifest;
     this.hubAssets = createAssets({
-      finalManifest: this.hubContent.finalManifest,
+      finalManifest: hubFinalManifest,
       packManifest: this.hubContent.placeholderManifest,
       placeholder: new PlaceholderProvider({
         palette: this.hubContent.theme.palette,
@@ -353,7 +361,7 @@ export class AppController {
     }
     for (const issue of this.hubAssets.validate(
       hubIds,
-      this.hubContent.finalManifest ?? undefined,
+      hubFinalManifest ?? undefined,
     ).issues) {
       this.warnings.push(`${issue.code}: ${issue.message}`);
     }
@@ -402,6 +410,7 @@ export class AppController {
       storage: this.saveData.audioStorage,
       logger: consoleLogger,
       onWarning: (message) => this.warn(message),
+      fetchImpl: this.fetchImpl,
     });
     this.hubAudio.setMuted(this.saveData.settings.audio.muted);
     this.hubAudio.setVolume(this.saveData.settings.audio.volume);
@@ -455,16 +464,23 @@ export class AppController {
     const entry = selectedPack(this.state);
     const hasSave = entry ? this.saveData.hasRun(entry.id) : false;
     const start = canStart(this.state, hasSave);
-    const packs = this.catalogData.packs.map((pack) => ({
-      id: pack.id,
-      title: pack.title,
-      subtitle: pack.subtitle ?? null,
-      description: pack.description ?? null,
-      status: pack.status,
-      online: pack.online,
-      selected: pack.id === this.state?.selectedPackId,
-      hasSave: this.saveData.hasRun(pack.id),
-    }));
+    const packs = this.catalogData.packs.map((pack) => {
+      const iconId = this.hubContent.theme.ui.assets[pack.id];
+      const icon = iconId ? this.hubAssets.image(iconId) : undefined;
+      return {
+        id: pack.id,
+        title: pack.title,
+        subtitle: pack.subtitle ?? null,
+        description: pack.description ?? null,
+        status: pack.status,
+        online: pack.online,
+        selected: pack.id === this.state?.selectedPackId,
+        hasSave: this.saveData.hasRun(pack.id),
+        ...(icon && icon.source !== "placeholder" && icon.src
+          ? { iconSrc: icon.src }
+          : {}),
+      };
+    });
     const view: HubView = {
       phase:
         this.state.phase === "boot"
@@ -557,6 +573,13 @@ export class AppController {
     if (!this.state) return;
     this.ensureHubAudio();
     this.activeAudio = this.hubAudio;
+    const menuTheme = this.hubContent.theme.audio?.music;
+    if (menuTheme) {
+      this.hubAudio?.playTheme(menuTheme, { fadeInMs: 800 });
+    }
+    await this.hubAudio?.preload(
+      Object.values(this.hubContent.theme.audio?.cues ?? {}),
+    );
 
     this.hubContainer?.remove();
     this.hubContainer = document.createElement("div");
@@ -567,10 +590,10 @@ export class AppController {
         onSelectPack: (id) => this.selectPack(id),
         onModeChange: (mode) => this.selectMode(mode),
         onStart: () => {
-          void this.startSelected({ resume: true });
+          void this.startSelected({ resume: true, fromGesture: true });
         },
         onNewCycle: () => {
-          void this.startSelected({ resume: false });
+          void this.startSelected({ resume: false, fromGesture: true });
         },
         onMute: () => this.toggleMute(),
         onTextScale: (scale) => this.setTextScale(scale),
@@ -630,6 +653,7 @@ export class AppController {
   private async startSelected(options: {
     resume: boolean;
     skipIntro?: boolean;
+    fromGesture?: boolean;
   }): Promise<void> {
     if (!this.state || this.state.busy) return;
     const entry = selectedPack(this.state);
@@ -685,7 +709,11 @@ export class AppController {
             reducedMotion: this.saveData.settings.accessibility.reducedMotion,
           }) ?? Promise.resolve();
 
-      const bundlePromise = this.preparePack(entry.id, options.resume);
+      const bundlePromise = this.preparePack(
+        entry.id,
+        options.resume,
+        options.fromGesture === true,
+      );
       [bundle] = await Promise.all([bundlePromise, launch]);
       this.state = markLaunching(this.state);
       this.refreshHub();
@@ -757,6 +785,7 @@ export class AppController {
   private async preparePack(
     packId: string,
     resume: boolean,
+    fromGesture = false,
   ): Promise<PackBundle> {
     const entry = catalogEntry(this.catalogData, packId);
     if (!entry) throw new Error(`PACK_NOT_FOUND: ${packId}`);
@@ -816,6 +845,7 @@ export class AppController {
       ...Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds),
       ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
+      ...collectLevelBlueprintAssetIds(content.levels),
       ...Object.values(PLAYER_ASSET_IDS),
       ...Object.values(PLAYER_ANIMATION_ASSET_IDS)
         .flatMap((clips) => Object.values(clips))
@@ -837,13 +867,22 @@ export class AppController {
       storage: this.saveData.audioStorage,
       logger: consoleLogger,
       onWarning: (message) => this.warn(message),
+      fetchImpl: this.fetchImpl,
     });
     audio.setMuted(this.saveData.settings.audio.muted);
     audio.setVolume(this.saveData.settings.audio.volume);
+    if (fromGesture) {
+      await audio.unlock();
+    }
+    await audio.preload(Object.values(content.theme.audio?.cues ?? {}));
 
     try {
       const audioPort: AudioPort = {
         play: (assetId) => audio.play(assetId),
+        playTheme: (assetId, options) => audio.playTheme(assetId, options),
+        stopTheme: (options) => audio.stopTheme(options),
+        pauseTheme: () => audio.pauseTheme(),
+        resumeTheme: () => audio.resumeTheme(),
         setMuted: (muted) => audio.setMuted(muted),
         get muted() {
           return audio.muted;
@@ -891,8 +930,9 @@ export class AppController {
   ): Promise<void> {
     await this.setTransition(true, skipIntro);
     this.destroyHub();
-    this.hubAudio?.dispose();
+    const hubAudio = this.hubAudio;
     this.hubAudio = null;
+    this.fadeOutAndDispose(hubAudio, 700);
 
     applyTheme(bundle.content.theme);
     document.title = `${bundle.content.pack.title} — Shrinkonauts`;
@@ -924,6 +964,10 @@ export class AppController {
         ? bundle.assets.image(bundle.content.theme.ui.assets.badge)
         : undefined,
       diagnostics,
+      resolveBlueprintSymbol: (symbol) =>
+        isAssetId(symbol)
+          ? bundle.assets.resolveById(symbol)
+          : null,
       callbacks: {
         onSurfaceAction: (surfaceId, action) =>
           bundle.runtime.surfaceAction(surfaceId, action),
@@ -939,6 +983,7 @@ export class AppController {
         onMute: () => bundle.runtime.toggleMute(),
         onTextScale: (scale) => bundle.runtime.setTextScale(scale),
         onToggleReducedMotion: () => bundle.runtime.toggleReducedMotion(),
+        onToggleSharedFeedback: () => bundle.runtime.toggleSharedFeedback(),
         onDebriefAnswer: (promptId, answer) =>
           bundle.runtime.submitDebrief(promptId, answer),
         onDebriefFinish: () => bundle.runtime.finishDebrief(),
@@ -1070,9 +1115,10 @@ export class AppController {
     this.packAssets = null;
     this.packPlan = null;
     const wasActivePack = this.activeAudio === this.packAudio;
-    this.packAudio?.dispose();
+    const packAudio = this.packAudio;
     this.packAudio = null;
     if (wasActivePack) this.activeAudio = null;
+    this.fadeOutAndDispose(packAudio, 600);
   }
 
   private destroyHub(): void {
@@ -1133,6 +1179,19 @@ export class AppController {
     await new Promise<void>((resolve) => {
       window.setTimeout(resolve, 230);
     });
+  }
+
+  /**
+   * The hub and pack use separate AudioContexts, so a true shared crossfade is
+   * not possible. Fade the outgoing theme and dispose after the ramp ends.
+   */
+  private fadeOutAndDispose(
+    audio: AudioModule | null,
+    fadeOutMs: number,
+  ): void {
+    if (!audio) return;
+    audio.stopTheme({ fadeOutMs });
+    window.setTimeout(() => audio.dispose(), fadeOutMs + 150);
   }
 
   private warn(message: string): void {

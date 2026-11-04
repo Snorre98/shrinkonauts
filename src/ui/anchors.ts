@@ -75,13 +75,18 @@ function projectPoint(
   );
   const offsetX = canvasRect.x + (canvasRect.width - gameWidth * scale) / 2;
   const offsetY = canvasRect.y + (canvasRect.height - gameHeight * scale) / 2;
-  const x = offsetX + (worldX - world.camera.x) * scale;
-  const y = offsetY + (worldY - world.camera.y) * scale;
+  const stageX = offsetX + world.stage.x * scale;
+  const stageY = offsetY + world.stage.y * scale;
+  const stageWidth = world.stage.width * scale;
+  const stageHeight = world.stage.height * scale;
+  const zoom = world.zoom > 0 ? world.zoom : 1;
+  const x = stageX + (worldX - world.camera.x) * zoom * scale;
+  const y = stageY + (worldY - world.camera.y) * zoom * scale;
   const visible =
-    x >= offsetX &&
-    x <= offsetX + gameWidth * scale &&
-    y >= offsetY &&
-    y <= offsetY + gameHeight * scale;
+    x >= stageX &&
+    x <= stageX + stageWidth &&
+    y >= stageY &&
+    y <= stageY + stageHeight;
   return { x, y, visible };
 }
 

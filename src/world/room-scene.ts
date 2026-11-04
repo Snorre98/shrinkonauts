@@ -23,8 +23,8 @@ import {
 import type { PlayerClip } from "./player-animation";
 import { EntityIdleAnimator } from "./entity-idle-animator";
 import {
-  ENTITY_DISPLAY_SIZE,
   ENTITY_INTERACTION_TINT,
+  resolveEntityDisplay,
 } from "./entity-style";
 import { RoomEffectLayer } from "./effects";
 import { MaterialTextureCache } from "./material-textures";
@@ -48,6 +48,7 @@ import {
   type PlayerId,
   type RoomSimulation,
 } from "./simulation";
+import { cameraScrollForView } from "./presentation";
 import {
   composeTileVisual,
   createTileVisualState,
@@ -180,7 +181,7 @@ export class RoomScene
     );
 
     for (const asset of this.config.plan.descriptors) {
-      if (!asset.src) {
+      if (!asset.src || asset.type === "audio") {
         continue;
       }
 
@@ -190,8 +191,6 @@ export class RoomScene
           frameWidth: asset.frameWidth ?? 32,
           frameHeight: asset.frameHeight ?? 32,
         });
-      } else if (asset.type === "audio") {
-        this.load.audio(key, asset.src);
       } else if (asset.type === "font") {
         this.load.font(key, asset.src);
       } else if (isSvgSource(asset.src)) {
@@ -263,7 +262,11 @@ export class RoomScene
     this.applyInteractionHighlight(this.config.runtime.interactionId());
     this.syncPlayers();
     const camera = this.cameras.main;
-    camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
+    const scroll = cameraScrollForView(
+      this.simulation.presentation,
+      this.simulation.camera,
+    );
+    camera.setScroll(scroll.x, scroll.y);
     this.background?.update(camera);
 
     const reduced = this.config.isReducedMotion?.() ?? false;
@@ -364,9 +367,18 @@ export class RoomScene
       new InputArbiter(new KeyboardIntentSource(this));
 
     const camera = this.cameras.main;
+    const presentation = this.simulation.presentation;
     camera.setBackgroundColor(theme.palette.bg);
+    camera.setViewport(
+      presentation.stage.x,
+      presentation.stage.y,
+      presentation.stage.width,
+      presentation.stage.height,
+    );
+    camera.setZoom(presentation.zoom);
     camera.setBounds(0, 0, roomPixelWidth(room), roomPixelHeight(room));
-    camera.setScroll(this.simulation.camera.x, this.simulation.camera.y);
+    const scroll = cameraScrollForView(presentation, this.simulation.camera);
+    camera.setScroll(scroll.x, scroll.y);
 
     if (this.config.materials && this.config.patterns) {
       this.patternLayer = new PatternLayer({
@@ -633,14 +645,30 @@ export class RoomScene
       const x = (entity.x + 0.5) * room.tileSize;
       const y = entity.y * room.tileSize;
       const depth = 4 + entity.y / 100;
+      const display = resolveEntityDisplay({
+        entity,
+        asset,
+        presentation: this.config.runtime.packPresentation,
+      });
+      this.config.runtime.registerEntityDisplay?.(entity.id, {
+        width: display.width,
+        height: display.height,
+      });
 
       const glow = this.add
-        .ellipse(x, y - 4, ENTITY_DISPLAY_SIZE * 1.25, 10, 0xffd166, 0)
+        .ellipse(
+          x,
+          y - 4,
+          Math.min(display.width * 1.25, 96),
+          10,
+          0xffd166,
+          0,
+        )
         .setDepth(depth - 0.5);
       const sprite = this.add
         .sprite(x, y, key)
         .setOrigin(0.5, 1)
-        .setDisplaySize(ENTITY_DISPLAY_SIZE, ENTITY_DISPLAY_SIZE)
+        .setDisplaySize(display.width, display.height)
         .setDepth(depth);
 
       this.entityGlows.set(entity.id, glow);
@@ -648,7 +676,7 @@ export class RoomScene
       if (entity.type === "prop") {
         this.propSprites.set(entity.id, sprite);
       }
-      this.createEntityIdleAnimator(entity, sprite, key);
+      this.createEntityIdleAnimator(entity, sprite, key, display);
 
       const materialBinding = entity.components?.material;
       if (materialBinding && this.config.materials) {
@@ -674,6 +702,7 @@ export class RoomScene
     entity: RoomEntity,
     sprite: Phaser.GameObjects.Sprite,
     staticTexture: string,
+    display: { width: number; height: number },
   ): void {
     if (!entity.idleAnimation) return;
 
@@ -711,6 +740,7 @@ export class RoomScene
           fps: asset.fps,
           loop: asset.loop === true,
         },
+        display,
         isReducedMotion: () => this.config.isReducedMotion?.() ?? false,
       });
       this.entityIdleAnimators.set(entity.id, animator);

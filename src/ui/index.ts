@@ -33,6 +33,9 @@ export type {
   GameUiOptions,
 } from "./game-ui";
 export type {
+  BlueprintComponentView,
+  BlueprintEdgeView,
+  BlueprintView,
   ConceptView,
   DebriefView,
   GateView,

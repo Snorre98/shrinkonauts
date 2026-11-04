@@ -2,16 +2,31 @@
   "schemaVersion": "1.1",
   "id": "puzzle-endplate-ferry",
   "title": "Endplate Ferry",
-  "objectiveIds": ["OBJ-2"],
-  "conceptIds": ["CON-4", "CON-6"],
-  "activation": { "mode": "interact", "entityId": "motor-terminal" },
+  "objectiveIds": [
+    "OBJ-2"
+  ],
+  "conceptIds": [
+    "CON-4",
+    "CON-6"
+  ],
+  "activation": {
+    "mode": "interact",
+    "entityId": "motor-terminal"
+  },
   "tether": "off",
   "nodes": [
     {
       "id": "terminal-plate",
       "type": "plate",
-      "rect": { "x": 336, "y": 600, "width": 64, "height": 48 },
-      "detects": ["player"],
+      "rect": {
+        "x": 448,
+        "y": 408,
+        "width": 64,
+        "height": 48
+      },
+      "detects": [
+        "player"
+      ],
       "minimum": 1,
       "countCarried": false
     },
@@ -32,25 +47,52 @@
       "id": "ach-packet",
       "type": "prop",
       "entityId": "ach-packet",
-      "tags": ["ach"],
+      "tags": [
+        "ach"
+      ],
       "shape": "triangle",
-      "spawn": { "x": 432, "y": 620 }
+      "spawn": {
+        "x": 560,
+        "y": 374
+      }
     },
     {
       "id": "nicotinic-receptor",
       "type": "receptor",
       "entityId": "nicotinic-receptor",
-      "accepts": { "tag": "ach", "shape": "triangle" },
-      "rect": { "x": 688, "y": 600, "width": 64, "height": 48 },
-      "snap": { "x": 720, "y": 620 }
+      "accepts": {
+        "tag": "ach",
+        "shape": "triangle"
+      },
+      "rect": {
+        "x": 1088,
+        "y": 248,
+        "width": 64,
+        "height": 48
+      },
+      "snap": {
+        "x": 1104,
+        "y": 268
+      }
     },
     {
       "id": "wrong-receptor",
       "type": "receptor",
       "entityId": "wrong-receptor",
-      "accepts": { "tag": "ach", "shape": "circle" },
-      "rect": { "x": 816, "y": 600, "width": 64, "height": 48 },
-      "snap": { "x": 848, "y": 620 }
+      "accepts": {
+        "tag": "ach",
+        "shape": "circle"
+      },
+      "rect": {
+        "x": 992,
+        "y": 248,
+        "width": 64,
+        "height": 48
+      },
+      "snap": {
+        "x": 1008,
+        "y": 268
+      }
     },
     {
       "id": "pulse-terminal",
@@ -81,21 +123,70 @@
     }
   ],
   "links": [
-    { "from": "terminal-plate", "to": "ca-timer", "type": "start" },
-    { "from": "ca-timer", "to": "ca-gate", "type": "open" },
-    { "from": "ca-gate", "to": "response-relay", "type": "activate" },
-    { "from": "nicotinic-receptor", "to": "response-relay", "type": "activate" },
-    { "from": "response-relay", "to": "muscle-gate", "type": "open" },
-    { "from": "pulse-terminal", "to": "nicotinic-receptor", "type": "pulse" },
-    { "from": "pulse-terminal", "to": "wrong-receptor", "type": "pulse" },
-    { "from": "nicotinic-receptor", "to": "ache-timer", "type": "bind" },
-    { "from": "ache-timer", "to": "ca-timer", "type": "reset" },
-    { "from": "ache-timer", "to": "ca-gate", "type": "close" },
-    { "from": "ache-timer", "to": "ach-packet", "type": "clear" }
+    {
+      "from": "terminal-plate",
+      "to": "ca-timer",
+      "type": "start"
+    },
+    {
+      "from": "ca-timer",
+      "to": "ca-gate",
+      "type": "open"
+    },
+    {
+      "from": "ca-gate",
+      "to": "response-relay",
+      "type": "activate"
+    },
+    {
+      "from": "nicotinic-receptor",
+      "to": "response-relay",
+      "type": "activate"
+    },
+    {
+      "from": "response-relay",
+      "to": "muscle-gate",
+      "type": "open"
+    },
+    {
+      "from": "pulse-terminal",
+      "to": "nicotinic-receptor",
+      "type": "pulse"
+    },
+    {
+      "from": "pulse-terminal",
+      "to": "wrong-receptor",
+      "type": "pulse"
+    },
+    {
+      "from": "nicotinic-receptor",
+      "to": "ache-timer",
+      "type": "bind"
+    },
+    {
+      "from": "ache-timer",
+      "to": "ca-timer",
+      "type": "reset"
+    },
+    {
+      "from": "ache-timer",
+      "to": "ca-gate",
+      "type": "close"
+    },
+    {
+      "from": "ache-timer",
+      "to": "ach-packet",
+      "type": "clear"
+    }
   ],
-  "win": { "type": "gateOpen", "gateId": "muscle-gate" },
+  "win": {
+    "type": "gateOpen",
+    "gateId": "muscle-gate"
+  },
   "reset": {
-    "props": ["ach-packet"],
+    "props": [
+      "ach-packet"
+    ],
     "nodes": [
       "terminal-plate",
       "ca-timer",
@@ -110,7 +201,9 @@
     ]
   },
   "evidence": {
-    "onSolve": ["puzzle_solved"],
+    "onSolve": [
+      "puzzle_solved"
+    ],
     "counters": [
       "pickups",
       "drops",
@@ -122,21 +215,61 @@
     ]
   },
   "rewards": {
-    "mapNodes": ["map-reflex-core"]
+    "mapNodes": [
+      "map-reflex-core"
+    ]
   },
   "solution": [
-    { "action": "move", "actor": "p1", "x": 368, "y": 620 },
-    { "action": "wait", "ticks": 80 },
-    { "action": "move", "actor": "p2", "x": 432, "y": 620 },
-    { "action": "pickup", "actor": "p2", "target": "ach-packet" },
-    { "action": "move", "actor": "p2", "x": 720, "y": 620 },
-    { "action": "place", "actor": "p2", "target": "nicotinic-receptor" },
-    { "action": "move", "actor": "p1", "x": 304, "y": 620 },
-    { "action": "pulse", "actor": "p1", "target": "pulse-terminal" },
-    { "action": "wait", "ticks": 10 }
+    {
+      "action": "move",
+      "actor": "p1",
+      "x": 480,
+      "y": 432
+    },
+    {
+      "action": "wait",
+      "ticks": 80
+    },
+    {
+      "action": "move",
+      "actor": "p2",
+      "x": 560,
+      "y": 374
+    },
+    {
+      "action": "pickup",
+      "actor": "p2",
+      "target": "ach-packet"
+    },
+    {
+      "action": "move",
+      "actor": "p2",
+      "x": 1104,
+      "y": 268
+    },
+    {
+      "action": "place",
+      "actor": "p2",
+      "target": "nicotinic-receptor"
+    },
+    {
+      "action": "move",
+      "actor": "p1",
+      "x": 272,
+      "y": 560
+    },
+    {
+      "action": "pulse",
+      "actor": "p1",
+      "target": "pulse-terminal"
+    },
+    {
+      "action": "wait",
+      "ticks": 10
+    }
   ],
   "hints": [
-    "Trigger the terminal first; the Ca²⁺ window opens the cleft bridge.",
+    "Trigger the terminal first; the Ca\u00b2\u207a window opens the cleft bridge.",
     "The ACh packet fits the nicotinic receptor, not the wrong socket.",
     "ACh is cleared after the response. The muscle has already contracted."
   ]

@@ -50,6 +50,8 @@
   --color-muted: #9db4ad;
   --color-accent: #7bdff2;
   --color-danger: #ef476f;
+  --color-player-p1: var(--color-orange);
+  --color-player-p2: var(--color-joint);
   --font-ui: "Pixelify Sans", monospace;
   --font-display: "Silkscreen", "Pixelify Sans", monospace;
   --ui-radius: 0px;
@@ -97,11 +99,12 @@ body {
 }
 
 #ui-root {
+  --hud-inset: clamp(12px, 2vw, 28px);
   position: fixed;
   inset: 0;
   z-index: 10;
   pointer-events: none;
-  padding: clamp(12px, 2vw, 28px);
+  padding: var(--hud-inset);
 }
 
 [hidden] {
@@ -109,10 +112,9 @@ body {
 }
 
 .hud {
-  position: relative;
+  position: fixed;
+  inset: var(--hud-inset, clamp(12px, 2vw, 28px));
   z-index: 5;
-  width: 100%;
-  height: 100%;
   font-size: var(--text-body);
 }
 
@@ -162,6 +164,7 @@ body {
 }
 
 .hud__eyebrow {
+  margin: 0 0 0.2rem;
   font-family: var(--font-display);
   font-size: var(--text-label);
   font-weight: 400;
@@ -253,15 +256,15 @@ body {
 }
 
 .hud__meta {
-  margin: 0.55rem 0 0;
+  margin: 0.3rem 0 0;
   color: var(--color-muted);
-  font-size: var(--text-body);
+  font-size: var(--text-label);
 }
 
 .hud__abilities {
-  margin: 0.2rem 0 0;
+  margin: 0.12rem 0 0;
   color: var(--color-muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-label);
 }
 
 .hud__hint {
@@ -436,6 +439,7 @@ body {
 
 @media (max-width: 720px) {
   #ui-root {
+    --hud-inset: 10px;
     padding: 10px;
   }
 
@@ -468,23 +472,124 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "identity blueprint progress"
+    "strip strip strip";
+  align-items: start;
+  gap: 0.55rem 1rem;
   max-width: none;
+  padding: 0.65rem 0.9rem 0.55rem;
 }
 
 .hud__identity {
+  grid-area: identity;
   min-width: 0;
+}
+
+.hud__blueprint {
+  grid-area: blueprint;
+  align-self: stretch;
+  min-width: 7rem;
+}
+
+.hud__progress {
+  grid-area: progress;
+  justify-self: end;
+  min-width: min(15rem, 28vw);
+  max-width: 26rem;
+}
+
+.hud__progress-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.hud__progress-count {
+  color: var(--color-bone);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+}
+
+.hud__strip {
+  grid-area: strip;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  padding-top: 0.4rem;
+  border-top: var(--ui-border) solid color-mix(in srgb, var(--color-bone) 12%, transparent);
+}
+
+.hud__strip .hud__mode-badge {
+  margin-top: 0;
+}
+
+.hud__hint-group {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.hud__hint-button {
+  flex: none;
+  padding: 0.08rem 0.5rem;
+  border: var(--ui-border) solid var(--color-nerve);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--color-nerve) 12%, transparent);
+  color: var(--color-nerve);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: auto;
+}
+
+.hud__hint-button:hover {
+  background: color-mix(in srgb, var(--color-nerve) 22%, transparent);
+}
+
+.hud__hint-button:disabled {
+  border-color: color-mix(in srgb, var(--color-muted) 35%, transparent);
+  background: transparent;
+  color: var(--color-muted);
+  cursor: default;
+}
+
+.hud__hint-count {
+  flex: none;
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hud__hint-group .hud__hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hud__badges {
   display: flex;
+  flex: none;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.45rem;
   flex-wrap: wrap;
-  justify-content: flex-end;
 }
 
 .hud__save {
@@ -499,16 +604,614 @@ body {
   text-transform: uppercase;
 }
 
-.hud__help {
-  top: 7.2rem;
+.hud__cards {
+  position: absolute;
+  left: 0;
   right: 0;
-  min-width: 19rem;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  pointer-events: none;
+}
+
+.hud__controls-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(38rem, 47vw);
+  padding: 0.15rem 0.4rem;
+  border: var(--ui-border) solid var(--color-player-p1);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-bone) 8%, transparent),
+    3px 3px 0 var(--color-teal-dark);
+  line-height: 1.15;
+  pointer-events: none;
+}
+
+.hud__controls-card--p2 {
+  border-color: var(--color-player-p2);
+  justify-content: flex-end;
+}
+
+.hud__controls-heading {
+  flex: none;
+  margin: 0;
+  color: var(--color-player-p1);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hud__controls-heading::after {
+  content: " controls";
+}
+
+.hud__controls-card--p2 .hud__controls-heading {
+  color: var(--color-player-p2);
+}
+
+.hud__control-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.05rem 0.4rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-label);
+  line-height: 1.15;
+}
+
+.hud__control {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  min-width: 0;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.hud__control[data-available="false"] {
+  opacity: 0.35;
+}
+
+.hud__control-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud__control-keys {
+  flex: none;
+  color: var(--color-bone);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: var(--text-label);
+}
+
+.hud__controls-card--p1 .hud__control-keys {
+  color: var(--color-player-p1);
+}
+
+.hud__controls-card--p2 .hud__control-keys {
+  color: var(--color-player-p2);
+}
+
+.blueprint--compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+}
+
+.blueprint__minimal-open {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.5rem;
+  border: var(--ui-border) solid var(--color-nerve);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--color-nerve) 12%, transparent);
+  color: var(--color-nerve);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.blueprint__chain {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.blueprint__component {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: var(--ui-border) solid color-mix(in srgb, var(--color-bone) 32%, transparent);
+  border-radius: 0;
+  background: var(--color-bg);
+  color: var(--color-bone);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.blueprint__component[data-state="pending"] {
+  opacity: 0.45;
+}
+
+.blueprint__component[data-state="done"] {
+  border-color: var(--color-joint);
+}
+
+.blueprint__component[data-state="active"] {
+  border-color: var(--blueprint-actor-color, var(--color-nerve));
+  box-shadow:
+    inset 0 0 0 1px var(--blueprint-actor-color, var(--color-nerve)),
+    2px 2px 0 var(--color-teal-dark);
+}
+
+.blueprint__component[data-state="done"]::after {
+  content: "✓";
+  position: absolute;
+  top: -0.45rem;
+  right: -0.35rem;
+  padding: 0 0.15rem;
+  background: var(--color-bg);
+  color: var(--color-joint);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+}
+
+.blueprint__component[data-actor="p1"],
+.blueprint__actor--p1 {
+  --blueprint-actor-color: var(--color-player-p1);
+}
+
+.blueprint__component[data-actor="p2"],
+.blueprint__actor--p2 {
+  --blueprint-actor-color: var(--color-player-p2);
+}
+
+.blueprint__component[data-actor="both"],
+.blueprint__actor--both {
+  --blueprint-actor-color: var(--color-nerve);
+}
+
+.blueprint__component[data-actor="shared"],
+.blueprint__actor--shared {
+  --blueprint-actor-color: var(--color-bone);
+}
+
+.blueprint__glyph {
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.blueprint__glyph--image {
+  width: 2rem;
+  height: 2rem;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 2rem 2rem;
+  image-rendering: pixelated;
+}
+
+.blueprint__actor {
+  position: absolute;
+  right: -0.4rem;
+  bottom: -0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.1rem;
+  padding: 0 0.15rem;
+  border: 1px solid var(--blueprint-actor-color, var(--color-bone));
+  background: var(--color-bg);
+  color: var(--blueprint-actor-color, var(--color-bone));
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  line-height: 1;
+}
+
+.blueprint__actor-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  margin: 0 0.05rem;
+}
+
+.blueprint__actor-dot--p1 {
+  background: var(--color-player-p1);
+}
+
+.blueprint__actor-dot--p2 {
+  background: var(--color-player-p2);
+}
+
+.blueprint__tooltip {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 50%;
+  z-index: 8;
+  display: none;
+  padding: 0.22rem 0.45rem;
+  border: var(--ui-border) solid color-mix(in srgb, var(--color-bone) 30%, transparent);
+  background: var(--color-bg);
+  box-shadow: 2px 2px 0 var(--color-teal-dark);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--text-label);
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.blueprint__component:hover .blueprint__tooltip,
+.blueprint__component:focus-visible .blueprint__tooltip {
+  display: block;
+}
+
+.blueprint__connector {
+  position: relative;
+  flex: none;
+  width: 1.15rem;
+  height: 2px;
+  background: currentColor;
+  color: color-mix(in srgb, var(--color-bone) 28%, transparent);
+}
+
+.blueprint__connector[data-state="done"] {
+  color: var(--color-joint);
+}
+
+.blueprint__connector[data-state="active"] {
+  color: var(--color-nerve);
+}
+
+.blueprint__connector[data-type="oneWay"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -1px;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
+  transform: translateY(-50%);
+}
+
+.blueprint--expanded {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.blueprint__title {
+  margin: 0;
+  color: var(--color-nerve);
+  font-family: var(--font-display);
+  font-size: var(--text-title-sm);
+  font-weight: 700;
+}
+
+.blueprint__expanded-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blueprint__expanded-component {
+  position: relative;
+  min-width: 9rem;
+  padding: 0.5rem 0.6rem;
+  border: var(--ui-border) solid color-mix(in srgb, var(--color-bone) 26%, transparent);
+  background: color-mix(in srgb, var(--color-bone) 4%, transparent);
+}
+
+.blueprint__expanded-component[data-state="done"] {
+  border-color: var(--color-joint);
+}
+
+.blueprint__expanded-component[data-state="active"] {
+  border-color: var(--blueprint-actor-color, var(--color-nerve));
+  box-shadow: 2px 2px 0 var(--color-teal-dark);
+}
+
+.blueprint__expanded-component[data-state="pending"] {
+  opacity: 0.5;
+}
+
+.blueprint__expanded-component[data-actor="p1"],
+.blueprint__expanded-component[data-actor="p2"],
+.blueprint__expanded-component[data-actor="both"],
+.blueprint__expanded-component[data-actor="shared"] {
+  --blueprint-actor-color: var(--color-nerve);
+}
+
+.blueprint__expanded-component[data-actor="p1"] {
+  --blueprint-actor-color: var(--color-player-p1);
+}
+
+.blueprint__expanded-component[data-actor="p2"] {
+  --blueprint-actor-color: var(--color-player-p2);
+}
+
+.blueprint__expanded-component[data-actor="both"] {
+  --blueprint-actor-color: var(--color-nerve);
+}
+
+.blueprint__expanded-component[data-actor="shared"] {
+  --blueprint-actor-color: var(--color-bone);
+}
+
+.blueprint__expanded-component .blueprint__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: var(--ui-border) solid color-mix(in srgb, var(--color-bone) 25%, transparent);
+}
+
+.blueprint__expanded-body {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.blueprint__expanded-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.blueprint__expanded-label {
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: 700;
+}
+
+.blueprint__expanded-state,
+.blueprint__expanded-actor {
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.blueprint__expanded-actor {
+  color: var(--blueprint-actor-color, var(--color-bone));
+}
+
+.blueprint__expanded-component:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 0.85rem;
+  height: 2px;
+  background: color-mix(in srgb, var(--color-bone) 28%, transparent);
+  transform: translateY(-50%);
+}
+
+.blueprint__expanded-component[data-edge-state="done"]:not(:last-child)::after {
+  background: var(--color-joint);
+}
+
+.blueprint__expanded-component[data-edge-state="active"]:not(:last-child)::after {
+  background: var(--color-nerve);
+}
+
+.blueprint-system {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blueprint-system__item {
+  padding: 0.22rem 0.45rem;
+  border: var(--ui-border) solid color-mix(in srgb, var(--color-bone) 26%, transparent);
+  background: var(--color-bg);
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.04em;
+}
+
+.blueprint-system__item[data-state="current"] {
+  border-color: var(--color-nerve);
+  color: var(--color-nerve);
+}
+
+.blueprint-system__item[data-state="visited"] {
+  border-color: var(--color-joint);
+  color: var(--color-bone);
+}
+
+.blueprint-system__item[data-state="next"] {
+  border-color: var(--color-bone);
+  color: var(--color-text);
+}
+
+.blueprint-system__item[data-state="unknown"] {
+  border-style: dashed;
+  opacity: 0.55;
+}
+
+.blueprint-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.blueprint-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--color-muted);
+}
+
+.blueprint-legend__swatch {
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 1px solid var(--color-bone);
+  background: var(--color-bg);
+}
+
+.blueprint-legend__swatch[data-state="done"] {
+  background: var(--color-joint);
+}
+
+.blueprint-legend__swatch[data-state="active"] {
+  background: var(--color-nerve);
+}
+
+.blueprint-legend__swatch[data-state="pending"] {
+  opacity: 0.4;
+}
+
+.blueprint-legend__swatch[data-actor="p1"] {
+  border-color: var(--color-player-p1);
+  background: var(--color-player-p1);
+}
+
+.blueprint-legend__swatch[data-actor="p2"] {
+  border-color: var(--color-player-p2);
+  background: var(--color-player-p2);
+}
+
+.blueprint-legend__swatch[data-actor="shared"] {
+  border-color: var(--color-bone);
+  background: var(--color-bone);
+}
+
+.blueprint-hints__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0 0 0.5rem;
+  padding-left: 1.2rem;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.blueprint-hints button {
+  align-self: flex-start;
+}
+
+.hud[data-hud-density="compact"] .hud__bar {
+  gap: 0.45rem 0.75rem;
+  padding: 0.55rem 0.75rem 0.45rem;
+}
+
+.hud[data-hud-density="compact"] .hud__title {
+  font-size: calc(clamp(1.15rem, 1.8vw, 1.5rem) * var(--ui-font-scale));
+}
+
+.hud[data-hud-density="compact"] .hud__meta,
+.hud[data-hud-density="compact"] .hud__abilities {
+  font-size: var(--text-label);
+}
+
+.hud[data-hud-density="compact"] .hud__progress {
+  min-width: min(12rem, 24vw);
+}
+
+.hud[data-hud-density="compact"] .hud__progress .feedback-beats__item:not([data-state="active"]) {
+  display: none;
+}
+
+.hud[data-hud-density="compact"] .hud__controls-card {
+  width: min(30rem, 45vw);
+  padding: 0.18rem 0.35rem;
+}
+
+.hud[data-hud-density="compact"] .hud__controls-heading::after {
+  content: "";
+}
+
+.hud[data-hud-density="minimal"] .hud__bar {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "identity blueprint progress"
+    "strip strip strip";
+  gap: 0.35rem 0.6rem;
+  padding: 0.5rem 0.65rem 0.4rem;
+}
+
+.hud[data-hud-density="minimal"] .hud__blueprint {
+  min-width: 0;
+}
+
+.hud[data-hud-density="minimal"] .blueprint--compact {
+  display: none;
+}
+
+.hud[data-hud-density="minimal"] .blueprint__minimal-open {
+  display: inline-flex;
+}
+
+.hud[data-hud-density="minimal"] .hud__title {
+  font-size: calc(1.1rem * var(--ui-font-scale));
+}
+
+.hud[data-hud-density="minimal"] .hud__meta,
+.hud[data-hud-density="minimal"] .hud__abilities,
+.hud[data-hud-density="minimal"] .hud__hint-group .hud__hint,
+.hud[data-hud-density="minimal"] .hud__cards {
+  display: none;
+}
+
+.hud[data-hud-density="minimal"] .hud__progress {
+  min-width: 0;
+}
+
+.hud[data-hud-density="minimal"] .hud__progress .feedback-beats__item:not([data-state="active"]) {
+  display: none;
+}
+
+.hud[data-hud-density="minimal"] .hud__badges {
+  flex-wrap: nowrap;
+}
+
+.hud[data-hud-density="minimal"] .hud__save {
+  display: none;
 }
 
 .hud__prompt {
   position: absolute;
   left: 50%;
-  bottom: 2.2rem;
+  bottom: calc(var(--hud-safe-bottom, 84px) + 0.55rem);
   display: flex;
   align-items: center;
   gap: 0.55rem;
@@ -545,7 +1248,7 @@ kbd {
 .hud__toast {
   position: absolute;
   left: 50%;
-  bottom: 5.6rem;
+  bottom: calc(var(--hud-safe-bottom, 84px) + 3.8rem);
   max-width: min(34rem, 82vw);
   padding: 0.55rem 0.9rem;
   border: var(--ui-border) solid color-mix(in srgb, var(--color-joint) 60%, transparent);
@@ -991,6 +1694,7 @@ kbd {
 
 .concept__relationships,
 .concept__misconceptions,
+.concept__facts,
 .concept-locked__list {
   margin: 0;
   padding-left: 1rem;
@@ -1004,6 +1708,15 @@ kbd {
 
 .concept__misconceptions li {
   color: var(--color-nerve);
+}
+
+.concept__facts li {
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+}
+
+.concept__facts strong {
+  color: var(--color-bone);
 }
 
 .concept-locked {
@@ -1098,15 +1811,10 @@ kbd {
 }
 
 .pause__controls,
-.pause__diagnostics,
-.pause__hint {
+.pause__diagnostics {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-}
-
-.pause__hint button {
-  align-self: flex-start;
 }
 
 .overlay--error {
@@ -1114,18 +1822,6 @@ kbd {
 }
 
 @media (max-width: 720px) {
-  .hud__help {
-    display: none;
-  }
-
-  .hud__bar {
-    flex-direction: column;
-  }
-
-  .hud__badges {
-    justify-content: flex-start;
-  }
-
   .overlay {
     width: calc(100vw - 18px);
     max-height: 92vh;
@@ -1182,11 +1878,11 @@ kbd {
 }
 
 .feedback-surface[data-owner="p1"] {
-  border-color: color-mix(in srgb, var(--color-joint) 70%, transparent);
+  border-color: color-mix(in srgb, var(--color-player-p1) 70%, transparent);
 }
 
 .feedback-surface[data-owner="p2"] {
-  border-color: color-mix(in srgb, var(--color-muscle) 70%, transparent);
+  border-color: color-mix(in srgb, var(--color-player-p2) 70%, transparent);
 }
 
 .feedback-surface[data-severity="warning"] {
@@ -1198,9 +1894,20 @@ kbd {
 }
 
 .feedback-surface--playerCaption {
-  max-width: min(20rem, 66vw);
+  display: block;
+  max-width: min(14rem, 55vw);
   border-radius: 0;
-  padding: 0.35rem 0.65rem;
+  padding: 0.15rem 0.4rem;
+  line-height: 1.35;
+  box-shadow: none;
+}
+
+.feedback-surface--playerCaption .feedback-surface__header {
+  display: none;
+}
+
+.feedback-surface--playerCaption .feedback-surface__text {
+  margin: 0;
 }
 
 .feedback-surface--speechBubble {
@@ -1241,6 +1948,27 @@ kbd {
   opacity: 0.94;
 }
 
+/* Compact world-space chrome. Body text keeps its normal size; only the
+   padding, width, and header spacing shrink. HUD/modal surfaces are untouched. */
+.feedback-surface--speechBubble,
+.feedback-surface--prompt,
+.feedback-surface--stateSwap,
+.feedback-surface--socketFill,
+.feedback-surface--outline,
+.feedback-surface--pathGlow {
+  padding: 0.2rem 0.4rem;
+  max-width: min(16rem, 65vw);
+}
+
+.feedback-surface--speechBubble {
+  max-width: min(18rem, 68vw);
+  padding: 0.25rem 0.45rem;
+}
+
+.feedback-surface--speechBubble .feedback-surface__header {
+  margin-bottom: 0.1rem;
+}
+
 .feedback-surface__header {
   display: flex;
   align-items: center;
@@ -1265,13 +1993,13 @@ kbd {
 }
 
 .feedback-surface[data-owner="p1"] .feedback-surface__owner {
-  background: color-mix(in srgb, var(--color-joint) 24%, transparent);
-  color: var(--color-joint);
+  background: color-mix(in srgb, var(--color-player-p1) 24%, transparent);
+  color: var(--color-player-p1);
 }
 
 .feedback-surface[data-owner="p2"] .feedback-surface__owner {
-  background: color-mix(in srgb, var(--color-muscle) 24%, transparent);
-  color: var(--color-muscle);
+  background: color-mix(in srgb, var(--color-player-p2) 24%, transparent);
+  color: var(--color-player-p2);
 }
 
 .feedback-surface__speaker {
@@ -1329,26 +2057,12 @@ kbd {
   margin-top: 0.4rem;
 }
 
-.feedback-beats {
-  position: absolute;
-  left: 0.75rem;
-  bottom: 0.75rem;
-  max-width: 18rem;
-  padding: 0.55rem 0.7rem;
-  border: var(--ui-border) solid color-mix(in srgb, var(--color-nerve) 35%, transparent);
-  border-radius: 0;
-  background: var(--color-bg);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--color-bone) 10%, transparent),
-    3px 3px 0 var(--color-teal-dark);
-  pointer-events: none;
-}
-
 .feedback-beats__title {
-  margin: 0 0 0.3rem;
+  margin: 0;
   color: var(--color-muted);
   font-family: var(--font-display);
   font-size: var(--text-label);
+  font-weight: 400;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1356,10 +2070,26 @@ kbd {
 .feedback-beats__list {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  margin: 0;
+  gap: 0.02rem;
+  margin: 0.18rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-label);
+  line-height: 1.2;
+}
+
+.feedback-beats__item {
+  position: relative;
   padding-left: 1rem;
-  font-size: var(--text-sm);
+  color: var(--color-muted);
+  line-height: 1.15;
+}
+
+.feedback-beats__item::before {
+  content: "○";
+  position: absolute;
+  left: 0;
+  color: color-mix(in srgb, var(--color-muted) 70%, transparent);
 }
 
 .feedback-beats__item[data-state="done"] {
@@ -1367,9 +2097,19 @@ kbd {
   text-decoration: line-through;
 }
 
+.feedback-beats__item[data-state="done"]::before {
+  content: "✓";
+  color: var(--color-joint);
+}
+
 .feedback-beats__item[data-state="active"] {
   color: var(--color-nerve);
   font-weight: 700;
+}
+
+.feedback-beats__item[data-state="active"]::before {
+  content: "●";
+  color: var(--color-nerve);
 }
 
 .sr-only {
@@ -1390,10 +2130,6 @@ kbd {
 }
 
 @media (max-width: 720px) {
-  .feedback-beats {
-    display: none;
-  }
-
   .feedback-surface {
     max-width: 70vw;
   }
@@ -1557,6 +2293,23 @@ kbd {
 
 .hub-card__title-row {
   display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.hub-card__icon {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid color-mix(in srgb, var(--color-bone) 24%, transparent);
+  background: var(--color-bg);
+  image-rendering: pixelated;
+}
+
+.hub-card__title-group {
+  display: flex;
+  flex: 1;
+  min-width: 0;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.35rem;
@@ -1848,6 +2601,13 @@ kbd {
   pointer-events: none;
 }
 
+@media (max-width: 1100px) {
+  /* Keep the card titles readable when the two-column panel narrows. */
+  .hub-card__icon {
+    display: none;
+  }
+}
+
 @media (max-width: 900px) {
   .hub {
     justify-content: center;
@@ -1920,16 +2680,6 @@ kbd {
 /* ------------------------------------------------------------------ */
 /* Large-text fallbacks                                               */
 /* ------------------------------------------------------------------ */
-
-/* At 150–200% the fixed HUD corners collide. The controls are also listed
-   in the pause menu, so the secondary HUD help yields to readable content. */
-[data-text-scale="1.5"] .hud__help {
-  top: 10rem;
-}
-
-[data-text-scale="2"] .hud__help {
-  display: none;
-}
 
 /* The map is a spatial schematic at 100%. When text is enlarged, stacking
    the nodes keeps every label readable instead of overlapping. */

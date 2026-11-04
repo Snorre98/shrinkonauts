@@ -45,10 +45,10 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Concept scan and concept log | Working |
 | Node Run and Endplate Ferry puzzles | Working |
 | Capability feedback surfaces and attributed cues | Working |
-| Beat progress and stuck hint/reset affordance | Working |
+| Beat progress and requested hint/reset affordance | Working |
 | Composable cosmetic effects and tile visuals | Working |
 | Material/pattern catalog, tile grids, autotiling, variants | Working |
-| Atlas assets, named regions, frame refs, placeholder atlas | Working |
+| Atlas assets, named regions, frame refs, four material atlases | Working |
 | World/object/background pattern projection | Working |
 | UI material/pattern slots and contrast-safe fallback | Working |
 | 03/04 fully materialized placeholder proof | Working |
@@ -59,15 +59,19 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Local co-op, tether, checkpoint P2 toggle | Working |
 | Solo start with P2 inactive | Working |
 | Pause, text scale, reduced motion, mute, focus management | Working |
+| M3.75 in-room HUD, blueprint, hint strip, player cards | Working; final 32×32 image symbols |
 | Placeholder asset pipeline (44/44 anatomy, 15/15 bathroom) | Working |
 | Pure validator with injected feedback vocabulary | Working |
 | Headless runtime smoke | Working |
 | Playwright browser smoke on system Chrome | Working |
 | Human hub visual/accessibility playtest | **Pending** |
 | Human solo/co-op playtest | **Pending** |
-| Final art/audio | Deferred |
+| Remaining final art files (03 scans, Silicon interrupt/exit, deferred backgrounds/UI) | Deferred |
+| Audio cues and room/menu themes | Installed from the 2026-11-03/04 Stable Audio passes |
+| 04 Nano Banana source batch | 7 plates processed, wired and accepted |
 | M3.5 bathroom hub art pass | Deferred |
-| Levels 5+, capture mode, music/ambience loops | Deferred |
+| Theme playback (menu/room music) | Working; menu and room theme files installed |
+| Levels 5+, capture mode, ambience loops | Deferred |
 | Full key rebinding | Deferred |
 | Physical gate bodies, `locked`/`unlock`, conditional links | Deferred |
 | Per-level debrief overrides, side-level travel | Deferred |
@@ -79,7 +83,7 @@ Run from `shrinkonauts/`:
 ```bash
 npm install
 npm run dev             # http://127.0.0.1:5173/
-npm test                # 45 files, 423 unit/integration tests
+npm test                # 68 files, 706 unit/integration tests
 npm run smoke           # room boot + module boundary tests
 npm run build           # tsc --noEmit + Vite production build
 npm run pack:validate   # dev fixture + anatomy + catalog/hub validation
@@ -98,9 +102,9 @@ bundled browser.
 Asset modes:
 
 ```text
-/                  # anatomy pack, procedural placeholders
+/                  # hub + final manifests by default
 /?assets=fixture   # anatomy fixture manifest if present, else warn + placeholders
-/?assets=final     # final manifest (current entries are placeholders)
+/?assets=final     # final manifests (POC/final entries; deferred IDs stay placeholders)
 ```
 
 Unknown `?assets=` values fall back to placeholder mode. The app does not boot
@@ -219,10 +223,16 @@ restoreRun()
 ```
 
 `step(dt, input)` advances the simulation, routes soft-surface input, drains
-one-shot actions, checks checkpoints/triggers/exits, ticks the feedback director,
-updates the stuck affordance, and returns gameplay cues (`jump`, `land`, `dash`).
-Actions are latched by the input source, so an `E` tap is consumed exactly once
-by the next fixed step even when several render frames occur first.
+one-shot actions, checks checkpoints/triggers/exits, and ticks the feedback
+director. It returns gameplay cues (`jump`, `land`, `dash`). Transient feedback
+cues are deferred into per-player inboxes and only appear when a player presses
+scan; cosmetic effects still run immediately. The scan button also opens the
+shared hint/reset affordance inside an authored info area. A persisted global
+“Shared feedback” pause setting hides shared-owned transient cues, persistent
+state surfaces, the beat tracker, and the requested help surface without
+affecting player cues; cosmetic effects keep running. Actions are latched by the
+input source, so an `E` tap is consumed exactly once by the next fixed step even
+when several render frames occur first.
 
 ### State machine
 
@@ -281,14 +291,17 @@ relevant entity/player, and cues carry P1/P2 attribution.
 - `descriptors.ts` defines exhaustive `NODE_FEEDBACK` and `LINK_FEEDBACK` tables,
   capability defaults, labels, and persistent state projection.
 - `director.ts` owns the ECS-backed sticky surfaces, transient cues, beats,
-  effect instances, ordering, dedupe, TTL, and cancellation.
+  effect instances, ordering, dedupe, TTL, cancellation, and shared-feedback
+  visibility.
 - `effect-presets.ts` defines named cosmetic recipes built from the closed
   operator/path vocabulary.
 - `beats.ts` derives authored or win-graph beat progress.
 
 `GameRuntime` ingests facts and projects sticky surfaces once per fixed step.
-`RuntimeSnapshot.feedback` contains surfaces, cues, beats, and effect instances.
-The scene consumes only `WorldEffectPlan`/tile ports through `drainEffects()`.
+`RuntimeSnapshot.feedback` contains surfaces, cues, beats, and effect instances;
+while shared feedback is off, it omits shared-owned surfaces and beats. The scene
+consumes only `WorldEffectPlan`/tile ports through `drainEffects()`, which still
+receives the unfiltered effect list.
 
 ### Accessibility contract
 
@@ -311,11 +324,11 @@ resolves referenced JSON files, parses every document, and returns a structured
 ```text
 public/packs/anatomy-reflex/
   pack.json                 start/end level, manifests, assets
-  theme.json                palette, fonts, parallax, UI assets, audio cues
+  theme.json                palette, fonts, parallax, UI assets, audio cues/music
   mapping.json              concept → objective/level coverage
   licenses.json             licence entries
-  assets.placeholder.json   placeholder manifest
-  assets.final.json         final manifest (currently placeholder entries)
+  assets.placeholder.json   placeholder/fallback manifest
+  assets.final.json         final manifest (POC/final entries; deferred IDs stay placeholders)
   levels/03-nerve-forest/
     level.json              objectives, concepts, puzzleIds, feedback, map, evidence
     room.json               tiles, entities, anchors, checkpoints, triggers, exits
@@ -378,7 +391,7 @@ talk, scan, open a gate, or cross the exit. The tether keeps the pair within
 560 px; when they separate further, P2 is pulled toward P1 so the shared camera
 cannot lose a player. `P` only changes P2 at a checkpoint, and rejoining places
 P2 beside P1 at that checkpoint. Soft-surface routing is owner-aware: hard
-overlays consume all input; conversation/stuck surfaces consume only their
+overlays consume all input; conversation/help surfaces consume only their
 owner's (or shared) UI actions.
 
 ## Save format
@@ -462,6 +475,36 @@ cues, beat progress, and the `.feedback-live` polite live region. Surfaces are
 diffed by stable ID, sorted by priority, and laid out by anchor with safe-area
 docking and P1/P2 caption lanes.
 
+M3.75 implements the three-zone header: identity on the left, the compact
+2–4-component puzzle blueprint in the centre, the puzzle checklist on the right,
+and the hint/status strip below. The header checklist owns the beat rendering
+(`.feedback-beats__item` is retained) and the header hint button cycles the
+authored hints with `aria-live` text. Bottom-left P1 and bottom-right P2 control
+cards use the shared `--color-player-p1`/`--color-player-p2` tokens; P2 is hidden
+in solo. The pause menu keeps the full shared and per-player control list and no
+longer owns the puzzle hint.
+
+`src/game/blueprint.ts` builds the compact component view from authored level
+data with a deterministic beat/nodes/solution fallback. `src/ui/blueprint.ts`
+renders the compact icon strip and the labelled Tab popup; the popup also carries
+the system chain, legend, and hint history. The pack-level system map is
+popup-only context and is not consumed by the compact blueprint. Header density
+is exposed as `data-hud-density` (`full`, `compact`, `minimal`), and measured
+header/card insets feed the feedback safe area so prompts, toasts, and anchored
+surfaces stay clear of the HUD.
+
+The design and data model are in
+[`docs/m3.75/README.md`](docs/m3.75/README.md), with the symbol brief in
+[`docs/m3.75/blueprint-symbol-asset-brief-v01.md`](docs/m3.75/blueprint-symbol-asset-brief-v01.md)
+and the decision in
+[ADR-0080](docs/adr-presentation/0080-hud-blueprint-and-player-colors.md).
+The 12 authored puzzle symbols resolve to final 32×32 `ui-1x` PNGs under each
+pack's `shared/ui/blueprint-symbols/` directory. The CSS code glyph remains the
+fallback for unresolved IDs; the old generic v01 entries remain for the fallback
+builder, while the v02 placeholder entries were removed once the final assets
+were wired. The assets, key/fit reports and 1×/2×/4× previews are committed under
+`art-source/blueprint-icons/` and `art-source/previews/blueprint-icons/`.
+
 The accessibility baseline is:
 
 - `Esc` pause from gameplay, with a visible pause overlay.
@@ -469,13 +512,20 @@ The accessibility baseline is:
 - Reduced motion: sets `data-reduced-motion="true"`, disables CSS animation, and
   simplifies movement effects while keeping surfaces/text.
 - Mute toggle (`M`) from gameplay and from every overlay, with HUD status.
+- Persisted global “Shared feedback” toggle in the pause settings; it hides
+  shared transient cues, shared persistent state surfaces, beats, and shared
+  help while keeping player cues and cosmetic effects.
 - Focus management: overlays are `role="dialog"`, `aria-modal`, labelled,
   autofocus the first meaningful control, trap `Tab`/`Shift+Tab`, and restore
   focus to the previous element on close.
 - Owner-aware soft surfaces; P1/P2 can operate conversations concurrently.
 - Live regions for toasts, gate feedback, and feedback cues with actor
-  attribution.
-- Semantic buttons and labels for gate reordering, choices, and debrief.
+  attribution; the header hint text is a polite live region and the active beat
+  uses `aria-current="step"`.
+- Semantic buttons and labels for gate reordering, choices, and debrief; compact
+  blueprint components are labelled buttons and the Tab popup traps focus.
+- Density states at `data-hud-density` keep content reachable through the
+  expanded blueprint, pause controls, and text scaling at 1/1.25/1.5/2.
 
 Full key rebinding is deferred. Settings changes update the mounted pause
 overlay in place, so buttons reflect their new state without recreating the
@@ -491,12 +541,17 @@ logical IDs such as `sprite.agent.neuron`, `bg.nerve_forest.mid`, or
 final manifest → fixture/pack manifest → placeholder provider
 ```
 
-The anatomy pack declares 44 IDs and resolves all 44 to placeholders, including
-the player sprites, tileset, parallax layers, agent/gate/scene sprites,
-checkpoint, exit, and audio cues. `?assets=fixture` looks for an anatomy fixture
-manifest; because none is authored for this slice, it warns and keeps
-placeholders. The dev fixture still resolves 10/10 placeholders, or 7/10 with
-its fixture manifest selected by the scripts.
+The anatomy pack declares 58 IDs. Final-source entries include the player
+sprites, Neuron Keeper, readable entity sprites, the 03 pretty sky, the final
+04 sky, four coloured material atlases, and final 04 gate/exit sprites; the
+remaining entries resolve to procedural placeholders. The seven-plate 04 Nano
+Banana batch is processed and wired; see the
+[remaining-work checklist](docs/assets/remaining-work.md) and the
+[completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix).
+`?assets=fixture` looks for an anatomy fixture manifest; because none is
+authored for this slice, it warns and keeps placeholders. The dev fixture still
+resolves 10/10 placeholders, or 7/10 with its fixture manifest selected by the
+scripts.
 
 The preload plan, validation, and boot fail loudly if an ID is unknown or a
 referenced file is missing. `applyTheme` maps pack palette/fonts to CSS
@@ -515,9 +570,12 @@ jump, land, wrong
 
 Web Audio is unlocked on the first keydown/pointerdown, mute and volume persist
 through the save-owned storage seam, and missing/failed media warns and falls
-back to a synth or silence. Feedback lexicon audio IDs remain vocabulary
-metadata; the current runtime continues to play the named theme cues. Music and
-ambience loops are deferred.
+back to a synth or silence. Cue files are preloaded during hub mount and pack
+preparation, then play a cached buffer on their first occurrence. Room/menu
+themes use a dedicated music bus, looped buffers, gain-ramp crossfades, and
+warn-once silence. The menu and three authored room themes are installed and
+`room.music` / `theme.audio.music` resolve to files. A separate ambience loop is
+deferred.
 
 ## Validation
 
@@ -581,18 +639,20 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/room-boot.test.ts` | Room parsing, simulation spawn/ground/camera/movement, jump/land cues |
 | `tests/assets.test.ts` | ID validation, provider precedence, preload, placeholder fallback |
 | `tests/manifest.test.ts` | Manifest parsing and malformed entries |
-| `tests/audio.test.ts` | Cue playback, mute/volume, unlock, provider fallback |
+| `tests/audio.test.ts` | Cue/theme playback, mute/volume, unlock, provider fallback |
 | `tests/cue-emission.test.ts` | Jump/land cue emission from the simulation |
 | `tests/syllabus.test.ts` | Real syllabus parse, lookups, duplicate/cycle/evidence rejection |
 | `tests/validate.test.ts` | Dev content, failure modes, feedback vocabulary/rules |
 | `tests/progression.test.ts` | Abilities, gates, all three puzzles, map traversal |
 | `tests/narrative.test.ts` | Linear dialogue, choices, effects, unknown choice |
 | `tests/curriculum.test.ts` | Evidence matching, objective progress, debrief, export |
-| `tests/save.test.ts` | Settings/run persistence, per-pack slots, legacy migration, version/pack rejection, conversations |
+| `tests/save.test.ts` | Settings/run persistence, shared-feedback defaults, per-pack slots, legacy migration, version/pack rejection, conversations |
 | `tests/catalog.test.ts` | Pack catalog ordering, statuses, paths, duplicates |
 | `tests/app-state.test.ts` | Hub phases, cycle/mode selection, start eligibility, error recovery |
 | `tests/hub.test.ts` | Bathroom document parsing, IDs, manifests, validation |
-| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, solo start, overlays |
+| `tests/runtime.test.ts` | Boot, full loop, restore, conversations, P2 toggle, shared-feedback state/beat filtering, solo start, overlays |
+| `tests/blueprint.test.ts` | Authored/fallback blueprint components, states, edges, actors, and grouping |
+| `tests/pack-feedback.test.ts` | Level feedback/beat/blueprint parsing and malformed shapes |
 | `tests/puzzle.test.ts`, `puzzle-dispatch.test.ts`, `endplate-ferry.test.ts` | Puzzle schema/dataflow, dispatch, timers, gate recovery |
 | `tests/recoverability.test.ts` | Exhaustive stable-state reachability |
 | `tests/ecs.test.ts` | Spawn/despawn/query/system order/determinism |
@@ -611,22 +671,66 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, materials purity, module graph |
 | `e2e/hub.spec.ts` | Browser: bathroom, cycle selection, launch skip, solo start, return |
 | `e2e/m1.spec.ts` | Browser: 03 → 04, conversations, attribution, reduced motion, live region, export |
+| `e2e/hud.spec.ts` | Browser: three-zone header, checklist, hint strip, cards, blueprint popup, image-backed 03/04/01 symbols, density, safe area |
+| `e2e/shared-feedback.spec.ts` | Browser: shared-feedback pause toggle, persistence, shared state/beat/help suppression and restoration |
 
 `npm run smoke` runs the room-boot and boundary suites. `pack:smoke` adds a
 headless full-loop runtime run plus the M0 placeholder/fixture simulation
-regression. `smoke:e2e` runs four Playwright tests against the dev server using
-system Chrome.
+regression. `smoke:e2e` runs the Playwright smoke project against the dev server
+using system Chrome.
 
 ## Verification performed
 
-On 2026-11-01, after the P2 re-baseline and POC player animation:
+On 2026-11-04, after merging `add-missing-04-03-assets` into `feat/m4.0a-phone-coop`:
 
 ```text
-npm test             45 files, 423 tests passed
+npm test               68 files, 706 tests passed
+npm run build          tsc clean + Vite production build + controller bundle check
+npm run pack:validate  dev placeholder/fixture PASS; anatomy 59 IDs / 16 placeholders; Silicon 52 IDs / 16 placeholders; catalog + bathroom hub 21 IDs / 1 placeholder PASS
+npm run pack:smoke     dev modes PASS; anatomy runtime PASS (59 IDs, 16 placeholders); Silicon runtime PASS (48 IDs, 16 placeholders)
+npm run smoke:e2e      17/17 passed
+npm run smoke:controller 1/1 passed
+conflict markers       none
+```
+
+On 2026-11-04, after the M3.75 final symbol pass:
+
+```text
+npm test             56 files, 588 tests passed
+npm run build        tsc clean + Vite production build
+npm run pack:validate  dev placeholder/fixture PASS; anatomy 59 IDs / 16 placeholders; Silicon 52 IDs / 16 placeholders; catalog + bathroom hub 21 IDs / 1 placeholder PASS
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (59 IDs, 16 placeholders); Silicon runtime PASS (48 IDs, 16 placeholders)
+npm run smoke:e2e      17/17 passed
+git diff --check      clean
+```
+
+The 12 source plates were keyed with `#ff00ff`, fitted to 32×32 `ui-1x`, and
+reviewed at 1× on `#101a20`. `route-integrate` was hand-cleaned by remapping its
+graphite wires to `#7a8f8a`; `axon-flow` remains the narrowest source. The 03,
+04 and 01 headers were captured at 1280×720 and checked for image glyphs,
+done/active/pending rings and P1/P2 markers. Human HUD playtest remains pending.
+
+On 2026-11-04, after the M3.75 HUD pass (before final symbol integration):
+
+```text
+npm test             56 files, 588 tests passed
 npm run build        tsc clean + Vite production build
 npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
-npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (45 IDs, 43 placeholders)
-npm run smoke:e2e     7/7 passed (system Chrome, port 4173)
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (59 IDs, 24 placeholders); Silicon PASS (48 IDs, 20 placeholders)
+npm run smoke:e2e      16/16 passed
+git diff --check      clean
+```
+
+On 2026-11-03, after the additive 04/tile-atlas pass:
+
+```text
+npm test             53 files, 555 tests passed
+npm run build        tsc clean + Vite production build
+npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (50 IDs, 26 placeholders)
+npm run gdd:site      39 docs/gallery build PASS
+npm run gdd:capture    hub/launch/03/04 captures PASS; Silicon/remaining captures blocked by an unrelated dialogue-button timeout
+npm run smoke:e2e      10/11 passed; the 04 "Signal restored" caption assertion races the scan key and is unrelated to the art change
 ```
 
 ### Screenshots
@@ -645,11 +749,11 @@ procedural placeholder:
 ## Deferred
 
 - Human solo and co-op playtest of the M1.75 feedback flow.
-- Final art and final audio; only procedural placeholders exist.
+- Final art; procedural placeholders remain for deferred art.
 - The Silicon fixture/pack (visible as a gated cycle).
 - Levels 5+ and the second core gate.
 - Capture mode.
-- Music and ambience loops.
+- A separate ambience loop.
 - Full key rebinding.
 - Conditional dialogue-node skipping; M1 supports linear nodes, choices, and
   effects only.

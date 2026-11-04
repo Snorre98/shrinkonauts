@@ -1,98 +1,11 @@
-import { expect, test, type Page } from "@playwright/test";
-
-interface RuntimeBridge {
-  entityPixel(id: string): { x: number; y: number } | null;
-  placePlayer(id: "p1" | "p2", x: number, y: number): void;
-  exportEvidence(): {
-    sessionId: string;
-    objectives: Array<{ id: string; requiredMet: boolean }>;
-    events: Array<{ type: string; gateId?: string; puzzleId?: string }>;
-  };
-  snapshot(): { state: string; abilities: string[]; mode: string };
-  simulation: {
-    players: Record<"p1" | "p2", { x: number; y: number }>;
-  };
-}
-
-type ShrinkonautsWindow = Window & {
-  __shrinkonauts?: {
-    runtime: RuntimeBridge;
-    game: { scene: { isActive(key: string): boolean } };
-  };
-};
-
-async function boot(page: Page): Promise<string[]> {
-  const consoleErrors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push(message.text());
-  });
-  page.on("pageerror", (error) => consoleErrors.push(error.message));
-
-  await page.goto("/?skipMenu=1&pack=anatomy-reflex");
-  // Wait for the Phaser scene, not only the boot bridge: key presses sent
-  // before `create()` are consumed by no one and would be lost.
-  await page.waitForFunction(() => {
-    const app = (window as ShrinkonautsWindow).__shrinkonauts;
-    return Boolean(app?.runtime) && app?.game.scene.isActive("room") === true;
-  });
-  await expect(page.locator(".hud__title")).toHaveText("Nerve Forest");
-  const materialPanel = await page.evaluate(() => {
-    const root = getComputedStyle(document.documentElement);
-    const panel = document.querySelector<HTMLElement>(".hud__panel");
-    return {
-      pattern: root.getPropertyValue("--material-panel-pattern").trim(),
-      background: panel ? getComputedStyle(panel).backgroundImage : "",
-    };
-  });
-  expect(materialPanel.pattern).toContain("data:image/svg+xml");
-  expect(materialPanel.background).not.toBe("none");
-  await waitForRoom(page, "room-nerve-forest");
-  await expect(page.locator(".overlay--error")).toHaveCount(0);
-  return consoleErrors;
-}
-
-async function waitForRoom(page: Page, roomId: string): Promise<void> {
-  await page.waitForFunction(
-    (id) =>
-      document
-        .querySelector<HTMLCanvasElement>("#game-root canvas")
-        ?.getAttribute("data-room-id") === id,
-    roomId,
-  );
-}
-
-async function teleport(
-  page: Page,
-  p1: { x: number; y: number } | string,
-  p2?: { x: number; y: number } | string,
-): Promise<void> {
-  await page.evaluate(
-    ({ first, second }) => {
-      const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
-      if (!runtime) throw new Error("runtime bridge is missing");
-
-      const resolve = (point: { x: number; y: number } | string) => {
-        if (typeof point !== "string") return point;
-        const resolved = runtime.entityPixel(point);
-        if (!resolved) throw new Error(`missing entity ${point}`);
-        return resolved;
-      };
-
-      const p1Point = resolve(first);
-      runtime.placePlayer("p1", p1Point.x, p1Point.y);
-      const p2Point = second ? resolve(second) : { x: p1Point.x + 36, y: p1Point.y };
-      runtime.placePlayer("p2", p2Point.x, p2Point.y);
-    },
-    { first: p1, second: p2 ?? null },
-  );
-  // Let the fixed-step scene publish the new interaction target.
-  await page.waitForTimeout(120);
-}
-
-async function closeOverlay(page: Page, overlay: string): Promise<void> {
-  await page.keyboard.press("Escape");
-  await expect(page.locator(`.${overlay}`)).toHaveCount(0);
-}
+import { expect, test } from "@playwright/test";
+import {
+  boot,
+  closeOverlay,
+  teleport,
+  waitForRoom,
+  type ShrinkonautsWindow,
+} from "./support";
 
 test("boots into the vertical slice and finishes conversation, scans, Node Run, Endplate Ferry, debrief", async ({
   page,
@@ -148,7 +61,9 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // Wait for the scan cue before opening the log; otherwise both actions land
   // in the same frame and the log transition consumes the scan.
   await expect(
-    page.locator(".feedback-surface", { hasText: "Sensory and motor pathways" }),
+    page.locator(".feedback-surface", {
+      hasText: "All-or-none and one-way conduction",
+    }),
   ).toBeVisible();
   await page.keyboard.press("c");
   await expect(page.getByRole("dialog", { name: "Concept log" })).toBeVisible();
@@ -160,14 +75,15 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // Node Run: P1 and P2 press one dendrite input each, then P1 reaches the
   // terminal. The threshold counter and terminal relay open the exit gate.
   await teleport(page, "pad-input-a", "pad-input-b");
-  await teleport(page, "pad-terminal");
+  await teleport(page, "pad-terminal", "pad-input-b");
+  await page.keyboard.press("q");
   await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
     "Signal restored",
   );
   await expect
     .poll(() =>
       page.evaluate(
-        () => (window as ShrinkonautsWindow).__shrinkonauts?.runtime.snapshot().abilities ?? [],
+        () => (window as ShrinkonautsWindow).__shrinkonauts?.runtime?.snapshot().abilities ?? [],
       ),
     )
     .toContain("signal-dash");
@@ -176,8 +92,10 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
-    runtime.placePlayer("p1", 1200, 640);
-    runtime.placePlayer("p2", 1180, 640);
+    const exit = runtime.entityPixel("exit-nerve");
+    if (!exit) throw new Error("exit-nerve is missing");
+    runtime.placePlayer("p1", exit.x, exit.y + 48);
+    runtime.placePlayer("p2", exit.x - 32, exit.y + 48);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
 
@@ -219,10 +137,11 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // P1 pulses the terminal; the Ca gate + receptor relay opens the muscle gate.
   await teleport(page, "motor-terminal");
   await page.keyboard.press("f");
+  await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry ✓");
+  await page.keyboard.press("q");
   await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
     "Signal restored",
   );
-  await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry ✓");
   await expect(
     page.locator('.feedback-surface[data-surface-id="fb:carrier:ach-packet"]'),
   ).toContainText("ACh packet cleared", { timeout: 6_000 });
@@ -230,7 +149,9 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
-    runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+    const exit = runtime.entityPixel("exit-muscle");
+    if (!exit) throw new Error("exit-muscle is missing");
+    runtime.placePlayer("p1", exit.x, exit.y + 48);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
   await expect(page.getByRole("dialog", { name: "Level complete" })).toHaveCount(0);
@@ -246,7 +167,7 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await expect(page.locator(".overlay__title")).toHaveText("Signal restored");
 
   const evidence = await page.evaluate(
-    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime.exportEvidence(),
+    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime!.exportEvidence(),
   );
   expect(evidence.objectives.find((item) => item.id === "OBJ-2")?.requiredMet).toBe(
     true,
@@ -283,13 +204,13 @@ test("two players can hold conversations while the other keeps moving", async ({
   await expect(page.locator('.feedback-surface--speechBubble[data-owner="p1"]')).toBeVisible();
 
   const before = await page.evaluate(
-    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime.simulation.players.p2.x,
+    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime!.simulation.players.p2.x,
   );
   await page.keyboard.down("ArrowRight");
   await page.waitForTimeout(250);
   await page.keyboard.up("ArrowRight");
   const after = await page.evaluate(
-    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime.simulation.players.p2.x,
+    () => (window as ShrinkonautsWindow).__shrinkonauts!.runtime!.simulation.players.p2.x,
   );
   expect(after).toBeGreaterThan(before);
   await expect(page.locator(".feedback-surface--speechBubble")).toHaveCount(1);
@@ -317,11 +238,9 @@ test("reduced motion keeps feedback surfaces and text", async ({ page }) => {
   await expect(page.locator(".overlay--pause")).toHaveCount(0);
 
   await teleport(page, "pad-input-a", { x: 120, y: 640 });
-  const caption = page
-    .locator(".feedback-surface--playerCaption", {
-      hasText: "Dendrite input A is active.",
-    })
-    .first();
+  await page.keyboard.press("q");
+  const caption = page.locator('.feedback-surface--playerCaption[data-owner="p1"]');
+  await expect(caption).toHaveCount(1);
   await expect(caption).toBeVisible();
   await expect(caption).toContainText("P1:");
   await expect(page.locator(".feedback-live")).toContainText("P1:");
@@ -329,6 +248,32 @@ test("reduced motion keeps feedback surfaces and text", async ({ page }) => {
     page.locator(".feedback-beats__item", { hasText: "Press a dendrite input" }),
   ).toBeVisible();
 
+  expect(consoleErrors).toEqual([]);
+});
+
+test("shared help is request-only and dismisses after choosing a hint", async ({
+  page,
+}) => {
+  const consoleErrors = await boot(page);
+
+  await expect(
+    page.locator(".feedback-surface", { hasText: "Need a nudge?" }),
+  ).toHaveCount(0);
+
+  await teleport(page, { x: 960, y: 640 });
+  await page.keyboard.press("q");
+
+  const help = page.locator(".feedback-surface--hudStatus", {
+    hasText: "Need a nudge?",
+  });
+  await expect(help).toBeVisible();
+  await expect(
+    help.getByRole("button", { name: "Show hint" }),
+  ).toBeVisible();
+
+  await help.getByRole("button", { name: "Show hint" }).click();
+  await expect(help).toHaveCount(0);
+  await expect(page.locator(".hud__hint")).toContainText("Hint:");
   expect(consoleErrors).toEqual([]);
 });
 
@@ -344,13 +289,13 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await page.keyboard.press("p");
   await expect(page.locator(".hud__meta")).toContainText("co-op");
 
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
-
-  await page.getByRole("button", { name: "Show puzzle hint" }).click();
-  await expect(page.locator(".pause__hint")).toContainText(
+  await page.getByRole("button", { name: "Hint", exact: true }).click();
+  await expect(page.locator(".hud__hint")).toContainText(
     "One input is below threshold. The trigger gate needs a second dendrite input.",
   );
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
 
   await page.getByRole("button", { name: "Reset puzzle" }).click();
   await expect(page.locator(".hud__save")).toContainText("Puzzle reset");
@@ -379,7 +324,7 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await expect(page.locator(".overlay--pause")).toHaveCount(0);
 
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("dialog", { name: "System map" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Blueprint" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.locator(".overlay--map")).toHaveCount(0);
 

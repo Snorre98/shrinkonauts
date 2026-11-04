@@ -7,6 +7,8 @@ import type { WorldView } from "../src/ui/model";
 const world: WorldView = {
   camera: { x: 100, y: 50, width: 1280, height: 720 },
   viewport: { width: 1280, height: 720 },
+  stage: { x: 0, y: 0, width: 1280, height: 720 },
+  zoom: 1,
   tileSize: 32,
   players: {
     p1: {
@@ -75,6 +77,48 @@ describe("anchors", () => {
     expect(anchor.x).toBeCloseTo(100 + (1000 - 1280 * (500 / 720)) / 2);
     expect(anchor.y).toBeCloseTo(200);
     expect(anchor.visible).toBe(true);
+  });
+
+  it("projects through a stage offset and integer camera zoom", () => {
+    const stageWorld: WorldView = {
+      ...world,
+      camera: { x: 200, y: 300, width: 640, height: 252 },
+      stage: { x: 0, y: 96, width: 1280, height: 504 },
+      zoom: 2,
+    };
+    const scale = 500 / 720;
+    const stageX = 100 + (1000 - 1280 * scale) / 2;
+    const stageY = 200 + 96 * scale;
+
+    const origin = worldToScreen(
+      { kind: "world", point: { x: 200, y: 300 } },
+      stageWorld,
+      canvas,
+    );
+    expect(origin.x).toBeCloseTo(stageX);
+    expect(origin.y).toBeCloseTo(stageY);
+    expect(origin.visible).toBe(true);
+
+    const inner = worldToScreen(
+      { kind: "world", point: { x: 300, y: 350 } },
+      stageWorld,
+      canvas,
+    );
+    expect(inner.x).toBeCloseTo(stageX + 100 * 2 * scale);
+    expect(inner.y).toBeCloseTo(stageY + 50 * 2 * scale);
+
+    const left = worldToScreen(
+      { kind: "world", point: { x: 100, y: 300 } },
+      stageWorld,
+      canvas,
+    );
+    const above = worldToScreen(
+      { kind: "world", point: { x: 200, y: 100 } },
+      stageWorld,
+      canvas,
+    );
+    expect(left.visible).toBe(false);
+    expect(above.visible).toBe(false);
   });
 
   it("resolves an authored entity socket and honours offsets", () => {

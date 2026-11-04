@@ -26,6 +26,10 @@ The build reads `working/clips.json`, which defines:
 - `idle` — frame 0, static, output `agent-neuron.png`
 - `idle-loop` — frames 0–35, 12.5 fps, looping, output `agent-neuron-idle.png`
 
+The cell is **96×96** and the display is **96×96** (`hero-1x`, ADR-0074/0075).
+The runtime sheet is 3456×96. The fit is a `fit-preview`; hand cleaning at
+96×96 is still required before final approval.
+
 It also writes the 8× preview and GIF under
 `art-source/previews/poc/downscale/` and a report under `working/tmp/`.
 

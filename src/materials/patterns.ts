@@ -193,9 +193,14 @@ export function sampleBitmap(
 /**
  * Serialize the bitmap as a compact SVG data URL. Consecutive equal alpha
  * pixels are merged into horizontal runs; this is small enough for UI custom
- * properties and keeps the CSS source identical to the Phaser texture.
+ * properties. The optional CSS opacity scales the alpha independently of the
+ * Phaser texture, which applies its own overlay opacity.
  */
-export function bitmapToSvgDataUrl(bitmap: PatternBitmap): string {
+export function bitmapToSvgDataUrl(
+  bitmap: PatternBitmap,
+  opacity = 1,
+): string {
+  const strength = Math.max(0, Math.min(1, opacity));
   const rows: string[] = [];
   for (let y = 0; y < bitmap.height; y += 1) {
     let runStart = 0;
@@ -207,9 +212,11 @@ export function bitmapToSvgDataUrl(bitmap: PatternBitmap): string {
           : -1;
       if (alpha === runAlpha) continue;
       if (runAlpha > 0) {
-        const opacity = (Math.round((runAlpha / 255) * 16) / 16).toFixed(2);
+        const runOpacity = (
+          Math.round((runAlpha / 255) * strength * 16) / 16
+        ).toFixed(2);
         rows.push(
-          `<rect x="${runStart}" y="${y}" width="${x - runStart}" height="1" fill="#fff" fill-opacity="${opacity}"/>`,
+          `<rect x="${runStart}" y="${y}" width="${x - runStart}" height="1" fill="#fff" fill-opacity="${runOpacity}"/>`,
         );
       }
       runStart = x;

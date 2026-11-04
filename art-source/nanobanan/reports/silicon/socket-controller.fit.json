@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.socket.controller",
+  "class": "hero-interactable",
+  "status": "fit-preview",
+  "treatment": "hero-interactable",
+  "display": {
+    "width": 64,
+    "height": 64
+  },
+  "notes": "Hero re-fit at 64×64. Open controller socket with bone frame, guide rails and cyan-lit slot.",
+  "config": "fit.silicon.config.json",
+  "source": {
+    "path": "art-source/nanobanan/keyed/silicon/socket-controller.png",
+    "width": 1721,
+    "height": 1536,
+    "edgeContact": {
+      "top": 1496,
+      "bottom": 1538,
+      "left": 1168,
+      "right": 1
+    }
+  },
+  "output": {
+    "path": "public/packs/silicon-reflex/shared/sprites/socket-controller.png",
+    "runtime": true,
+    "written": false,
+    "width": 64,
+    "height": 64,
+    "bytes": 1911
+  },
+  "cell": {
+    "width": 64,
+    "height": 64
+  },
+  "margin": 2,
+  "alphaThreshold": 128,
+  "gates": {
+    "minReadablePx": 48,
+    "minOpaquePixels": 1400,
+    "maxPaletteDistance": 24,
+    "maxDownscale": 10
+  },
+  "sourceScale": 28.683,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "trim": {
+    "x": 0,
+    "y": 0,
+    "width": 1721,
+    "height": 1536
+  },
+  "fit": {
+    "width": 60,
+    "height": 54,
+    "offsetX": 2,
+    "offsetY": 8,
+    "scale": 0.034863,
+    "upscaled": false
+  },
+  "finalBounds": {
+    "x": 2,
+    "y": 8,
+    "width": 60,
+    "height": 54
+  },
+  "margins": {
+    "top": 8,
+    "right": 2,
+    "bottom": 2,
+    "left": 2
+  },
+  "quantization": {
+    "changedPixels": 3178,
+    "maxDistance": 55.408,
+    "offPalettePixels": 3178,
+    "alphaViolations": 0
+  },
+  "paletteValidation": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 3200
+  },
+  "rampHistogram": {
+    "teal": 640,
+    "boneShadow": 380,
+    "sage": 356,
+    "bone": 980,
+    "ink": 495,
+    "joint": 349
+  },
+  "warnings": [
+    "source content touches the image border (t 1496, b 1538, l 1168, r 1); the concept plate may be clipped",
+    "source-to-fit scale 28.7:1 exceeds the 10:1 treatment limit",
+    "max palette quantisation distance 55.4 exceeds 24"
+  ],
+  "previews": {
+    "scale1x": "art-source/previews/nanobanan/silicon/socket-controller-1x.png",
+    "scale2x": "art-source/previews/nanobanan/silicon/socket-controller-2x.png",
+    "scale4x": "art-source/previews/nanobanan/silicon/socket-controller-4x.png",
+    "tint2x": "art-source/previews/nanobanan/silicon/socket-controller-tint-2x.png"
+  }
+}

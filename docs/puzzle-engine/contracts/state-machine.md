@@ -1,7 +1,8 @@
 # State machine contract
 
 Explicit states for gates, props, feedback surfaces/cues, effects, conversations,
-and the deferred travel/conditional-link targets. Source ADRs: ADR-0002–0013.
+and the deferred travel/conditional-link targets. Source ADRs: ADR-0002–0013,
+ADR-0018–0022.
 
 Status labels:
 
@@ -72,7 +73,8 @@ Invariants:
 | State | Kind | Meaning |
 |---|---|---|
 | projected | phase | sticky surface rebuilt from puzzle state |
-| runtime-owned | phase | conversation or stuck affordance inserted directly |
+| runtime-owned | phase | conversation or requested-help surface inserted directly |
+| expired | terminal | non-sticky runtime-owned surface reached its TTL |
 | removed | terminal | source state no longer projects the surface |
 
 | From | To | Trigger | Notes |
@@ -80,8 +82,9 @@ Invariants:
 | (none) | projected | `ProjectSticky` | stable ID `fb:<capability>:<sourceId>` |
 | projected | projected | state change | same entity ID is upserted |
 | projected | removed | source disappears/state no longer projects | effect instances cancelled |
-| (none) | runtime-owned | `putSurface` | conversation/stuck surface |
-| runtime-owned | removed | `removeSurface` or conversation close | effect instances cancelled |
+| (none) | runtime-owned | `putSurface` | conversation or requested-help surface |
+| runtime-owned | removed | `removeSurface`, conversation close, solve/reset | effect instances cancelled |
+| runtime-owned | expired | `ttlTicks` reached | non-sticky surfaces only |
 
 Invariants:
 
@@ -90,21 +93,36 @@ Invariants:
 - Sticky surfaces never rely on a toast.
 - Surface ordering is priority descending, then ID.
 - A surface never owns gameplay truth; it only projects state.
+- A non-sticky runtime-owned surface expires after its TTL and does not reappear
+  automatically.
+- Player-anchored transient cues occupy one slot per player; entity and HUD
+  cues may coexist.
 
 ## 4. Feedback cue lifecycle
 
 | State | Kind | Meaning |
 |---|---|---|
 | queued | transient | fact ingested in the current tick |
+| dropped | transient | shared cue discarded while shared feedback is off |
+| pending | transient | stored in a player's deferred inbox; not rendered or announced |
 | announced | transient | visible and eligible for the live region |
 | coalesced | transient | same cause replaced by the newest/highest-priority cue |
+| evicted | transient | replaced by a newer cue in the same player-attached slot |
 | expired | terminal | TTL reached; entity despawned |
 
 | From | To | Trigger | Notes |
 |---|---|---|---|
-| (none) | queued | `ingest`/`ingestAll` | cause key assigned |
-| queued | announced | `IngestFacts`/`tick` | seq increments |
+| (none) | queued | `ingest`/`ingestAll`/`ingestNow` | cause key assigned |
+| queued | announced | `IngestFacts` in immediate mode | seq increments |
+| queued | dropped | `IngestFacts` for a shared cue while shared feedback is off | never buffered, rendered, or announced; effects still start |
+| queued | pending | `IngestFacts` in deferred mode | latest per player wins |
+| pending | pending | newer cue for the same player | older pending cue is replaced |
+| pending | announced | `requestLatest` | cue TTL starts at reveal |
+| pending | removed | shared feedback turned off | shared copies cleared from both inboxes |
+| pending | removed | `reset` or level transition | pending inbox cleared |
 | announced | coalesced | same cause | highest priority/newest sequence wins |
+| announced | evicted | newer player-attached cue | newest wins; effects cancelled |
+| announced | removed | shared feedback turned off | shared-owned cue despawned; player cues remain |
 | announced | expired | `LifetimeTick` | TTL in fixed ticks |
 | announced | removed | `reset` or level transition | all feedback state cleared |
 
@@ -112,8 +130,37 @@ Invariants:
 
 - Cue sequence is monotonic within a runtime.
 - A cue is deduplicated by cause, not by text.
+- At most one player-anchored transient cue exists per player.
+- At most one pending cue exists per player; newer cues replace older ones.
+- A shared pending cue is copied to both players; revealing it consumes both
+  copies.
+- Pending cues are absent from the frame, the live region, and save state.
+- While shared feedback is off, no shared-owned cue or persistent surface exists
+  in the runtime feedback snapshot, and the beat tracker is empty.
+- Player-owned cues are never removed or suppressed by the shared-feedback
+  setting.
+- Cosmetic effects attached to hidden shared surfaces keep running.
+- Re-enabling shared feedback restores current persistent state surfaces and
+  beats, but does not restore dropped or cleared transient cues.
+- Cosmetic effects on a deferred cue start immediately and are not deferred.
 - Cues with a player actor carry actor attribution in text and accessibility.
 - Cues expire; persistent state does not.
+
+### 4.1 Shared feedback visibility
+
+| State | Meaning |
+|---|---|
+| enabled | shared cues may be buffered or spawned, shared help may be requested, and shared state surfaces/beats are visible |
+| disabled | shared cues are dropped, pending shared copies and visible shared cues are cleared, shared state surfaces and beats are filtered from the snapshot, and shared help is removed |
+
+| From | To | Trigger | Notes |
+|---|---|---|---|
+| enabled | disabled | pause toggle or persisted setting at boot | clear pending/visible shared cues immediately; snapshot filters state and beats |
+| disabled | enabled | pause toggle | current shared state surfaces and beats reappear; dropped cues stay dropped |
+
+The setting is global and persisted. It never changes player cues, puzzle state,
+or effect timing. Hidden shared persistent surfaces remain in the director so
+their cosmetic effects keep running.
 
 ## 5. Effect lifetime
 

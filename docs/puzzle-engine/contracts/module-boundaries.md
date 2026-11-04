@@ -63,6 +63,10 @@ modules.
 | `feedback` | `EFFECT_PRESETS` / `effectPresetIds` / `NODE_EFFECT_SOCKETS` | Named cosmetic recipes and conventional sockets | 0013 | Implemented |
 | `game` | `routeSurfaceInput` / `SurfaceInputRouter` | Per-player soft-surface input routing | 0010 | Implemented |
 | `game` | `GameRuntime.conversations` / `startConversation` | Concurrent entity conversations | 0011 | Implemented |
+| `feedback` | `setSharedFeedbackEnabled` | Drop/clear/despawn shared transient cues without touching persistent surfaces or player cues | 0021 | Implemented |
+| `game` | `GameRuntime.toggleSharedFeedback` | Persist the global setting, clear shared cues/help, and filter shared state/beats from the snapshot | 0021, 0022 | Implemented |
+| `save` | `updateFeedback(patch)` | Persist `feedback.showShared` in the settings slot | 0021 | Implemented |
+| `ui` | `GameUiCallbacks.onToggleSharedFeedback` | Accessible pause-settings toggle | 0021 | Implemented |
 | `world` | `WorldEffectPort` / `TileVisualPort` / `simplifyForReducedMotion` | Narrow cosmetic rendering ports | 0013 | Implemented |
 | `assets` | `AssetsModule.resolveFrame` / `AtlasFrameRef` | Resolve individual assets or named atlas regions | 0017 | Implemented |
 | `materials` | `createMaterialCatalog` / `resolveMaterialBinding` | Material/pattern lookup and binding precedence | 0014 | Implemented |

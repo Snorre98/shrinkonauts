@@ -1,3 +1,7 @@
+import type {
+  AudioThemeOptions,
+  AudioThemeStopOptions,
+} from "../audio";
 import type { LearningEvent } from "../curriculum";
 import {
   createCurriculum,
@@ -14,11 +18,13 @@ import {
   type FeedbackAnchor,
   type FeedbackDirector,
   type FeedbackFrame,
+  type FeedbackSurface,
   type FeedbackSurfaceSpec,
   type SourceRefValue,
   type SurfaceId,
 } from "../feedback";
 import { toWorldEffectPlan } from "./effect-mapper";
+import { buildBlueprint } from "./blueprint";
 import type {
   DialogueDocument,
   DialogueEffect,
@@ -31,6 +37,8 @@ import type {
   RoomDocument,
   RoomEntity,
   RoomExit,
+  RoomInfoArea,
+  ScanFact,
 } from "../pack";
 import {
   advanceDialogue as advanceNarrative,
@@ -54,6 +62,7 @@ import {
   type ProgressionSnapshot,
 } from "../progression";
 import type { Syllabus } from "../syllabus";
+import { resolveEntityDisplay } from "../world/entity-style";
 import {
   PuzzleRuntime,
   type PuzzleDocument,
@@ -95,6 +104,7 @@ import {
   PLAYER_HEIGHT,
   PLAYER_WIDTH,
   placePlayer as placeWorldPlayer,
+  resizeRoomSimulation,
   roomPixelHeight,
   roomPixelWidth,
   setPlayerActive,
@@ -107,8 +117,10 @@ import {
   type PropState,
   type RoomSimulation,
 } from "../world/simulation";
+import { TETHER_LENGTHS } from "../world/physics";
 import {
   initialMachine,
+  machineIsPaused,
   transition,
   type GameState,
   type GameEventType,
@@ -125,12 +137,33 @@ const CHECKPOINT_RANGE = 64;
 const TOAST_SECONDS = 3;
 const PLACEHOLDER_ABILITY = "scan";
 const FEEDBACK_CUE_TTL_TICKS = 180;
-const FEEDBACK_STUCK_TICKS = 1800;
+const HELP_SURFACE_TTL_TICKS = 300;
 const CONVERSATION_ACK_DISTANCE = 140;
-const ROOM_ENTITY_SIZE = 36;
+
+/**
+ * The camera must keep the widest tether span in the room visible. A room with
+ * no tether (or only `off`) returns 0, which disables the tether cap.
+ */
+function maxTetherLengthForLevel(
+  content: PackContent,
+  level: LevelDocument,
+): number {
+  let max = 0;
+  for (const puzzleId of level.puzzleIds ?? []) {
+    const tether = content.puzzles[puzzleId]?.tether;
+    if (tether === "normal" || tether === "stretch") {
+      max = Math.max(max, TETHER_LENGTHS[tether]);
+    }
+  }
+  return max;
+}
 
 export interface AudioPort {
   play(assetId: string): void;
+  playTheme(assetId: string, options?: AudioThemeOptions): void;
+  stopTheme(options?: AudioThemeStopOptions): void;
+  pauseTheme(): void;
+  resumeTheme(): void;
   setMuted(muted: boolean): void;
   readonly muted: boolean;
 }
@@ -148,6 +181,7 @@ export interface RuntimeSavePort {
   updateAccessibility(
     patch: Partial<GameSettings["accessibility"]>,
   ): GameSettings;
+  updateFeedback(patch: Partial<GameSettings["feedback"]>): GameSettings;
 }
 
 export interface RuntimeActionInput {
@@ -167,8 +201,6 @@ export interface RuntimeOptions {
   onSettings?: (settings: GameSettings) => void;
   /** Notifies the platform after a runtime level entry that needs a scene rebuild. */
   onLevelChange?: (levelId: string) => void;
-  /** Ticks without a puzzle-state change before the stuck affordance appears. */
-  stuckThresholdTicks?: number;
 }
 
 export interface StartOptions {
@@ -247,17 +279,17 @@ function playerOverlapsExit(
   );
 }
 
-function playerOverlapsTrigger(
+function playerOverlapsTileRect(
   player: PlayerState,
-  trigger: { x: number; y: number; width: number; height: number },
+  rect: { x: number; y: number; width: number; height: number },
   tileSize: number,
 ): boolean {
-  const x = trigger.x * tileSize;
-  const y = trigger.y * tileSize;
+  const x = rect.x * tileSize;
+  const y = rect.y * tileSize;
   return (
-    player.x - PLAYER_WIDTH / 2 < x + trigger.width * tileSize &&
+    player.x - PLAYER_WIDTH / 2 < x + rect.width * tileSize &&
     player.x + PLAYER_WIDTH / 2 > x &&
-    player.y - PLAYER_HEIGHT < y + trigger.height * tileSize &&
+    player.y - PLAYER_HEIGHT < y + rect.height * tileSize &&
     player.y > y
   );
 }
@@ -297,7 +329,21 @@ export class GameRuntime implements WorldRuntime {
   private readonly onLevelChange?: (levelId: string) => void;
   private readonly listeners = new Set<Listener>();
   private readonly feedback: FeedbackDirector;
-  private readonly stuckThresholdTicks: number;
+  private readonly entityDisplayOverrides = new Map<
+    string,
+    { width: number; height: number }
+  >();
+
+  get packPresentation() {
+    return this.content.pack.presentation;
+  }
+
+  registerEntityDisplay(
+    entityId: string,
+    size: { width: number; height: number },
+  ): void {
+    this.entityDisplayOverrides.set(entityId, size);
+  }
 
   private machine: MachineState = initialMachine();
   private level: LevelDocument;
@@ -311,6 +357,7 @@ export class GameRuntime implements WorldRuntime {
   private puzzles = new Map<string, PuzzleRuntime>();
   private activatedPuzzles = new Set<string>();
   private puzzleHintIndex = 0;
+  private revealedPuzzleHintCount = 0;
   private gateFeedback: { correct: boolean; message: string } | null = null;
   private gateHintIndex = 0;
   private debriefAnswers: Record<string, string> = {};
@@ -322,9 +369,7 @@ export class GameRuntime implements WorldRuntime {
   private firedTriggers = new Set<string>();
   private lastExitWarning = 0;
   private lastEmitSignature: string | null = null;
-  private lastPuzzleSignature: string | null = null;
-  private stuckTicks = 0;
-  private stuckSurfaceId: SurfaceId | null = null;
+  private helpSurfaceId: SurfaceId | null = null;
   private effectFrameSeq = -1;
   private effectPlans: readonly WorldEffectPlan[] = [];
 
@@ -337,12 +382,14 @@ export class GameRuntime implements WorldRuntime {
     this.onCue = options.onCue;
     this.onSettings = options.onSettings;
     this.onLevelChange = options.onLevelChange;
-    this.stuckThresholdTicks =
-      options.stuckThresholdTicks ?? FEEDBACK_STUCK_TICKS;
     this.feedback = createFeedbackDirector({
       defaultCueTtlTicks: FEEDBACK_CUE_TTL_TICKS,
+      deferCues: true,
       isAnchorAlive: (anchor) => this.anchorIsAlive(anchor),
     });
+    this.feedback.setSharedFeedbackEnabled(
+      this.save.settings.feedback.showShared,
+    );
 
     const level = options.content.levels[0];
     if (!level) throw new Error("PACK_HAS_NO_LEVELS");
@@ -351,7 +398,11 @@ export class GameRuntime implements WorldRuntime {
 
     this.level = level;
     this.room = room;
-    this.world = createRoomSimulation(room);
+    this.world = createRoomSimulation(
+      room,
+      undefined,
+      this.presentationInput(level),
+    );
   }
 
   /* ---------------------------------------------------------------- */
@@ -476,10 +527,16 @@ export class GameRuntime implements WorldRuntime {
 
     this.level = level;
     this.room = room;
-    this.world = createRoomSimulation(room);
+    this.playThemeForRoom();
+    this.world = createRoomSimulation(
+      room,
+      undefined,
+      this.presentationInput(level),
+    );
     this.puzzles = new Map();
     this.activatedPuzzles = new Set();
     this.puzzleHintIndex = 0;
+    this.revealedPuzzleHintCount = 0;
     for (const puzzleId of level.puzzleIds ?? []) {
       const document = this.content.puzzles[puzzleId];
       if (document) this.puzzles.set(puzzleId, new PuzzleRuntime(document));
@@ -499,9 +556,7 @@ export class GameRuntime implements WorldRuntime {
     this.syncPuzzleTether();
     this.conversations.clear();
     this.feedback.reset();
-    this.dismissStuck();
-    this.lastPuzzleSignature = null;
-    this.stuckTicks = 0;
+    this.dismissHelpSurface();
     this.effectFrameSeq = -1;
     this.effectPlans = [];
     this.activeGate = null;
@@ -534,7 +589,6 @@ export class GameRuntime implements WorldRuntime {
     this.world.props = this.world.physics.propStates();
     this.projectFeedback();
     this.feedback.tick(0);
-    this.lastPuzzleSignature = this.puzzleStateSignature();
 
     if (options.fresh) {
       this.record({ type: "pack_loaded", packVersion: this.content.pack.version, syllabusVersion: this.content.syllabus.version });
@@ -625,7 +679,9 @@ export class GameRuntime implements WorldRuntime {
     }
 
     const routed = new Set<PlayerId>();
-    const surfaces = this.feedback.view().surfaces;
+    const surfaces = this.presentedFeedbackSurfaces(
+      this.feedback.view().surfaces,
+    );
     const router = new SurfaceInputRouter({
       hard: false,
       surfaces,
@@ -689,7 +745,6 @@ export class GameRuntime implements WorldRuntime {
     this.checkTriggers();
     this.checkExit();
     this.feedback.tick(dt);
-    this.updateStuck();
     this.emit();
     return cues;
   }
@@ -744,7 +799,15 @@ export class GameRuntime implements WorldRuntime {
       this.closeGate();
       return;
     }
-    this.transition(this.machine.state === "pause" ? "resume" : "pause");
+    if (this.machine.state === "pause") {
+      this.transition("resume");
+      this.audio.resumeTheme();
+      return;
+    }
+    this.transition("pause");
+    if (machineIsPaused(this.machine)) {
+      this.audio.pauseTheme();
+    }
   }
 
   toggleMap(): void {
@@ -884,7 +947,7 @@ export class GameRuntime implements WorldRuntime {
             target: entityId ? { kind: "entity", id: entityId } : undefined,
             text: `${carriedLabel} placed in the receptor`,
           });
-          this.resetStuckActivity();
+          this.dismissHelpSurface();
         }
       } else {
         this.world.physics.dropProp(carried.id);
@@ -895,7 +958,7 @@ export class GameRuntime implements WorldRuntime {
           target: { kind: "entity", id: carried.id },
           text: `No receptor in reach — ${carriedLabel} dropped`,
         });
-        this.resetStuckActivity();
+        this.dismissHelpSurface();
       }
       this.autosave();
       this.emit();
@@ -935,7 +998,7 @@ export class GameRuntime implements WorldRuntime {
       target: { kind: "entity", id: prop.id },
       text: `${label} picked up`,
     });
-    this.resetStuckActivity();
+    this.dismissHelpSurface();
     this.autosave();
     this.emit();
   }
@@ -958,7 +1021,7 @@ export class GameRuntime implements WorldRuntime {
       target: { kind: "entity", id: carried.id },
       text: `${this.entityLabel(carried.id)} thrown`,
     });
-    this.resetStuckActivity();
+    this.dismissHelpSurface();
     this.autosave();
     this.emit();
   }
@@ -992,7 +1055,7 @@ export class GameRuntime implements WorldRuntime {
         : { target: { kind: "node" as const, id: target.nodeId } }),
       text: "Signal pulse sent",
     });
-    this.resetStuckActivity();
+    this.dismissHelpSurface();
     this.autosave();
     this.emit();
   }
@@ -1232,12 +1295,23 @@ export class GameRuntime implements WorldRuntime {
     for (const [id, puzzle] of this.puzzles) {
       if (!this.activatedPuzzles.has(id)) continue;
       const result = puzzle.tickResult(snapshot);
-      if (result.events.length > 0) {
-        this.handlePuzzleEvents(puzzle.document, result.events);
+      const solvedEvents = result.events.filter(
+        (event) => event.type === "solved",
+      );
+      const otherEvents = result.events.filter(
+        (event) => event.type !== "solved",
+      );
+      if (otherEvents.length > 0) {
+        this.handlePuzzleEvents(puzzle.document, otherEvents);
         this.world.props = this.world.physics.propStates();
       }
       if (result.solvedNow) {
         this.onPuzzleSolved(id, result.rewards);
+      }
+      // Ingest the solved cue last so it remains the newest deferred message
+      // after the reward notifications produced by onPuzzleSolved.
+      if (solvedEvents.length > 0) {
+        this.handlePuzzleEvents(puzzle.document, solvedEvents);
       }
     }
     this.projectFeedback();
@@ -1346,48 +1420,125 @@ export class GameRuntime implements WorldRuntime {
       }
     }
 
+    this.dismissHelpSurface();
     this.playCue("unlock");
     this.autosave();
     this.emit();
   }
 
+  /**
+   * Reveals the newest deferred cue for a player. Shared cues are copied to
+   * both players' inboxes when they are ingested.
+   */
+  requestFeedback(actor?: PlayerId): boolean {
+    if (this.machine.state !== "level") return false;
+    const id = actor ?? (this.world.players.p1.active ? "p1" : "p2");
+    const shown = this.feedback.requestLatest(id);
+    if (shown) this.emit();
+    return shown;
+  }
+
   scan(actor?: PlayerId): void {
     if (this.machine.state !== "level") return;
     const id = actor ?? (this.world.players.p1.active ? "p1" : "p2");
+
+    // The scan button is also the feedback request button. Read the newest
+    // pending message before performing a new scan or opening help.
+    if (this.requestFeedback(id)) {
+      this.playCue("scan");
+      return;
+    }
+
     const target = this.nearestEntity(["scanTarget"], SCAN_RANGE, id);
-    if (!target || !target.entity.conceptId) {
+    if (!target || (!target.entity.conceptId && !target.entity.factId)) {
+      if (this.requestSharedHelp(id)) {
+        this.playCue("scan");
+        this.emit();
+        return;
+      }
       this.emitAction(id, "scan", "rejected", {
         reason: "out-of-range",
         text: "Nothing to scan here",
       });
+      this.requestFeedback(id);
+      this.playCue("scan");
       this.emit();
       return;
     }
-    const conceptId = target.entity.conceptId;
-    if (this.knownConceptIds().includes(conceptId)) {
+
+    const fact = target.entity.factId
+      ? this.factById(target.entity.factId)
+      : undefined;
+    if (target.entity.factId && !fact) {
+      this.setToast(`Fact missing: ${target.entity.factId}`);
+      this.emit();
+      return;
+    }
+    const conceptId = fact?.conceptId ?? target.entity.conceptId;
+    if (!conceptId) {
+      this.emitAction(id, "scan", "rejected", {
+        reason: "out-of-range",
+        text: "Nothing to scan here",
+      });
+      this.requestFeedback(id);
+      this.playCue("scan");
+      this.emit();
+      return;
+    }
+
+    const alreadyKnown = fact
+      ? this.knownFactIds().includes(fact.id)
+      : this.knownConceptIds().includes(conceptId);
+    if (alreadyKnown) {
+      if (this.requestSharedHelp(id)) {
+        this.playCue("scan");
+        this.emit();
+        return;
+      }
       this.emitAction(id, "scan", "blocked", {
         reason: "condition-unmet",
         target: { kind: "entity", id: target.entity.id },
-        text: "Already in your concept log",
+        text: fact
+          ? "Already scanned"
+          : "Already in your concept log",
       });
+      this.requestFeedback(id);
+      this.playCue("scan");
       this.emit();
       return;
     }
-    this.record({
-      type: "concept_revealed",
-      conceptId,
-      source: "scan",
-    });
+
+    if (fact) {
+      this.record({
+        type: "fact_revealed",
+        factId: fact.id,
+        conceptId: fact.conceptId,
+        source: "scan",
+      });
+    }
+    if (!this.knownConceptIds().includes(conceptId)) {
+      this.record({
+        type: "concept_revealed",
+        conceptId,
+        source: "scan",
+      });
+    }
+
     const concept = this.content.syllabus.concepts.find(
       (item) => item.id === conceptId,
     );
+    const text = fact
+      ? `${fact.title}: ${fact.claim}`
+      : concept
+        ? `${concept.term}: ${concept.definition}`
+        : conceptId;
     this.emitAction(id, "scan", "completed", {
       target: { kind: "entity", id: target.entity.id },
-      text: concept
-        ? `${concept.term}: ${concept.definition}`
-        : conceptId,
+      ...(fact ? { factId: fact.id } : {}),
+      text,
     });
-    this.resetStuckActivity();
+    this.dismissHelpSurface();
+    this.requestFeedback(id);
     this.playCue("scan");
     this.emit();
   }
@@ -1443,8 +1594,8 @@ export class GameRuntime implements WorldRuntime {
       agentId: dialogue.speaker,
     });
     this.playCue("dialogue");
-    this.dismissStuck();
-    this.resetStuckActivity();
+    this.dismissHelpSurface();
+    this.dismissHelpSurface();
     this.autosave();
     this.emit();
   }
@@ -1553,8 +1704,8 @@ export class GameRuntime implements WorldRuntime {
   }
 
   surfaceAction(surfaceId: SurfaceId, action: SurfaceAction): void {
-    if (surfaceId === this.stuckSurfaceId) {
-      this.handleStuckAction(action);
+    if (surfaceId === this.helpSurfaceId) {
+      this.handleHelpAction(action);
       return;
     }
     const state = this.conversations.get(surfaceId);
@@ -1939,7 +2090,7 @@ export class GameRuntime implements WorldRuntime {
 
   private enterDebrief(record: boolean): void {
     this.closeAllConversations("level-complete");
-    this.dismissStuck();
+    this.dismissHelpSurface();
     this.machine = { state: "debrief", returnTo: null };
     if (record) {
       this.playCue("debrief");
@@ -2064,6 +2215,16 @@ export class GameRuntime implements WorldRuntime {
     return settings;
   }
 
+  toggleSharedFeedback(): GameSettings {
+    const enabled = !this.save.settings.feedback.showShared;
+    const settings = this.save.updateFeedback({ showShared: enabled });
+    this.feedback.setSharedFeedbackEnabled(enabled);
+    if (!enabled) this.dismissHelpSurface();
+    this.onSettings?.(settings);
+    this.emit();
+    return settings;
+  }
+
   /* ---------------------------------------------------------------- */
   /* Helpers                                                          */
   /* ---------------------------------------------------------------- */
@@ -2095,6 +2256,19 @@ export class GameRuntime implements WorldRuntime {
         .map((event) => String(event.conceptId ?? ""))
         .filter((id) => id !== ""),
     );
+  }
+
+  knownFactIds(): string[] {
+    return unique(
+      this.curriculum.events
+        .filter((event) => event.type === "fact_revealed")
+        .map((event) => String(event.factId ?? ""))
+        .filter((id) => id !== ""),
+    );
+  }
+
+  factById(factId: string): ScanFact | undefined {
+    return (this.content.facts ?? []).find((fact) => fact.id === factId);
   }
 
   subscribe(listener: Listener): () => void {
@@ -2141,6 +2315,27 @@ export class GameRuntime implements WorldRuntime {
             source: "dialogue",
           });
           break;
+        case "revealFact": {
+          const fact = this.factById(effect.factId);
+          if (!fact) {
+            this.setToast(`Fact missing: ${effect.factId}`);
+            break;
+          }
+          this.record({
+            type: "fact_revealed",
+            factId: fact.id,
+            conceptId: fact.conceptId,
+            source: "dialogue",
+          });
+          if (!this.knownConceptIds().includes(fact.conceptId)) {
+            this.record({
+              type: "concept_revealed",
+              conceptId: fact.conceptId,
+              source: "dialogue",
+            });
+          }
+          break;
+        }
         case "unlockAbility":
           if (unlockAbility(this.progression, effect.id)) {
             this.record({
@@ -2189,6 +2384,19 @@ export class GameRuntime implements WorldRuntime {
       this.audio.play(assetId);
     }
     this.onCue?.(name);
+  }
+
+  /**
+   * Theme resolution order from ADR-0076: room → pack theme → silence. The
+   * audio module crossfades when the previous room theme is still playing.
+   */
+  private playThemeForRoom(): void {
+    const themeId = this.room.music ?? this.content.theme.audio?.music;
+    if (themeId) {
+      this.audio.playTheme(themeId);
+    } else {
+      this.audio.stopTheme({ fadeOutMs: 600 });
+    }
   }
 
   private entityLabel(id: string): string {
@@ -2270,7 +2478,7 @@ export class GameRuntime implements WorldRuntime {
       ].some(
         (player) =>
           player.active &&
-          playerOverlapsTrigger(player, trigger, this.room.tileSize),
+          playerOverlapsTileRect(player, trigger, this.room.tileSize),
       );
       if (!entered) continue;
       this.firedTriggers.add(trigger.id);
@@ -2393,68 +2601,49 @@ export class GameRuntime implements WorldRuntime {
     }
   }
 
-  private puzzleStateSignature(): string | null {
-    const entry = this.activePuzzleEntry();
-    if (!entry) return null;
-    const [, puzzle] = entry;
-    const state = puzzle.snapshot();
-    return JSON.stringify({
-      puzzleId: state.puzzleId,
-      solved: state.solved,
-      nodes: Object.fromEntries(
-        Object.entries(state.nodes).map(([id, node]) => [
-          id,
-          {
-            state: node.state,
-            active: node.active,
-            count: node.count,
-            remaining: node.remaining,
-            fired: node.fired,
-          },
-        ]),
-      ),
-    });
+  private infoAreaFor(id: PlayerId): RoomInfoArea | null {
+    const player = this.world.players[id];
+    if (!player.active) return null;
+    const activePuzzleId = this.activePuzzleEntry()?.[0];
+    if (!activePuzzleId) return null;
+
+    for (const area of this.room.infoAreas ?? []) {
+      if (area.puzzleId && area.puzzleId !== activePuzzleId) continue;
+      if (playerOverlapsTileRect(player, area, this.room.tileSize)) {
+        return area;
+      }
+    }
+    return null;
   }
 
-  private updateStuck(): void {
-    if (this.machine.state !== "level") return;
+  /**
+   * A deliberate scan request inside an authored info area reveals the shared
+   * help affordance. It never appears from an idle or stuck timer.
+   */
+  private requestSharedHelp(id: PlayerId): boolean {
+    if (this.machine.state !== "level") return false;
+    if (!this.save.settings.feedback.showShared) return false;
+    const area = this.infoAreaFor(id);
+    if (!area) return false;
+
     const entry = this.activePuzzleEntry();
-    if (!entry) {
-      this.stuckTicks = 0;
-      this.lastPuzzleSignature = null;
-      this.dismissStuck();
-      return;
-    }
+    if (!entry) return false;
     const [puzzleId, puzzle] = entry;
-    if (puzzle.isSolved()) {
-      this.dismissStuck();
-      return;
-    }
-    const signature = this.puzzleStateSignature();
-    if (signature !== this.lastPuzzleSignature) {
-      this.lastPuzzleSignature = signature;
-      this.stuckTicks = 0;
-      if (this.stuckSurfaceId) this.dismissStuck();
-    } else {
-      this.stuckTicks += 1;
-    }
-    if (this.stuckTicks < this.stuckThresholdTicks) return;
-    if (this.conversations.size > 0) return;
-    if (this.stuckSurfaceId) return;
+    if (puzzle.isSolved()) return false;
 
     const choices: Array<{ id: string; label: string }> = [];
-    if (this.puzzleHintIndex < puzzle.document.hints.length) {
+    if (puzzle.document.hints.length > 0) {
       choices.push({ id: "hint", label: "Show hint" });
     }
     if (puzzle.canReset()) {
       choices.push({ id: "reset", label: "Reset puzzle" });
     }
-    if (choices.length === 0) return;
+    if (choices.length === 0) return false;
 
-    puzzle.note("stuckWarnings");
-    this.stuckSurfaceId = `fb:stuck:${puzzleId}`;
+    puzzle.note("helpRequests");
+    this.helpSurfaceId = `fb:help:${puzzleId}`;
     this.feedback.putSurface({
-      id: this.stuckSurfaceId,
+      id: this.helpSurfaceId,
       capability: "affordance",
       source: { kind: "node", id: puzzleId },
       actor: null,
@@ -2469,7 +2658,10 @@ export class GameRuntime implements WorldRuntime {
       },
       state: "blocked",
       severity: "warning",
-      lifetime: { sticky: true },
+      lifetime: {
+        sticky: false,
+        ttlTicks: area.ttlTicks ?? HELP_SURFACE_TTL_TICKS,
+      },
       interaction: {
         mode: "choice",
         focus: "soft",
@@ -2481,24 +2673,18 @@ export class GameRuntime implements WorldRuntime {
         textAlternative: "Need a nudge? Show hint or reset puzzle.",
       },
     });
+    return true;
   }
 
-  private dismissStuck(): void {
-    if (this.stuckSurfaceId) {
-      this.feedback.removeSurface(this.stuckSurfaceId);
-      this.stuckSurfaceId = null;
-    }
+  private dismissHelpSurface(): void {
+    if (!this.helpSurfaceId) return;
+    this.feedback.removeSurface(this.helpSurfaceId);
+    this.helpSurfaceId = null;
   }
 
-  private resetStuckActivity(): void {
-    this.stuckTicks = 0;
-    this.lastPuzzleSignature = this.puzzleStateSignature();
-    if (this.stuckSurfaceId) this.dismissStuck();
-  }
-
-  private handleStuckAction(action: SurfaceAction): void {
+  private handleHelpAction(action: SurfaceAction): void {
     if (action.type === "cancel") {
-      this.resetStuckActivity();
+      this.dismissHelpSurface();
       this.emit();
       return;
     }
@@ -2507,9 +2693,9 @@ export class GameRuntime implements WorldRuntime {
         ? action.choiceId
         : this.feedback
             .view()
-            .surfaces.find((surface) => surface.id === this.stuckSurfaceId)
+            .surfaces.find((surface) => surface.id === this.helpSurfaceId)
             ?.content.selectedChoiceId ?? "hint";
-    this.resetStuckActivity();
+    this.dismissHelpSurface();
     if (choiceId === "reset") {
       this.resetPuzzle();
     } else {
@@ -2536,7 +2722,7 @@ export class GameRuntime implements WorldRuntime {
       text?: string;
     } = {},
   ): void {
-    this.feedback.ingest({
+    this.feedback.ingestNow({
       kind: "action.outcome",
       actor,
       action,
@@ -2547,8 +2733,34 @@ export class GameRuntime implements WorldRuntime {
     });
   }
 
+  /**
+   * Shared state surfaces and beats are presentation-only. Hiding them must not
+   * remove their effects: `drainEffects` keeps consuming the unfiltered effect
+   * list from the director frame.
+   */
+  private presentedFeedbackSurfaces(
+    surfaces: readonly FeedbackSurface[],
+  ): readonly FeedbackSurface[] {
+    if (this.save.settings.feedback.showShared) return surfaces;
+    return surfaces.filter((surface) => surface.owner !== "shared");
+  }
+
   private feedbackFrame(): FeedbackFrame {
-    return this.feedback.frame();
+    const frame = this.feedback.frame();
+    if (this.save.settings.feedback.showShared) return frame;
+    return {
+      ...frame,
+      surfaces: this.presentedFeedbackSurfaces(frame.surfaces),
+      beats: [],
+    };
+  }
+
+  private presentationInput(level: LevelDocument) {
+    return {
+      pack: this.content.pack.presentation,
+      room: this.room.presentation,
+      maxTetherLength: maxTetherLengthForLevel(this.content, level),
+    };
   }
 
   private worldView(): WorldView {
@@ -2573,8 +2785,15 @@ export class GameRuntime implements WorldRuntime {
 
     const entities: Record<string, WorldEntityView> = {};
     for (const entity of this.room.entities ?? []) {
-      const width = ROOM_ENTITY_SIZE;
-      const height = ROOM_ENTITY_SIZE;
+      const override = this.entityDisplayOverrides.get(entity.id);
+      const resolved =
+        override ??
+        resolveEntityDisplay({
+          entity,
+          presentation: this.packPresentation,
+        });
+      const width = resolved.width;
+      const height = resolved.height;
       entities[entity.id] = {
         id: entity.id,
         x: (entity.x + 0.5) * this.room.tileSize,
@@ -2606,6 +2825,8 @@ export class GameRuntime implements WorldRuntime {
         width: this.world.viewport.width,
         height: this.world.viewport.height,
       },
+      stage: { ...this.world.presentation.stage },
+      zoom: this.world.presentation.zoom,
       tileSize: this.room.tileSize,
       players: { p1: playerView("p1"), p2: playerView("p2") },
       entities,
@@ -2663,6 +2884,7 @@ export class GameRuntime implements WorldRuntime {
       (node) => node.type === "pulseSource",
     );
     const pulseState = pulseNode ? puzzle.nodeState(pulseNode.id) : undefined;
+    const hints = puzzle.document.hints;
     return {
       id,
       title: puzzle.document.title,
@@ -2672,11 +2894,12 @@ export class GameRuntime implements WorldRuntime {
       counters: puzzle.evidenceCounters(),
       hint:
         this.puzzleHintIndex > 0
-          ? (puzzle.document.hints[this.puzzleHintIndex - 1] ?? null)
+          ? (hints[this.puzzleHintIndex - 1] ?? null)
           : null,
-      canHint:
-        !puzzle.isSolved() &&
-        this.puzzleHintIndex < puzzle.document.hints.length,
+      canHint: !puzzle.isSolved() && hints.length > 0,
+      hintIndex: this.puzzleHintIndex,
+      hintsTotal: hints.length,
+      revealedHints: hints.slice(0, this.revealedPuzzleHintCount),
       pulse:
         pulseNode && pulseState
           ? {
@@ -2689,22 +2912,32 @@ export class GameRuntime implements WorldRuntime {
   }
 
   puzzleHint(): void {
-    if (this.machine.state !== "level" && this.machine.state !== "pause") {
+    if (
+      this.machine.state !== "level" &&
+      this.machine.state !== "pause" &&
+      this.machine.state !== "map"
+    ) {
       return;
     }
     const entry = [...this.puzzles.entries()].find(
       ([id, puzzle]) =>
         this.activatedPuzzles.has(id) &&
         !puzzle.isSolved() &&
-        this.puzzleHintIndex < puzzle.document.hints.length,
+        puzzle.document.hints.length > 0,
     );
     if (!entry) return;
 
     const [id, puzzle] = entry;
-    const hint = puzzle.document.hints[this.puzzleHintIndex];
+    const hints = puzzle.document.hints;
+    const hintIndex =
+      this.puzzleHintIndex >= hints.length ? 0 : this.puzzleHintIndex;
+    const hint = hints[hintIndex];
     if (!hint) return;
-    const hintIndex = this.puzzleHintIndex;
-    this.puzzleHintIndex += 1;
+    this.puzzleHintIndex = hintIndex + 1;
+    this.revealedPuzzleHintCount = Math.max(
+      this.revealedPuzzleHintCount,
+      this.puzzleHintIndex,
+    );
     this.record({
       type: "hint_used",
       puzzleId: id,
@@ -2718,7 +2951,7 @@ export class GameRuntime implements WorldRuntime {
       text: `Hint: ${hint}`,
       severity: "neutral",
     });
-    this.resetStuckActivity();
+    this.dismissHelpSurface();
     this.autosave();
     this.emit();
   }
@@ -2745,7 +2978,7 @@ export class GameRuntime implements WorldRuntime {
         text: "Puzzle reset",
         severity: "neutral",
       });
-      this.resetStuckActivity();
+      this.dismissHelpSurface();
       this.projectFeedback();
       this.feedback.tick(0);
       this.autosave();
@@ -2817,6 +3050,8 @@ export class GameRuntime implements WorldRuntime {
 
   private conceptLogView(): ConceptView[] {
     const known = new Set(this.knownConceptIds());
+    const knownFacts = new Set(this.knownFactIds());
+    const allFacts = this.content.facts ?? [];
     return this.content.syllabus.concepts.map((concept) => ({
       id: concept.id,
       term: concept.term,
@@ -2830,6 +3065,14 @@ export class GameRuntime implements WorldRuntime {
           )?.term ?? relationship.target,
       })),
       misconceptions: concept.misconceptions,
+      facts: allFacts
+        .filter((fact) => fact.conceptId === concept.id)
+        .map((fact) => ({
+          id: fact.id,
+          title: fact.title,
+          claim: fact.claim,
+          discovered: knownFacts.has(fact.id),
+        })),
       discovered: known.has(concept.id),
     }));
   }
@@ -2909,6 +3152,7 @@ export class GameRuntime implements WorldRuntime {
 
   snapshot(): RuntimeSnapshot {
     const known = this.knownConceptIds();
+    const knownFacts = this.knownFactIds();
     const playerView = (id: PlayerId): PlayerView => {
       const player = this.world.players[id];
       return {
@@ -2928,6 +3172,18 @@ export class GameRuntime implements WorldRuntime {
       };
     };
 
+    const feedback = this.feedbackFrame();
+    const activePuzzle = this.activePuzzleEntry();
+    const blueprint = activePuzzle
+      ? buildBlueprint({
+          level: this.level,
+          puzzle: activePuzzle[1].document,
+          state: activePuzzle[1].snapshot(),
+          beats: feedback.beats,
+          mode: this.activeP2 ? "co-op" : "solo",
+        })
+      : null;
+
     return {
       state: this.machine.state,
       paused: this.machine.state === "pause",
@@ -2940,9 +3196,11 @@ export class GameRuntime implements WorldRuntime {
       players: { p1: playerView("p1"), p2: playerView("p2") },
       camera: { ...this.world.camera },
       world: this.worldView(),
-      feedback: this.feedbackFrame(),
+      feedback,
+      blueprint,
       abilities: [...this.progression.abilities],
       knownConceptIds: known,
+      knownFactIds: knownFacts,
       interaction: this.interactionView(),
       checkpointId: this.checkpointId,
       activeP2: this.activeP2,
@@ -2999,9 +3257,11 @@ export class GameRuntime implements WorldRuntime {
 
   /** Matches the camera frame to the renderer's viewport on resize. */
   resize(width: number, height: number): void {
-    this.world.viewport = { width, height };
-    this.world.camera.width = width;
-    this.world.camera.height = height;
+    resizeRoomSimulation(
+      this.world,
+      { width, height },
+      this.presentationInput(this.level),
+    );
     this.emit();
   }
 

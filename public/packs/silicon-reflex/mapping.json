@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "1.0",
+  "syllabusId": "anatomy-reflex",
+  "packId": "silicon-reflex",
+  "objectives": {
+    "OBJ-1": {
+      "levels": [],
+      "dialogues": [],
+      "gates": [],
+      "evidence": [
+        "EV-1"
+      ],
+      "debrief": "debrief-obj-1"
+    },
+    "OBJ-2": {
+      "levels": [],
+      "dialogues": [],
+      "gates": [],
+      "evidence": [
+        "EV-2",
+        "EV-7",
+        "EV-8"
+      ],
+      "debrief": "debrief-obj-2"
+    },
+    "OBJ-3": {
+      "levels": [],
+      "dialogues": [],
+      "gates": [],
+      "evidence": [
+        "EV-3"
+      ],
+      "debrief": "debrief-obj-3"
+    },
+    "OBJ-4": {
+      "levels": [],
+      "dialogues": [],
+      "gates": [],
+      "evidence": [
+        "EV-4"
+      ],
+      "debrief": "debrief-obj-4"
+    },
+    "OBJ-5": {
+      "levels": [
+        "01-interrupt-loop"
+      ],
+      "dialogues": [
+        "dlg-cpu-01"
+      ],
+      "gates": [
+        "gate-transfer"
+      ],
+      "evidence": [
+        "EV-5"
+      ],
+      "debrief": "debrief-obj-5"
+    }
+  },
+  "concepts": {
+    "CON-1": {
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
+    },
+    "CON-2": {
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
+    },
+    "CON-3": {
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
+    },
+    "CON-4": {
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
+    },
+    "CON-5": {
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
+    },
+    "CON-6": {
+      "levels": [],
+      "dialogues": [],
+      "scanTargets": [],
+      "mapLabels": []
+    },
+    "CON-7": {
+      "levels": [
+        "01-interrupt-loop"
+      ],
+      "dialogues": [
+        "dlg-cpu-01"
+      ],
+      "scanTargets": [],
+      "mapLabels": [
+        "Interrupt Loop"
+      ]
+    },
+    "CON-8": {
+      "levels": [
+        "01-interrupt-loop"
+      ],
+      "dialogues": [
+        "dlg-cpu-01"
+      ],
+      "scanTargets": [
+        "scan-actuator",
+        "scan-controller",
+        "scan-cpu",
+        "scan-interrupt",
+        "scan-sensor"
+      ],
+      "mapLabels": [
+        "Interrupt Loop"
+      ]
+    }
+  }
+}

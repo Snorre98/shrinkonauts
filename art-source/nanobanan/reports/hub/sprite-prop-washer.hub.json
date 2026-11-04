@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "sprite.prop.washer",
+  "source": {
+    "path": "art-source/nanobanan/keyed/hub-washer.png",
+    "width": 1194,
+    "height": 1452
+  },
+  "crop": {
+    "x": 63,
+    "y": 108,
+    "width": 1038,
+    "height": 1275
+  },
+  "masks": [
+    {
+      "kind": "fill-rect",
+      "x": 560,
+      "y": 1110,
+      "width": 478,
+      "height": 165,
+      "color": "#263236"
+    }
+  ],
+  "cell": {
+    "width": 180,
+    "height": 240
+  },
+  "margin": 0,
+  "align": "bottom-center",
+  "anchor": null,
+  "fit": {
+    "sourceBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 1038,
+      "height": 1275
+    },
+    "fit": {
+      "width": 180,
+      "height": 221,
+      "offsetX": 0,
+      "offsetY": 19
+    },
+    "margins": {
+      "top": 19,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    }
+  },
+  "quantized": true,
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "nerve",
+    "joint",
+    "muscle",
+    "sage",
+    "ink",
+    "appliance"
+  ],
+  "palette": {
+    "offPalettePixels": 0,
+    "alphaViolations": 0,
+    "opaquePixels": 39339
+  },
+  "bytes": 24621,
+  "maxBytes": 32768,
+  "output": "public/hub/bathroom/shared/sprites/washer.png",
+  "note": null
+}

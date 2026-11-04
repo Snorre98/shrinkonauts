@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "assetId": "bg.silicon_board.sky",
+  "source": "art-source/nanobanan/new-silicon/bg-silicon_board-sky.jpeg",
+  "sourceSize": {
+    "width": 2720,
+    "height": 1568
+  },
+  "crop": {
+    "width": 2720,
+    "height": 1564,
+    "x": 0,
+    "y": 2
+  },
+  "scale": {
+    "width": 1280,
+    "height": 736,
+    "filter": "lanczos"
+  },
+  "palette": "art-source/nanobanan/palette.json",
+  "ramps": [
+    "teal",
+    "bone",
+    "boneShadow",
+    "joint",
+    "sage",
+    "ink"
+  ],
+  "dither": "bayer:bayer_scale=1",
+  "format": "WebP",
+  "lossless": true,
+  "dimensions": {
+    "width": 1280,
+    "height": 736
+  },
+  "alpha": 0,
+  "bytes": 99538,
+  "uniqueColours": 16,
+  "offPalettePixels": 0,
+  "luminance": {
+    "topLeftHud": 24.4,
+    "topRightHud": 19.5,
+    "centre70": 67.5,
+    "lowerThird": 62.5
+  },
+  "previews": {
+    "1280x736": "art-source/previews/nanobanan/silicon/silicon-board-sky-1280x736.png",
+    "1280x720": "art-source/previews/nanobanan/silicon/silicon-board-sky-1280x720.png"
+  },
+  "runtime": "public/packs/silicon-reflex/shared/backgrounds/silicon-board-sky.webp",
+  "verdict": "integrated; POC licence plan TBD; HUD/player band visually checked at 1280x736 and 1280x720"
+}

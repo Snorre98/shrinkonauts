@@ -3,6 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   parseDialogue,
+  parseFacts,
   parseGate,
   parseLevel,
   parseLicences,
@@ -85,6 +86,12 @@ export function loadContent(
   if (pack.materials) {
     const materialsPath = join(directory, pack.materials);
     materials = expectOk(parseMaterials(readJson(materialsPath)), materialsPath);
+  }
+
+  let facts: PackContent["facts"];
+  if (pack.facts) {
+    const factsPath = join(directory, pack.facts);
+    facts = expectOk(parseFacts(readJson(factsPath)), factsPath).facts;
   }
 
   const syllabus = loadSyllabusFile(
@@ -173,6 +180,7 @@ export function loadContent(
     dialogues,
     gates,
     puzzles,
+    ...(facts ? { facts } : {}),
     ...(materials ? { materials } : {}),
   };
 }

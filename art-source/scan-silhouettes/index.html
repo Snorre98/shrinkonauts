@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>03 Nerve Forest — scan silhouette test v2</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: #05090b;
+    --panel: #101a20;
+    --panel-2: #16262e;
+    --bone: #f2e8d5;
+    --muted: #9db4ad;
+    --joint: #7bdff2;
+    --nerve: #ffd166;
+    --line: #2a3f47;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #0b1216;
+    color: var(--bone);
+    font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .page { width: 1400px; margin: 0 auto; padding: 28px 32px 40px; }
+  h1 { font-size: 22px; letter-spacing: .04em; margin: 0 0 4px; }
+  h2 { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--joint); margin: 30px 0 10px; }
+  p { color: var(--muted); margin: 0 0 16px; max-width: 980px; }
+  .rule { height: 1px; background: var(--line); margin: 18px 0; }
+  .room-wrap { position: relative; width: 1280px; height: 720px; overflow: hidden; border: 1px solid var(--line); background: #000; }
+  .room-wrap img.room { display: block; width: 1280px; height: 720px; image-rendering: pixelated; }
+  .room-icon { position: absolute; width: 36px; height: 36px; image-rendering: pixelated; }
+  .silhouette { color: #f2e8d5; filter: drop-shadow(1px 0 0 #05090b) drop-shadow(-1px 0 0 #05090b) drop-shadow(0 1px 0 #05090b) drop-shadow(0 -1px 0 #05090b); }
+  .tag {
+    position: absolute; transform: translate(-50%, -100%);
+    background: #05090b; color: var(--joint); border: 1px solid var(--line);
+    font-size: 9px; padding: 2px 4px; letter-spacing: .08em; white-space: nowrap;
+  }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+  .legend b { color: var(--bone); font-weight: 600; }
+  .strip { display: flex; gap: 12px; align-items: end; margin: 12px 0 0; }
+  .strip .cell { background: var(--panel); border: 1px solid var(--line); padding: 8px; text-align: center; }
+  .strip .cell span { display: block; color: var(--muted); font-size: 10px; letter-spacing: .06em; margin-top: 4px; }
+  .strip img { display: block; width: 36px; height: 36px; image-rendering: pixelated; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); padding: 14px; }
+  .card h3 { margin: 0 0 2px; font-size: 15px; color: var(--bone); letter-spacing: .04em; }
+  .card .fact { margin: 0 0 12px; color: var(--nerve); font-size: 11px; }
+  .card .sub { margin: 0 0 10px; color: var(--muted); font-size: 11px; }
+  .big { display: flex; gap: 14px; align-items: end; }
+  .big .shape { background: var(--panel-2); border: 1px solid var(--line); padding: 6px; }
+  .big .shape img, .big .shape svg { display: block; width: 192px; height: 192px; image-rendering: pixelated; }
+  .big .shape span { display: block; color: var(--muted); font-size: 10px; text-align: center; margin-top: 4px; }
+  .compare { display: flex; gap: 10px; margin-top: 10px; }
+  .compare figure { margin: 0; text-align: center; }
+  .compare img { display: block; width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; background: var(--panel-2); border: 1px solid var(--line); }
+  .compare figcaption { color: var(--muted); font-size: 10px; margin-top: 3px; }
+  .mini-row { display: flex; gap: 14px; align-items: center; background: var(--panel); border: 1px solid var(--line); padding: 10px 14px; margin-top: 10px; }
+  .mini-row .label { color: var(--muted); font-size: 11px; width: 170px; }
+  .mini-row img, .mini-row svg { width: 36px; height: 36px; image-rendering: pixelated; }
+  .mini-row .sep { width: 1px; height: 40px; background: var(--line); }
+  .note { color: var(--muted); font-size: 11px; margin-top: 10px; }
+  .white { color: #fff; }
+  .dark { color: #0b1216; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>03 Nerve Forest — scan silhouette test v2</h1>
+  <p>Concept test only. Flat silhouettes, not final art. Iteration 2: the cell is a star-crowned teardrop with a curled axon; myelin is a continuous capsule with a pinched node; pathway is a beaded chain with a terminal fork.</p>
+
+  <h2>1. In-room placement at 1×</h2>
+  <div class="room-wrap" id="room">
+    <img class="room" src="../../gdd-captures/03-solo.png" alt="Nerve Forest room capture">
+
+    <div class="room-icon" style="left:398px; top:412px;">
+      <svg viewBox="0 0 64 64" class="silhouette" aria-label="Proposed neuron silhouette">
+        <g fill="currentColor">
+          <path d="M46 32 C46 44 38 50 29 50 C19 50 12 43 12 33 C12 22 20 15 30 15 C40 15 46 21 46 32 Z"/>
+          <g stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none">
+            <path d="M22 20 L17 9"/><path d="M17 9 L12 6 M17 9 L21 4"/>
+            <path d="M31 16 L30 4"/><path d="M30 4 L25 1 M30 4 L35 1"/>
+            <path d="M39 20 L45 9"/><path d="M45 9 L50 6 M45 9 L41 4"/>
+            <path d="M14 31 L4 31"/><path d="M4 31 L1 26 M4 31 L1 36"/>
+            <path d="M18 43 L10 52"/><path d="M10 52 L5 53 M10 52 L9 57"/>
+          </g>
+          <path d="M46 34 C55 38 56 47 50 52 C46 56 45 59 46 62" stroke="currentColor" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <path d="M46 62 L39 58 M46 62 L50 56" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="room-icon" style="left:750px; top:476px;">
+      <svg viewBox="0 0 64 64" class="silhouette" aria-label="Proposed myelin silhouette">
+        <g transform="rotate(-45 32 32)" fill="currentColor">
+          <rect x="5" y="22" width="25" height="20" rx="10"/>
+          <rect x="34" y="22" width="25" height="20" rx="10"/>
+          <rect x="27" y="29" width="10" height="6"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="room-icon" style="left:1006px; top:476px;">
+      <svg viewBox="0 0 64 64" class="silhouette" aria-label="Proposed pathway silhouette">
+        <g fill="currentColor">
+          <path d="M13 13 L32 32 L51 51" stroke="currentColor" stroke-width="3" fill="none"/>
+          <circle cx="12" cy="12" r="7"/>
+          <circle cx="32" cy="32" r="7"/>
+          <circle cx="52" cy="52" r="7"/>
+          <path d="M56 56 L63 63 M56 56 L63 49" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="tag" style="left:416px; top:410px;">NEURON</div>
+    <div class="tag" style="left:768px; top:474px;">MYELIN</div>
+    <div class="tag" style="left:1024px; top:474px;">PATHWAY</div>
+  </div>
+  <div class="legend">
+    <span><b>Neuron:</b> star-crowned teardrop soma + curled axon + fork</span>
+    <span><b>Myelin:</b> continuous capsule + pinched node</span>
+    <span><b>Pathway:</b> three-bead chain + terminal fork</span>
+  </div>
+
+  <div class="strip">
+    <div class="cell"><img src="../../public/packs/anatomy-reflex/shared/sprites/agent-neuron.png" alt="Neuron Keeper"><span>KEEPER 96px</span></div>
+    <div class="cell"><img src="../../public/packs/anatomy-reflex/shared/sprites/pad-dendrite.png" alt="Dendrite pad"><span>PAD-D 64px</span></div>
+    <div class="cell"><img src="../../public/packs/anatomy-reflex/shared/sprites/pad-terminal.png" alt="Terminal pad"><span>PAD-T 64px</span></div>
+    <div class="cell"><img src="../../public/packs/anatomy-reflex/shared/sprites/scan-synapse.png" alt="Synapse scan"><span>SYNAPSE 36px</span></div>
+    <div class="cell"><img src="../../public/packs/anatomy-reflex/shared/sprites/scan-muscle.png" alt="Muscle scan"><span>MUSCLE 36px</span></div>
+  </div>
+
+  <h2>2. Proposed shapes at 8×</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Neuron</h3>
+      <p class="fact">NERV-01#1 · structure / direction</p>
+      <p class="sub">Star-crowned teardrop, short curled axon, terminal fork. No myelin beads, no long horizontal tail.</p>
+      <div class="big">
+        <div class="shape">
+          <svg viewBox="0 0 64 64" class="silhouette">
+            <g fill="currentColor">
+              <path d="M46 32 C46 44 38 50 29 50 C19 50 12 43 12 33 C12 22 20 15 30 15 C40 15 46 21 46 32 Z"/>
+              <g stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none">
+                <path d="M22 20 L17 9"/><path d="M17 9 L12 6 M17 9 L21 4"/>
+                <path d="M31 16 L30 4"/><path d="M30 4 L25 1 M30 4 L35 1"/>
+                <path d="M39 20 L45 9"/><path d="M45 9 L50 6 M45 9 L41 4"/>
+                <path d="M14 31 L4 31"/><path d="M4 31 L1 26 M4 31 L1 36"/>
+                <path d="M18 43 L10 52"/><path d="M10 52 L5 53 M10 52 L9 57"/>
+              </g>
+              <path d="M46 34 C55 38 56 47 50 52 C46 56 45 59 46 62" stroke="currentColor" stroke-width="5" stroke-linecap="round" fill="none"/>
+              <path d="M46 62 L39 58 M46 62 L50 56" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+            </g>
+          </svg>
+          <span>PROPOSED</span>
+        </div>
+        <div class="shape">
+          <img src="../../public/packs/anatomy-reflex/shared/sprites/agent-neuron.png" alt="Neuron Keeper">
+          <span>KEEPER</span>
+        </div>
+      </div>
+      <div class="compare">
+        <figure><img src="../../public/packs/anatomy-reflex/shared/sprites/pad-dendrite.png" alt="Dendrite pad"><figcaption>PAD-D</figcaption></figure>
+        <figure><img src="../../public/packs/anatomy-reflex/shared/sprites/scan-synapse.png" alt="Synapse scan"><figcaption>SYNAPSE</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Myelin</h3>
+      <p class="fact">NERV-01#3 · sheath / nodes / speed</p>
+      <p class="sub">Continuous capsule with a narrow pinched node. No cell body, no dendrites, no pulse, no terminal.</p>
+      <div class="big">
+        <div class="shape">
+          <svg viewBox="0 0 64 64" class="silhouette">
+            <g transform="rotate(-45 32 32)" fill="currentColor">
+              <rect x="5" y="22" width="25" height="20" rx="10"/>
+              <rect x="34" y="22" width="25" height="20" rx="10"/>
+              <rect x="27" y="29" width="10" height="6"/>
+            </g>
+          </svg>
+          <span>PROPOSED</span>
+        </div>
+        <div class="shape">
+          <img src="../../public/packs/anatomy-reflex/shared/sprites/receptor-circle.png" alt="Receptor circle">
+          <span>RECEPTOR</span>
+        </div>
+      </div>
+      <div class="compare">
+        <figure><img src="../../public/packs/anatomy-reflex/shared/sprites/gate-ferry.png" alt="Ferry gate"><figcaption>GATE</figcaption></figure>
+        <figure><img src="../../public/packs/anatomy-reflex/shared/sprites/scan-synapse.png" alt="Synapse scan"><figcaption>SYNAPSE</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Pathway</h3>
+      <p class="fact">NERV-01#6 · all-or-none / one-way</p>
+      <p class="sub">Three-bead diagonal chain with a terminal fork. No soma, no dendrites, no arrow.</p>
+      <div class="big">
+        <div class="shape">
+          <svg viewBox="0 0 64 64" class="silhouette">
+            <g fill="currentColor">
+              <path d="M13 13 L32 32 L51 51" stroke="currentColor" stroke-width="3" fill="none"/>
+              <circle cx="12" cy="12" r="7"/>
+              <circle cx="32" cy="32" r="7"/>
+              <circle cx="52" cy="52" r="7"/>
+              <path d="M56 56 L63 63 M56 56 L63 49" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+            </g>
+          </svg>
+          <span>PROPOSED</span>
+        </div>
+        <div class="shape">
+          <img src="../../public/packs/anatomy-reflex/shared/sprites/pad-terminal.png" alt="Terminal pad">
+          <span>PAD-T</span>
+        </div>
+      </div>
+      <div class="compare">
+        <figure><img src="../../public/packs/anatomy-reflex/shared/sprites/scan-synapse.png" alt="Synapse scan"><figcaption>SYNAPSE</figcaption></figure>
+        <figure><img src="../../public/packs/anatomy-reflex/shared/sprites/scan-muscle.png" alt="Muscle scan"><figcaption>MUSCLE</figcaption></figure>
+      </div>
+    </div>
+  </div>
+
+  <h2>3. All three at 1×, side by side</h2>
+  <div class="mini-row">
+    <span class="label">on the room background</span>
+    <svg viewBox="0 0 64 64" class="silhouette" style="background:#1d2f38" aria-label="Neuron at 1x">
+      <g fill="currentColor">
+        <path d="M46 32 C46 44 38 50 29 50 C19 50 12 43 12 33 C12 22 20 15 30 15 C40 15 46 21 46 32 Z"/>
+        <g stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none">
+          <path d="M22 20 L17 9"/><path d="M17 9 L12 6 M17 9 L21 4"/>
+          <path d="M31 16 L30 4"/><path d="M30 4 L25 1 M30 4 L35 1"/>
+          <path d="M39 20 L45 9"/><path d="M45 9 L50 6 M45 9 L41 4"/>
+          <path d="M14 31 L4 31"/><path d="M4 31 L1 26 M4 31 L1 36"/>
+          <path d="M18 43 L10 52"/><path d="M10 52 L5 53 M10 52 L9 57"/>
+        </g>
+        <path d="M46 34 C55 38 56 47 50 52 C46 56 45 59 46 62" stroke="currentColor" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M46 62 L39 58 M46 62 L50 56" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      </g>
+    </svg>
+    <svg viewBox="0 0 64 64" class="silhouette" style="background:#1d2f38" aria-label="Myelin at 1x">
+      <g transform="rotate(-45 32 32)" fill="currentColor">
+        <rect x="5" y="22" width="25" height="20" rx="10"/>
+        <rect x="34" y="22" width="25" height="20" rx="10"/>
+        <rect x="27" y="29" width="10" height="6"/>
+      </g>
+    </svg>
+    <svg viewBox="0 0 64 64" class="silhouette" style="background:#1d2f38" aria-label="Pathway at 1x">
+      <g fill="currentColor">
+        <path d="M13 13 L32 32 L51 51" stroke="currentColor" stroke-width="3" fill="none"/>
+        <circle cx="12" cy="12" r="7"/>
+        <circle cx="32" cy="32" r="7"/>
+        <circle cx="52" cy="52" r="7"/>
+        <path d="M56 56 L63 63 M56 56 L63 49" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      </g>
+    </svg>
+    <span class="sep"></span>
+    <span class="label">against the current pads</span>
+    <img src="../../public/packs/anatomy-reflex/shared/sprites/pad-dendrite.png" alt="Dendrite pad">
+    <img src="../../public/packs/anatomy-reflex/shared/sprites/pad-terminal.png" alt="Terminal pad">
+    <span class="sep"></span>
+    <span class="label">accepted scans</span>
+    <img src="../../public/packs/anatomy-reflex/shared/sprites/scan-synapse.png" alt="Synapse scan">
+    <img src="../../public/packs/anatomy-reflex/shared/sprites/scan-muscle.png" alt="Muscle scan">
+  </div>
+
+  <p class="note">v2 tries to fix the v1 failure: the cell now has a star crown and a visible curled axon; myelin is one capsule with a pinched node instead of two eggs; pathway keeps three beads but adds a continuous cable and a larger terminal fork. The real test is still the 1× row: if the capsule and chain merge, the concept needs one more shape change before any Nano Banana pass.</p>
+</div>
+</body>
+</html>

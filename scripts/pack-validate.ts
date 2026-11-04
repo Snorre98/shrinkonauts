@@ -22,6 +22,7 @@ import {
 
 const CONTENT_DIR = join(PUBLIC_DIR, "content", "dev");
 const PACK_DIR = join(PACKS_DIR, "anatomy-reflex");
+const SILICON_PACK_DIR = join(PACKS_DIR, "silicon-reflex");
 const HUB_DIR = join(PUBLIC_DIR, "hub", "bathroom");
 
 const FEEDBACK_VOCABULARY = {
@@ -34,8 +35,8 @@ function readDevJson(file: string): unknown {
   return JSON.parse(readFileSync(join(CONTENT_DIR, file), "utf8"));
 }
 
-function readPackJson(file: string): unknown {
-  return JSON.parse(readFileSync(join(PACK_DIR, file), "utf8"));
+function readPackJson(directory: string, file: string): unknown {
+  return JSON.parse(readFileSync(join(directory, file), "utf8"));
 }
 
 function parseFileManifest(
@@ -147,35 +148,39 @@ function validateDev(): boolean {
   return placeholderResult.ok && fixtureResult.ok;
 }
 
-function validateAnatomy(): boolean {
+function validateInstalledPack(input: {
+  directory: string;
+  heading: string;
+  label: string;
+}): boolean {
   let content;
   let placeholderManifest: AssetManifest;
   let finalManifest: AssetManifest;
   let room: RoomDocument;
 
   try {
-    content = loadContent(PACK_DIR);
+    content = loadContent(input.directory);
     room = primaryRoom(content);
     placeholderManifest = parseFileManifest(
-      PACK_DIR,
+      input.directory,
       content.pack.assetManifests.placeholder ?? "assets.placeholder.json",
-      readPackJson,
+      (file) => readPackJson(input.directory, file),
     );
     finalManifest = parseFileManifest(
-      PACK_DIR,
+      input.directory,
       content.pack.assetManifests.final ?? "assets.final.json",
-      readPackJson,
+      (file) => readPackJson(input.directory, file),
     );
   } catch (error) {
     console.error(
-      `FAIL — could not read anatomy-reflex pack: ${
+      `FAIL — could not read ${input.label}: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
     return false;
   }
 
-  console.log("\nAnatomy reflex pack");
+  console.log(`\n${input.heading}`);
   console.log(`  pack:   ${content.pack.id} v${content.pack.version}`);
   console.log(
     `  levels: ${content.pack.levels.join(", ")} (start ${content.pack.startLevelId}, end ${content.pack.endLevelId})`,
@@ -209,6 +214,22 @@ function validateAnatomy(): boolean {
   );
 
   return result.ok;
+}
+
+function validateAnatomy(): boolean {
+  return validateInstalledPack({
+    directory: PACK_DIR,
+    heading: "Anatomy reflex pack",
+    label: "anatomy-reflex pack",
+  });
+}
+
+function validateSilicon(): boolean {
+  return validateInstalledPack({
+    directory: SILICON_PACK_DIR,
+    heading: "Silicon reflex pack",
+    label: "silicon-reflex pack",
+  });
 }
 
 function readHubJson(file: string): unknown {
@@ -324,8 +345,9 @@ function main(): void {
   console.log("Shrinkonauts pack validation\n");
   const devOk = validateDev();
   const anatomyOk = validateAnatomy();
+  const siliconOk = validateSilicon();
   const catalogOk = validateCatalogAndHub();
-  const ok = devOk && anatomyOk && catalogOk;
+  const ok = devOk && anatomyOk && siliconOk && catalogOk;
   console.log(ok ? "\nPASS — pack validation" : "\nFAIL — pack validation");
   if (!ok) {
     process.exitCode = 1;

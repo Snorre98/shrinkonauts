@@ -1,19 +1,19 @@
 # Nanobanan concept plates
 
-Source concepts generated on a flat magenta `#ff00ff` field. These are **not**
-runtime assets and must never be referenced by a manifest. Raw source JPEGs and
-lightweight review previews/reports are tracked; full keyed PNGs live in
-`art-source/nanobanan/keyed/` (ignored). Only the runtime PNG/WebP exports are
-referenced by the pack.
+Most source concepts are generated on a flat magenta `#ff00ff` field; the sky
+is opaque. These are **not** runtime assets and must never be referenced by a
+manifest. Raw source JPEGs and lightweight review previews/reports are tracked;
+full keyed PNGs live in `art-source/nanobanan/keyed/` (ignored). Only the
+runtime PNG/WebP exports are referenced by the pack.
 
 ## Batch status
 
 | File | Intended runtime ID | Status |
 |---|---|---|
 | `sprite-agent-neuron.jpeg` | `sprite.agent.neuron` | **Alternate only.** The runtime static is frame 0 of the animated Neuron Keeper sheet; this plate is kept for review. |
-| `sprite-scan-neuron.jpeg` | `sprite.scan.neuron` | **Placeholder.** The 1886×1004 plate fits to 16×9; the myelin sleeves, nodes and forked terminals are not legible at 36×36. |
+| `sprite-scan-neuron.jpeg` | `sprite.scan.neuron` | **Placeholder.** The 1886×1004 plate fits to 32×17; the myelin sleeves, nodes and forked terminals are not legible at 36×36. |
 | `sprite-scan-synapse.jpeg` | `sprite.scan.synapse` | **POC integrated / final approval pending.** Two cells and the cleft read; the cyan rim is partial. |
-| `sprite-scan-pathway.jpeg` | `sprite.scan.pathway` | **Placeholder.** The 1864×740 plate fits to 16×6; the one-way reading and myelin gaps are lost. |
+| `sprite-scan-pathway.jpeg` | `sprite.scan.pathway` | **Placeholder.** The 1864×740 plate fits to 32×13; the one-way reading and myelin gaps are lost. |
 | `sprite-scan-muscle.jpeg` | `sprite.scan.muscle` | **POC integrated / final approval pending.** The muscle bundle and nerve contact read; the cyan rim is missing. |
 | `new/sprite-scan-ferry-v2.jpeg` | `sprite.gate.ferry` | **POC integrated / final approval pending.** A closed organic gate, not a scan icon. It maps to `sprite.gate.ferry`, used by all 03 gates and 04’s `muscle-gate`. The yellow seam is subdued at 18×18. |
 | `new/sprite-prop-tracer.jpeg` | `sprite.prop.tracer` | **POC integrated / final approval pending.** Triangular ACh packet; the cyan rim does not survive. |
@@ -22,16 +22,126 @@ referenced by the pack.
 | `new/sprite-receptor-circle.jpeg` | `sprite.receptor.circle` | **POC integrated / final approval pending.** Circular socket reads; distinct from the triangle. |
 | `new/sprite-scan-reflex.jpeg` | `sprite.scan.reflex` | **Placeholder.** The loop reads, but the dorsal/ventral roots and spindle do not at 36×36. Not referenced by 03/04. |
 | `new/ui-icon-badge.jpeg` | `ui.icon.badge` | **Placeholder.** The 16×16 fit collapses the helmet dome into the ring; the CSS HUD placeholder stays. |
-| `new/bg.nerve_forest.sky.jpeg` | `bg.nerve_forest.sky` | **POC integrated / final approval pending.** Cropped/resized 640×368 lossless WebP; the only visible 03 background. |
-| `new/bg-nerve_forest-far.jpeg` | `bg.nerve_forest.far` | **Source-only/deferred.** 16:9 opaque scene, not a 1024×512 transparent tileable layer. |
-| `new/bg-nerve_forest-mid.jpeg` | `bg.nerve_forest.mid` | **Source-only/deferred.** Same contract mismatch. |
-| `new/bg-nerve_forest-near.jpeg` | `bg.nerve_forest.near` | **Source-only/deferred.** Same mismatch, plus a baked checkerboard. |
-| `new/tile-bone-atlas.jpeg` | `tile.bone.atlas` source | **Source-only/deferred.** Material swatch, not a 256×192 47-frame atlas. |
-| `new/tile-nerve-atlas.jpeg` | `tile.nerve.atlas` source | **Source-only/deferred.** Material swatch, not a 128×128 16-frame atlas. |
+| `new/bg.nerve_forest.sky.jpeg` | `bg.nerve_forest.sky` | **POC integrated / final approval pending.** Pretty 2752×1536 source; 2672×1536 crop at x=40; Lanczos downscale to 1280×736; lossless WebP; no palette quantisation; muscle-pink drapes retained. |
+| `new/bg-nerve_forest-sky-updated.jpeg` | — | **Previous sky source; superseded.** 2720×1568 → 2720×1564 crop → 640×368 lossless WebP with the no-muscle sky palette. Retained for comparison. |
+| `new/bg-nerve_forest-far-updated.jpeg` | `bg.nerve_forest.far` | **Placeholder/future.** 2048×1024 exact-2× crop, keyed, 1024×512, 46.0% coverage; not wired. |
+| `new/bg-nerve_forest-mid-updated.jpeg` | `bg.nerve_forest.mid` | **Placeholder/future.** 2048×1024 exact-2× crop, keyed, 1024×512, 50.7% coverage; not wired. |
+| `new/bg-nerve_forest-near-updated.jpeg` | `bg.nerve_forest.near` | **Placeholder/future.** 1024×512, 23.9% coverage; the vertical repeat lands across the play band; not wired. |
+| `new/bg-nerve_forest-far.jpeg`, `-mid.jpeg`, `-near.jpeg` | — | **Failed references; do not use.** The older non-updated parallax JPEGs are opaque scenes or contain a baked checkerboard. |
+| `new/tile-bone-atlas.jpeg` | `tile.bone.atlas` source | **Superseded.** The final source is the 2026-11-03 `tile.bone.atlas.jpeg`; the old post material swatch is retained for comparison only. |
+| `new/tile-nerve-atlas.jpeg` | `tile.nerve.atlas` source | **Superseded.** The final source is the 2026-11-03 `tile.nerve.atlas.jpeg`. |
+| `working/tile-muscle-swatch-neutral-512.png` | historical `tile.muscle.atlas` source | **Superseded interim.** Final swatch: `working/tile-muscle-swatch-nano-clean-512.png`. |
+| `working/tile-membrane-swatch-neutral-512.png` | historical `tile.membrane.atlas` source | **Superseded interim.** Final swatch: `working/tile-membrane-swatch-nano-clean-512.png`. |
+| `working/muscle-endplate-sky-placeholder-1280x720.png` | historical `bg.muscle_endplate.sky` source | **Superseded interim.** Final sky: 2720×1530 crop from the 2026-11-03 source, 1280×720 lossless WebP. |
 
-The 03 room deliberately wires only `bg.nerve_forest.sky`. Do not wire the
-far/mid/near JPEGs or the material swatches. `sprite.exit`, `sprite.gate.nerve`,
-and `sprite.checkpoint` also remain placeholders.
+The 03 room wires only `bg.nerve_forest.sky` (the pretty 1280×736 plate).
+`bg.nerve_forest.far`, `.mid` and `.near` are declared placeholders: their
+sources, key reports and previews are retained for a later layered pass, but
+the runtime WebPs are not shipped and the layers are not wired. The 04 room
+wires the accepted `bg.muscle_endplate.sky`; its far/mid/near remain declared
+placeholders. The four material atlases are final coloured 32×32-frame
+atlases and are not tinted. `sprite.exit` and `sprite.gate.nerve` are accepted
+64×64 runtime sprites; `sprite.checkpoint` remains a declared placeholder. See
+[`docs/m3/muscle-endplate-asset-requirements-v01.md`](../../docs/m3/muscle-endplate-asset-requirements-v01.md).
+
+## M3 04 muscle-endplate batch (2026-11-03)
+
+Source folder: `art-source/nanobanan/new/muscle-endplate-2026-11-03/`
+(7 JPEGs, generated with the `muscle-endplate-2026-11-03.1` prompt pack).
+
+| File | Intended runtime ID | Dimensions | Stage | Evidence |
+|---|---|---:|---|---|
+| `bg.muscle_endplate.sky.jpeg` | `bg.muscle_endplate.sky` | 2752×1536 | `accepted` | 2720×1530 crop → 1280×720 lossless VP8L; 669,798 bytes |
+| `tile.muscle.atlas.jpeg` | `tile.muscle.atlas` | 2048×2048 | `accepted` | 512 swatch → 128×128 4×4 edge atlas |
+| `tile.membrane.atlas.jpeg` | `tile.membrane.atlas` | 2048×2048 | `accepted` | 512 swatch → 128×128 4×4 edge atlas |
+| `tile.bone.atlas.jpeg` | `tile.bone.atlas` | 2048×2048 | `accepted` | 512 swatch → 256×192 `blob47` atlas |
+| `tile.nerve.atlas.jpeg` | `tile.nerve.atlas` | 2048×2048 | `accepted` | 512 swatch → 128×128 4×4 edge atlas |
+| `sprite.gate.nerve.jpeg` | `sprite.gate.nerve` | 2048×2048 | `accepted` | magenta key; 60×60 in 64×64; 5,444 bytes |
+| `sprite.exit.jpeg` | `sprite.exit` | 2048×2048 | `accepted` | magenta key; 59×60 in 64×64; 6,043 bytes |
+
+**Status:** all seven are processed, wired and accepted. The runtime loads the
+final files, the manifest has `src` and licences, the material tints are
+removed, and the prompt log is in
+[`docs/m3/muscle-endplate-asset-requirements-v01.md`](../../docs/m3/muscle-endplate-asset-requirements-v01.md#12-prompt-log-template).
+The raw 2048 plates are not runtime assets.
+
+**Prompt source:**
+[`docs/m3/muscle-endplate-asset-requirements-v01.md`](../../docs/m3/muscle-endplate-asset-requirements-v01.md).
+**Completion matrix:**
+[`docs/assets/prompt-library-v01.md`](../../docs/assets/prompt-library-v01.md#40-completion-matrix).
+**Consolidated checklist:**
+[`docs/assets/remaining-work.md`](../../docs/assets/remaining-work.md).
+
+## M3.5 bathroom hub batch (2026-11-02)
+
+Source folder: `art-source/nanobanan/new-main-menu/` (14 JPEGs, 2752×1536,
+flat magenta except the opaque scene plate). The raw batch is ignored and is
+not committed; only the processed runtime exports, previews, reports, and this
+note are tracked.
+
+**Wired final art:** `bg.bathroom.wall`, `sprite.prop.washer`,
+`sprite.prop.washer.door`, `sprite.prop.washer.drum`,
+`sprite.player.civilian`, `sprite.prop.poster`,
+`sprite.prop.cartridge.anatomy`, `sprite.prop.cartridge.silicon`,
+`ui.icon.cycle.anatomy`, `ui.icon.cycle.silicon`,
+`sprite.prop.plush.neuron`, `sprite.prop.laundry.basket`, and the reused P1
+tiny astronaut (`sprite.player.p1`). The separate
+`sprite.prop.detergent.bottles` asset is processed and declared but is
+manifest-only: the scene already bakes detergent bottles on the shelf.
+
+**Composition decisions:** the scene plate is cropped 296 source px on the
+left and padded 296 px on the right with `#1b2b2c` before a Lanczos
+downscale to 640×360. This moves the baked alcove under the locked machine
+position and moves the baked poster out from under the DOM panel. The scene is
+**not** palette-quantised: this is the recorded scene-plate exception, matching
+the M3 sky precedent, because the warm lamp and wall grime survive better at
+2×. Sprites are quantised to `palette.hub.json` (the shared ramps plus the
+hub-only appliance ramp).
+
+The delivered machine body is 0.814 aspect and fits the 180×240 cell as
+180×221 content, so its visible body is 360×442. The machine keeps x=340,
+y=720 and scale=2; the door/drum anchors move to `(340,503)` and the screen /
+nameplate rects in `hub.json` describe the delivered body. The separate poster
+is rendered at the baked poster footprint (`627,312`, scale 3.1) so the scene
+does not show two posters. The logo plate has a washing machine baked behind
+the wordmark; it is not shipped as alpha art and the Silkscreen wordmark
+fallback remains.
+
+**Deferred / missing:** no civilian walk sheet (single-frame idle only), the toy
+astronaut is cut, and the hub logo uses the approved CSS fallback. The towel was cleaned with a pink-removal pass
+plus a silhouette polygon mask, but the remaining 11×32 source collapses to a
+narrow strip that does not read as a towel at 2×; the processed asset is
+manifest-only and is not wired. The detergent bottles are also manifest-only
+for the reason above.
+
+**Commands:**
+
+```bash
+# Key a magenta plate; repeat per source. Full-size keyed files are ignored.
+npm run art:key -- \
+  --in art-source/nanobanan/new-main-menu/sprite-prop-washer.jpeg \
+  --out art-source/nanobanan/keyed/hub-washer.png \
+  --key "#ff00ff" --tolerance 0.18 --softness 0.08 --despill --trim \
+  --preview art-source/previews/nanobanan/hub/hub-washer-key.png \
+  --preview-width 512 --background "#101a20"
+
+# Fit, mask, quantise and export every runtime asset plus the scene WebP.
+npm run art:hub
+
+# Review a single asset without writing the runtime file.
+npm run art:hub -- --asset sprite.prop.washer --no-write
+```
+
+The fit/mask/quantisation reports are in `reports/hub/`; 2× and 4× previews are
+in `previews/nanobanan/hub/`. Runtime files live under
+`public/hub/bathroom/shared/`. The final contact sheets are
+`screenshots/m3.5-hub-final.png`, `screenshots/m3.5-hub-final-720p.png`, and
+`screenshots/m3.5-hub-placeholder.png`.
+
+**Licence:** all new hub runtime assets use
+`Nano Banana / Google Gemini (plan TBD)`. The reused P1 tiny astronaut retains
+`Ludo.ai source (POC; plan TBD)`. The source batch has no seed/prompt/licence
+log; this note is the provenance record until that log exists.
 
 ## Background removal
 
@@ -59,9 +169,21 @@ If a plate has a soft or noisy edge, raise `--tolerance` before lowering
 
 ## Entity fit
 
-`npm run art:fit` takes the keyed PNG, crops to alpha bounds, fits the 18×18
-cell without stretching, hard-thresholds alpha, quantises to the approved
-non-orange ramps, and writes the runtime PNG, previews and a JSON report.
+`npm run art:fit` takes the keyed PNG, crops to alpha bounds, fits the
+configured cell without stretching, hard-thresholds alpha, quantises to the
+approved non-orange ramps, and writes the runtime PNG, previews and a JSON
+report.
+
+**Hero pass (2026-11-02, ADR-0075).** The hero configs (`fit.new.config.json`
+and `fit.silicon.config.json`) are schema 2 and declare per-class cells:
+`hero-npc` 96×96, `hero-interactable` 64×64, `hero-prop` 48×48, `ui-1x`
+36×36. The older `fit.config.json` and `fit.badge.config.json` remain schema 1
+for legacy 18×18 / badge review. The palette cell is advisory; the fit cell
+wins. The reports record the class, display, treatment, source scale and gates.
+The 2026-11-02 pass re-fitted the Keeper sheet, CPU, gates, consoles, sockets,
+receptors, pads and props as `fit-preview`; hand cleaning is still required
+before any hero asset is marked final. The Keeper sheet is now 3456×96
+(36 frames at 96×96) and the CPU static is 96×96.
 
 The original scan batch is in `fit.config.json`. The 2026-11-01 batch is in
 `fit.new.config.json`; it includes the accepted gate, tracer, pulse terminal,
@@ -106,45 +228,110 @@ quantiser reports max-distance warnings above 64; this matches the existing
 
 ## Sky
 
-The sky source is a 2752×1536 16:9 scene. The runtime plate is generated with a
-centered 2672×1536 crop (40 px each side, no stretching), an area resize to
-640×368, palette quantisation, and lossless WebP encoding:
+The current sky is the pretty 2752×1536 source. It is the only wired 03
+background and the recorded exception to the pixel-art palette/quantisation
+rules: it keeps the muscle-pink drapes and is not palette-quantised. The
+runtime plate is a 2672×1536 side crop (40 px each side) that matches the
+1280:736 room aspect, Lanczos-downscaled to 1280×736 and exported as lossless
+WebP:
 
 ```bash
 mkdir -p art-source/nanobanan/working/tmp
 ffmpeg -y -v error \
   -i art-source/nanobanan/new/bg.nerve_forest.sky.jpeg \
-  -vf "crop=2672:1536:40:0,scale=640:368:flags=area" \
-  art-source/nanobanan/working/tmp/nerve-forest-sky-640x368.png
-
-npm run art:normalize -- \
-  --in art-source/nanobanan/working/tmp/nerve-forest-sky-640x368.png \
-  --palette art-source/nanobanan/palette.sky.json \
-  --out art-source/nanobanan/working/tmp/nerve-forest-sky-quantized.png \
-  --preview art-source/previews/nanobanan/nerve-forest-sky-2x.png \
-  --scale 2 --background "#101a20" \
-  --report art-source/nanobanan/reports/nerve-forest-sky.normalize.json
+  -vf "crop=2672:1536:40:0,scale=1280:736:flags=lanczos" \
+  -pix_fmt rgb24 \
+  art-source/nanobanan/working/tmp/nerve-forest-sky-pretty-1280x736.png
 
 cwebp -quiet -lossless -q 100 -m 6 \
-  art-source/nanobanan/working/tmp/nerve-forest-sky-quantized.png \
+  art-source/nanobanan/working/tmp/nerve-forest-sky-pretty-1280x736.png \
   -o public/packs/anatomy-reflex/shared/backgrounds/nerve-forest-sky.webp
 ```
 
-The result is a 640×368 VP8L WebP under 300 KB. Inspect
-`art-source/previews/nanobanan/nerve-forest-sky-2x.png` at 1280×736 and in the
-game at 1280×720. The sky is busier than the ideal prompt plate (it has a strong
-bone arch and pink canopy), so final approval remains pending.
+The result is a 1280×736 VP8L WebP of 978,732 bytes (~956 KiB). No `art:normalize` pass and
+no `palette.nerve-forest-sky.json` are used. The previews are
+`previews/nanobanan/backgrounds/nerve-forest-sky-pretty-1280x736.png` and
+`-1280x720.png`; the 1280×720 preview drops the 8 px top/bottom that the
+720-high viewport crops. The earlier 640×368 quantised sky and its
+`nerve-forest-sky-updated-2x.png` preview are retained for comparison only.
 
-## Deferred background and atlas plates
+## Parallax layers
 
-The far/mid/near sources are full 16:9 scenes, not 1024×512 transparent
-tileable layers, and the near plate has a baked checkerboard. They must not be
-wired into `fit: "tile"` layers.
+The far/mid/near plates are flat `#FF00FF` cut-outs retained for a future
+layered pass. Each is cropped to an exact 2048×1024 window (far:
+`x=432,y=416`; mid/near: `x=432,y=208`), keyed at full resolution,
+nearest-downscaled to 1024×512, quantised with
+`palette.nerve-forest-layer.json` (no `tissue` role), 2×2-snapped and 2 px
+edge-welded. The weld makes opposite edges pixel-identical; it does not hand-
+repaint the composition across the seam. These layers are **not wired** in the
+current 03 runtime.
 
-The bone/nerve JPEGs are material swatches, not frame atlases. The runtime needs
-32×32 frames, named region maps, a `bone-blob47` variant set, and the nerve-edge
-repoint per §8.21. Until that task is taken, keep `tile.anatomy.atlas` and the
-`materials.json` mapping as placeholders.
+```bash
+# Far; use x=432,y=208 for mid/near
+ffmpeg -y -v error \
+  -i art-source/nanobanan/new/bg-nerve_forest-far-updated.jpeg \
+  -vf "crop=2048:1024:432:416" \
+  art-source/nanobanan/working/tmp/background-far-2048x1024.png
+
+npm run art:key -- \
+  --in art-source/nanobanan/working/tmp/background-far-2048x1024.png \
+  --out art-source/nanobanan/keyed/background-far-keyed.png \
+  --key "#ff00ff" --tolerance 0.18 --softness 0.08 \
+  --preview art-source/previews/nanobanan/backgrounds/background-far-keyed.png \
+  --preview-width 1024 --background "#101a20" \
+  --report art-source/nanobanan/reports/background-far.key.json
+
+ffmpeg -y -v error \
+  -i art-source/nanobanan/keyed/background-far-keyed.png \
+  -vf "scale=1024:512:flags=neighbor" -pix_fmt rgba \
+  art-source/nanobanan/working/tmp/background-far-1024x512.png
+
+npm run art:normalize -- \
+  --in art-source/nanobanan/working/tmp/background-far-1024x512.png \
+  --palette art-source/nanobanan/palette.nerve-forest-layer.json \
+  --out art-source/nanobanan/working/tmp/background-far-quantized.png \
+  --preview art-source/previews/nanobanan/backgrounds/background-far-quantized.png \
+  --scale 1 --background "#101a20" \
+  --report art-source/nanobanan/reports/background-far.normalize.json
+
+npm run art:tile-clean -- \
+  --in art-source/nanobanan/working/tmp/background-far-quantized.png \
+  --out art-source/nanobanan/working/tmp/background-far-clean.png \
+  --band 2 --min-component 4 --snap2x2 \
+  --weld-x union --weld-y union \
+  --report art-source/nanobanan/reports/background-far.clean.json
+
+cwebp -quiet -lossless -q 100 -m 6 \
+  art-source/nanobanan/working/tmp/background-far-clean.png \
+  -o public/packs/anatomy-reflex/shared/backgrounds/nerve-forest-far.webp
+```
+
+Measured coverage: far 46.0%, mid 50.7%, near 23.9%. All three are
+placeholders/future work; the current room wires only the pretty sky. Near's
+1024×512 tile repeats vertically at screen y≈512 and the hanging canopy lands
+across the play band (`background-near-over-sky-1280x736.png`), so it is not
+ready to wire as-is. The process report is
+`reports/background-layers.process.json`; previews are in
+`previews/nanobanan/backgrounds/`.
+
+## Deferred layered plates and atlas plates
+
+Far, mid and near are placeholders/future work. The updated plates remain
+usable sources for a later layered pass, but the current 03 room wires only the
+pretty sky. Near's vertical repeat still lands across the play band, so it is
+not ready to wire as-is. The older non-updated far/mid/near JPEGs are failed
+references and must not be wired.
+
+The 2026-11-03 material plates are swatches, not frame atlases. The runtime now
+has final coloured 32×32 frame atlases, named region maps, and the
+`bone-blob47`, `nerve-edge`, `muscle-edge` and `membrane-edge` variant sets. The
+atlases were generated by
+`npm run art:atlas -- --selection single --weld-edges` from the processed Nano
+Banana swatches; the material tints are removed. The single-window mode reuses
+one 32×32 source window for every mask, so the texture is uniform instead of a
+per-mask patchwork; the accepted trade-off is a 32 px repeat. The tile-level
+procedural fiber overlays were removed from `materials.json` in the same pass.
+`tile.anatomy.atlas` is no longer wired and is retained only as a test fixture.
 
 ## Neuron Keeper source
 
@@ -157,8 +344,11 @@ The nanobanan agent plate remains an alternate review asset only.
 
 - **Tool:** Nanobanan / Ludo.ai concept generation (record the exact model and
   seed before shipping).
-- **Prompt / plan / licence:** TBD. The POC runtime manifests use the shared
-  `Ludo.ai source (POC; plan TBD)` label.
-- **Status:** final art approval is pending for the integrated sky, gate,
-  tracer, pulse terminal, and receptors. Badge, reflex, far/mid/near, and the
-  atlases remain placeholders/source-only.
+- **Prompt / plan / licence:** the 2026-11-03 04 batch uses prompt pack
+  `muscle-endplate-2026-11-03.1`; the exact model/seed is still unrecorded. The
+  POC runtime manifests use the shared `Ludo.ai source (POC; plan TBD)` label.
+- **Status:** the 04 batch (sky, four atlases, gate, exit) is accepted. Final
+  approval is still pending for the earlier POC pretty sky, ferry gate, tracer,
+  pulse terminal and receptors. Far/mid/near are placeholders/future work. The
+  badge, reflex and 03 scans remain placeholders; the hub logo uses the
+  approved CSS fallback and the toy astronaut is cut.

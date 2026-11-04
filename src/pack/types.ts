@@ -1,4 +1,4 @@
-import type { AssetId } from "../assets";
+import type { AssetDisplaySize, AssetId, FidelityClass } from "../assets";
 import type {
   MaterialBinding,
   MaterialId,
@@ -12,6 +12,75 @@ import type { Syllabus } from "../syllabus";
 export type BackgroundFit = "cover" | "tile" | "stretch" | "contain";
 
 export type BackgroundBlend = "normal" | "add" | "multiply" | "screen";
+
+/* ------------------------------------------------------------------ */
+/* Presentation                                                        */
+/* ------------------------------------------------------------------ */
+
+/** A rect in logical canvas pixels (stage) or tile coordinates (play band). */
+export interface PresentationRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type CameraFraming = "fit-play-band";
+export type CameraZoom = "auto" | number;
+export type CameraFollowX = "players" | "p1" | "p2";
+export type CameraFollowY = "play-band" | "players";
+
+export interface PresentationCameraConfig {
+  framing?: CameraFraming;
+  zoom?: CameraZoom;
+  maxZoom?: number;
+  followX?: CameraFollowX;
+  followY?: CameraFollowY;
+  padding?: number;
+  snap?: boolean;
+}
+
+export type PresentationRoleName =
+  | "player"
+  | "npc"
+  | "interactable"
+  | "prop"
+  | "scan"
+  | "decor";
+
+/** JSON may use `[width, height]`; resolved values use the object form. */
+export type PresentationSize =
+  | [number, number]
+  | AssetDisplaySize;
+
+export interface PresentationRoleConfig {
+  display: PresentationSize;
+  fidelity?: FidelityClass;
+}
+
+export interface EntityPresentationConfig {
+  role?: PresentationRoleName;
+  display?: PresentationSize;
+  /** Optional depth tie-breaker for feet-aligned heroes. */
+  depthBias?: number;
+}
+
+/** Pack-level defaults. */
+export interface PresentationConfig {
+  stage?: PresentationRect;
+  camera?: PresentationCameraConfig;
+  roles?: Partial<Record<PresentationRoleName, PresentationRoleConfig>>;
+  /** Optional override of the built-in entity-type to role mapping. */
+  defaultRoles?: Partial<
+    Record<RoomEntityType, PresentationRoleName | "none">
+  >;
+}
+
+/** Room-level overrides. */
+export interface RoomPresentationConfig {
+  playBand?: PresentationRect;
+  camera?: PresentationCameraConfig;
+}
 
 export interface RoomBackgroundLayer {
   assetId: AssetId;
@@ -113,7 +182,11 @@ export interface RoomEntity {
   dialogueId?: string;
   gateId?: string;
   conceptId?: string;
+  /** Optional card fact revealed by a scan. See facts.json. */
+  factId?: string;
   label?: string;
+  /** Optional visual role/size override. ADR-0074. */
+  presentation?: EntityPresentationConfig;
   properties?: Record<string, RoomPropertyValue>;
   components?: RoomEntityComponents;
 }
@@ -147,6 +220,22 @@ export interface RoomTrigger {
   event?: string;
 }
 
+/**
+ * Authored relevance zone for shared help requests. Coordinates are in tiles,
+ * matching room triggers and entities.
+ */
+export interface RoomInfoArea {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Puzzle whose hint is requested; defaults to the active puzzle. */
+  puzzleId?: string;
+  /** Optional display duration for the requested help surface. */
+  ttlTicks?: number;
+}
+
 export interface RoomDocument {
   schemaVersion: string;
   id: string;
@@ -175,8 +264,10 @@ export interface RoomDocument {
   exits?: RoomExit[];
   entities?: RoomEntity[];
   triggers?: RoomTrigger[];
+  infoAreas?: RoomInfoArea[];
   music?: AssetId;
   ambience?: AssetId;
+  presentation?: RoomPresentationConfig;
 }
 
 export interface ThemePalette {
@@ -204,6 +295,10 @@ export interface ThemePalette {
   orange?: string;
   orangeDark?: string;
   orangeLight?: string;
+  /** Hub-only cool appliance ramp. Do not use in M3 gameplay assets. */
+  appliance?: string;
+  applianceShadow?: string;
+  applianceHighlight?: string;
 }
 
 export interface ThemeFonts {
@@ -246,6 +341,27 @@ export interface PackAssetManifests {
   final?: string;
 }
 
+export type FactDepth = "core" | "advanced";
+
+/**
+ * A card fact that a scan target can reveal. Facts are narrower than the
+ * concept cards in the syllabus: CON-3 owns several NERV-01 facts, and a scan
+ * target names the exact fact it delivers.
+ */
+export interface ScanFact {
+  id: string;
+  cardId?: string;
+  conceptId: string;
+  title: string;
+  claim: string;
+  depth?: FactDepth;
+}
+
+export interface FactsDocument {
+  schemaVersion: string;
+  facts: ScanFact[];
+}
+
 export interface PackDocument {
   schemaVersion: string;
   id: string;
@@ -259,6 +375,8 @@ export interface PackDocument {
   theme: string;
   mapping: string;
   licenses: string;
+  /** Optional pack-level card facts document path. */
+  facts?: string;
   /** Optional pack-level materials document path. */
   materials?: string;
   assetManifests: PackAssetManifests;
@@ -266,6 +384,7 @@ export interface PackDocument {
   ageRating?: string;
   description?: string;
   metadata?: Record<string, unknown>;
+  presentation?: PresentationConfig;
 }
 
 /* ------------------------------------------------------------------ */
@@ -339,9 +458,41 @@ export interface LevelFeedbackNodeOverride {
   tileTarget?: LevelFeedbackTileTarget;
 }
 
+export type LevelBlueprintActor = "p1" | "p2" | "both" | "shared";
+
+export type LevelBlueprintEdgeType = "flow" | "oneWay";
+
+export interface LevelBlueprintComponent {
+  id: string;
+  label?: string;
+  symbol: string;
+  beatIds: string[];
+  /** Column/order index, not a world coordinate. */
+  x: number;
+}
+
+export interface LevelBlueprintEdge {
+  from: string;
+  to: string;
+  type: LevelBlueprintEdgeType;
+}
+
+export interface LevelBlueprintStep {
+  componentId: string;
+  actor: LevelBlueprintActor;
+}
+
+export interface LevelBlueprint {
+  title?: string;
+  components: LevelBlueprintComponent[];
+  edges?: LevelBlueprintEdge[];
+  steps?: LevelBlueprintStep[];
+}
+
 export interface LevelFeedbackPuzzle {
   beats?: LevelFeedbackBeat[];
   nodes?: Record<string, LevelFeedbackNodeOverride>;
+  blueprint?: LevelBlueprint;
 }
 
 export interface LevelFeedback {
@@ -394,6 +545,7 @@ export interface RecordEvidenceEffect {
 export type DialogueEffect =
   | { type: "setFlag"; flagId: string; value: boolean }
   | { type: "revealConcept"; conceptId: string }
+  | { type: "revealFact"; factId: string }
   | { type: "unlockAbility"; id: string }
   | { type: "startGate"; gateId: string }
   | { type: "revealMap"; nodeId: string }
@@ -537,6 +689,7 @@ export interface PackContent {
   dialogues: Record<string, DialogueDocument>;
   gates: Record<string, GateDocument>;
   puzzles: Record<string, PuzzleDocument>;
+  facts?: ScanFact[];
   materials?: MaterialsDocument;
 }
 
