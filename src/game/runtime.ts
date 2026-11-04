@@ -357,6 +357,7 @@ export class GameRuntime implements WorldRuntime {
   private puzzles = new Map<string, PuzzleRuntime>();
   private activatedPuzzles = new Set<string>();
   private puzzleHintIndex = 0;
+  private revealedPuzzleHintCount = 0;
   private gateFeedback: { correct: boolean; message: string } | null = null;
   private gateHintIndex = 0;
   private debriefAnswers: Record<string, string> = {};
@@ -535,6 +536,7 @@ export class GameRuntime implements WorldRuntime {
     this.puzzles = new Map();
     this.activatedPuzzles = new Set();
     this.puzzleHintIndex = 0;
+    this.revealedPuzzleHintCount = 0;
     for (const puzzleId of level.puzzleIds ?? []) {
       const document = this.content.puzzles[puzzleId];
       if (document) this.puzzles.set(puzzleId, new PuzzleRuntime(document));
@@ -2630,7 +2632,7 @@ export class GameRuntime implements WorldRuntime {
     if (puzzle.isSolved()) return false;
 
     const choices: Array<{ id: string; label: string }> = [];
-    if (this.puzzleHintIndex < puzzle.document.hints.length) {
+    if (puzzle.document.hints.length > 0) {
       choices.push({ id: "hint", label: "Show hint" });
     }
     if (puzzle.canReset()) {
@@ -2894,12 +2896,10 @@ export class GameRuntime implements WorldRuntime {
         this.puzzleHintIndex > 0
           ? (hints[this.puzzleHintIndex - 1] ?? null)
           : null,
-      canHint:
-        !puzzle.isSolved() &&
-        this.puzzleHintIndex < hints.length,
+      canHint: !puzzle.isSolved() && hints.length > 0,
       hintIndex: this.puzzleHintIndex,
       hintsTotal: hints.length,
-      revealedHints: hints.slice(0, this.puzzleHintIndex),
+      revealedHints: hints.slice(0, this.revealedPuzzleHintCount),
       pulse:
         pulseNode && pulseState
           ? {
@@ -2923,15 +2923,21 @@ export class GameRuntime implements WorldRuntime {
       ([id, puzzle]) =>
         this.activatedPuzzles.has(id) &&
         !puzzle.isSolved() &&
-        this.puzzleHintIndex < puzzle.document.hints.length,
+        puzzle.document.hints.length > 0,
     );
     if (!entry) return;
 
     const [id, puzzle] = entry;
-    const hint = puzzle.document.hints[this.puzzleHintIndex];
+    const hints = puzzle.document.hints;
+    const hintIndex =
+      this.puzzleHintIndex >= hints.length ? 0 : this.puzzleHintIndex;
+    const hint = hints[hintIndex];
     if (!hint) return;
-    const hintIndex = this.puzzleHintIndex;
-    this.puzzleHintIndex += 1;
+    this.puzzleHintIndex = hintIndex + 1;
+    this.revealedPuzzleHintCount = Math.max(
+      this.revealedPuzzleHintCount,
+      this.puzzleHintIndex,
+    );
     this.record({
       type: "hint_used",
       puzzleId: id,

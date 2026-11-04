@@ -523,7 +523,7 @@ describe("game runtime", () => {
     expect(runtime.simulation.tetherPolicy).toBe("off");
   });
 
-  it("shows authored hints without a pulse cooldown", () => {
+  it("shows and cycles authored hints without a pulse cooldown", () => {
     const { runtime } = makeRuntime();
     expect(runtime.snapshot().puzzle?.canHint).toBe(true);
     expect(runtime.snapshot().puzzle?.pulse).toBeNull();
@@ -558,8 +558,15 @@ describe("game runtime", () => {
     expect(runtime.snapshot().puzzle?.hint).toBe(
       "The axon is one-way: dendrite → trigger zone → axon → terminal.",
     );
-    expect(runtime.snapshot().puzzle?.canHint).toBe(false);
+    expect(runtime.snapshot().puzzle?.canHint).toBe(true);
     expect(runtime.snapshot().puzzle?.hintIndex).toBe(3);
+    expect(runtime.snapshot().puzzle?.revealedHints).toHaveLength(3);
+
+    runtime.puzzleHint();
+    expect(runtime.snapshot().puzzle?.hint).toBe(
+      "One input is below threshold. The trigger gate needs a second dendrite input.",
+    );
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(1);
     expect(runtime.snapshot().puzzle?.revealedHints).toHaveLength(3);
     expect(
       runtime

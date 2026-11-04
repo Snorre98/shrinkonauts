@@ -104,7 +104,8 @@ test("header carries the checklist, hint strip, and player-coloured cards", asyn
     page.locator('.blueprint__component[data-state="active"]'),
   ).toHaveCount(1);
 
-  await page.getByRole("button", { name: "Hint", exact: true }).click();
+  const hintButton = page.getByRole("button", { name: "Hint", exact: true });
+  await hintButton.click();
   await expect(bar.locator(".hud__hint-count")).toHaveText("Hint 1/3");
   await expect(bar.locator(".hud__hint-text")).toContainText(
     "One input is below threshold",
@@ -112,6 +113,17 @@ test("header carries the checklist, hint strip, and player-coloured cards", asyn
   await expect(
     page.locator('.blueprint__component[data-state="active"]'),
   ).toHaveCount(1);
+
+  await hintButton.click();
+  await expect(bar.locator(".hud__hint-count")).toHaveText("Hint 2/3");
+  await hintButton.click();
+  await expect(bar.locator(".hud__hint-count")).toHaveText("Hint 3/3");
+  await expect(hintButton).toBeEnabled();
+  await hintButton.click();
+  await expect(bar.locator(".hud__hint-count")).toHaveText("Hint 1/3");
+  await expect(bar.locator(".hud__hint-text")).toContainText(
+    "One input is below threshold",
+  );
 
   await expect(page.locator(".hud__help")).toHaveCount(0);
   const p1Card = page.locator(".hud__controls-card--p1");
