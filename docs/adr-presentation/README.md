@@ -1,9 +1,10 @@
 # Presentation — ADR domain
 
-**Status:** Proposed, 2 November 2026  
+**Status:** Proposed, 2–4 November 2026<br>
 **Scope:** Stage and camera framing, background composition, asset fidelity and
-encoding, HUD density, and canvas scaling  
-**Applies to:** M3 and later; `03-nerve-forest` is the first adopter  
+encoding, HUD density, canvas scaling, and the in-room HUD information
+architecture<br>
+**Applies to:** M3 and later; `03-nerve-forest` is the first adopter<br>
 **Format:** Nygard-style, matching `docs/adr-m3/` and
 `docs/adr-art-pipeline/`
 
@@ -35,9 +36,10 @@ uses ADR-0060–0065, and controller uses ADR-0066–0069.
 
 The highest record in the repository was **ADR-0069** before this domain. This
 domain continues at **ADR-0070**, and ADR-0074 follows it. ADR-0075 lives in the
-art-pipeline domain but continues the same global sequence. These are new
-records, not amendments. If the project later reconciles one global sequence,
-renumber before acceptance; accepted records are immutable.
+art-pipeline domain but continues the same global sequence. ADR-0080 returns to
+this domain for the M3.75 in-room HUD. These are new records, not amendments. If
+the project later reconciles one global sequence, renumber before acceptance;
+accepted records are immutable.
 
 ## Index
 
@@ -48,6 +50,7 @@ renumber before acceptance; accepted records are immutable.
 | [0072](0072-asset-fidelity-tiers-and-encoding.md) | Asset fidelity tiers, display sizes, and lossless encoding | Proposed |
 | [0073](0073-hud-density-and-canvas-scaling.md) | HUD density presets and integer canvas scaling | Proposed |
 | [0074](0074-hero-scale-npcs-and-interactables.md) | Hero-scale NPCs and interactables | Proposed |
+| [0080](0080-hud-blueprint-and-player-colors.md) | Compact HUD blueprint, player colours, and the in-room HUD layout | Proposed |
 
 ## Relationship to accepted decisions
 
@@ -67,10 +70,13 @@ renumber before acceptance; accepted records are immutable.
   keeping the 2× policy for characters. ADR-0074 adds the recorded `hero-1x`
   exception for NPCs, interactables, and props.
 - **ADR-0049:** pixel UI chrome and typography. ADR-0073 extends the UI with
-  density presets and stage-aware safe areas.
+  density presets and stage-aware safe areas. ADR-0080 builds the in-room HUD
+  information architecture on the same DOM/CSS chrome, including the compact
+  component blueprint and the `Tab` popup.
 - **ADR-0060–0065:** art pipeline. ADR-0072 adds fidelity tiers, display sizes,
   readability gates, and the fit-preview/hand-cleaned status split. ADR-0075
-  adds per-class fit cells and hero-asset treatments.
+  adds per-class fit cells and hero-asset treatments. ADR-0080 adds the
+  blueprint symbol kit and the `ui-1x` glyph contract.
 
 ## Acceptance
 

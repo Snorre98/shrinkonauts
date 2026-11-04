@@ -472,6 +472,17 @@ cues, beat progress, and the `.feedback-live` polite live region. Surfaces are
 diffed by stable ID, sorted by priority, and laid out by anchor with safe-area
 docking and P1/P2 caption lanes.
 
+M3.75 (specified, not yet implemented) changes this split: the puzzle beats move
+into the three-zone header checklist, the header gains a compact 2–4-component
+puzzle blueprint and hint strip, and the bottom corners gain player-coloured
+control cards. The blueprint is a conceptual solution schematic, not the
+pack-level system map; `Tab` opens the expanded blueprint with the room-to-room
+context. The design and data model are in
+[`docs/m3.75/README.md`](docs/m3.75/README.md), with the symbol brief in
+[`docs/m3.75/blueprint-symbol-asset-brief-v01.md`](docs/m3.75/blueprint-symbol-asset-brief-v01.md)
+and the decision in
+[ADR-0080](docs/adr-presentation/0080-hud-blueprint-and-player-colors.md).
+
 The accessibility baseline is:
 
 - `Esc` pause from gameplay, with a visible pause overlay.

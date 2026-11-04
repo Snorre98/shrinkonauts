@@ -293,6 +293,12 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
   per-pack saves, and launch transition.
 - [`docs/m2.75/README.md`](docs/m2.75/README.md) — Nerve Forest concept rescope:
   ontology, learning load, literalism, and the option space for redesigning 03.
+- [`docs/m3.75/README.md`](docs/m3.75/README.md) — in-room HUD milestone:
+  compact 2–4-component blueprint, header checklist, hint strip, player cards,
+  and player colour tokens.
+- [`docs/m3.75/blueprint-symbol-asset-brief-v01.md`](docs/m3.75/blueprint-symbol-asset-brief-v01.md)
+  — blueprint symbol register, nanobanana prompt pack, atlas workflow, and
+  acceptance gates.
 - [`docs/m3/muscle-endplate-asset-requirements-v01.md`](docs/m3/muscle-endplate-asset-requirements-v01.md)
   — additive 04 sky, shared tile-atlas prompts, and the `art:atlas` workflow.
 - [`docs/assets/prompt-library-v01.md`](docs/assets/prompt-library-v01.md) —
@@ -301,6 +307,9 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
 - [`docs/adr-assets/README.md`](docs/adr-assets/README.md) — ADR-0078–0079 for
   asset prompt-library governance, placeholder completion, and the scan fact
   model.
+- [`docs/adr-presentation/0080-hud-blueprint-and-player-colors.md`](docs/adr-presentation/0080-hud-blueprint-and-player-colors.md)
+  — ADR for the compact component blueprint, player colour tokens, and the
+  M3.75 HUD layout.
 - [`docs/m1.9/remaining-work.md`](docs/m1.9/remaining-work.md) — what is
   deliberately missing and which milestone owns it.
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
@@ -328,6 +337,13 @@ sheets play in `03-nerve-forest`, P2 uses the approved bone-suit/joint-cyan
 source sheets (ADR-0065), and `npm run art:key` removes magenta backgrounds from
 the nanobanan concept plates. Entity/background animation, final art approval,
 and the full ADR-0062 descriptor remain future work.
+
+M3.75 is **specified, not implemented**: the in-room HUD moves to a three-zone
+header with a compact 2–4-component puzzle blueprint, header checklist, header
+hint strip, and bottom player cards. The room-to-room context moves into the
+`Tab` blueprint popup. The blueprint symbol kit has a prompt pack and
+placeholder-first integration plan; see
+[`docs/m3.75/README.md`](docs/m3.75/README.md).
 
 M1.75 remains **implementation complete; manual solo/co-op playtest pending**.
 `authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until a
