@@ -162,16 +162,17 @@ ephemeral and are rebuilt from puzzle/world state after restore.
   the three authored room themes are installed as MP3s; there is no separate
   ambience loop.
 - Full key rebinding is deferred.
-- Final art/audio, the bathroom hub art pass (M3.5), and human M1.8 visual
-  review are deferred. The seven-plate 04 Nano Banana batch is processed, wired
-  and accepted (`2026-11-03`); see the
+- Remaining final art/audio, the bathroom hub art pass (M3.5), and human M1.8
+  visual review are deferred. The seven-plate 04 Nano Banana batch and the 12
+  M3.75 blueprint symbols are processed, wired and accepted (`2026-11-03/04`);
+  see the
   [completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix).
   M1.8 `wang` transitions, pattern animation, image/atlas-sourced UI patterns,
   final material atlases, and editor tooling are deferred within the accepted
   architecture.
-- M3.75 blueprint symbols ship as CSS code glyphs with placeholder manifest
-  entries. Final 32×32 nanobanana glyphs remain pending the brief's readability
-  and palette gates; the blueprint data and layout do not change when they land.
+- M3.75 blueprint symbols ship as final 32×32 PNGs in both pack manifests and
+  are rendered image-backed in the 03/04/01 headers. The CSS code glyph remains
+  the unresolved-ID fallback; the v02 placeholder entries were removed.
 - Physical puzzle-gate bodies, `locked`/`unlock` props, conditional links,
   per-level debrief overrides, and side-level travel are accepted ADR targets but
   are **not implemented** in this branch. See
@@ -199,12 +200,14 @@ room/boot tests, but the app does not boot it.
 | `/?skipMenu=1&pack=anatomy-reflex` | Direct boot into the selected pack |
 | `/?pack=silicon-reflex` | Preselects the gated Silicon cycle in the hub; Start is disabled |
 | `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
-| `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, the 03 pretty sky, and the 04 batch are final, while deferred entries remain placeholders |
+| `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, the 03 pretty sky, the 04 batch, and the 12 M3.75 blueprint symbols are final, while deferred entries remain placeholders |
 
-The bathroom hub resolves 8/21 IDs as placeholders. Anatomy resolves 26/58
-placeholders; the POC player sheets, Neuron Keeper static/idle, readable
+The bathroom hub resolves 1 of 21 IDs as a placeholder. Anatomy resolves 16 of
+59 IDs as placeholders; the POC player sheets, Neuron Keeper static/idle, readable
 scan/entity sprites, the pretty 03 sky, the final 04 sky, the four coloured
-material atlases, and the final 04 gate/exit sprites have sources.
+material atlases, the final 04 gate/exit sprites, and the eight anatomy
+blueprint symbols have sources. Silicon resolves 16 of 48 runtime IDs as
+placeholders, while its four blueprint symbols are final.
 `bg.nerve_forest.far`, `.mid`, `.near`, `bg.muscle_endplate.far`, `.mid`,
 `.near`, the 03 scans, the Silicon interrupt/exit and the HUD badge remain
 declared placeholders/future work; both rooms wire only their sky. The 04
@@ -330,7 +333,7 @@ M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
 suite passes (56 files / 588 tests), pack validation/smoke pass, and the browser
-smoke passes 16/16. The hub starts Anatomy in Solo or Local co-op, returns to the
+smoke passes 17/17. The hub starts Anatomy in Solo or Local co-op, returns to the
 bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
 M2 and M4.0b. Phone-controller same-screen co-op is planned as M4.0a; see
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
@@ -344,9 +347,10 @@ and the full ADR-0062 descriptor remain future work.
 M3.75 is **implemented** with automated verification: the in-room HUD uses the
 three-zone header with the compact 2–4-component puzzle blueprint, header
 checklist, hint strip, and bottom player cards. The room-to-room context lives in
-the `Tab` blueprint popup. Blueprint symbols currently use the CSS code-glyph
-fallback and placeholder manifest entries; final nanobanana art remains a tracked
-follow-up. Human visual/playtest review is pending. See
+the `Tab` blueprint popup. The 12 authored puzzle symbols are final 32×32 PNGs,
+wired in both pack manifests with licences, and render image-backed in the
+03/04/01 headers; the CSS code glyph is only the unresolved-ID fallback. Human
+visual/playtest review is pending. See
 [`docs/m3.75/README.md`](docs/m3.75/README.md).
 
 M1.75 remains **implementation complete; manual solo/co-op playtest pending**.

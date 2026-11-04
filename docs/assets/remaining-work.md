@@ -1,7 +1,7 @@
 # Remaining Work — Assets and Integration
 
 - **Status:** Working checklist
-- **Last updated:** 2026-11-03
+- **Last updated:** 2026-11-04
 - **Owner:** Snorre
 - **Purpose:** the single “what do I do next?” view across graphics, audio, and asset integration.
 - **Detailed status/evidence:** [`prompt-library-v01.md`](prompt-library-v01.md#40-completion-matrix)
@@ -52,6 +52,21 @@ Detailed evidence is in
 [muscle-endplate §12](../m3/muscle-endplate-asset-requirements-v01.md#12-prompt-log-template).
 The accepted command family was `art:key`, `art:normalize`, `art:tile-clean`,
 `art:fit`, `art:atlas`, then the test/pack/build gates.
+
+### 2.1 Completed — M3.75 blueprint symbols
+
+All 12 puzzle-specific blueprint symbols are keyed, fitted to 32×32 `ui-1x`,
+reviewed at 1× on `#101a20`, wired in the pack final manifests, and covered by a
+browser assertion. The v02 placeholder entries were removed; the old generic
+v01 anatomy entries remain only for the fallback builder.
+
+| Pack | Symbols | Evidence |
+|---|---|---|
+| Anatomy | `input-pair`, `threshold-gauge`, `axon-flow`, `exit-gate`, `ca-window`, `ach-carry`, `receptor-bind`, `response-clear` | `art-source/blueprint-icons/reports/*.key.json`, `*.fit.json`; `art-source/previews/blueprint-icons/*-1x.png`; licences in `public/packs/anatomy-reflex/licenses.json` |
+| Silicon | `sensor-detect`, `route-integrate`, `cpu-wake`, `actuator-gate` | Same pipeline; `route-integrate` graphite wires remapped to `#7a8f8a`; licences in `public/packs/silicon-reflex/licenses.json` |
+
+Detailed per-symbol status and the accepted fit exceptions are in
+[`blueprint-symbol-prompts-v02.md`](../m3.75/blueprint-symbol-prompts-v02.md#pipeline-status).
 
 ---
 
@@ -107,6 +122,7 @@ Local SFX scratch and the prompt log are not runtime assets.
 | Hub towel and detergent bottles | `deferred`/manifest-only | processed | Decide whether to wire or remove; the scene already has baked bottles and the towel does not read at 2× |
 | Final approval of POC art | `interim` | `source-accepted` | Players, Neuron Keeper, scans, entities, and the 03 sky are POC-integrated; final approval and prompt-log completion remain |
 | GDD/video captures | current | — | Refresh captures after visible art changes so the GDD does not show superseded placeholders |
+| M3.75 HUD human playtest | current | **pending** | Automated tests and 1× captures pass; a human still needs to run the header comprehension, density and co-op attribution checks in [`docs/m3.75/README.md` §10](../m3.75/README.md#10-verification) |
 | Online co-op, controller, levels 01/02/05 | `deferred` | — | Outside the asset pass; tracked in their milestone docs |
 
 ---

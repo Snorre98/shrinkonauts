@@ -1,6 +1,6 @@
 # M3.75 — Blueprint Symbol Asset Brief and Prompt Pack v01
 
-**Status:** proposed asset brief — no final art generated yet
+**Status:** approved asset brief — 12/12 final symbols processed, wired and accepted
 **Date:** 2026-11-04
 **Scope:** the abstract symbol kit used by the in-room puzzle blueprint
 **Depends on:** M3 palette, ADR-0049, ADR-0072, ADR-0073, ADR-0080
@@ -296,6 +296,9 @@ Preferred: one atlas `ui.blueprint.symbols` at 256×128 px, 8 columns × 4 rows 
 
 The exact region map is finalised when the sheet is sliced. If atlas generation
 is unreliable, ship individual PNGs with the same logical IDs and 32×32 display.
+The shipped M3.75 set uses individual 32×32 PNGs under
+`public/packs/<pack>/shared/ui/blueprint-symbols/`, with one final manifest entry
+per logical ID.
 
 ### 6.2 Manifest and theme wiring
 

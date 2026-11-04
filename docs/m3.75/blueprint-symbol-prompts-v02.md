@@ -1,6 +1,6 @@
 # M3.75 — Blueprint Symbol Prompts v02
 
-**Status:** canonical set — 12 DONE; source plates still need key/fit/cleanup
+**Status:** canonical set — 12/12 accepted; keyed, fitted to 32×32, wired, and reviewed at 1×
 **Date:** 2026-11-04
 **Scope:** the 12 puzzle-specific blueprint symbols used by 03, 04, and 01
 **Contract:** [`blueprint-symbol-asset-brief-v01.md`](blueprint-symbol-asset-brief-v01.md)
@@ -14,34 +14,80 @@ gets its own symbol; no glyph is reused across puzzles.
 
 ## Asset status
 
-**DONE** means a usable source plate exists in `art-source/blueprint-bio-puzzles/`.
-It still needs keying, 32×32 fitting, and hand-cleanup. **TODO** means no usable
-source exists yet and the prompt still needs to be generated.
+**ACCEPTED** means the source plate was keyed, fitted to 32×32, hand-cleaned
+where needed, wired in the pack’s final manifest, and reviewed at 1× on
+`#101a20`. All 12 symbols are accepted. The complete pipeline is reproducible
+from the source plates and the commands below.
+
+### Source status
 
 | Prompt | Status | Source |
 |---|---|---|
-| BPV2-01 `input-pair` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-inputs.jpeg` |
-| BPV2-02 `threshold-gauge` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-threshold_gauge.jpeg` |
-| BPV2-03 `axon-flow` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-flow.jpeg` |
-| BPV2-04 `exit-gate` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-gate.jpeg` |
-| BPV2-05 `ca-window` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-timer.jpeg` |
-| BPV2-06 `ach-carry` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-carry.jpeg` |
-| BPV2-07 `receptor-bind` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-receptor.jpeg` |
-| BPV2-08 `response-clear` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-relay.jpeg` |
-| BPV2-09 `sensor-detect` | **DONE** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-sensor_detect.jpeg` |
-| BPV2-10 `route-integrate` | **DONE** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-route_integrate.jpeg` |
-| BPV2-11 `cpu-wake` | **DONE** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-cpu_wake.jpeg` |
-| BPV2-12 `actuator-gate` | **DONE** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-actuator_gate.jpeg` |
+| BPV2-01 `input-pair` | **ACCEPTED** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-inputs.jpeg` |
+| BPV2-02 `threshold-gauge` | **ACCEPTED** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-threshold_gauge.jpeg` |
+| BPV2-03 `axon-flow` | **ACCEPTED** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-flow.jpeg` |
+| BPV2-04 `exit-gate` | **ACCEPTED** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-gate.jpeg` |
+| BPV2-05 `ca-window` | **ACCEPTED** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-timer.jpeg` |
+| BPV2-06 `ach-carry` | **ACCEPTED** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-carry.jpeg` |
+| BPV2-07 `receptor-bind` | **ACCEPTED** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-receptor.jpeg` |
+| BPV2-08 `response-clear` | **ACCEPTED** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-relay.jpeg` |
+| BPV2-09 `sensor-detect` | **ACCEPTED** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-sensor_detect.jpeg` |
+| BPV2-10 `route-integrate` | **ACCEPTED** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-route_integrate.jpeg` |
+| BPV2-11 `cpu-wake` | **ACCEPTED** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-cpu_wake.jpeg` |
+| BPV2-12 `actuator-gate` | **ACCEPTED** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-actuator_gate.jpeg` |
+
+### Pipeline status
+
+Keying used `npm run art:key` with the default `#ff00ff` key, tolerance 0.18,
+softness 0.08, despill, and trim. Fitting used
+`art-source/blueprint-icons/fit.config.json` (`ui-1x`, 32×32 cell/display,
+2 px margin, max palette distance 32). Keyed files are in
+`art-source/blueprint-icons/keyed/`; key reports are in
+`art-source/blueprint-icons/reports/<symbol>.key.json`; fit reports are in
+`art-source/blueprint-icons/reports/<symbol>.fit.json`; 1×/2×/4× previews are
+in `art-source/previews/blueprint-icons/`.
+
+| Symbol | Keyed | Fit | Runtime | Status |
+|---|---|---|---|---|
+| `input-pair` | yes | 28×22 | anatomy `shared/ui/blueprint-symbols/input-pair.png` | accepted |
+| `threshold-gauge` | yes | 16×28 | anatomy `shared/ui/blueprint-symbols/threshold-gauge.png` | accepted |
+| `axon-flow` | yes | 9×28 | anatomy `shared/ui/blueprint-symbols/axon-flow.png` | accepted |
+| `exit-gate` | yes | 28×28 | anatomy `shared/ui/blueprint-symbols/exit-gate.png` | accepted |
+| `ca-window` | yes | 28×28 | anatomy `shared/ui/blueprint-symbols/ca-window.png` | accepted |
+| `ach-carry` | yes | 28×23 | anatomy `shared/ui/blueprint-symbols/ach-carry.png` | accepted |
+| `receptor-bind` | yes | 17×28 | anatomy `shared/ui/blueprint-symbols/receptor-bind.png` | accepted |
+| `response-clear` | yes | 28×14 | anatomy `shared/ui/blueprint-symbols/response-clear.png` | accepted |
+| `sensor-detect` | yes | 28×26 | Silicon `shared/ui/blueprint-symbols/sensor-detect.png` | accepted |
+| `route-integrate` | yes | 28×13 | Silicon `shared/ui/blueprint-symbols/route-integrate.png` | accepted |
+| `cpu-wake` | yes | 25×28 | Silicon `shared/ui/blueprint-symbols/cpu-wake.png` | accepted |
+| `actuator-gate` | yes | 26×28 | Silicon `shared/ui/blueprint-symbols/actuator-gate.png` | accepted |
+
+Every keyed and runtime PNG has hard 0/255 alpha and zero magenta-fringe
+pixels. Every runtime file is a lossless 32×32 PNG with a 2 px transparent
+margin.
+
+**Fit warnings reviewed.** The fit reports retain the source-border warning
+(a false positive after `--trim`), a max-palette-distance warning from JPEG edge
+colours (the accepted 04 batch shows the same pattern; final
+`paletteValidation.offPalettePixels` is 0), and narrow-glyph warnings for the
+line-art shapes. `input-pair` (114 opaque px), `response-clear` (88) and
+`route-integrate` (85) fall below the 180-pixel target, and `axon-flow` is only
+9 px wide; all four were inspected at 1× and accepted because their silhouettes
+remain distinct. These are recorded exceptions, not hidden passes.
+
+`route-integrate` required a hand-clean: its graphite wires were remapped from
+the source near-black to `#7a8f8a` before the final fit so the L-shaped route
+and junction read on the dark HUD. This is a colour cleanup, not a mask.
 
 `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-pulse.jpeg` remains an
-unused spare; no v02 prompt references it. The Silicon `sensor-detect` source is
-now the separate graphite/ceramic/signal-cyan plate.
+unused spare; it was not keyed or wired. The Silicon `sensor-detect` source is
+the separate graphite/ceramic/signal-cyan plate.
 
-The `flow.jpeg` mapping to `axon-flow` is provisional: the plate reads as a
-vertical flow channel rather than the horizontal conduit + bead + arrow in the
-prompt. It is usable as the current flow glyph, but it is the weakest DONE
-source. The `relay.jpeg` mapping to `response-clear` shows the response merge but
-not a separate fading clearance tail; the label and state styling carry that
+The `flow.jpeg` mapping to `axon-flow` is accepted as the weakest source: the
+plate reads as a narrow vertical flow channel rather than the horizontal
+conduit + bead + arrow in the prompt. It remains distinct in the 03 chain. The
+`relay.jpeg` mapping to `response-clear` shows the response merge but not a
+separate fading clearance tail; the label and state styling carry that
 distinction.
 
 All 12 prompts share the same output contract:
@@ -60,16 +106,31 @@ All 12 prompts share the same output contract:
 - the magenta field keys cleanly with no halo, fringe, checkerboard, or scene
   remnant.
 
-Suggested source paths:
+Accepted source plates:
 
-- anatomy: `art-source/nanobanan/new/blueprint-symbols/v02/<symbol>-v02.png`;
-- Silicon: `art-source/nanobanan/new/blueprint-symbols/v02/silicon/<symbol>-v02.png`.
+- anatomy: `art-source/blueprint-bio-puzzles/`;
+- Silicon: `art-source/blueprint-silicon-puzzle-icon/`.
+
+Reprocessing commands:
+
+```bash
+npm run art:key -- \
+  --in <source.jpeg> \
+  --out art-source/blueprint-icons/keyed/<symbol>.png \
+  --trim \
+  --preview art-source/previews/blueprint-icons/<symbol>-preview.png \
+  --report art-source/blueprint-icons/reports/<symbol>.key.json
+
+npm run art:fit -- \
+  --config art-source/blueprint-icons/fit.config.json \
+  --asset ui.blueprint.symbol.<symbol>
+```
 
 ---
 
 ## BPV2-01 — `ui.blueprint.symbol.input-pair`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-inputs.jpeg`
 
 **Used by:** 03 Nerve Forest — Two inputs (`input`).
@@ -116,7 +177,7 @@ one combined signal; no third input or decorative circuitry.
 
 ## BPV2-02 — `ui.blueprint.symbol.threshold-gauge`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-threshold_gauge.jpeg`
 
 **Used by:** 03 Nerve Forest — Threshold (`threshold`).
@@ -163,7 +224,7 @@ labels; the glyph reads as a condition being met.
 
 ## BPV2-03 — `ui.blueprint.symbol.axon-flow`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-flow.jpeg`
 
 **Used by:** 03 Nerve Forest — One-way flow (`axon`).
@@ -210,7 +271,7 @@ no branch or second path.
 
 ## BPV2-04 — `ui.blueprint.symbol.exit-gate`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-gate.jpeg`
 
 **Used by:** 03 Nerve Forest — Terminal / exit (`terminal`, `exit`).
@@ -257,7 +318,7 @@ barrier that has moved aside; no architectural door detail.
 
 ## BPV2-05 — `ui.blueprint.symbol.ca-window`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-timer.jpeg`
 
 **Used by:** 04 Muscle Effector — Trigger + Ca²⁺ window (`trigger`, `release`).
@@ -304,7 +365,7 @@ face, numerals, or literal channel.
 
 ## BPV2-06 — `ui.blueprint.symbol.ach-carry`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-carry.jpeg`
 
 **Used by:** 04 Muscle Effector — Carry ACh (`carry`).
@@ -352,7 +413,7 @@ letters, molecular bonds, or package markings.
 
 ## BPV2-07 — `ui.blueprint.symbol.receptor-bind`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-receptor.jpeg`
 
 **Used by:** 04 Muscle Effector — Bind receptor (`bind`).
@@ -399,7 +460,7 @@ gap that reads as unbound; no lock iconography.
 
 ## BPV2-08 — `ui.blueprint.symbol.response-clear`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-relay.jpeg`
 
 **Used by:** 04 Muscle Effector — Response + clearance (`respond`, `clear`).
@@ -448,7 +509,7 @@ at 1×; the glyph shows response and clearance without a second icon.
 
 ## BPV2-09 — `ui.blueprint.symbol.sensor-detect`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-sensor_detect.jpeg`
 
 **Used by:** 01 Interrupt Loop — Detect change (`detect`).
@@ -500,7 +561,7 @@ lightning-bolt silhouette.
 
 ## BPV2-10 — `ui.blueprint.symbol.route-integrate`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-route_integrate.jpeg`
 
 **Used by:** 01 Interrupt Loop — Route + integrate (`route`, `integrate`).
@@ -552,7 +613,7 @@ literal chip or socket.
 
 ## BPV2-11 — `ui.blueprint.symbol.cpu-wake`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-cpu_wake.jpeg`
 
 **Used by:** 01 Interrupt Loop — Wake CPU (`wake`).
@@ -602,7 +663,7 @@ orange, muscle pink
 
 ## BPV2-12 — `ui.blueprint.symbol.actuator-gate`
 
-**Status:** DONE
+**Status:** ACCEPTED
 **Source:** `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-actuator_gate.jpeg`
 
 **Used by:** 01 Interrupt Loop — Actuate response (`actuate`).
@@ -668,7 +729,7 @@ the actuating response; no architectural door or literal machine detail.
 | 01 Interrupt Loop | Wake CPU | `wake` | `cpu-wake` | BPV2-11 |
 | 01 Interrupt Loop | Actuate response | `actuate` | `actuator-gate` | BPV2-12 |
 
-## Generation and review order
+## Generation and review order (completed)
 
 1. BPV2-01 `input-pair`, BPV2-02 `threshold-gauge`, BPV2-03 `axon-flow`.
 2. BPV2-04 `exit-gate`, BPV2-05 `ca-window`, BPV2-06 `ach-carry`.
@@ -676,6 +737,7 @@ the actuating response; no architectural door or literal machine detail.
 4. BPV2-09 `sensor-detect`, BPV2-10 `route-integrate`, BPV2-11 `cpu-wake`,
    BPV2-12 `actuator-gate`.
 
-Generate four variations per symbol. Reject any result that reads as anatomy,
-literal hardware, a labelled diagram, or an icon that only works at 4×. Then key,
-fit, hand-clean, validate, smoke, and capture the 03, 04, and 01 headers.
+All 12 were keyed, fitted, hand-cleaned where needed, wired, validated,
+smoke-tested, and reviewed in the 03, 04, and 01 header captures at 1280×720.
+The browser assertion checks that each header renders four image-backed glyphs
+and no CSS code glyphs.

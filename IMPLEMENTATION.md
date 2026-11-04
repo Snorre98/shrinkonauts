@@ -57,14 +57,14 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Local co-op, tether, checkpoint P2 toggle | Working |
 | Solo start with P2 inactive | Working |
 | Pause, text scale, reduced motion, mute, focus management | Working |
-| M3.75 in-room HUD, blueprint, hint strip, player cards | Working; placeholder symbol glyphs |
+| M3.75 in-room HUD, blueprint, hint strip, player cards | Working; final 32×32 image symbols |
 | Placeholder asset pipeline (44/44 anatomy, 15/15 bathroom) | Working |
 | Pure validator with injected feedback vocabulary | Working |
 | Headless runtime smoke | Working |
 | Playwright browser smoke on system Chrome | Working |
 | Human hub visual/accessibility playtest | **Pending** |
 | Human solo/co-op playtest | **Pending** |
-| Final art files | Deferred |
+| Remaining final art files (03 scans, Silicon interrupt/exit, deferred backgrounds/UI) | Deferred |
 | Audio cues and room/menu themes | Installed from the 2026-11-03/04 Stable Audio passes |
 | 04 Nano Banana source batch | 7 plates processed, wired and accepted |
 | M3.5 bathroom hub art pass | Deferred |
@@ -100,9 +100,9 @@ bundled browser.
 Asset modes:
 
 ```text
-/                  # anatomy pack, procedural placeholders
+/                  # hub + final manifests by default
 /?assets=fixture   # anatomy fixture manifest if present, else warn + placeholders
-/?assets=final     # final manifest (current entries are placeholders)
+/?assets=final     # final manifests (POC/final entries; deferred IDs stay placeholders)
 ```
 
 Unknown `?assets=` values fall back to placeholder mode. The app does not boot
@@ -325,8 +325,8 @@ public/packs/anatomy-reflex/
   theme.json                palette, fonts, parallax, UI assets, audio cues/music
   mapping.json              concept → objective/level coverage
   licenses.json             licence entries
-  assets.placeholder.json   placeholder manifest
-  assets.final.json         final manifest (currently placeholder entries)
+  assets.placeholder.json   placeholder/fallback manifest
+  assets.final.json         final manifest (POC/final entries; deferred IDs stay placeholders)
   levels/03-nerve-forest/
     level.json              objectives, concepts, puzzleIds, feedback, map, evidence
     room.json               tiles, entities, anchors, checkpoints, triggers, exits
@@ -496,9 +496,12 @@ The design and data model are in
 [`docs/m3.75/blueprint-symbol-asset-brief-v01.md`](docs/m3.75/blueprint-symbol-asset-brief-v01.md)
 and the decision in
 [ADR-0080](docs/adr-presentation/0080-hud-blueprint-and-player-colors.md).
-Blueprint symbols currently use the CSS code-glyph fallback; the manifest carries
-placeholder entries until final nanobanana art passes the brief's readability
-gate.
+The 12 authored puzzle symbols resolve to final 32×32 `ui-1x` PNGs under each
+pack's `shared/ui/blueprint-symbols/` directory. The CSS code glyph remains the
+fallback for unresolved IDs; the old generic v01 entries remain for the fallback
+builder, while the v02 placeholder entries were removed once the final assets
+were wired. The assets, key/fit reports and 1×/2×/4× previews are committed under
+`art-source/blueprint-icons/` and `art-source/previews/blueprint-icons/`.
 
 The accessibility baseline is:
 
@@ -666,7 +669,7 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, materials purity, module graph |
 | `e2e/hub.spec.ts` | Browser: bathroom, cycle selection, launch skip, solo start, return |
 | `e2e/m1.spec.ts` | Browser: 03 → 04, conversations, attribution, reduced motion, live region, export |
-| `e2e/hud.spec.ts` | Browser: three-zone header, checklist, hint strip, cards, blueprint popup, density, safe area |
+| `e2e/hud.spec.ts` | Browser: three-zone header, checklist, hint strip, cards, blueprint popup, image-backed 03/04/01 symbols, density, safe area |
 | `e2e/shared-feedback.spec.ts` | Browser: shared-feedback pause toggle, persistence, shared state/beat/help suppression and restoration |
 
 `npm run smoke` runs the room-boot and boundary suites. `pack:smoke` adds a
@@ -676,7 +679,24 @@ using system Chrome.
 
 ## Verification performed
 
-On 2026-11-04, after the M3.75 HUD pass:
+On 2026-11-04, after the M3.75 final symbol pass:
+
+```text
+npm test             56 files, 588 tests passed
+npm run build        tsc clean + Vite production build
+npm run pack:validate  dev placeholder/fixture PASS; anatomy 59 IDs / 16 placeholders; Silicon 52 IDs / 16 placeholders; catalog + bathroom hub 21 IDs / 1 placeholder PASS
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (59 IDs, 16 placeholders); Silicon runtime PASS (48 IDs, 16 placeholders)
+npm run smoke:e2e      17/17 passed
+git diff --check      clean
+```
+
+The 12 source plates were keyed with `#ff00ff`, fitted to 32×32 `ui-1x`, and
+reviewed at 1× on `#101a20`. `route-integrate` was hand-cleaned by remapping its
+graphite wires to `#7a8f8a`; `axon-flow` remains the narrowest source. The 03,
+04 and 01 headers were captured at 1280×720 and checked for image glyphs,
+done/active/pending rings and P1/P2 markers. Human HUD playtest remains pending.
+
+On 2026-11-04, after the M3.75 HUD pass (before final symbol integration):
 
 ```text
 npm test             56 files, 588 tests passed

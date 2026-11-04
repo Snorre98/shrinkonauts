@@ -1,11 +1,11 @@
 # Asset Prompt Library — Audio and Graphics v0.2
 
 - **Status:** Draft
-- **Last updated:** 2026-11-03
+- **Last updated:** 2026-11-04
 - **Date:** 2026-11-03
 - **Owner:** Snorre
 - **Scope:** Cross-discipline inventory and prompt routing for graphics and audio assets across the authored packs and the bathroom hub
-- **Prompt version:** `assets-2026-11-03.1`
+- **Prompt version:** `assets-2026-11-04.1`
 - **Governing ADR:** [`docs/adr-assets/0078-audio-and-graphics-prompt-libraries.md`](../adr-assets/0078-audio-and-graphics-prompt-libraries.md)
 - **Related:** [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) · [`docs/m3/background-asset-requirements-v01.md`](../m3/background-asset-requirements-v01.md) · [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md) · [`docs/m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md) · [`docs/audio/audio-requirements-and-prompts-v01.md`](../audio/audio-requirements-and-prompts-v01.md) · [`docs/audio/room-and-menu-themes-v01.md`](../audio/room-and-menu-themes-v01.md)
 
@@ -19,8 +19,9 @@
 |---|---|
 | Graphics prompt sources | M3, background, muscle-endplate, M3.5 hub, Silicon level packs |
 | Audio prompt sources | 18 SFX cues; four music themes |
-| Current graphics state | Final 04 batch, POC-integrated earlier art, and the deliberate placeholder/fallback assets listed in §3.1 and §4.3 coexist |
+| Current graphics state | Final 04 batch, 12 final M3.75 blueprint symbols, POC-integrated earlier art, and the deliberate placeholder/fallback assets listed in §3.1 and §4.3 coexist |
 | Current 04 source batch | **7 source plates processed, wired and accepted** (`2026-11-03`) |
+| Current M3.75 symbol batch | **12 source plates keyed, fitted to 32×32, wired and accepted** (`2026-11-04`) |
 | Current audio state | 3 of 18 SFX cues installed; 15 cues and four themes remain placeholders |
 | Visible placeholder-only sprites | `sprite.scan.neuron`, `sprite.scan.myelin`, `sprite.scan.pathway`, `sprite.scan.interrupt`, `sprite.exit.silicon` |
 | Audio delivery | File-backed cue and theme playback implemented; three pilot SFX files exist, themes are silent |
@@ -45,10 +46,17 @@ The branch now contains:
    - The atlas assembler has an explicit `--weld-edges` pass and a
      `--selection single` mode that reuses one source window across all masks;
      `art:normalize` accepts a `--ramps` subset for material swatches.
-2. **Earlier POC graphics integrated**:
+2. **M3.75 blueprint symbols accepted** (`2026-11-04`):
+   - 12 standalone source plates across `art-source/blueprint-bio-puzzles/` and
+     `art-source/blueprint-silicon-puzzle-icon/`.
+   - Keyed, fitted to 32×32 `ui-1x`, reviewed at 1×, and wired in the anatomy and
+     Silicon final manifests with licence records.
+   - The 03, 04 and 01 headers render image-backed glyphs; the CSS code glyph is
+     now only the unresolved-ID fallback.
+3. **Earlier POC graphics integrated**:
    - P1/P2 players, Neuron Keeper static + 36-frame idle.
    - Readable scans/entities, the 03 pretty sky and the hub M3.5 art.
-3. **Remaining placeholder decisions**:
+4. **Remaining placeholder decisions**:
    - The three 03 scans (`scan.neuron`, `scan.myelin`, `scan.pathway`) remain
      placeholder-only; the old neuron/pathway plates fail the 36×36 read and no
      new source exists. The new fact-specific prompts are in
@@ -56,7 +64,7 @@ The branch now contains:
    - Silicon scan interrupt and Silicon exit remain placeholder-only.
    - The hub logo uses the approved Silkscreen CSS fallback; the toy astronaut
      is cut; the HUD badge keeps its CSS fallback.
-4. **Audio partially delivered** (`278d687`):
+5. **Audio partially delivered** (`278d687`):
    - Three SFX cues (`scan`, `jump`, `land`) are installed in both packs.
    - 15 cues and all four themes remain placeholders.
    - File-backed cue playback and ADR-0077 theme playback are implemented;
@@ -144,7 +152,7 @@ terminal are interactable props, not scans.
 
 ### 4.0 Completion matrix
 
-**Last updated:** 2026-11-03
+**Last updated:** 2026-11-04
 
 This is the single source of truth for graphics evidence and per-asset status.
 For the consolidated “what do I do next?” checklist across graphics, audio, and
@@ -160,6 +168,7 @@ status vocabulary in §2.1; “Stage” uses the pipeline stages in §2.1.
 | `tile.nerve.atlas` | P0 | `final` | `accepted` | `.../tile.nerve.atlas.jpeg` → 512 swatch → 128×128 4×4 edge atlas | — | — |
 | `sprite.gate.nerve` | P1 | `final` | `accepted` | `.../sprite.gate.nerve.jpeg` → key/trim → 60×60 in 64×64; 5,444 bytes | — | — |
 | `sprite.exit` | P1 | `final` | `accepted` | `.../sprite.exit.jpeg` → key/trim → 59×60 in 64×64; 6,043 bytes | — | — |
+| `ui.blueprint.symbol.*` (12) | P1 | `final` | `accepted` | 12 plates in `art-source/blueprint-bio-puzzles/` and `art-source/blueprint-silicon-puzzle-icon/`; keyed #ff00ff, fitted 32×32 `ui-1x`, 1× reviewed; reports in `art-source/blueprint-icons/reports/` | — | — |
 
 The full source folder is
 `art-source/nanobanan/new/muscle-endplate-2026-11-03/`. Evidence paths are in
@@ -169,6 +178,10 @@ and the licence entries.
 **Current counts:** 7 source-generated; 7 source-accepted; 7 processed; 7 wired;
 7 accepted. The interim procedural files and material tints are gone from the
 runtime.
+
+**M3.75 symbol counts:** 12 source-generated; 12 source-accepted; 12 keyed;
+12 fitted; 12 wired; 12 accepted. The 12 v02 placeholder entries were removed
+from the pack placeholder manifests once the final entries were active.
 
 ### 4.1 Final runtime graphics
 
@@ -182,6 +195,8 @@ These are approved or POC-integrated and have `src` paths:
 - `sprite.receptor.triangle`, `sprite.receptor.circle`.
 - `bg.nerve_forest.sky`.
 - Silicon final sprites and `bg.silicon_board.sky`.
+- 12 M3.75 blueprint symbol PNGs under
+  `public/packs/{anatomy-reflex,silicon-reflex}/shared/ui/blueprint-symbols/`.
 - Hub final scene/props/sprites listed in `docs/m3.5/hub-asset-prompts-v01.md`.
 
 ### 4.2 Interim graphics
@@ -280,7 +295,7 @@ longer an optional future asset.
 | Asset family | Prompt source | Notes |
 |---|---|---|
 | Shared sprites, scans, gates, props, receptors, badge | [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) | M3 style blocks, per-asset prompts, atlas maps, prompt log |
-| M3.75 blueprint symbols | [`blueprint-symbol-prompts-v02.md`](../m3.75/blueprint-symbol-prompts-v02.md) | 12 puzzle-specific standalone prompts, four per puzzle; no cross-puzzle glyph reuse; 12/12 have source plates |
+| M3.75 blueprint symbols | [`blueprint-symbol-prompts-v02.md`](../m3.75/blueprint-symbol-prompts-v02.md) | 12 puzzle-specific standalone prompts, four per puzzle; no cross-puzzle glyph reuse; 12/12 keyed, fitted, wired and accepted |
 | 03 background layers | [`docs/m3/background-asset-requirements-v01.md`](../m3/background-asset-requirements-v01.md) | Current 03 sky wired; far/mid/near future |
 | 04 sky, four atlases, gate, exit | [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md) | Accepted 2026-11-03; evidence in §12 |
 | Hub scene/props/UI | [`docs/m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md) | Nano Banana first, Ludo fallback |
@@ -368,6 +383,17 @@ The seven source plates are processed, wired and accepted:
 8. Manifest `src`/licence entries wired; `placeholder` and material tints
    removed.
 
+### P1.5 — M3.75 blueprint symbols ✅
+
+The 12 puzzle-specific symbols are keyed from their source plates, fitted to
+32×32 `ui-1x`, reviewed at 1× on `#101a20`, and wired in both final manifests:
+
+- Anatomy: `input-pair`, `threshold-gauge`, `axon-flow`, `exit-gate`,
+  `ca-window`, `ach-carry`, `receptor-bind`, `response-clear`.
+- Silicon: `sensor-detect`, `route-integrate`, `cpu-wake`, `actuator-gate`.
+- Licence records, 1×/2×/4× previews and key/fit reports are committed; the
+  browser assertion checks the 03, 04, and 01 headers.
+
 ### P2 — audio
 
 8. ~~Implement `ManifestAudioProvider` and theme playback.~~ Done.
@@ -420,6 +446,8 @@ Expected:
 - The 03 scan prompts produce square 36×36 runtime PNGs, not wide strips.
 - Audio files are not committed while the provider is a stub.
 - Final replacements remove `placeholder` and keep licence/prompt-log entries.
+- The 12 blueprint symbols resolve to image-backed `ui-1x` PNGs in the 03, 04
+  and 01 headers; no authored puzzle component falls back to a CSS code glyph.
 - The umbrella library, discipline prompt documents and manifests agree.
 
 ---

@@ -1,6 +1,6 @@
 # M3.75 — In-Room HUD: Compact Blueprint, Progress, and Player Cards
 
-**Status:** implemented — automated validation complete; CSS placeholder symbols; human playtest pending
+**Status:** implemented — automated validation complete; final 32×32 blueprint symbols integrated; human playtest pending
 **Date:** 2026-11-04
 **Owner:** Snorre
 **Depends on:** M1.75 feedback beats, M3 art direction, ADR-0049, ADR-0072, ADR-0073
@@ -301,8 +301,9 @@ Rules:
 - `beatIds` links a component to one or more checklist beats.
 - `edges` are optional; the fallback derives a chain from component order.
 - The last component is the goal; no `goalGroupId` is needed.
-- Symbols are logical asset IDs; the UI falls back to a CSS placeholder when an
-  asset is not resolved.
+- Symbols are logical asset IDs; the UI resolves the final 32×32 PNGs through
+  the asset provider and falls back to a CSS code glyph when an asset is not
+  resolved.
 
 ### 5.6 Component mappings
 
@@ -494,8 +495,8 @@ expanded variants, resolves symbol assets through a callback, and exposes an
 | 2 | Rebuild the header: three zones, relocated checklist, header hint strip, bottom control cards |
 | 3 | Build the compact component blueprint, tooltips, and expanded `Tab` popup with room context |
 | 4 | Author blueprints for `03-nerve-forest` and `04-muscle-effector`; add validation + fallback |
-| 5 | Write the nanobanana symbol brief/prompt pack; integrate placeholder and final symbol manifests |
-| 6 | Automated tests, text-scale/responsive captures, human playtest, docs update |
+| 5 | Write the nanobanana symbol brief/prompt pack; integrate placeholder and final symbol manifests — done, 12/12 final symbols wired |
+| 6 | Automated tests, text-scale/responsive captures, docs update — done; human playtest pending |
 
 Each phase must leave the game playable and the test suite green.
 
@@ -513,13 +514,19 @@ Each phase must leave the game playable and the test suite green.
 - The 12 puzzle-specific symbol prompts are in
   [`blueprint-symbol-prompts-v02.md`](blueprint-symbol-prompts-v02.md), with a
   puzzle-to-component coverage matrix. The v01 prompt files are superseded. All
-  12 prompts now have source plates; the sources still need key/fit/cleanup.
+  12 symbols are keyed from their source plates, fitted to 32×32, hand-cleaned
+  where needed, wired in both final manifests, and reviewed at 1× on `#101a20`.
+  `axon-flow` remains the narrowest and weakest source; `route-integrate`
+  needed its graphite wires remapped to `#7a8f8a` before the final fit.
 - Silicon uses its own four IDs (`sensor-detect`, `route-integrate`, `cpu-wake`,
   `actuator-gate`) and graphite/ceramic/signal-cyan art; it does not reuse
   anatomy glyphs.
-- Blueprint symbols resolve through the asset provider; unresolved IDs render
-  the CSS code glyph. `assets.placeholder.json` carries the placeholder entries.
-  Final nanobanana art is not fabricated in this milestone.
+- Blueprint symbols resolve through the asset provider; the 12 authored puzzle
+  IDs resolve to `shared/ui/blueprint-symbols/*.png`. Unresolved IDs still render
+  the CSS code glyph. The old generic placeholder entries remain for the fallback
+  builder; the v02 placeholder entries were removed once the final assets were
+  wired. `assets.placeholder.json` is no longer the rendering path for the
+  authored puzzles.
 
 ---
 
@@ -540,11 +547,13 @@ Each phase must leave the game playable and the test suite green.
    content.
 10. Authored blueprints for 03/04/01 validate; fallback works for a puzzle without
     authored data.
-11. The nanobanana symbol kit meets readability, palette, and transparency gates.
+11. The nanobanana symbol kit meets readability, palette, and transparency gates
+    (12/12 accepted; the narrow line-art exceptions and fit warnings are recorded
+    in the prompt pack).
 12. `npm test`, `npm run pack:validate`, `npm run pack:smoke`,
     `npm run smoke:e2e`, `npm run build`, and `git diff --check` pass.
 13. Human playtest confirms the header is understandable and does not hide the
-    players.
+    players — **pending**.
 
 ---
 
@@ -565,6 +574,8 @@ Each phase must leave the game playable and the test suite green.
 - Header shows the compact blueprint, checklist, hint strip, and badges.
 - Checklist is in the header and the old bottom-left panel is gone.
 - Blueprint shows 2–4 icons with done/active/pending states and no context chain.
+- The 03, 04 (after Endplate Ferry activation), and 01 (after Interrupt Loop
+  activation) headers render four image-backed glyphs and no CSS code glyphs.
 - Hover/focus shows a component tooltip.
 - Hint cycles, updates the count, and highlights the active component.
 - `Tab` opens the expanded blueprint with labels, room context, legend, and hint
@@ -583,7 +594,9 @@ Each phase must leave the game playable and the test suite green.
 - Text scale 100%, 125%, 150%, 200%.
 - 720 px viewport width.
 - P1 spawn visible at level start; bottom cards do not cover the players.
-- Blueprint icons readable at 1× display, transparent, pixel-crisp.
+- Blueprint icons readable at 1× display, transparent, pixel-crisp. The final 12
+  symbols were inspected at 1× on `#101a20` and in the 03/04/01 header captures;
+  active/done/pending rings and P1/P2 markers were checked.
 - Player colours meet contrast requirements and are paired with labels.
 
 ### Human playtest
