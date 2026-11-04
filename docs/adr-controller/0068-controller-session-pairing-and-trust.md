@@ -4,7 +4,10 @@
 - **Date:** 2026-11-01
 - **Deciders:** Snorre
 - **Related:** ADR-0048, ADR-0049, ADR-0050, ADR-0053, ADR-0054, ADR-0055,
-  ADR-0056, ADR-0066, ADR-0067
+  ADR-0056, ADR-0066, ADR-0067, ADR-0081
+- **Later decision (2026-11-04):** ADR-0081 makes M4.0a the complete multiplayer
+  scope; M4.0b/M4.1 are not planned. The controller session and trust decisions
+  remain accepted.
 
 ## Context
 

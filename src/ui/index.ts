@@ -21,7 +21,6 @@ export type { HubUi, HubUiOptions } from "./hub-ui";
 export type {
   HubCallbacks,
   HubMode,
-  HubOnlineView,
   HubPackView,
   HubPhase,
   HubView,

@@ -1,18 +1,21 @@
 # Phone Controller Co-op — ADR domain
 
-**Status:** Accepted, 2026-11-01
+**Status:** Accepted, 2026-11-01; same-room scope confirmed 2026-11-04
 **Owner:** Snorre
 **Scope:** phone-as-controller for same-screen co-op (M4.0a), per-player
-input slots, pairing and trust, and controller latency policy
-**Milestone:** [`../m4/README.md`](../m4/README.md) — M4.0a
+input slots, pairing and trust, controller latency policy, and the same-room
+product boundary
+**Milestone:** [`../m4/README.md`](../m4/README.md) — M4.0a is the complete
+multiplayer scope
 **Format:** Nygard-style, matching `docs/adr-online/`, `docs/adr-hub/`,
 `docs/adr-m3/`, and `docs/puzzle-engine/adr/`.
 
-This domain records the first phase of the multiplayer ladder: a phone acts as
-a controller while the game remains host-authoritative on one shared screen. It
-does not duplicate the remote-guest decisions in
-[`../adr-online/`](../adr-online/README.md); it consumes the same transport and
-input protocol for a smaller client role.
+This domain records the complete multiplayer model: a phone acts as a
+controller while the game remains host-authoritative on one shared screen. The
+product is same-room and shared-screen only. It does not add a remote guest or a
+fourth device. The remote-guest records in
+[`../adr-online/`](../adr-online/README.md) remain for historical precedent and
+are not an active plan.
 
 ## Numbering
 
@@ -26,7 +29,7 @@ renumber these records before acceptance; accepted records are immutable.
 
 | In scope | Out of scope |
 |---|---|
-| Same-screen co-op with one or two phone controllers | Remote second-screen rendering (online domain, M4.0b) |
+| Same-screen co-op with one or two phone controllers | Remote second-screen rendering (not planned, ADR-0081) |
 | Per-player input slots: keyboard or phone for P1/P2 | Matchmaking, accounts, lobbies, spectators |
 | Host-authoritative input application | Server-side simulation or deterministic lockstep |
 | Controller role, slot reservation, QR/code pairing | A second `GameRuntime` or `PuzzleRuntime` |
@@ -44,19 +47,20 @@ renumber these records before acceptance; accepted records are immutable.
 | [0067](0067-per-player-input-slots-and-device-arbitration.md) | Per-player input slots and device arbitration | Accepted |
 | [0068](0068-controller-session-pairing-and-trust.md) | Controller session, pairing, and trust boundary | Accepted |
 | [0069](0069-controller-latency-and-input-feel.md) | Controller latency budget and input-feel policy | Accepted |
+| [0081](0081-same-room-shared-screen-multiplayer.md) | Same-room, shared-screen multiplayer; no remote guest | Accepted |
 
 ## Relationship to other decisions
 
-- **ADR-0047–0057 (online domain):** define the host-authoritative session,
-  room lifecycle, input protocol, ownership, failure, security, deployment, and
-  test strategy. M4.0a reuses the transport, room code, heartbeat, and
-  `NetInput` subset; it does not adopt world/UI snapshots or guest rendering.
-- **ADR-0047 / ADR-0050 (online domain):** assume host = P1 and guest = P2. The
+- **ADR-0047–0057 (online domain):** historical design exploration for remote
+  guest co-op. ADR-0081 supersedes the guest-rendering/snapshot scope. The input
+  relay reuses the transport, room code, heartbeat, failure, security, and
+  deployment lessons; it does not adopt world/UI snapshots or guest rendering.
+- **ADR-0047 / ADR-0050 (online domain):** assumed host = P1 and guest = P2. The
   controller phase generalizes this: the host is authority/display, and P1/P2
-  are independent input slots. The remote guest remains host = P1 in M4.0b.
+  are independent input slots. There is no remote guest slot.
 - **ADR-0058–0059 (hub domain):** the bathroom hub is the pre-game surface. M4.0a
-  adds a local-co-op input setup panel; the disabled online block remains for
-  M4.0b.
+  adds a local-co-op input setup panel; the obsolete online block and `online`
+  catalog flag are removed rather than reserved for M4.0b.
 - **ADR-0010 (puzzle-engine):** per-player soft-surface input and ownership. The
   controller arbiter preserves the existing P1/P2 routing.
 - **ADR-0037, ADR-0043 (puzzle-engine):** per-player abilities, tether, and
@@ -83,4 +87,6 @@ M4.0a Phase 0 accepts this domain when:
 - **Superseded:** replaced by a later ADR; kept immutable.
 - **Rejected:** considered and not adopted.
 
-All records in this domain start as **Proposed**.
+All active records in this domain are **Accepted**. The historical online
+records outside this domain are marked **Historical** and are not an active
+plan.

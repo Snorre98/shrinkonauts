@@ -1,34 +1,35 @@
 # Phone Controller Co-op — Implementation Plan (M4.0a)
 
-**Status:** Draft for review, 2026-11-01
+**Status:** M4.0a authority, 2026-11-01; same-room scope confirmed 2026-11-04
 **Owner:** Snorre
-**Source decisions:** [ADR-0066–0069](../adr-controller/README.md)
-**Milestone:** [M4](../m4/README.md) — M4.0a, the first phase of complete
-multiplayer
+**Source decisions:** [ADR-0066–0069 and ADR-0081](../adr-controller/README.md)
+**Milestone:** [M4](../m4/README.md) — M4.0a, the complete multiplayer scope
 **Format:** phased plan matching
 [`../puzzle-engine/implementation-plan.md`](../puzzle-engine/implementation-plan.md)
 and [`../puzzle-engine/feedback-implementation-plan.md`](../puzzle-engine/feedback-implementation-plan.md)
 
 This plan is the authority for M4.0a. **No production code is written until
-Phase 0 accepts ADR-0066–0069 and approves this plan.** Phase 1 may begin only
-after that gate.
+Phase 0 accepts ADR-0066–0069 and ADR-0081 and approves this plan.** Phase 1 may
+begin only after that gate.
 
-M4.0b (remote guest with world/UI snapshots) remains described by the existing
-[M4 README](../m4/README.md) and
-[online ADR domain](../adr-online/README.md). M4.0a is not a replacement for
-M4.0b; it is the smaller, earlier tracer bullet that proves the transport and
-input boundary.
+M4.0a is the complete multiplayer scope: same-room, shared-screen co-op with
+keyboard-or-phone input slots. M4.0b (remote guest with world/UI snapshots) and
+M4.1 (full-pack online) are **not planned** (ADR-0081). Their design remains in
+the [M4 historical appendix](../m4/README.md#appendix-a--remote-guest-co-op-not-planned-historical)
+and the [online ADR domain](../adr-online/README.md) for historical precedent.
 
 ### Review gate
 
 - [ ] Accept [ADR-0066](../adr-controller/0066-phone-controller-first-multiplayer-phase.md)
-  (phase ladder and scope).
+  (phone-controller phase and same-room scope).
 - [ ] Accept [ADR-0067](../adr-controller/0067-per-player-input-slots-and-device-arbitration.md)
   (host is not a player; per-slot input).
 - [ ] Accept [ADR-0068](../adr-controller/0068-controller-session-pairing-and-trust.md)
   (controller role, pairing, trust).
 - [ ] Accept [ADR-0069](../adr-controller/0069-controller-latency-and-input-feel.md)
   (latency budget and no prediction).
+- [ ] Accept [ADR-0081](../adr-controller/0081-same-room-shared-screen-multiplayer.md)
+  (same-room product boundary; no remote guest).
 - [ ] Resolve or defer the open decisions in §13.
 - [ ] Approve this plan as the M4.0a authority.
 
@@ -58,15 +59,17 @@ session fails.
 
 ### Non-goals
 
-- Remote co-op with a second rendered game view; that is M4.0b.
+- Remote co-op, a second rendered game view, or a fourth device; M4.0b/M4.1
+  are not planned (ADR-0081).
 - World, UI, puzzle, dialogue, camera, feedback, or save state on the phone.
 - Phone-side prediction, rollback, or a second simulation.
+- Guest rendering, world/UI snapshots, interpolation, or host migration.
 - Bluetooth, native iOS/Android apps, or a phone as a Bluetooth HID device.
 - Accounts, matchmaking, lobbies, spectators, chat, voice, or profiles.
 - A third player.
 - New puzzles, levels, abilities, assets, or save fields.
 - Trusted graded assessment from a public controller.
-- Full M2 pack online; that is M4.1.
+- Keeping the obsolete Online co-op placeholder or `online` catalog flag.
 
 ---
 
@@ -94,8 +97,10 @@ A successful M4.0a demo looks like this:
 8. The latency playtest records a keyboard baseline and phone p50/p95
    input-to-photon on the demo Wi-Fi and display. The target is p95 ≤ 120 ms; if
    it is not met, the fallback is a local relay or keyboard, not prediction.
-9. Existing local co-op, solo, save, feedback, materials, and pack tests still
-   pass.
+9. The obsolete Online co-op hub mode/panel and the `online` pack catalog flag
+   are removed; the hub advertises Solo and Local co-op only.
+10. Existing local co-op, solo, save, feedback, materials, and pack tests still
+    pass.
 
 ---
 
@@ -113,11 +118,16 @@ A successful M4.0a demo looks like this:
   [`../../src/world/runtime-port.ts`](../../src/world/runtime-port.ts).
 - P1/P2 ownership, surface routing, tether, camera, feedback, save, and
   evidence are already host-local.
-- The bathroom hub exposes Solo, Local co-op, and a disabled Online co-op block
-  ([`../../src/ui/hub-ui.ts`](../../src/ui/hub-ui.ts),
-  [`../../src/game/boot.ts`](../../src/game/boot.ts)).
-- No `worker/` directory or network client exists yet. The online ADRs describe
-  it, but M4.0a is the first implementation of it.
+- The bathroom hub still exposes Solo, Local co-op, and a disabled Online co-op
+  block ([`../../src/ui/hub-ui.ts`](../../src/ui/hub-ui.ts),
+  [`../../src/game/boot.ts`](../../src/game/boot.ts)). Phase 5.5 removes it.
+- Phases 1–5 are implemented: the input arbiter, protocol/transport, Worker +
+  `GameRoom` Durable Object, host session, and standalone controller page exist.
+- The temporary developer bridge is still active: `prepareHostRun()` creates the
+  room after launch and `HostRunAdapter` uses `autoStart: true`. Phase 6 replaces
+  both with hub-time room creation and an explicit Start gate.
+- The online ADRs describe historical remote-guest co-op and are not an active
+  plan (ADR-0081).
 
 ### Assumptions
 
@@ -381,12 +391,13 @@ active ── controller lost / host hidden / host pause ──▶ paused
 
 Tasks:
 
-1. Review and accept ADR-0066–0069.
+1. Review and accept ADR-0066–0069 and ADR-0081.
 2. Approve this plan as the M4.0a authority.
-3. Update the M4 README to show the M4.0a → M4.0b → M4.1 ladder, scope table,
-   deliverables, DoD, risks, verification, and open decisions.
-4. Update the online ADR domain's scope/relationship notes: controller sessions
-   reuse its transport but not its snapshots. Do not rewrite accepted records.
+3. Update the M4 README to show the M4.0a-only scope: same-room, shared-screen
+   co-op; scope table, deliverables, DoD, risks, verification, and open
+   decisions. Move M4.0b/M4.1 history into the appendix.
+4. Update the online ADR domain to historical status: controller sessions reuse
+   its transport but not its snapshots. Do not rewrite accepted record bodies.
 5. Amend the local-only contracts for the optional controller input path:
    - [`../puzzle-engine/architecture.md`](../puzzle-engine/architecture.md) §7;
    - [`../puzzle-engine/contracts/failure-semantics.md`](../puzzle-engine/contracts/failure-semantics.md);
@@ -394,7 +405,7 @@ Tasks:
    - [`../puzzle-engine/contracts/module-boundaries.md`](../puzzle-engine/contracts/module-boundaries.md);
    - [`../puzzle-engine/contracts/interface.md`](../puzzle-engine/contracts/interface.md).
 6. Update the hub-domain relationship note so Local co-op has a phone-input
-   setup panel; the disabled Online block remains for M4.0b.
+   setup panel and the obsolete online block is removed.
 7. Record the open decisions in §13 as resolved or explicitly deferred.
 
 Exit criteria:
@@ -511,10 +522,9 @@ Exit criteria:
 
 ### Phase 3 — Worker and Durable Object
 
-**Estimate:** 1.5–2 focused days. This phase is shared with M4.0b and should be
-built once.
+**Estimate:** 1.5–2 focused days.
 
-Goal: a real cloud relay with controller roles and slot reservations.
+Goal: a real cloud input relay with controller roles and slot reservations.
 
 Files:
 
@@ -673,6 +683,55 @@ Exit criteria:
 
 ---
 
+### Phase 5.5 — Remove the obsolete online co-op placeholder
+
+**Status:** implemented 2026-11-04.
+**Estimate:** 0.25–0.5 focused day.
+
+Goal: make the product boundary match ADR-0081. The hub is same-room, shared
+screen only. The Worker/DO/controller page remain; only the remote-guest
+placeholder and its catalog flag are removed.
+
+Files:
+
+- `src/ui/hub-model.ts`
+- `src/ui/hub-ui.ts`
+- `src/ui/index.ts`
+- `src/ui/styles.css`
+- `src/world/hub-scene.ts`
+- `src/game/app-state.ts`
+- `src/game/boot.ts`
+- `src/pack/catalog.ts`
+- `public/packs/index.json`
+- `tests/app-state.test.ts`
+- `tests/catalog.test.ts`
+- `e2e/support.ts`
+- `e2e/hub.spec.ts`
+
+Tasks:
+
+1. Remove `online` from `HubMode`; keep `solo` and `local`.
+2. Remove the Online co-op radio, the Multiplayer panel, Host/Join buttons, and
+   their styles.
+3. Remove `HubOnlineView`, `HubPackView.online`, and `onlineAvailable`.
+4. Remove `PackCatalogEntry.online`, catalog parsing/validation, and the
+   `online` flags in `public/packs/index.json`.
+5. Remove `mode === "online"` branches and notices from boot/app-state.
+6. Remove `"online"` from the hub-scene mode union.
+7. Update unit/e2e tests to assert the online mode and panel are absent.
+8. Do not remove the Worker, Durable Object, controller page, input arbiter,
+   host session, or phone input plan.
+
+Exit criteria:
+
+- The hub exposes Solo and Local co-op only.
+- No `hub__online`, Host/Join panel, `HubOnlineView`, `onlineAvailable`, or
+  `online` catalog field remains.
+- Keyboard/keyboard and phone-controller paths still work.
+- Existing tests pass.
+
+---
+
 ### Phase 6 — Hub setup and pairing
 
 **Estimate:** 1–1.5 focused days.
@@ -713,15 +772,16 @@ Tasks:
    - End session.
 6. On return to hub, close the session and reset the plan to K/K (see open
    decision).
-7. Keep the disabled Online co-op block for M4.0b; do not conflate it with phone
-   setup.
+7. Do not reintroduce an Online co-op block; Phase 5.5 removed it and the
+   product is same-room only.
 8. Tests:
    - hub renders K/K by default;
    - phone setup states;
    - Start gating;
    - fallback;
    - keyboard/keyboard regression;
-   - QR/code UI.
+   - QR/code UI;
+   - online mode/panel absence.
 
 Exit criteria:
 
@@ -729,7 +789,7 @@ Exit criteria:
 - Start is blocked or held paused until controller slots are ready; becoming
   ready does not start the run automatically.
 - The keyboard default requires no network or QR.
-- The disabled online block remains for M4.0b.
+- The hub advertises Solo and Local co-op only.
 
 ---
 
@@ -771,8 +831,8 @@ Tasks:
    - wake lock/screen lock, orientation, accessibility;
    - free-tier usage over a 30-minute session.
 5. Update docs:
-   - ADR statuses;
-   - M4 README ladder and DoD;
+   - ADR statuses, including ADR-0081;
+   - M4 README same-room scope and DoD;
    - architecture/failure/concurrency/module-boundary/interface amendments;
    - README/IMPLEMENTATION status after acceptance;
    - playtest note with measurements and known limitations.
@@ -806,17 +866,16 @@ Exit criteria:
 | Host leaves | — | Yes | Yes | Yes |
 | Security/rate/Origin | Yes | Yes | Yes | — |
 | No game state on phone | — | Yes | DOM/bundle check | Yes |
+| Online placeholder absent | — | — | Hub absence check | Yes |
 | Latency/feel | Physics tests | — | Instrumented | Yes |
 | Existing suites | `npm test` | — | `smoke:e2e` | — |
 
-New provisional commands:
+Controller commands:
 
 ```sh
 npm run test:controller
 npm run smoke:controller
 ```
-
-Names are provisional; keep them separate from the existing suites until Phase 3.
 
 ---
 
@@ -876,17 +935,19 @@ Names are provisional; keep them separate from the existing suites until Phase 3
 
 | Document | Change |
 |---|---|
-| `docs/adr-controller/README.md` | New domain index and scope |
-| ADR-0066–0069 | New proposed records |
-| `docs/m4/README.md` | M4.0a ladder, scope, deliverables, DoD, risks, verification |
-| `docs/adr-online/README.md` | Cross-reference the controller phase; no rewrite of accepted records |
-| `docs/adr-hub/README.md` | Local co-op phone setup; online block remains M4.0b |
+| `docs/adr-controller/README.md` | Active controller domain index and scope, including ADR-0081 |
+| ADR-0066–0069 | Accepted phone-controller records |
+| ADR-0081 | Same-room, shared-screen product boundary; no remote guest |
+| `docs/m4/README.md` | M4.0a-only scope, deliverables, DoD, risks, verification; M4.0b/M4.1 historical appendix |
+| `docs/adr-online/README.md` | Historical status; no rewrite of record bodies |
+| `docs/adr-hub/README.md` | Local co-op phone setup; obsolete online block removed |
+| `docs/m1.9/remaining-work.md` | Phone-controller same-room setup; no online lobby |
 | `docs/puzzle-engine/architecture.md` | Optional controller input path; authority unchanged |
 | `docs/puzzle-engine/contracts/failure-semantics.md` | Controller disconnect/fallback |
 | `docs/puzzle-engine/contracts/concurrency-topology.md` | Input arbiter and controller relay; single writer unchanged |
 | `docs/puzzle-engine/contracts/module-boundaries.md` | `net` module and controller entry boundaries |
 | `docs/puzzle-engine/contracts/interface.md` | Input-source contracts and controller page boundary |
-| `README.md`, `IMPLEMENTATION.md` | Status after implementation |
+| `README.md`, `IMPLEMENTATION.md` | Status after implementation; no online mode |
 | `docs/m4/playtest-m4.0a.md` | Latency and manual evidence |
 
 ---
@@ -902,7 +963,7 @@ Names are provisional; keep them separate from the existing suites until Phase 3
 | Two-slot hub is confusing | K/K default, per-slot QR/status, explicit ready/error copy, "use keyboard" escape |
 | Input ownership bugs | Pure arbiter tests; discard on every source change; no double sampling |
 | TV/projector display latency dominates | Game mode; keyboard baseline; separate display from network in measurements |
-| Scope creeps into M4.0b | Non-goals: no snapshots, no phone rendering, no prediction |
+| Scope creeps into remote online co-op | ADR-0081: no snapshots, no guest rendering, no prediction, no fourth device |
 | Controller can spoof actions | Slot-bound connection; host allowlist; ownership validation |
 | Controller page is stale after deploy | Build ID check; reload message; no degraded join |
 | Worker/DO deployment fails | `wrangler deploy --dry-run`; local Worker tests; no game loop in DO |
@@ -917,7 +978,7 @@ Names are provisional; keep them separate from the existing suites until Phase 3
 
 M4.0a is done when:
 
-1. ADR-0066–0069 are accepted and indexed; this plan is approved.
+1. ADR-0066–0069 and ADR-0081 are accepted and indexed; this plan is approved.
 2. Keyboard/keyboard local co-op is unchanged, is the default, and passes the
    existing regression suite.
 3. Keyboard/phone, phone/keyboard, and phone/phone each start from the hub and
@@ -938,12 +999,14 @@ M4.0a is done when:
     target is met or the chosen fallback is documented.
 11. Coyote time and jump buffer are implemented and tested without changing
     keyboard/solo correctness.
-12. Unit, integration, browser, and manual tests pass, including the existing
+12. The obsolete online mode, panel, and catalog flag are removed; the hub
+    advertises Solo and Local co-op only.
+13. Unit, integration, browser, and manual tests pass, including the existing
     `npm test`, pack validation/smoke, `smoke:e2e`, build, and `git diff --check`.
-13. Docs are updated: controller ADR index, M4 README, architecture/contracts,
+14. Docs are updated: controller ADR index, M4 README, architecture/contracts,
     README/IMPLEMENTATION status, playtest note.
-14. The multiplayer ladder is explicit: M4.0a complete; M4.0b and M4.1 remain
-    future phases.
+15. The multiplayer scope is explicit: M4.0a is complete; M4.0b/M4.1 are not
+    planned (ADR-0081).
 
 ---
 
@@ -962,13 +1025,18 @@ M4.0a is done when:
 | 9 | Should the controller page show RTT? | Yes, dev/optional; useful evidence and support |
 | 10 | Should the host show a per-slot "connected" HUD? | Yes, in the hub and pause overlay; no gameplay HUD clutter |
 
+The same-room decision is closed: no remote guest, no fourth device, no M4.0b or
+M4.1 (ADR-0081).
+
 ---
 
 ## 14. Traceability
 
 | Decision | ADR | Phases | Verification |
 |---|---|---|---|
-| Phone controller is phase 1 of M4 | 0066 | 0, 7 | Scope/DoD review; no snapshot messages |
+| Phone controller is the complete multiplayer scope | 0066, 0081 | 0, 5.5, 7 | Scope/DoD review; no snapshot messages |
+| Multiplayer is same-room and shared-screen | 0081 | 0, 5.5, 6 | Hub has no online mode/panel; no fourth device |
+| Online placeholder and catalog flag removed | 0081 | 5.5 | Hub/catalog absence tests |
 | Keyboard co-op remains default | 0066, 0067 | 1, 4, 6 | Existing suite; K/K regression |
 | P1/P2 are independent input slots | 0067 | 1, 4, 6 | Arbiter unit tests; four-plan integration |
 | Host is authority/display, not a player | 0067 | 1, 4, 6 | P/P session with host keyboard only for host actions |
@@ -985,29 +1053,31 @@ M4.0a is done when:
 
 ## 15. Out of scope
 
-- M4.0b guest renderer, world/UI snapshots, interpolation, guest save/evidence.
-- M4.1 full-pack online and guest gate/debrief.
+- Remote guest co-op, a fourth device, or M4.0b/M4.1 (ADR-0081).
+- Guest renderer, world/UI snapshots, interpolation, prediction, guest
+  save/evidence.
+- Full-pack online and guest gate/debrief.
 - Phone-rendered game view, video streaming, spectator view.
 - Bluetooth, native apps, or a phone as a Bluetooth HID device.
 - Accounts, matchmaking, lobbies, chat, voice, profiles, PII.
 - Third player, spectators, or a controller+guest mix for one slot.
+- Keeping the obsolete online mode/panel or `online` catalog flag.
 - Trusted graded assessment.
 - New content, puzzles, levels, abilities, art, audio, or save fields.
 - Gamepad support (the input seam may accept it later, but it is not M4.0a).
 
 ---
 
-## 16. First action after approval
+## 16. Next action
 
-Phase 1 starts with the pure input contract and arbiter only:
+Phases 1–5 are implemented, Phase 5.5 is complete, and the Cloudflare deployment
+spike passed. The next action is Phase 6:
 
-- no `worker/` directory;
-- no network client;
-- no hub UI;
-- no controller page;
-- no gameplay behavior change.
+1. Create or reuse the host session while still in the hub, before Start.
+2. Add the per-slot keyboard/phone selectors, QR/code setup, readiness status,
+   and explicit Start gate.
+3. Remove the temporary `autoStart: true` bridge.
+4. Add the disconnect/fallback/reconnect overlay.
 
-The first reviewable increment is a keyboard-only regression that passes
-unchanged, plus pure arbiter tests for K/K, K/P, P/K, and P/P. If that increment
-cannot keep keyboard behavior identical, stop and fix the seam before adding
-transport.
+Keyboard/K keyboard co-op must remain unchanged throughout. If a change cannot
+keep the K/K regression clean, stop and fix the seam before adding hub UI.

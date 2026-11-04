@@ -13,9 +13,9 @@ rewrite.
 - `/` boots the bathroom hub; direct boot remains available at
   `/?skipMenu=1&pack=anatomy-reflex`.
 - Anatomy cycle is playable through the hub in Solo or Local co-op.
-- Silicon is visible as a `coming-soon` cycle; Start is disabled.
-- Online co-op is visible as a disabled M4 placeholder; there is no transport,
-  room code, or session state yet.
+- Silicon is available as a separate cycle.
+- The original M1.9 online placeholder is now removed by M4.0a; multiplayer is
+  same-room phone-controller co-op only (ADR-0081).
 - Launch cinematic, Skip launch, reduced-motion launch, and return-to-bathroom
   work.
 - Per-pack saves and the legacy `shrinkonauts.run` migration work.
@@ -29,7 +29,7 @@ fully accepted until they are done or explicitly waived.
 
 | Item | When | Why it is still missing | Exit condition |
 |---|---|---|---|
-| Screen-reader pass over the hub | Before M1.9 sign-off | Automated tests check roles/names but not a real screen reader | NVDA or VoiceOver reads pack cards, modes, online placeholder, Start, settings, and confirm dialog correctly |
+| Screen-reader pass over the hub | Before M1.9 sign-off | Automated tests check roles/names but not a real screen reader | NVDA or VoiceOver reads pack cards, modes, Start, settings, and confirm dialog correctly |
 | Keyboard-only pass | Before M1.9 sign-off | Automated tests use mouse clicks for some hub paths | Tab/Shift+Tab, arrows, Enter/Space, and Esc work without a mouse |
 | Narrow-window and 720p visual pass | Before M1.9 sign-off | Only a 1280×720 headless screenshot has been checked | Hub remains usable and readable at 720p and at the 900px breakpoint |
 | Reduced-motion launch playthrough | Before M1.9 sign-off | Automated smoke checks the setting and room entry, not the human experience | No spin/shake/flash; captions and transition are understandable |
@@ -56,7 +56,6 @@ Required work:
   `01-interrupt-loop`.
 - [ ] Change `public/packs/index.json` Silicon entry from `coming-soon` to
   `available`.
-- [ ] Keep `online: false` on Silicon until M4.1.
 
 **M1.9 code changes expected for M2:** none. The catalog status is the switch.
 If M2 chooses the in-pack fallback instead of a separate pack, the catalog model
@@ -124,35 +123,43 @@ Work:
 - [ ] Keep the existing information architecture unless a deliberate panel redesign is approved.
 - [ ] Verify `?assets=final` on the hub and the selected pack.
 
-## 6. M4 — Online co-op lobby
+## 6. M4 — Phone-controller same-room co-op
 
-**When:** after M3/M3.5, as part of the Cloudflare online milestone.  
-**Status:** M4 is proposed; the hub only reserves the UI slot.
+**When:** after M1.9 acceptance; M4.0a is independent of M1.8/M2/M3 content.
+
+**Status:** M4.0a is the complete multiplayer scope (ADR-0081). Remote online
+co-op and M4.1 are not planned.
 
 Required work:
 
-- [ ] Implement the Worker, Durable Object, room code, role handshake, and
-  heartbeat (ADR-0047–0057).
-- [ ] Replace the hub's disabled Online block with Host / Join controls.
-- [ ] Host owns the selected cycle; guest sees it read-only.
-- [ ] Both clients load the pack and signal ready before host Start.
-- [ ] Version/build/pack mismatch is rejected in the hub.
-- [ ] Guest save is memory/no-op; Continue is hidden for the guest.
-- [ ] Host Start sends the initial run; both clients run the launch locally.
-- [ ] Guest disconnect/reconnect, host-left, host-tab-hidden, and session-end
-  return to the hub.
-- [ ] M4.0 online supports `anatomy-reflex` / `03-nerve-forest` only; Silicon
-  online is M4.1.
-- [ ] Add the two-browser lobby/online Playwright test.
+- [ ] Implement the Worker, Durable Object, room code, controller role, and
+  heartbeat as an input-only relay (ADR-0066–0069, ADR-0081).
+- [ ] Add per-slot `P1: Keyboard | Phone` and `P2: Keyboard | Phone` under Local
+  co-op; default K/K.
+- [ ] Create or reuse the host session while still in the hub, before Start.
+- [ ] Show one QR and six-character code per phone slot; show waiting/connected/
+  ready/error status and “Use keyboard instead.”
+- [ ] Gate Start until every phone slot is ready or explicitly downgraded;
+  readiness must not auto-start the run.
+- [ ] Add the disconnect/pause overlay: wait for reconnect, continue with
+  keyboard, or end session.
+- [x] Remove the disabled Online co-op block, `online` hub mode, and `online`
+  pack catalog flag (2026-11-04).
+- [ ] Keep the Worker/DO input relay, controller page, input arbiter, host
+  session, and phone input plan.
+- [ ] Add the phone-controller browser smoke with one and two phones.
+- [ ] Do not add remote guest rendering, game-state snapshots, interpolation,
+  prediction, or a fourth device.
 
-**M1.9 code expected for M4:** replace the disabled online section with the
-session UI and wire the `SessionSetupPort` behind it. Do not add online state to
+**M1.9 code expected for M4:** the hub gains a local-co-op phone setup panel; the
+obsolete online placeholder is removed. Do not add online state to
 `GameRuntime`.
 
 ## 7. Deliberately not part of M1.9
 
 - Silicon puzzle/room content.
-- Any Worker, Durable Object, WebSocket, room code, or online session code.
+- Remote guest/online co-op, guest rendering, snapshots, interpolation, or
+  prediction. The Worker/DO is the M4.0a controller input relay.
 - Final bathroom art or final audio.
 - Free movement or platforming in the bathroom.
 - Multiple save profiles per pack.
@@ -164,8 +171,8 @@ session UI and wire the `SessionSetupPort` behind it. Do not add online state to
 
 - [x] Hub default boot and direct-boot fallback.
 - [x] Anatomy hub start in Solo and Local co-op.
-- [x] Silicon card visible but gated.
-- [x] Online card visible but disabled.
+- [x] Silicon card visible and available.
+- [x] Online placeholder removed.
 - [x] Launch cinematic, skip, reduced motion.
 - [x] Per-pack saves and legacy migration.
 - [x] Return to bathroom from pause/complete.
@@ -173,7 +180,7 @@ session UI and wire the `SessionSetupPort` behind it. Do not add online state to
 - [ ] Human visual/accessibility acceptance (section 2).
 - [ ] M2 Silicon content (section 3).
 - [ ] M3.5 hub art (section 5).
-- [ ] M4 online lobby (section 6).
+- [ ] M4 phone-controller same-room co-op (section 6).
 
 ## 9. References
 
@@ -183,4 +190,5 @@ session UI and wire the `SessionSetupPort` behind it. Do not add online state to
   — Silicon room/puzzle design.
 - [`../m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) — M3 scope and the
   M3.5 hub note.
-- [`../m4/README.md`](../m4/README.md) — M4 online co-op and lobby phase.
+- [`../m4/README.md`](../m4/README.md) — M4 same-room phone-controller co-op;
+  remote online co-op is not planned (ADR-0081).

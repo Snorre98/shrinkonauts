@@ -4,7 +4,11 @@
 - **Date:** 2026-11-01
 - **Deciders:** Snorre
 - **Related:** ADR-0047, ADR-0048, ADR-0049, ADR-0050, ADR-0051, ADR-0052,
-  ADR-0054, ADR-0055, ADR-0056, ADR-0067, ADR-0068, ADR-0069
+  ADR-0054, ADR-0055, ADR-0056, ADR-0067, ADR-0068, ADR-0069, ADR-0081
+- **Later decision (2026-11-04):** ADR-0081 narrows the multiplayer product to
+  same-room, shared-screen co-op. M4.0a is the complete multiplayer scope; the
+  M4.0b remote-guest phase described below is not planned. The M4.0a decision
+  and its input-only controller contract remain accepted.
 
 ## Context
 

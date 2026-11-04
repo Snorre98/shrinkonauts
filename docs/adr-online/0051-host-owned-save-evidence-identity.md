@@ -1,6 +1,6 @@
 # ADR-0051: Host-owned save, evidence, and ephemeral identity
 
-- **Status:** Proposed
+- **Status:** Historical — not planned after ADR-0081
 - **Date:** 2026-10-28
 - **Deciders:** Snorre
 - **Related:** ADR-0039, ADR-0041, ADR-0045, ADR-0047, ADR-0050, ADR-0054

@@ -5,11 +5,12 @@ M1.8 adds the material/pattern visual layer beneath the existing runtime.
 The app boots into a bathroom, selects a cycle and player mode in the washing
 machine menu, plays a launch transition, and enters the selected pack. Anatomy
 starts at **03 — Nerve Forest**, plays Node Run, transitions to **04 — Endplate
-Ferry**, and finishes with teach-back evidence export. Silicon is visible but
-gated until M2; online co-op is a disabled M4.0b placeholder. Phone-controller
-same-screen co-op is in progress as M4.0a: the standalone controller page, touch
-input, host session, and room relay are implemented; hub pairing and the explicit
-Start gate remain Phase 6.
+Ferry**, and finishes with teach-back evidence export. Silicon is available as a
+separate cycle. Multiplayer is same-room, shared-screen co-op only (ADR-0081):
+M4.0a phone controllers use an input-only Cloudflare relay. The standalone
+controller page, touch input, host session, and room relay are implemented; hub
+pairing and the explicit Start gate remain Phase 6. The obsolete Online co-op
+placeholder and `online` catalog flag were removed.
 
 M1.8 adds `materials.json`, material grids and autotiling, deterministic tile
 variants, atlas regions, world/object/background pattern projection, and UI
@@ -34,9 +35,9 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Pack catalog (`public/packs/index.json`) | Working |
 | Per-pack saves (`shrinkonauts.run.<packId>`) | Working |
 | Anatomy cycle start, launch, and return | Working |
-| Silicon cycle | Visible; gated until M2 |
-| Online co-op lobby | Visible placeholder; M4.0b |
-| Phone controller co-op | Controller page + host session working; hub pairing/start gate pending (M4.0a Phase 6) |
+| Silicon cycle | Available |
+| Online co-op lobby | Removed; same-room multiplayer only (ADR-0081) |
+| Phone controller co-op | Input-only relay, controller page, and host session working; hub pairing/start gate pending (M4.0a Phase 6) |
 | Direct boot into `03-nerve-forest` | Working via `?skipMenu=1` |
 | 03 → 04 transition through debrief | Working |
 | Pack + syllabus loading from `public/` | Working |
@@ -750,7 +751,7 @@ procedural placeholder:
 
 - Human solo and co-op playtest of the M1.75 feedback flow.
 - Final art; procedural placeholders remain for deferred art.
-- The Silicon fixture/pack (visible as a gated cycle).
+- Further Silicon content beyond the current fixture/pack.
 - Levels 5+ and the second core gate.
 - Capture mode.
 - A separate ambience loop.
@@ -758,10 +759,11 @@ procedural placeholder:
 - Conditional dialogue-node skipping; M1 supports linear nodes, choices, and
   effects only.
 - Final bathroom hub art (M3.5); procedural hub placeholders ship now.
-- Real online host/join/ready (M4.0b); the hub shows a disabled placeholder.
-- Phone-controller co-op (M4.0a); the controller page and host session are wired,
-  but hub pairing/start gating and the latency/game-feel close-out remain
-  (Phases 6–7).
+- Remote online co-op, remote guest rendering, snapshots, interpolation, and
+  prediction (M4.0b/M4.1); not planned per ADR-0081.
+- Phone-controller co-op (M4.0a); the controller page, input-only relay, and host
+  session are wired, but hub pairing/start gating and the latency/game-feel
+  close-out remain (Phases 6–7).
 - Physical puzzle-gate bodies (ADR-0002 target).
 - `locked`/`unlock`/`propReleased` (ADR-0004 target).
 - `requires`/`message`/`linkBlocked` (ADR-0005 target).
@@ -777,18 +779,20 @@ procedural placeholder:
   `/?skipMenu=1&pack=anatomy-reflex`.
 - **Outer app shell.** Pack selection and launch live in `AppController`, not
   `GameRuntime`; the runtime remains pack/level-scoped.
-- **Catalog-driven cycles.** `public/packs/index.json` lists Anatomy and the
-  gated Silicon cycle; M2 flips Silicon by changing status.
+- **Catalog-driven cycles.** `public/packs/index.json` lists Anatomy and Silicon
+  as available cycles. The catalog has no `online` flag; multiplayer is
+  same-room only.
 - **Per-pack saves.** Run slots are `shrinkonauts.run.<packId>`; the legacy
   `shrinkonauts.run` slot migrates once.
 - **Separate hub content.** `public/hub/bathroom/` has its own document, theme,
   and manifests; it is not a playable pack.
 - **One Phaser game at a time.** The hub game is destroyed before the room game
   is created, avoiding texture-key collisions between packs.
-- **Online is a placeholder.** The hub exposes the M4.0b section but no guest
-  transport or room state until M4.0b. M4.0a phone-controller co-op uses its own
-  standalone controller page and the shared room relay; hub pairing and the
-  explicit Start gate are Phase 6.
+- **Same-room only.** The hub exposes Solo and Local co-op. M4.0a
+  phone-controller co-op uses a standalone controller page and an input-only
+  Cloudflare relay; hub pairing and the explicit Start gate are Phase 6. The
+  obsolete online mode, panel, and catalog flag are removed; remote guest co-op
+  is not planned (ADR-0081).
 - **Two-level slice.** `03-nerve-forest` starts and transitions through debrief
   to `04-muscle-effector`, which ends the pack. `05-reflex-core` is a forward
   reference only.

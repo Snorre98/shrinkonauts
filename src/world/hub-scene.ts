@@ -33,7 +33,7 @@ export interface HubLaunchOptions {
 
 export interface HubSelectionView {
   packId: string | null;
-  mode: "solo" | "local" | "online";
+  mode: "solo" | "local";
 }
 
 function colorNumber(value: string): number {

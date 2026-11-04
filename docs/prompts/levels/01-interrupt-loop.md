@@ -538,7 +538,7 @@ Out:
 - new music or ambience;
 - the anatomy pack’s nerve assets;
 - 05 Reflex Core (separate future level);
-- online co-op (M4).
+- remote online co-op (not planned; M4.0a phone controllers are input-only).
 
 ---
 

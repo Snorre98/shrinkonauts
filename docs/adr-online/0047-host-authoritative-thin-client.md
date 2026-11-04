@@ -1,6 +1,6 @@
 # ADR-0047: Host-authoritative thin-client online co-op
 
-- **Status:** Proposed
+- **Status:** Historical — not planned after ADR-0081
 - **Date:** 2026-10-28
 - **Deciders:** Snorre
 - **Related:** ADR-0005, ADR-0016, ADR-0017, ADR-0036, ADR-0046, ADR-0048–0057

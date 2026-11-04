@@ -7,8 +7,9 @@ puzzle design (`03`–`05`, Silicon, optional `01`/`02`)
 [precise contracts](contracts/), [traceability](traceability.md),
 [implementation plan](implementation-plan.md), [M2 puzzle design](../m2/nervous-puzzles/README.md),
 [ADR-0046 level transitions](../adr-m1.5/0046-level-transitions.md),
-[M4 multiplayer](../m4/README.md), [online ADR domain](../adr-online/README.md),
-[controller ADR domain](../adr-controller/README.md)
+[M4 multiplayer](../m4/README.md), [controller ADR
+domain](../adr-controller/README.md), [historical online ADR
+domain](../adr-online/README.md)
 
 ---
 
@@ -412,23 +413,20 @@ Single-user, local-only deployment is the default; no backend or network
 telemetry is required for local play. The engine upgrade does not change that
 default. Tests run in Node (Vitest) and system Chrome (Playwright).
 
-**Optional online co-op amendment.** M4 adds a host-authoritative, two-player
-online mode. The host browser remains the single writer of game state; the guest
-is a thin renderer and input source. A Cloudflare Durable Object relays
-WebSockets and stores no game state. Local single-player and local co-op remain
-unchanged and do not require the Worker. See
-[`../adr-online/README.md`](../adr-online/README.md) and
-[`../m4/README.md`](../m4/README.md).
-
 **Optional controller input amendment.** M4.0a adds a phone web app as an input
-device for same-screen co-op. The host browser remains the single writer of game
-state; the phone sends input for one player slot and receives no world, UI,
-puzzle, dialogue, or save state. A Cloudflare Worker and Durable Object relay
-controller input; the DO stores membership only. Keyboard co-op remains the
-default and the fallback. Local single-player and keyboard co-op remain
-unchanged and do not require the Worker. See
-[`../adr-controller/README.md`](../adr-controller/README.md) and
-[`../m4/phone-coop-implementation-plan.md`](../m4/phone-coop-implementation-plan.md).
+device for same-room, shared-screen co-op. The host browser remains the single
+writer of game state; the phone sends input for one player slot and receives no
+world, UI, puzzle, dialogue, save, or evidence state. A Cloudflare Worker and
+Durable Object relay controller input; the DO stores membership only. Keyboard
+co-op remains the default and the fallback. Local single-player and keyboard
+co-op remain unchanged and do not require the Worker. See
+[`../adr-controller/README.md`](../adr-controller/README.md),
+[`../adr-controller/0081-same-room-shared-screen-multiplayer.md`](../adr-controller/0081-same-room-shared-screen-multiplayer.md),
+and [`../m4/phone-coop-implementation-plan.md`](../m4/phone-coop-implementation-plan.md).
+
+Remote guest co-op and the snapshot-based online mode described in the
+historical [`../adr-online/README.md`](../adr-online/README.md) domain are not
+planned.
 
 ## 8. Cross-cutting Concepts
 

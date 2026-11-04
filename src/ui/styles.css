@@ -2408,40 +2408,6 @@ kbd {
   cursor: not-allowed;
 }
 
-.hub__online {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0.45rem;
-  padding: 0.45rem 0.55rem;
-  border: var(--ui-border) dashed color-mix(in srgb, var(--color-muted) 40%, transparent);
-  border-radius: 0;
-  background: var(--color-bg);
-}
-
-.hub__online-title {
-  margin: 0;
-  color: var(--color-muted);
-  font-family: var(--font-display);
-  font-size: var(--text-label);
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.hub__online-copy {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: var(--text-sm);
-  line-height: 1.5;
-}
-
-.hub__online-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
 .hub__start {
   display: flex;
   flex-wrap: wrap;

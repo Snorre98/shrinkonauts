@@ -64,13 +64,8 @@ export function selectPack(
   return { ...state, selectedPackId: packId, error: null, notice: null };
 }
 
-export function selectMode(
-  state: AppState,
-  mode: HubMode,
-  onlineAvailable: boolean,
-): AppState {
+export function selectMode(state: AppState, mode: HubMode): AppState {
   if (state.busy) return state;
-  if (mode === "online" && !onlineAvailable) return state;
   return { ...state, mode, error: null, notice: null };
 }
 
@@ -133,13 +128,6 @@ export function canStart(
       allowed: false,
       label: "Start cycle",
       reason: "This cycle is not installed yet.",
-    };
-  }
-  if (state.mode === "online") {
-    return {
-      allowed: false,
-      label: "Start cycle",
-      reason: "Online co-op arrives with the Cloudflare milestone (M4).",
     };
   }
   if (state.busy) {

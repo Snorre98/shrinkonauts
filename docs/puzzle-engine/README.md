@@ -7,7 +7,9 @@ puzzle design (`03`–`05`, Silicon, optional `01`/`02`)
 **Implementation:** the status table in [`architecture.md`](architecture.md);
 feedback plan in [`feedback-implementation-plan.md`](feedback-implementation-plan.md),
 earlier puzzle-engine plan in [`implementation-plan.md`](implementation-plan.md)
-**Post-M3 online co-op:** [`../m4/README.md`](../m4/README.md) and [`../adr-online/README.md`](../adr-online/README.md) (Proposed)
+**Post-M3 multiplayer:** [`../m4/README.md`](../m4/README.md) — same-room
+phone-controller co-op (M4.0a). Remote online co-op is not planned (ADR-0081);
+[`../adr-online/README.md`](../adr-online/README.md) is historical.
 
 This documentation set turns the engine gaps found during the M2 level work
 into explicit, testable capabilities. It is not a new game and not a scripting
@@ -94,9 +96,10 @@ but deferred targets; the M1.75 feedback rows are implemented.
     and definition of done.
 14. [`../m1.8/README.md`](../m1.8/README.md) — the M1.8 material/pattern
     milestone boundary and definition of done.
-15. [`../m4/README.md`](../m4/README.md) and
-    [`../adr-online/README.md`](../adr-online/README.md) — proposed post-M3
-    online co-op, explicitly after M1.75/M1.8/M2/M3.
+15. [`../m4/README.md`](../m4/README.md) — same-room phone-controller co-op
+    (M4.0a). Remote online co-op is not planned (ADR-0081); the historical
+    [`../adr-online/README.md`](../adr-online/README.md) domain is retained for
+    precedent.
 
 ## Relationship to existing decisions
 

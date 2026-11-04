@@ -1,6 +1,6 @@
 # ADR-0057: Infrastructure-as-code and deployment ownership
 
-- **Status:** Proposed
+- **Status:** Historical — not planned after ADR-0081
 - **Date:** 2026-10-28
 - **Deciders:** Snorre
 - **Related:** ADR-0048, ADR-0053, ADR-0055, ADR-0056

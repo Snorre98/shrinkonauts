@@ -80,10 +80,10 @@ test("boots into the bathroom, starts a solo anatomy cycle, and returns to the h
     "true",
   );
 
-  // Online is a visible M4 placeholder, not a working mode.
-  await expect(
-    page.locator(".hub__mode", { hasText: "Online co-op" }).locator("input"),
-  ).toBeDisabled();
+  // Multiplayer is same-room only: no online mode or host/join panel.
+  await expect(page.locator(".hub__mode")).toHaveCount(2);
+  await expect(page.locator(".hub__mode", { hasText: "Online co-op" })).toHaveCount(0);
+  await expect(page.locator(".hub__online")).toHaveCount(0);
   await page.locator(".hub__mode", { hasText: "Solo" }).click();
   await expect(
     page.locator(".hub__mode", { hasText: "Solo" }).locator("input"),

@@ -84,17 +84,17 @@ Related records outside this system:
 - [ADR-0046](../../adr-m1.5/0046-level-transitions.md) — main-path level
   transitions after the debrief.
 
-## Online co-op architecture
+## Same-room controller architecture
 
-The post-M3 online co-op milestone has its own ADR domain:
+The post-M3 multiplayer milestone has its own ADR domain:
 
-- [ADR-0047–0057](../../adr-online/README.md) — host-authoritative thin-client
-  authority, session topology, snapshots and input, per-player ownership,
-  host-owned save/evidence, composition with M1.75/M1.8/M2/M3, failure and
-  reconnect semantics, security, deployment, IaC ownership, and testing.
-- [M4 milestone](../../m4/README.md) — one-level online co-op for the M3
-  `03-nerve-forest` slice.
+- [ADR-0066–0069 and ADR-0081](../../adr-controller/README.md) — phone
+  controllers, per-player input slots, session pairing/trust, latency and
+  input-feel policy, and the same-room product boundary.
+- [M4 milestone](../../m4/README.md) — M4.0a same-room phone-controller co-op
+  for the current local slice.
 
-These records are **Proposed**. They do not amend the accepted local-only
-behaviour; they add an optional online mode whose host browser remains the
-single writer of game state.
+The [ADR-0047–0057](../../adr-online/README.md) online domain is **historical**
+and not an active plan. Remote guest rendering, snapshots, interpolation, and
+prediction are not planned (ADR-0081). The host browser remains the single
+writer of game state; controllers are input-only.

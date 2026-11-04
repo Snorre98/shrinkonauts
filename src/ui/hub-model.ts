@@ -1,7 +1,7 @@
 import type { PackAvailability } from "../pack";
 import type { SettingsView } from "./model";
 
-export type HubMode = "solo" | "local" | "online";
+export type HubMode = "solo" | "local";
 export type HubPhase = "loading" | "hub" | "starting" | "playing" | "error";
 
 export interface HubPackView {
@@ -10,16 +10,10 @@ export interface HubPackView {
   subtitle: string | null;
   description: string | null;
   status: PackAvailability;
-  online: boolean;
   selected: boolean;
   hasSave: boolean;
   /** Optional decorative 16×16 cycle icon resolved from the theme. */
   iconSrc?: string;
-}
-
-export interface HubOnlineView {
-  available: boolean;
-  reason: string;
 }
 
 export interface HubView {
@@ -29,7 +23,6 @@ export interface HubView {
   packs: HubPackView[];
   selectedPackId: string | null;
   mode: HubMode;
-  online: HubOnlineView;
   startLabel: string;
   startDisabled: boolean;
   startReason: string | null;

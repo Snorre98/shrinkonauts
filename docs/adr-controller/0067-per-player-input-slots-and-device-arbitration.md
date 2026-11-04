@@ -4,7 +4,10 @@
 - **Date:** 2026-11-01
 - **Deciders:** Snorre
 - **Related:** ADR-0010, ADR-0037, ADR-0043, ADR-0047, ADR-0050, ADR-0053,
-  ADR-0066, ADR-0068
+  ADR-0066, ADR-0068, ADR-0081
+- **Later decision (2026-11-04):** ADR-0081 makes M4.0a the complete multiplayer
+  scope; M4.0b/M4.1 are not planned. The per-slot input decision remains
+  accepted.
 
 ## Context
 

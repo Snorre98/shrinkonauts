@@ -473,7 +473,6 @@ export class AppController {
         subtitle: pack.subtitle ?? null,
         description: pack.description ?? null,
         status: pack.status,
-        online: pack.online,
         selected: pack.id === this.state?.selectedPackId,
         hasSave: this.saveData.hasRun(pack.id),
         ...(icon && icon.source !== "placeholder" && icon.src
@@ -494,11 +493,6 @@ export class AppController {
       packs,
       selectedPackId: this.state.selectedPackId,
       mode: this.state.mode,
-      online: {
-        available: false,
-        reason:
-          "Local co-op is ready. Online co-op arrives with the Cloudflare milestone (M4).",
-      },
       startLabel: start.label,
       startDisabled: !start.allowed,
       startReason: start.reason,
@@ -529,17 +523,8 @@ export class AppController {
 
   selectMode(mode: HubMode): void {
     if (!this.state) return;
-    const next = selectMode(this.state, mode, false);
-    if (next === this.state) {
-      if (mode === "online") {
-        this.state = {
-          ...this.state,
-          notice: "Online co-op arrives with the Cloudflare milestone (M4).",
-        };
-        this.refreshHub();
-      }
-      return;
-    }
+    const next = selectMode(this.state, mode);
+    if (next === this.state) return;
     this.state = next;
     this.hubAudio?.play(this.hubContent.hub.audio.click);
     this.refreshHub();
@@ -658,14 +643,6 @@ export class AppController {
     if (!this.state || this.state.busy) return;
     const entry = selectedPack(this.state);
     if (!entry || entry.status !== "available") return;
-    if (this.state.mode === "online") {
-      this.state = {
-        ...this.state,
-        notice: "Online co-op arrives with the Cloudflare milestone (M4).",
-      };
-      this.refreshHub();
-      return;
-    }
 
     const skipIntro = options.skipIntro === true;
     const inputPlan = { ...this.state.inputPlan };

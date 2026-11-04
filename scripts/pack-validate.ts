@@ -258,7 +258,7 @@ function validateCatalogAndHub(): boolean {
   console.log("\nPack catalog");
   for (const entry of catalog.value.packs) {
     console.log(
-      `  ${entry.id}: ${entry.status}${entry.online ? " · online-ready" : ""}`,
+      `  ${entry.id}: ${entry.status}`,
     );
     if (entry.status === "available") {
       try {

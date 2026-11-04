@@ -107,10 +107,11 @@ never lost.
 
 1. **Bathroom.** The player stands in front of a washing machine. The machine's
    control panel is the DOM menu, anchored over the bathroom scene.
-2. **Cycle.** Anatomy is available. Silicon is visible but gated until its M2
-   pack exists. Each cycle has its own save slot.
+2. **Cycle.** Anatomy and Silicon are available. Each cycle has its own save
+   slot.
 3. **Players.** Solo starts with P2 inactive; Local co-op starts both players.
-   Online co-op is visible but disabled with the M4 Cloudflare explanation.
+   M4.0a adds per-slot keyboard/phone setup under Local co-op. There is no
+   remote online mode; multiplayer is same-room only.
 4. **Start.** Continue resumes the selected cycle; New cycle asks for
    confirmation. Start plays the climb-in, spin, shrink, and tiny-astronaut
    transition, which can be skipped or reduced.
@@ -154,8 +155,10 @@ ephemeral and are rebuilt from puzzle/world state after restore.
 
 - Default boot is the bathroom hub; direct boot remains available with
   `?skipMenu=1&pack=anatomy-reflex`.
-- Silicon is a visible `coming-soon` cycle until the M2 pack exists.
-- Online co-op is a disabled M4 placeholder; no Worker/DO client is wired yet.
+- Silicon is available as a separate cycle.
+- Multiplayer is same-room phone-controller co-op only. The obsolete Online
+  co-op placeholder and `online` catalog flag were removed; remote online co-op
+  is not planned (ADR-0081).
 - Two authored levels; `05-reflex-core` and later map nodes are forward
   references reported as warnings.
 - Audio supports short cues plus per-room/menu theme playback. The menu and
@@ -196,9 +199,9 @@ room/boot tests, but the app does not boot it.
 
 | URL | Behaviour |
 | --- | --- |
-| `/` | Bathroom hub; Anatomy available, Silicon gated, online placeholder |
+| `/` | Bathroom hub; Anatomy and Silicon available; Solo and Local co-op only |
 | `/?skipMenu=1&pack=anatomy-reflex` | Direct boot into the selected pack |
-| `/?pack=silicon-reflex` | Preselects the gated Silicon cycle in the hub; Start is disabled |
+| `/?pack=silicon-reflex` | Preselects the Silicon cycle in the hub |
 | `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
 | `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, the 03 pretty sky, the 04 batch, and the 12 M3.75 blueprint symbols are final, while deferred entries remain placeholders |
 
@@ -321,7 +324,8 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
   pre-game shell and save/catalog model.
 - [`docs/adr-controller/README.md`](docs/adr-controller/README.md) — ADR-0066–0069
-  for phone-controller same-screen co-op (M4.0a).
+  and ADR-0081 for same-room phone-controller co-op (M4.0a); the
+  [`docs/adr-online/README.md`](docs/adr-online/README.md) domain is historical.
 
 `docs/puzzle-engine/` and `docs/adr-m1.5/` are maintained in this repository.
 `docs/shrinkonauts` is a symlink into the read-only Obsidian vault and is not
@@ -335,10 +339,11 @@ with placeholder proof content; human visual review is pending. The automated
 suite passes (68 files / 706 tests), pack validation/smoke pass, the browser
 smoke passes 17/17, and the controller browser smoke passes 1/1. The hub starts
 Anatomy in Solo or Local co-op, returns to the bathroom, and preserves per-pack
-saves. Silicon and online co-op remain gated by M2 and M4.0b. Phone-controller
-same-screen co-op has its M4.0a host session, room relay, and standalone
-controller page working with touch input; hub pairing and the explicit Start
-gate remain Phase 6. See
+saves. Silicon is available. Multiplayer is same-room, shared-screen co-op:
+phone-controller M4.0a has its host session, input-only Cloudflare relay, and
+standalone controller page working with touch input. Hub pairing and the
+explicit Start gate remain Phase 6. Remote online co-op, M4.0b, and M4.1 are not
+planned (ADR-0081). See
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
 
 M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, and land

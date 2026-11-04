@@ -1,6 +1,6 @@
 # ADR-0049: Snapshot and guest-input protocol
 
-- **Status:** Proposed
+- **Status:** Historical — not planned after ADR-0081
 - **Date:** 2026-10-28
 - **Deciders:** Snorre
 - **Related:** ADR-0047, ADR-0048, ADR-0050, ADR-0052, ADR-0055

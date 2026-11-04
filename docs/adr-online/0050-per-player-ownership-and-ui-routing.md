@@ -1,6 +1,6 @@
 # ADR-0050: Per-player ownership, input routing, and interaction parity
 
-- **Status:** Proposed
+- **Status:** Historical — not planned after ADR-0081
 - **Date:** 2026-10-28
 - **Deciders:** Snorre
 - **Related:** ADR-0010, ADR-0011, ADR-0037, ADR-0043, ADR-0047, ADR-0049

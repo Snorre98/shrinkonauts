@@ -144,7 +144,7 @@ export async function bootHub(
   const silicon = page.locator(".hub-card", { hasText: "Silicon" });
   await expect(silicon).toHaveAttribute("data-status", "available");
   await expect(silicon.locator("input")).toBeEnabled();
-  await expect(page.locator(".hub__online-copy")).toContainText("M4");
+  await expect(page.locator(".hub__online")).toHaveCount(0);
   await expect(page.locator(".hub__asset-mode")).toHaveText(
     options.assetMode ?? "Final assets",
   );

@@ -123,7 +123,7 @@ Local SFX scratch and the prompt log are not runtime assets.
 | Final approval of POC art | `interim` | `source-accepted` | Players, Neuron Keeper, scans, entities, and the 03 sky are POC-integrated; final approval and prompt-log completion remain |
 | GDD/video captures | current | — | Refresh captures after visible art changes so the GDD does not show superseded placeholders |
 | M3.75 HUD human playtest | current | **pending** | Automated tests and 1× captures pass; a human still needs to run the header comprehension, density and co-op attribution checks in [`docs/m3.75/README.md` §10](../m3.75/README.md#10-verification) |
-| Online co-op, controller, levels 01/02/05 | `deferred` | — | Outside the asset pass; tracked in their milestone docs |
+| Controller, levels 01/02/05 | `deferred` | — | Outside the asset pass; tracked in their milestone docs. Remote online co-op is not planned (ADR-0081). |
 
 ---
 

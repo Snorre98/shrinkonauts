@@ -36,12 +36,12 @@ describe("app shell state", () => {
     expect(selectPack(state, "missing")).toBe(state);
   });
 
-  it("defaults to local co-op and refuses online before M4", () => {
+  it("defaults to local co-op and supports solo", () => {
     const state = createAppState(catalog);
     expect(state.mode).toBe("local");
     expect(state.inputPlan).toEqual({ p1: "keyboard", p2: "keyboard" });
-    expect(selectMode(state, "online", false)).toBe(state);
-    expect(selectMode(state, "solo", false).mode).toBe("solo");
+    expect(selectMode(state, "solo").mode).toBe("solo");
+    expect(selectMode(state, "local").mode).toBe("local");
   });
 
   it("stores a per-slot input plan without changing the play default", () => {

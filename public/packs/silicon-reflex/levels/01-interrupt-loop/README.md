@@ -13,8 +13,8 @@
 > The pack is authored, validated, and `available` in the catalog. The
 > 2026-11-02 Silicon asset pass integrated the sky and 12 entity sprites;
 > far/mid/near, the exit, portrait, tileset, atlas PNG, scan-interrupt icon,
-> and audio remain placeholders. The catalog entry is `available` with
-> `online: false`; the hub/e2e, app-state, and pack-smoke paths are in place.
+> and audio remain placeholders. The catalog entry is `available`; the hub/e2e,
+> app-state, and pack-smoke paths are in place.
 
 ## Player-facing goal
 
@@ -316,9 +316,9 @@ Expected warnings, recorded rather than suppressed:
 - **Final art/audio:** far/mid/near, exit, portrait, atlas PNG,
   scan-interrupt icon, and audio remain deferred.
 - **Human playtesting:** `playtestedSolo: false`, `playtestedCoop: false`.
-- **Catalog/hub/e2e:** the Silicon entry was flipped to `available` with
-  `online: false`; the hub/e2e, app-state, and pack-smoke Silicon paths were
-  added in the follow-up catalog phase. No engine or runtime modules changed.
+- **Catalog/hub/e2e:** the Silicon entry was flipped to `available`; the
+  hub/e2e, app-state, and pack-smoke Silicon paths were added in the follow-up
+  catalog phase. No engine or runtime modules changed.
 
 ## Catalog, hub, and smoke phase — completed 2026-11-02
 
@@ -327,8 +327,7 @@ of the art log; this phase changed catalog, tests, and documentation only.
 
 ### 1. Catalog — done
 
-- `public/packs/index.json` now marks `silicon-reflex` as `available` with
-  `online: false`.
+- `public/packs/index.json` now marks `silicon-reflex` as `available`.
 - The description is present tense and describes the one-room sensor →
   interrupt controller → CPU → actuator fixture.
 - `anatomy-reflex` is unchanged.
@@ -340,8 +339,8 @@ of the art log; this phase changed catalog, tests, and documentation only.
   cycle, and checks the HUD title **Interrupt Loop**.
 - `tests/app-state.test.ts` keeps `anatomy-reflex` as the order-10 default and
   asserts `silicon-reflex` is selectable with status `available`.
-- The bathroom-hub final-art, online-placeholder, anatomy start, and
-  return-to-hub tests remain intact.
+- The bathroom-hub final-art, anatomy start, and return-to-hub tests remain
+  intact. The obsolete online-placeholder test was removed with the online mode.
 
 ### 3. Silicon pack smoke — done
 

@@ -16,7 +16,6 @@ export interface HubUi {
 const MODE_LABELS: Record<HubMode, string> = {
   solo: "Solo",
   local: "Local co-op",
-  online: "Online co-op",
 };
 
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -87,7 +86,7 @@ export function mountHubUi(
   const modeRow = el("div", "hub__modes");
   modeGroup.append(modeLegend, modeRow);
   const modeInputs = new Map<HubMode, HTMLInputElement>();
-  for (const mode of ["solo", "local", "online"] as const) {
+  for (const mode of ["solo", "local"] as const) {
     const label = el("label", "hub__mode");
     const input = el("input");
     input.type = "radio";
@@ -101,17 +100,6 @@ export function mountHubUi(
     modeInputs.set(mode, input);
     modeRow.append(label);
   }
-
-  const online = el("div", "hub__online");
-  const onlineTitle = el("p", "hub__online-title", "Multiplayer");
-  const onlineCopy = el("p", "hub__online-copy", "");
-  const onlineActions = el("div", "hub__online-actions");
-  const hostButton = button("Host online room", "button button--small", () => {});
-  const joinButton = button("Join with code", "button button--small", () => {});
-  hostButton.disabled = true;
-  joinButton.disabled = true;
-  onlineActions.append(hostButton, joinButton);
-  online.append(onlineTitle, onlineCopy, onlineActions);
 
   const startSection = el("section", "hub__start");
   const startButton = button("Start cycle", "button button--primary hub__start-button", () =>
@@ -218,7 +206,6 @@ export function mountHubUi(
     header,
     packGroup,
     modeGroup,
-    online,
     startSection,
     confirm,
     error,
@@ -326,14 +313,8 @@ export function mountHubUi(
     renderPacks(next);
     for (const [mode, input] of modeInputs) {
       input.checked = next.mode === mode;
-      input.disabled =
-        next.busy || (mode === "online" && !next.online.available);
+      input.disabled = next.busy;
     }
-
-    onlineCopy.textContent = next.online.reason;
-    online.dataset.available = String(next.online.available);
-    hostButton.disabled = true;
-    joinButton.disabled = true;
 
     startButton.textContent = next.startLabel;
     startButton.disabled = next.startDisabled || next.busy;
