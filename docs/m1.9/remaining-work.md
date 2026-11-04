@@ -133,7 +133,7 @@ co-op and M4.1 are not planned.
 Required work:
 
 - [ ] Implement the Worker, Durable Object, room code, controller role, and
-  heartbeat as an input-only relay (ADR-0066–0069, ADR-0081).
+  heartbeat as an input-only relay (ADR-0066–0069, ADR-0081, ADR-0082).
 - [ ] Add per-slot `P1: Keyboard | Phone` and `P2: Keyboard | Phone` under Local
   co-op; default K/K.
 - [ ] Create or reuse the host session while still in the hub, before Start.

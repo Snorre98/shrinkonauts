@@ -88,7 +88,7 @@ Related records outside this system:
 
 The post-M3 multiplayer milestone has its own ADR domain:
 
-- [ADR-0066–0069 and ADR-0081](../../adr-controller/README.md) — phone
+- [ADR-0066–0069, ADR-0081, and ADR-0082](../../adr-controller/README.md) — phone
   controllers, per-player input slots, session pairing/trust, latency and
   input-feel policy, and the same-room product boundary.
 - [M4 milestone](../../m4/README.md) — M4.0a same-room phone-controller co-op

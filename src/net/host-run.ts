@@ -242,15 +242,19 @@ export function createHostRunFactory(
 ): HostRunFactory {
   return (options) => {
     const room = options.room ?? generateRoomCode();
+    const urlOptions = {
+      ...(options.ticket ? { ticket: options.ticket } : {}),
+      ...(options.deviceToken ? { device: options.deviceToken } : {}),
+    };
     let transport: RoomTransport<HostClientMessage, HostServerMessage>;
     if (config.createTransport) {
       const url = config.netUrl
-        ? buildRoomSocketUrl(config.netUrl, room, "host")
+        ? buildRoomSocketUrl(config.netUrl, room, "host", urlOptions)
         : "";
       transport = config.createTransport(url, options);
     } else if (config.netUrl) {
       transport = new WebSocketRoomTransport({
-        url: buildRoomSocketUrl(config.netUrl, room, "host"),
+        url: buildRoomSocketUrl(config.netUrl, room, "host", urlOptions),
         decode: decodeHostServerMessage,
       });
     } else {

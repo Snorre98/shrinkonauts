@@ -1,12 +1,19 @@
+import type { PlayerSlot } from "../../src/net/protocol";
+import { demoConfig } from "./demo-config";
+import type { WorkerEnv } from "./env";
 import {
   RoomCore,
   type ConnectionAttachment,
   type RoomSocket,
+  type RoomSocketMetadata,
   type RoomSocketRole,
 } from "./room-core";
 
 class CloudflareSocket implements RoomSocket {
-  constructor(private readonly socket: WebSocket) {}
+  constructor(
+    private readonly socket: WebSocket,
+    readonly metadata: RoomSocketMetadata,
+  ) {}
 
   getAttachment(): unknown {
     return this.socket.deserializeAttachment();
@@ -37,6 +44,12 @@ class CloudflareSocket implements RoomSocket {
   }
 }
 
+const UNKNOWN_METADATA: RoomSocketMetadata = {
+  deviceId: "",
+  expiresAt: 0,
+  slot: null,
+};
+
 function roomError(
   code: string,
   message: string,
@@ -51,17 +64,43 @@ function roomError(
   });
 }
 
+function parseSlot(value: string | null): PlayerSlot | null {
+  return value === "p1" || value === "p2" ? value : null;
+}
+
 export class GameRoom implements DurableObject {
   private readonly core: RoomCore;
   private readonly sockets = new Map<WebSocket, CloudflareSocket>();
+  private alarmAt: number | null = null;
 
-  constructor(private readonly ctx: DurableObjectState) {
-    this.core = new RoomCore();
+  constructor(
+    private readonly ctx: DurableObjectState,
+    private readonly env: WorkerEnv,
+  ) {
+    const config = demoConfig(env);
+    this.core = new RoomCore({
+      maxMessagesPerRoom: config.maxMessagesPerRoom,
+      maxControllerMessagesPerSecond:
+        config.maxControllerMessagesPerSecond,
+      maxHostMessagesPerSecond: config.maxHostMessagesPerSecond,
+      maxJoinsPerRoom: config.maxJoinsPerRoom,
+      handshakeTimeoutMs: config.handshakeTimeoutMs,
+      readyTimeoutMs: config.readyTimeoutMs,
+      allowHostDeviceAsController: config.allowHostDeviceAsController,
+      onRoomEnd: (reason, expiresAt) => {
+        this.ctx.waitUntil(this.handleRoomEnd(reason, expiresAt));
+      },
+    });
+    const namedRoom = this.ctx.id.name;
+    if (namedRoom) this.core.setRoom(namedRoom);
     for (const socket of this.ctx.getWebSockets()) {
-      const adapter = new CloudflareSocket(socket);
+      const adapter = new CloudflareSocket(socket, UNKNOWN_METADATA);
       this.sockets.set(socket, adapter);
       this.core.restore(adapter);
     }
+    // A room can wake after its session expiry. End it before scheduling.
+    this.core.onAlarm(Date.now());
+    void this.scheduleAlarm();
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -81,35 +120,54 @@ export class GameRoom implements DurableObject {
     if (!this.core.setRoom(url.searchParams.get("room") ?? "")) {
       return roomError("ROOM_INVALID", "Room code is invalid");
     }
-    if (role === "host" && this.core.hasHost) {
+
+    const deviceId =
+      request.headers.get("x-demo-device")?.trim() ?? "";
+    const expiresAt = Number.parseInt(
+      request.headers.get("x-demo-expires") ?? "",
+      10,
+    );
+    const slot = parseSlot(url.searchParams.get("slot"));
+    const metadata: RoomSocketMetadata = {
+      deviceId,
+      expiresAt: Number.isFinite(expiresAt) ? expiresAt : 0,
+      slot: role === "controller" ? slot : null,
+    };
+
+    if (role === "controller" && !slot) {
       return roomError(
-        "ROOM_FULL",
-        "Host slot is already occupied",
-        409,
+        "PROTOCOL_ERROR",
+        "A controller slot is required",
       );
     }
-    if (role === "controller" && !this.core.hasHost) {
-      return roomError(
-        "SLOT_UNAVAILABLE",
-        "Host is not connected",
-        409,
-      );
-    }
-    if (role === "controller" && this.core.controllerCount >= 2) {
-      return roomError(
-        "ROOM_FULL",
-        "Both controller slots are occupied",
-        409,
-      );
+
+    const decision = this.core.canConnect(
+      role as RoomSocketRole,
+      metadata,
+    );
+    if (!decision.ok) {
+      return roomError(decision.code, decision.message, decision.status);
     }
 
     const pair = new WebSocketPair();
     const client = pair[0];
     const server = pair[1];
     this.ctx.acceptWebSocket(server);
-    const adapter = new CloudflareSocket(server);
+    const adapter = new CloudflareSocket(server, metadata);
     this.sockets.set(server, adapter);
-    this.core.onConnect(adapter, role as RoomSocketRole);
+    const connected = this.core.onConnect(
+      adapter,
+      role as RoomSocketRole,
+    );
+    if (!connected) {
+      adapter.close(1008, "rejected");
+      return roomError(
+        "ROOM_FULL",
+        "The room rejected the connection",
+        409,
+      );
+    }
+    await this.scheduleAlarm();
 
     return new Response(null, {
       status: 101,
@@ -124,6 +182,7 @@ export class GameRoom implements DurableObject {
       return;
     }
     this.core.onMessage(adapter, message);
+    void this.scheduleAlarm();
   }
 
   webSocketClose(
@@ -135,20 +194,65 @@ export class GameRoom implements DurableObject {
     const adapter = this.sockets.get(ws);
     this.sockets.delete(ws);
     if (adapter) this.core.onClose(adapter);
+    void this.scheduleAlarm();
   }
 
   webSocketError(ws: WebSocket, _error: unknown): void {
     const adapter = this.sockets.get(ws);
     this.sockets.delete(ws);
     if (adapter) this.core.onClose(adapter);
+    void this.scheduleAlarm();
+  }
+
+  async alarm(): Promise<void> {
+    this.core.onAlarm(Date.now());
+    await this.scheduleAlarm();
   }
 
   private adapter(ws: WebSocket): CloudflareSocket {
     const existing = this.sockets.get(ws);
     if (existing) return existing;
-    const adapter = new CloudflareSocket(ws);
+    const adapter = new CloudflareSocket(ws, UNKNOWN_METADATA);
     this.sockets.set(ws, adapter);
     this.core.restore(adapter);
     return adapter;
+  }
+
+  private async scheduleAlarm(): Promise<void> {
+    const at = this.core.nextAlarmAt(Date.now());
+    if (at === this.alarmAt) return;
+    this.alarmAt = at;
+    if (at === null) {
+      await this.ctx.storage.deleteAlarm();
+    } else {
+      await this.ctx.storage.setAlarm(at);
+    }
+  }
+
+  private async handleRoomEnd(
+    _reason: string,
+    expiresAt: number | null,
+  ): Promise<void> {
+    this.alarmAt = null;
+    try {
+      await this.ctx.storage.deleteAlarm();
+    } catch {
+      // The alarm is best-effort; the gate lease also expires.
+    }
+    if (!this.core.roomCode) return;
+    try {
+      await this.env.DEMO_GATE.getByName("global").fetch(
+        new Request("https://demo-gate.internal/release", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            room: this.core.roomCode,
+            ...(expiresAt !== null ? { expiresAt } : {}),
+          }),
+        }),
+      );
+    } catch {
+      // The gate lease expires on its own.
+    }
   }
 }

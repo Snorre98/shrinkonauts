@@ -67,6 +67,42 @@ describe("room codes and controller URLs", () => {
     });
   });
 
+  it("round-trips a signed controller ticket in the URL fragment", () => {
+    const ticket = "v1.ABC234.1999999999999.signature";
+    const url = buildControllerUrl(
+      "https://example.test/controller.html",
+      "ABC234",
+      "p1",
+      ticket,
+    );
+    expect(url).toContain(`ticket=${encodeURIComponent(ticket)}`);
+    expect(parseControllerUrl(url)).toEqual({
+      ok: true,
+      value: { room: "ABC234", slot: "p1", ticket },
+    });
+  });
+
+  it("adds slot, ticket, and device to socket URLs", () => {
+    const url = buildRoomSocketUrl(
+      "wss://relay.example.test",
+      "ABC234",
+      "controller",
+      {
+        slot: "p2",
+        ticket: "v1.ABC234.1999999999999.signature",
+        device: "device-token",
+      },
+    );
+    const parsed = new URL(url);
+    expect(parsed.searchParams.get("room")).toBe("ABC234");
+    expect(parsed.searchParams.get("role")).toBe("controller");
+    expect(parsed.searchParams.get("slot")).toBe("p2");
+    expect(parsed.searchParams.get("ticket")).toBe(
+      "v1.ABC234.1999999999999.signature",
+    );
+    expect(parsed.searchParams.get("device")).toBe("device-token");
+  });
+
   it("builds a host WebSocket URL and preserves an explicit /ws path", () => {
     expect(
       buildRoomSocketUrl("ws://relay.example.test", "abc234", "host"),

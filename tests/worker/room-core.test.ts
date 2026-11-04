@@ -10,16 +10,22 @@ import {
 import {
   RoomCore,
   type ConnectionAttachment,
+  type RoomCoreOptions,
   type RoomSocket,
+  type RoomSocketMetadata,
 } from "../../worker/src/room-core";
 
 const ROOM = "ABC234";
 const BUILD = "build-1";
+const HOST_DEVICE = "host-device";
+const FAR_FUTURE = 1_000_000;
 
 class FakeSocket implements RoomSocket {
   attachment: unknown = null;
   readonly sent: ServerMessage[] = [];
   closeInfo: { code?: number; reason?: string } | null = null;
+
+  constructor(readonly metadata: RoomSocketMetadata) {}
 
   getAttachment(): unknown {
     return this.attachment;
@@ -44,6 +50,21 @@ class FakeSocket implements RoomSocket {
   lastSent(): ServerMessage | undefined {
     return this.sent.at(-1);
   }
+}
+
+function hostSocket(
+  expiresAt = FAR_FUTURE,
+  deviceId = HOST_DEVICE,
+): FakeSocket {
+  return new FakeSocket({ deviceId, expiresAt, slot: null });
+}
+
+function controllerSocket(
+  slot: PlayerSlot,
+  deviceId = `device-${slot}`,
+  expiresAt = FAR_FUTURE,
+): FakeSocket {
+  return new FakeSocket({ deviceId, expiresAt, slot });
 }
 
 function hostHello(
@@ -101,13 +122,15 @@ function netInput(overrides: {
 function setup(
   phoneSlots: PlayerSlot[] = ["p1", "p2"],
   now: () => number = () => 1_000,
+  options: Partial<RoomCoreOptions> = {},
 ) {
   const core = new RoomCore({
     room: ROOM,
     now,
     newSessionId: () => "session-1",
+    ...options,
   });
-  const host = new FakeSocket();
+  const host = hostSocket();
   expect(core.onConnect(host, "host")).toBe(true);
   core.onMessage(host, JSON.stringify(hostHello(phoneSlots)));
   return { core, host };
@@ -116,8 +139,9 @@ function setup(
 function join(
   core: RoomCore,
   slot: PlayerSlot,
+  deviceId = `device-${slot}`,
 ): FakeSocket {
-  const socket = new FakeSocket();
+  const socket = controllerSocket(slot, deviceId);
   expect(core.onConnect(socket, "controller")).toBe(true);
   core.onMessage(socket, JSON.stringify(controllerHello(slot)));
   return socket;
@@ -174,28 +198,36 @@ describe("RoomCore membership", () => {
     });
   });
 
+  it("rejects a controller before the host hello", () => {
+    const core = new RoomCore({ room: ROOM, now: () => 1_000 });
+    const host = hostSocket();
+    expect(core.onConnect(host, "host")).toBe(true);
+
+    const controller = controllerSocket("p1");
+    expect(core.onConnect(controller, "controller")).toBe(false);
+    expect(controller.lastSent()).toMatchObject({
+      t: "error",
+      code: "SLOT_UNAVAILABLE",
+    });
+  });
+
   it("rejects a duplicate controller for an already-bound slot", () => {
     const { core } = setup(["p1", "p2"]);
     const first = join(core, "p1");
-    const duplicate = new FakeSocket();
-    expect(core.onConnect(duplicate, "controller")).toBe(true);
-    core.onMessage(
-      duplicate,
-      JSON.stringify(controllerHello("p1")),
-    );
+    const duplicate = controllerSocket("p1", "another-device");
 
+    expect(core.onConnect(duplicate, "controller")).toBe(false);
     expect(duplicate.lastSent()).toMatchObject({
       t: "error",
       code: "SLOT_UNAVAILABLE",
     });
-    expect(duplicate.closeInfo?.code).toBe(1008);
     expect(core.controllerCount).toBe(1);
     expect(first.closeInfo).toBeNull();
   });
 
   it("rejects a version or build mismatch before input", () => {
     const { core } = setup(["p2"]);
-    const controller = new FakeSocket();
+    const controller = controllerSocket("p2");
     expect(core.onConnect(controller, "controller")).toBe(true);
     core.onMessage(
       controller,
@@ -214,13 +246,9 @@ describe("RoomCore membership", () => {
 
   it("rejects a controller for an unopened slot", () => {
     const { core } = setup(["p2"]);
-    const controller = new FakeSocket();
-    expect(core.onConnect(controller, "controller")).toBe(true);
-    core.onMessage(
-      controller,
-      JSON.stringify(controllerHello("p1")),
-    );
+    const controller = controllerSocket("p1");
 
+    expect(core.onConnect(controller, "controller")).toBe(false);
     expect(controller.lastSent()).toMatchObject({
       t: "error",
       code: "SLOT_UNAVAILABLE",
@@ -232,7 +260,7 @@ describe("RoomCore membership", () => {
     join(core, "p1");
     join(core, "p2");
 
-    const third = new FakeSocket();
+    const third = controllerSocket("p1", "device-p3");
     expect(core.onConnect(third, "controller")).toBe(false);
     expect(third.lastSent()).toMatchObject({
       t: "error",
@@ -240,9 +268,32 @@ describe("RoomCore membership", () => {
     });
   });
 
+  it("rejects the host device as a controller", () => {
+    const { core } = setup(["p1"]);
+    const controller = controllerSocket("p1", HOST_DEVICE);
+
+    expect(core.onConnect(controller, "controller")).toBe(false);
+    expect(controller.lastSent()).toMatchObject({
+      t: "error",
+      code: "DEVICE_REJECTED",
+    });
+  });
+
+  it("rejects the same device in both controller slots", () => {
+    const { core } = setup(["p1", "p2"]);
+    join(core, "p1", "shared-device");
+    const second = controllerSocket("p2", "shared-device");
+
+    expect(core.onConnect(second, "controller")).toBe(false);
+    expect(second.lastSent()).toMatchObject({
+      t: "error",
+      code: "DEVICE_REJECTED",
+    });
+  });
+
   it("rejects duplicate host connections", () => {
     const { core, host } = setup(["p2"]);
-    const duplicate = new FakeSocket();
+    const duplicate = hostSocket();
 
     expect(core.onConnect(duplicate, "host")).toBe(false);
     expect(duplicate.lastSent()).toMatchObject({
@@ -250,6 +301,17 @@ describe("RoomCore membership", () => {
       code: "ROOM_FULL",
     });
     expect(host.closeInfo).toBeNull();
+  });
+
+  it("rejects an expired session before accepting a socket", () => {
+    const core = new RoomCore({ room: ROOM, now: () => 2_000 });
+    const host = hostSocket(1_500);
+
+    expect(core.onConnect(host, "host")).toBe(false);
+    expect(host.lastSent()).toMatchObject({
+      t: "error",
+      code: "SESSION_EXPIRED",
+    });
   });
 });
 
@@ -326,35 +388,29 @@ describe("RoomCore relay", () => {
     });
   });
 
-  it("rate-limits controller input at the Durable Object edge", () => {
+  it("rate-limits all controller messages, including ping and ready", () => {
     let now = 1_000;
-    const { core, host } = setup(["p2"], () => now);
+    const { core, host } = setup(["p2"], () => now, {
+      maxControllerMessagesPerSecond: 2,
+    });
     const controller = join(core, "p2");
     ready(core, controller);
     host.takeSent();
-
-    for (let seq = 0; seq < 120; seq += 1) {
-      core.onMessage(
-        controller,
-        JSON.stringify({
-          v: PROTOCOL_VERSION,
-          t: "input",
-          seq,
-          input: netInput(),
-        }),
-      );
-    }
-    expect(controller.closeInfo).toBeNull();
-
-    now = 1_001;
+    // hello and ready already consumed the first second bucket.
+    now = 2_000;
     core.onMessage(
       controller,
-      JSON.stringify({
-        v: PROTOCOL_VERSION,
-        t: "input",
-        seq: 120,
-        input: netInput(),
-      }),
+      JSON.stringify({ v: PROTOCOL_VERSION, t: "ping", t0: 1 }),
+    );
+    core.onMessage(
+      controller,
+      JSON.stringify({ v: PROTOCOL_VERSION, t: "ping", t0: 2 }),
+    );
+    expect(controller.closeInfo).toBeNull();
+
+    core.onMessage(
+      controller,
+      JSON.stringify({ v: PROTOCOL_VERSION, t: "ping", t0: 3 }),
     );
     expect(controller.lastSent()).toMatchObject({
       t: "error",
@@ -398,9 +454,9 @@ describe("RoomCore relay", () => {
     });
   });
 
-  it("closes a controller slot and rejects the closed slot", () => {
+  it("closes a controller slot, blocks the device, and rejects the closed slot", () => {
     const { core, host } = setup(["p1", "p2"]);
-    const controller = join(core, "p2");
+    const controller = join(core, "p2", "device-p2");
     ready(core, controller);
     controller.takeSent();
     host.takeSent();
@@ -427,13 +483,51 @@ describe("RoomCore relay", () => {
       slots: [{ slot: "p1", connected: false, ready: false }],
     });
 
-    const retry = new FakeSocket();
-    expect(core.onConnect(retry, "controller")).toBe(true);
-    core.onMessage(retry, JSON.stringify(controllerHello("p2")));
+    const retry = controllerSocket("p2", "device-p2");
+    expect(core.onConnect(retry, "controller")).toBe(false);
     expect(retry.lastSent()).toMatchObject({
       t: "error",
       code: "SLOT_UNAVAILABLE",
     });
+
+    const otherSlot = controllerSocket("p1", "device-p2");
+    expect(core.onConnect(otherSlot, "controller")).toBe(false);
+    expect(otherSlot.lastSent()).toMatchObject({
+      t: "error",
+      code: "DEVICE_REJECTED",
+    });
+  });
+
+  it("reserves a disconnected slot for the same device", () => {
+    const { core, host } = setup(["p1", "p2"]);
+    const controller = join(core, "p2", "device-p2");
+    ready(core, controller);
+    host.takeSent();
+
+    core.onClose(controller);
+    expect(host.lastSent()).toEqual({
+      v: PROTOCOL_VERSION,
+      t: "room-state",
+      slots: [
+        { slot: "p1", connected: false, ready: false },
+        { slot: "p2", connected: false, ready: false },
+      ],
+    });
+
+    const otherDevice = controllerSocket("p2", "device-other");
+    expect(core.onConnect(otherDevice, "controller")).toBe(false);
+    expect(otherDevice.lastSent()).toMatchObject({
+      t: "error",
+      code: "SLOT_RESERVED",
+    });
+
+    const sameDevice = controllerSocket("p2", "device-p2");
+    expect(core.onConnect(sameDevice, "controller")).toBe(true);
+    core.onMessage(
+      sameDevice,
+      JSON.stringify(controllerHello("p2")),
+    );
+    expect(sameDevice.lastSent()).toMatchObject({ t: "welcome" });
   });
 
   it("pauses the host view when a controller disconnects", () => {
@@ -525,7 +619,7 @@ describe("RoomCore relay", () => {
   });
 
   it("rejects malformed, oversized, and wrong-direction messages", () => {
-    const { core, host } = setup(["p2"]);
+    const { core, host } = setup(["p1", "p2"]);
     const controller = join(core, "p2");
     controller.takeSent();
     host.takeSent();
@@ -536,7 +630,7 @@ describe("RoomCore relay", () => {
       code: "BAD_MESSAGE",
     });
 
-    const oversized = new FakeSocket();
+    const oversized = controllerSocket("p1", "device-oversized");
     expect(core.onConnect(oversized, "controller")).toBe(true);
     core.onMessage(oversized, "x".repeat(9_000));
     expect(oversized.lastSent()).toMatchObject({
@@ -580,5 +674,98 @@ describe("RoomCore relay", () => {
     expect(types).toContain("welcome");
     expect(types).toContain("pause");
     expect(types).toContain("resume");
+  });
+});
+
+describe("RoomCore demo limits", () => {
+  it("ends the room at the session expiry", () => {
+    let now = 1_000;
+    const ends: string[] = [];
+    const core = new RoomCore({
+      room: ROOM,
+      now: () => now,
+      onRoomEnd: (reason) => ends.push(reason),
+    });
+    const host = hostSocket(1_500);
+    expect(core.onConnect(host, "host")).toBe(true);
+    core.onMessage(host, JSON.stringify(hostHello(["p2"])));
+    const controller = join(core, "p2");
+    ready(core, controller);
+
+    now = 1_500;
+    core.onAlarm();
+    expect(ends).toEqual(["demo-time-limit"]);
+    expect(controller.lastSent()).toMatchObject({
+      t: "session-end",
+      reason: "demo-time-limit",
+    });
+  });
+
+  it("closes a controller that never completes the handshake", () => {
+    let now = 1_000;
+    const core = new RoomCore({
+      room: ROOM,
+      now: () => now,
+      handshakeTimeoutMs: 10_000,
+    });
+    const host = hostSocket();
+    expect(core.onConnect(host, "host")).toBe(true);
+    core.onMessage(host, JSON.stringify(hostHello(["p2"])));
+    const controller = controllerSocket("p2");
+    expect(core.onConnect(controller, "controller")).toBe(true);
+
+    now = 11_000;
+    core.onAlarm();
+    expect(controller.lastSent()).toMatchObject({
+      t: "session-end",
+      reason: "join-timeout",
+    });
+  });
+
+  it("ends the room when the message cap is reached", () => {
+    const ends: string[] = [];
+    const { core, host } = setup(["p2"], () => 1_000, {
+      maxMessagesPerRoom: 5,
+      onRoomEnd: (reason) => ends.push(reason),
+    });
+    const controller = join(core, "p2");
+    ready(core, controller);
+
+    for (let index = 0; index < 5; index += 1) {
+      core.onMessage(
+        controller,
+        JSON.stringify({ v: PROTOCOL_VERSION, t: "ping", t0: index }),
+      );
+    }
+
+    expect(ends).toContain("demo-message-limit");
+    expect(controller.lastSent()).toMatchObject({
+      t: "session-end",
+      reason: "demo-message-limit",
+    });
+    expect(host.closeInfo?.code).toBe(1000);
+  });
+
+  it("computes the earliest alarm deadline", () => {
+    const core = new RoomCore({
+      room: ROOM,
+      now: () => 1_000,
+      handshakeTimeoutMs: 10_000,
+      readyTimeoutMs: 15_000,
+    });
+    const host = hostSocket(20_000);
+    expect(core.onConnect(host, "host")).toBe(true);
+    expect(core.nextAlarmAt()).toBe(20_000);
+    core.onMessage(host, JSON.stringify(hostHello(["p2"])));
+    const controller = controllerSocket("p2");
+    expect(core.onConnect(controller, "controller")).toBe(true);
+    expect(core.nextAlarmAt()).toBe(11_000);
+    core.onMessage(
+      controller,
+      JSON.stringify(controllerHello("p2")),
+    );
+    expect(core.nextAlarmAt()).toBe(16_000);
+    ready(core, controller);
+    expect(core.nextAlarmAt()).toBe(20_000);
   });
 });

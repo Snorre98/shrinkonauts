@@ -91,6 +91,13 @@ import type {
 } from "./host-run-port";
 import { GameRuntime, type AudioPort } from "./runtime";
 
+export interface BootRoomSession {
+  room: string;
+  ticket: string;
+  expiresAt: number;
+  deviceToken: string;
+}
+
 export interface BootOptions {
   parent?: string;
   uiRoot?: HTMLElement | null;
@@ -100,7 +107,9 @@ export interface BootOptions {
   roomCode?: string;
   buildId?: string;
   hostRunFactory?: HostRunFactory;
-  controllerUrlFor?: (room: string, slot: PlayerSlot) => string;
+  createSession?: (room?: string) => Promise<BootRoomSession>;
+  releaseSession?: (room: string, ticket: string) => Promise<void>;
+  controllerUrlFor?: (room: string, slot: PlayerSlot, ticket?: string) => string;
 }
 
 export interface PackBundle {
@@ -239,9 +248,17 @@ export class AppController {
   private readonly roomCodeOption: string | null;
   private readonly buildId: string;
   private readonly hostRunFactory?: HostRunFactory;
+  private readonly createSession?: (
+    room?: string,
+  ) => Promise<BootRoomSession>;
+  private readonly releaseSession?: (
+    room: string,
+    ticket: string,
+  ) => Promise<void>;
   private readonly controllerUrlFor?: (
     room: string,
     slot: PlayerSlot,
+    ticket?: string,
   ) => string;
 
   private saveData!: SaveModule;
@@ -273,6 +290,7 @@ export class AppController {
   private hostRun: HostRunPort | null = null;
   private hostRunView: HostRunView | null = null;
   private hostRoomCode: string | null = null;
+  private hostTicket: string | null = null;
   private hostPlan: InputPlan | null = null;
   private hostRunError: HostRunError | null = null;
   private hostRunStartAttempted = false;
@@ -291,6 +309,8 @@ export class AppController {
     this.roomCodeOption = options.roomCode ?? null;
     this.buildId = options.buildId?.trim() || "dev";
     this.hostRunFactory = options.hostRunFactory;
+    this.createSession = options.createSession;
+    this.releaseSession = options.releaseSession;
     this.controllerUrlFor = options.controllerUrlFor;
 
     this.transition = document.createElement("div");
@@ -364,7 +384,14 @@ export class AppController {
   }
 
   endHostRun(): void {
+    const room = this.hostRoomCode;
+    const ticket = this.hostTicket;
     this.hostRun?.end();
+    if (room && ticket && this.releaseSession) {
+      void this.releaseSession(room, ticket).catch(() => {
+        // The room object also releases the lease when it closes.
+      });
+    }
     this.syncHostRunUi();
   }
 
@@ -630,7 +657,11 @@ export class AppController {
       let url = "";
       if (roomCode && this.controllerUrlFor) {
         try {
-          url = this.controllerUrlFor(roomCode, slot);
+          url = this.controllerUrlFor(
+            roomCode,
+            slot,
+            this.hostTicket ?? undefined,
+          );
         } catch {
           url = "";
         }
@@ -974,11 +1005,35 @@ export class AppController {
       return;
     }
 
+    let session: BootRoomSession | null = null;
+    if (this.createSession) {
+      try {
+        session = await this.createSession(this.roomCodeOption ?? undefined);
+      } catch (error) {
+        if (generation !== this.hostGeneration) return;
+        this.hostRunError = {
+          code: "HOST_SESSION_CREATE",
+          message: toError(error).message,
+        };
+        this.refreshHub();
+        return;
+      }
+      if (generation !== this.hostGeneration) return;
+    }
+
     let run: HostRunPort | null = null;
     try {
       run = this.hostRunFactory({
         plan: { ...plan },
-        ...(this.roomCodeOption ? { room: this.roomCodeOption } : {}),
+        ...(session
+          ? {
+              room: session.room,
+              ticket: session.ticket,
+              deviceToken: session.deviceToken,
+            }
+          : this.roomCodeOption
+            ? { room: this.roomCodeOption }
+            : {}),
         buildId: this.buildId,
         onStateChange: (view) => {
           if (this.hostRun !== run) return;
@@ -1005,6 +1060,7 @@ export class AppController {
     this.hostRun = run;
     this.hostPlan = { ...plan };
     this.hostRoomCode = run.room;
+    this.hostTicket = session?.ticket ?? null;
     this.hostRunView = run.view;
     this.refreshHub();
     this.syncHostRunUi();
@@ -1028,9 +1084,12 @@ export class AppController {
 
   private disposeHostRun(): void {
     const run = this.hostRun;
+    const room = this.hostRoomCode;
+    const ticket = this.hostTicket;
     this.hostRun = null;
     this.hostRunView = null;
     this.hostRoomCode = null;
+    this.hostTicket = null;
     this.hostPlan = null;
     this.hostRunError = null;
     this.hostRunStartAttempted = false;
@@ -1039,6 +1098,11 @@ export class AppController {
     if (run) {
       run.end("host-left");
       run.destroy();
+    }
+    if (room && ticket && this.releaseSession) {
+      void this.releaseSession(room, ticket).catch(() => {
+        // The room object also releases the lease when it closes.
+      });
     }
     this.gameUi?.setHostRun(null);
   }

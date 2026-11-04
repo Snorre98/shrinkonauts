@@ -11,14 +11,22 @@ export const ROOM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export interface ControllerUrl {
   room: string;
   slot: PlayerSlot;
+  ticket?: string;
 }
 
 export type RoomSocketRole = "host" | "controller";
+
+export interface RoomSocketUrlOptions {
+  slot?: PlayerSlot;
+  ticket?: string;
+  device?: string;
+}
 
 export function buildRoomSocketUrl(
   baseUrl: string,
   room: string,
   role: RoomSocketRole,
+  options: RoomSocketUrlOptions = {},
 ): string {
   const normalized = normalizeRoomCode(room);
   if (!normalized.ok) throw new Error(normalized.error.message);
@@ -29,6 +37,9 @@ export function buildRoomSocketUrl(
   const params = new URLSearchParams(url.search);
   params.set("room", normalized.value);
   params.set("role", role);
+  if (options.slot) params.set("slot", options.slot);
+  if (options.ticket) params.set("ticket", options.ticket);
+  if (options.device) params.set("device", options.device);
   url.search = params.toString();
   return url.toString();
 }
@@ -82,6 +93,7 @@ export function buildControllerUrl(
   baseUrl: string,
   room: string,
   slot: PlayerSlot,
+  ticket?: string,
 ): string {
   const normalized = normalizeRoomCode(room);
   if (!normalized.ok) throw new Error(normalized.error.message);
@@ -92,6 +104,7 @@ export function buildControllerUrl(
   const params = new URLSearchParams();
   params.set("room", normalized.value);
   params.set("slot", slot);
+  if (ticket) params.set("ticket", ticket);
   url.hash = params.toString();
   return url.toString();
 }
@@ -117,5 +130,10 @@ export function parseControllerUrl(
     return roomError("Controller URL slot must be p1 or p2");
   }
 
-  return ok({ room: normalized.value, slot });
+  const ticket = params.get("ticket");
+  return ok({
+    room: normalized.value,
+    slot,
+    ...(ticket ? { ticket } : {}),
+  });
 }

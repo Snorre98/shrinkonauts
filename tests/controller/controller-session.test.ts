@@ -8,8 +8,10 @@ import {
 } from "../../src/net/protocol";
 import {
   ControllerSession,
+  MAX_RECONNECT_ATTEMPTS,
   PING_TIMEOUT_MS,
   RECONNECT_BASE_DELAY_MS,
+  RECONNECT_MAX_DELAY_MS,
   RECONNECT_WINDOW_MS,
   type ControllerSessionView,
 } from "../../src/controller/controller-session";
@@ -289,6 +291,28 @@ describe("ControllerSession", () => {
     await context.session.tick(2_000 + RECONNECT_WINDOW_MS);
     expect(context.session.state).toBe("ended");
     expect(context.session.view.endReason).toBe("reconnect-timeout");
+  });
+
+  it("gives up after the reconnect attempt cap", async () => {
+    const context = setup();
+    const transport = await connectReady(context);
+    transport.close("network-drop");
+
+    let now = 1_100;
+    await context.session.tick(now);
+    expect(context.session.state).toBe("reconnecting");
+
+    for (let attempt = 0; attempt < MAX_RECONNECT_ATTEMPTS; attempt += 1) {
+      now += RECONNECT_MAX_DELAY_MS + 1;
+      await context.session.tick(now);
+      const next = context.factory.last;
+      next.close("network-drop");
+      await context.session.tick(now);
+      if (context.session.state === "ended") break;
+    }
+
+    expect(context.session.state).toBe("ended");
+    expect(context.session.view.endReason).toBe("reconnect-exhausted");
   });
 
   it("records RTT from ping and pong", async () => {

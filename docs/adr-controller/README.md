@@ -37,6 +37,7 @@ renumber these records before acceptance; accepted records are immutable.
 | Reconnect, pause, keyboard fallback | Phone-side prediction or rollback |
 | Latency budget, measurement, and input-feel policy | Bluetooth or native mobile apps |
 | Controller page with no game assets | Chat, voice, profiles, PII |
+| Demo quota guard, signed room tickets, server-issued device IDs | Accounts, identity providers, anti-cheat |
 | Host-owned save, evidence, and P1/P2 attribution | Trusted public assessment |
 
 ## Index
@@ -48,6 +49,7 @@ renumber these records before acceptance; accepted records are immutable.
 | [0068](0068-controller-session-pairing-and-trust.md) | Controller session, pairing, and trust boundary | Accepted |
 | [0069](0069-controller-latency-and-input-feel.md) | Controller latency budget and input-feel policy | Accepted |
 | [0081](0081-same-room-shared-screen-multiplayer.md) | Same-room, shared-screen multiplayer; no remote guest | Accepted |
+| [0082](0082-demo-quota-guard-and-device-admission.md) | Demo quota guard and device admission | Accepted |
 
 ## Relationship to other decisions
 
@@ -61,6 +63,9 @@ renumber these records before acceptance; accepted records are immutable.
 - **ADR-0058–0059 (hub domain):** the bathroom hub is the pre-game surface. M4.0a
   adds a local-co-op input setup panel; the obsolete online block and `online`
   catalog flag are removed rather than reserved for M4.0b.
+- **ADR-0082:** the demo quota guard and device admission boundary. It makes the
+  ADR-0081 three-device cap enforceable, adds signed room tickets and
+  server-issued device IDs, and disables Workers Logs for the free-tier demo.
 - **ADR-0010 (puzzle-engine):** per-player soft-surface input and ownership. The
   controller arbiter preserves the existing P1/P2 routing.
 - **ADR-0037, ADR-0043 (puzzle-engine):** per-player abilities, tether, and
@@ -79,6 +84,8 @@ M4.0a Phase 0 accepts this domain when:
 5. The latency budget and the fallback path are explicit.
 6. No accepted online ADR is rewritten; the controller phase is an additive
    record set.
+7. The demo quota guard, signed room tickets, and device admission are explicit
+   and configurable (ADR-0082).
 
 ## Status vocabulary
 

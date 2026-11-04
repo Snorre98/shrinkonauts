@@ -323,8 +323,8 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
   deliberately missing and which milestone owns it.
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
   pre-game shell and save/catalog model.
-- [`docs/adr-controller/README.md`](docs/adr-controller/README.md) — ADR-0066–0069
-  and ADR-0081 for same-room phone-controller co-op (M4.0a); the
+- [`docs/adr-controller/README.md`](docs/adr-controller/README.md) — ADR-0066–0069,
+  ADR-0081, and ADR-0082 for same-room phone-controller co-op (M4.0a); the
   [`docs/adr-online/README.md`](docs/adr-online/README.md) domain is historical.
 
 `docs/puzzle-engine/` and `docs/adr-m1.5/` are maintained in this repository.
@@ -336,12 +336,13 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (68 files / 706 tests), pack validation/smoke pass, the browser
-smoke passes 17/17, and the controller browser smoke passes 1/1. The hub starts
+suite passes (73 files / 770 tests), pack validation/smoke pass, the browser
+smoke passes 17/17, and the controller browser smoke passes 2/2. The hub starts
 Anatomy in Solo or Local co-op, returns to the bathroom, and preserves per-pack
 saves. Silicon is available. Multiplayer is same-room, shared-screen co-op:
 phone-controller M4.0a has its host session, input-only Cloudflare relay,
-standalone controller page, hub pairing, QR/code setup, and explicit Start gate
+standalone controller page, hub pairing, QR/code setup, explicit Start gate,
+signed room tickets, server-issued device IDs, and the ADR-0082 demo quota guard
 working. Phase 7 latency/game-feel measurement and the playtest record remain.
 Remote online co-op, M4.0b, and M4.1 are not planned (ADR-0081). See
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).

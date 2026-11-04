@@ -14,6 +14,7 @@ import type { RoomTransport } from "../net/transport";
 export const RECONNECT_WINDOW_MS = 60_000;
 export const RECONNECT_BASE_DELAY_MS = 500;
 export const RECONNECT_MAX_DELAY_MS = 5_000;
+export const MAX_RECONNECT_ATTEMPTS = 5;
 export const PING_INTERVAL_MS = 5_000;
 export const PING_TIMEOUT_MS = 10_000;
 
@@ -55,6 +56,9 @@ const FATAL_ERRORS: ReadonlySet<ErrorCode> = new Set<ErrorCode>([
   "UNSUPPORTED_PROTOCOL",
   "UNKNOWN_TYPE",
   "VERSION_MISMATCH",
+  "SESSION_EXPIRED",
+  "DEVICE_REJECTED",
+  "SLOT_RESERVED",
   "PROTOCOL_ERROR",
 ]);
 
@@ -195,6 +199,15 @@ export class ControllerSession {
   async tick(now = this.now()): Promise<void> {
     if (this.destroyed) return;
 
+    if (
+      this.transport &&
+      this.transport.state === "closed" &&
+      !this.attempting
+    ) {
+      this.handleTransportLoss(now);
+      return;
+    }
+
     if (this.sessionState === "reconnecting") {
       if (
         this.firstDisconnectAt !== null &&
@@ -206,15 +219,6 @@ export class ControllerSession {
       if (!this.attempting && now >= this.nextReconnectAt) {
         await this.attemptReconnect();
       }
-      return;
-    }
-
-    if (
-      this.transport &&
-      this.transport.state === "closed" &&
-      !this.attempting
-    ) {
-      this.handleTransportLoss(now);
       return;
     }
 
@@ -450,6 +454,10 @@ export class ControllerSession {
       this.firstDisconnectAt = now;
     }
     this.reconnectAttempt += 1;
+    if (this.reconnectAttempt > MAX_RECONNECT_ATTEMPTS) {
+      this.finish("reconnect-exhausted");
+      return;
+    }
     const delay = Math.min(
       RECONNECT_BASE_DELAY_MS * 2 ** (this.reconnectAttempt - 1),
       RECONNECT_MAX_DELAY_MS,

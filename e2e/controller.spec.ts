@@ -183,21 +183,27 @@ test("two phones join through the hub, start explicitly, reconnect, fall back, a
     name: /Start cycle|Continue/,
   });
 
-  const phone = await browser.newContext({
+  const phoneP1 = await browser.newContext({
+    viewport: { width: 844, height: 390 },
+    isMobile: true,
+    hasTouch: true,
+    deviceScaleFactor: 2,
+  });
+  const phoneP2 = await browser.newContext({
     viewport: { width: 844, height: 390 },
     isMobile: true,
     hasTouch: true,
     deviceScaleFactor: 2,
   });
 
-  const p1 = await openController(phone, p1Url, "p1");
+  const p1 = await openController(phoneP1, p1Url, "p1");
   await expect(
     page.locator('.hub__controller-slot[data-slot="p1"]'),
   ).toHaveAttribute("data-status", "ready", { timeout: 20_000 });
   await expect(startButton).toBeDisabled();
   await expect(page.locator("#hub-start-reason")).toContainText("P2");
 
-  const p2 = await joinControllerWithCode(phone, room, "p2");
+  const p2 = await joinControllerWithCode(phoneP2, room, "p2");
   await expect(
     page.locator('.hub__controller-slot[data-slot="p2"]'),
   ).toHaveAttribute("data-status", "ready", { timeout: 20_000 });
@@ -272,7 +278,7 @@ test("two phones join through the hub, start explicitly, reconnect, fall back, a
     "paused",
   );
 
-  const p1Reconnect = await openController(phone, p1Url, "p1");
+  const p1Reconnect = await openController(phoneP1, p1Url, "p1");
   await expect(
     overlay.getByRole("button", { name: "Resume" }),
   ).toBeEnabled({ timeout: 20_000 });
@@ -308,7 +314,7 @@ test("two phones join through the hub, start explicitly, reconnect, fall back, a
   await expect(overlay.locator(".overlay__title")).toHaveText(
     "P2 disconnected",
   );
-  const p2Reconnect = await openController(phone, p2Url, "p2");
+  const p2Reconnect = await openController(phoneP2, p2Url, "p2");
   await expect(
     overlay.getByRole("button", { name: "Resume" }),
   ).toBeEnabled({ timeout: 20_000 });
@@ -337,7 +343,8 @@ test("two phones join through the hub, start explicitly, reconnect, fall back, a
   expect(p1Reconnect.errors).toEqual([]);
   expect(p2Reconnect.errors).toEqual([]);
   expect(hostErrors).toEqual([]);
-  await phone.close();
+  await phoneP1.close();
+  await phoneP2.close();
 });
 
 test("Use keyboard instead closes only the chosen slot and keeps the room", async ({
@@ -347,13 +354,19 @@ test("Use keyboard instead closes only the chosen slot and keeps the room", asyn
   const hostErrors = collectConsoleErrors(page);
   const { room, p1Url } = await bootHostWithPhones(page);
 
-  const phone = await browser.newContext({
+  const phoneP1 = await browser.newContext({
     viewport: { width: 844, height: 390 },
     isMobile: true,
     hasTouch: true,
     deviceScaleFactor: 2,
   });
-  const p1 = await openController(phone, p1Url, "p1");
+  const phoneP2 = await browser.newContext({
+    viewport: { width: 844, height: 390 },
+    isMobile: true,
+    hasTouch: true,
+    deviceScaleFactor: 2,
+  });
+  const p1 = await openController(phoneP1, p1Url, "p1");
   await expect(
     page.locator('.hub__controller-slot[data-slot="p1"]'),
   ).toHaveAttribute("data-status", "ready", { timeout: 20_000 });
@@ -375,7 +388,7 @@ test("Use keyboard instead closes only the chosen slot and keeps the room", asyn
   ).toContainText(/keyboard/i);
 
   // The remaining P2 phone still owns the original room and can start.
-  const p2 = await joinControllerWithCode(phone, room, "p2");
+  const p2 = await joinControllerWithCode(phoneP2, room, "p2");
   await expect(
     page.locator('.hub__controller-slot[data-slot="p2"]'),
   ).toHaveAttribute("data-status", "ready", { timeout: 20_000 });
@@ -386,5 +399,6 @@ test("Use keyboard instead closes only the chosen slot and keeps the room", asyn
   expect(p1.errors).toEqual([]);
   expect(p2.errors).toEqual([]);
   expect(hostErrors).toEqual([]);
-  await phone.close();
+  await phoneP1.close();
+  await phoneP2.close();
 });

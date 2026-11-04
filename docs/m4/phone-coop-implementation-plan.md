@@ -2,15 +2,15 @@
 
 **Status:** M4.0a authority, 2026-11-01; same-room scope confirmed 2026-11-04
 **Owner:** Snorre
-**Source decisions:** [ADR-0066–0069 and ADR-0081](../adr-controller/README.md)
+**Source decisions:** [ADR-0066–0069, ADR-0081, and ADR-0082](../adr-controller/README.md)
 **Milestone:** [M4](../m4/README.md) — M4.0a, the complete multiplayer scope
 **Format:** phased plan matching
 [`../puzzle-engine/implementation-plan.md`](../puzzle-engine/implementation-plan.md)
 and [`../puzzle-engine/feedback-implementation-plan.md`](../puzzle-engine/feedback-implementation-plan.md)
 
 This plan is the authority for M4.0a. **No production code is written until
-Phase 0 accepts ADR-0066–0069 and ADR-0081 and approves this plan.** Phase 1 may
-begin only after that gate.
+Phase 0 accepts ADR-0066–0069, ADR-0081, and ADR-0082 and approves this plan.**
+Phase 1 may begin only after that gate.
 
 M4.0a is the complete multiplayer scope: same-room, shared-screen co-op with
 keyboard-or-phone input slots. M4.0b (remote guest with world/UI snapshots) and
@@ -30,6 +30,8 @@ and the [online ADR domain](../adr-online/README.md) for historical precedent.
   (latency budget and no prediction).
 - [ ] Accept [ADR-0081](../adr-controller/0081-same-room-shared-screen-multiplayer.md)
   (same-room product boundary; no remote guest).
+- [ ] Accept [ADR-0082](../adr-controller/0082-demo-quota-guard-and-device-admission.md)
+  (demo quota guard, signed tickets, device admission, three-socket cap).
 - [ ] Resolve or defer the open decisions in §13.
 - [ ] Approve this plan as the M4.0a authority.
 
@@ -329,7 +331,8 @@ interface NetInput {
 Limits:
 
 - controller → host message: 8 KiB;
-- input rate: 120/s;
+- input rate: 20 messages/s per controller in the demo (protocol absolute cap
+  120/s); 12,000 messages per room; 5-minute session;
 - heartbeat: 20–30 s;
 - room sockets: host + at most two controllers;
 - invalid/oversize/rate-limited messages are dropped and counted; repeated abuse
@@ -391,7 +394,7 @@ active ── controller lost / host hidden / host pause ──▶ paused
 
 Tasks:
 
-1. Review and accept ADR-0066–0069 and ADR-0081.
+1. Review and accept ADR-0066–0069, ADR-0081, and ADR-0082.
 2. Approve this plan as the M4.0a authority.
 3. Update the M4 README to show the M4.0a-only scope: same-room, shared-screen
    co-op; scope table, deliverables, DoD, risks, verification, and open
@@ -566,6 +569,79 @@ Exit criteria:
   invalid membership.
 - The DO contains no gameplay simulation.
 - Config validation passes.
+
+---
+
+### Phase 3.5 — Demo quota guard and device admission
+
+**Estimate:** 2–3 focused days.
+
+Goal: make the public relay fit the Cloudflare free plan by construction, make
+unwanted joins free of room traffic, and make the one-host/two-phone boundary a
+server-enforced admission rule.
+
+Files:
+
+- `worker/src/demo-config.ts` (new)
+- `worker/src/ticket.ts` (new)
+- `worker/src/gate-core.ts` (new)
+- `worker/src/gate.ts` (new)
+- `worker/src/router.ts`
+- `worker/src/room.ts`
+- `worker/src/room-core.ts`
+- `worker/src/env.ts`
+- `worker/wrangler.jsonc`
+- `src/net/demo-client.ts` (new)
+- `src/net/room-code.ts`
+- `src/net/host-run.ts`
+- `src/net/index.ts`
+- `src/game/boot.ts`
+- `src/game/host-run-port.ts`
+- `src/platform/main.ts`
+- `src/controller/main.ts`
+- `src/controller/controller-session.ts`
+- `tests/worker/*`, `tests/net/*`, `tests/controller/*`, `e2e/controller.spec.ts`
+
+Tasks:
+
+1. Add the singleton `DemoGate` Durable Object with UTC daily session, attempt,
+   and device-issue budgets plus an active-room registry. Add the same-host
+   supersede rule so a hub plan change or host refresh does not produce a false
+   concurrency denial.
+2. Add `POST /device`, `POST /session`, and `POST /session/release` with CORS.
+   Sign room tickets and device tokens with HMAC-SHA256. Verify tickets and
+   device tokens at the Worker edge. Reject a host or controller before
+   `env.ROOMS.getByName()` when the ticket, device, or active room is invalid.
+3. Keep the six-character code fallback: verify the code against the gate's
+   active-room registry; an inactive code never creates a room DO.
+4. Add server-issued device identity: one device per slot, the host device
+   cannot also be a controller, reconnect is same-device only, and `close-slot`
+   blocks the removed device for the session.
+5. Move room admission before `acceptWebSocket()`. Bind the slot from the URL,
+   reject a second host/third controller/duplicate or reserved slot, and add
+   handshake, ready, and join caps.
+6. Add the 5-minute wall-clock session alarm, the 12,000-message room cap, the
+   20/s all-controller-message rate limit, and the 60/s host rate limit.
+7. Disable Workers Logs in `wrangler.jsonc`; do not add `console.log` to the
+   request or message paths.
+8. Client plumbing: cache the device token, carry the room ticket in the QR and
+   WebSocket URL, release the session on explicit end/hub teardown, stop input
+   while hidden, and give up after 5 reconnect attempts.
+9. Tests: gate budgets and UTC reset; ticket/device sign and verify; edge
+   rejection without a room DO; admission before accept; same-device slot
+   reservation; session alarm; message/rate caps; hibernation restore; CORS;
+   two-phone browser smoke with separate device contexts.
+
+Exit criteria:
+
+- A random or stale QR join never creates or wakes a room DO.
+- One host plus two controllers is enforced before the socket is accepted; a
+  fourth device, duplicate slot, reserved slot, host-device controller, and
+  unready join are rejected.
+- A session ends at 5 minutes or 12,000 messages; controller messages are
+  capped at 20/s; the gate enforces the daily budgets.
+- Workers Logs is disabled and `wrangler deploy --dry-run` passes.
+- Existing local, controller, Worker, and browser suites pass.
 
 ---
 
@@ -830,7 +906,7 @@ Tasks:
    - two phones, one phone, keyboard fallback;
    - disconnect/reconnect, host hidden, host leaves;
    - wake lock/screen lock, orientation, accessibility;
-   - free-tier usage over a 30-minute session.
+   - free-tier usage over several full 5-minute sessions.
 5. Update docs:
    - ADR statuses, including ADR-0081;
    - M4 README same-room scope and DoD;
@@ -856,8 +932,11 @@ Exit criteria:
 | K/K regression | Existing keyboard tests | Host runtime | Existing E2E | Yes |
 | K/P | Arbiter | Fake transport | Touch context | Yes |
 | P/K | Arbiter | Fake transport | Touch context | Yes |
-| P/P | Arbiter | Fake transport | Two touch contexts | Yes |
+| P/P | Arbiter | Fake transport | Two separate device contexts | Yes |
 | Slot ownership | Yes | Yes | Yes | — |
+| Signed ticket / edge admission | Yes | Yes | Yes | — |
+| Device ID / three-socket cap | Yes | Yes | Yes | Yes |
+| Quota, session, message caps | Yes | Yes | — | Free-tier math |
 | Edge coalescing | Yes | Yes | — | — |
 | Protocol/version | Yes | Yes | Yes | — |
 | QR/code join | URL parser | Session | Yes | Yes |
@@ -923,8 +1002,19 @@ npm run smoke:controller
 - [ ] Controller page loads no game content.
 - [ ] Origin allowlist includes Pages and localhost only.
 - [ ] Message size, input rate, and room membership are capped.
+- [ ] A QR join requires a valid signed room ticket; invalid, expired, or
+      wrong-room tickets are rejected before a room DO is created.
+- [ ] A manual six-character join checks the gate's active-room registry and
+      never creates a room for an inactive code.
+- [ ] Device tokens are server-issued; one device owns one slot, the host device
+      cannot be a controller, and reconnect is same-device only.
+- [ ] At most one host and two controllers are admitted before the socket is
+      accepted; a fourth device is rejected without a `101`.
+- [ ] Sessions are capped at 5 minutes and 12,000 messages; controller messages
+      are capped at 20/s across all message types.
+- [ ] Workers Logs is disabled and no request/message path calls `console.log`.
 - [ ] Room code is a bearer token, not identity.
-- [ ] No input payloads, evidence, or PII are logged.
+- [ ] No input payloads, evidence, device IDs, or PII are logged.
 - [ ] Evidence export remains host-only; controller input is not treated as
       trusted assessment.
 - [ ] Version/build mismatch rejects before input.
@@ -939,6 +1029,7 @@ npm run smoke:controller
 | `docs/adr-controller/README.md` | Active controller domain index and scope, including ADR-0081 |
 | ADR-0066–0069 | Accepted phone-controller records |
 | ADR-0081 | Same-room, shared-screen product boundary; no remote guest |
+| ADR-0082 | Demo quota guard, signed room tickets, device admission, and three-socket cap |
 | `docs/m4/README.md` | M4.0a-only scope, deliverables, DoD, risks, verification; M4.0b/M4.1 historical appendix |
 | `docs/adr-online/README.md` | Historical status; no rewrite of record bodies |
 | `docs/adr-hub/README.md` | Local co-op phone setup; obsolete online block removed |
@@ -968,7 +1059,7 @@ npm run smoke:controller
 | Controller can spoof actions | Slot-bound connection; host allowlist; ownership validation |
 | Controller page is stale after deploy | Build ID check; reload message; no degraded join |
 | Worker/DO deployment fails | `wrangler deploy --dry-run`; local Worker tests; no game loop in DO |
-| Free-tier limits | Input-only traffic; heartbeat; measure a 30-minute session |
+| Free-tier limits | ADR-0082: daily session/attempt/device budgets, 5-minute sessions, 12k room message cap, 20/s controller rate, signed tickets and device admission, Workers Logs disabled |
 | Evidence trust is overstated | Host-only export; document that controller input is not graded assessment |
 | Keyboard regression | Keyboard-only path stays default; dedicated regression suite at every phase |
 | Phase 1/2 code becomes framework-coupled | Pure TS contracts; no Phaser/DOM in arbiter/protocol; fake transport tests |
@@ -979,7 +1070,8 @@ npm run smoke:controller
 
 M4.0a is done when:
 
-1. ADR-0066–0069 and ADR-0081 are accepted and indexed; this plan is approved.
+1. ADR-0066–0069, ADR-0081, and ADR-0082 are accepted and indexed; this plan
+   is approved.
 2. Keyboard/keyboard local co-op is unchanged, is the default, and passes the
    existing regression suite.
 3. Keyboard/phone, phone/keyboard, and phone/phone each start from the hub and
@@ -1008,6 +1100,10 @@ M4.0a is done when:
     README/IMPLEMENTATION status, playtest note.
 15. The multiplayer scope is explicit: M4.0a is complete; M4.0b/M4.1 are not
     planned (ADR-0081).
+16. The demo quota guard is enforced and configurable: signed room tickets,
+    server-issued device IDs, one host plus two controllers, 5-minute sessions,
+    room message and controller rate caps, and Workers Logs disabled
+    (ADR-0082).
 
 ---
 
@@ -1048,6 +1144,9 @@ M4.1 (ADR-0081).
 | Reconnect and keyboard fallback | 0067, 0068 | 2, 4, 6 | Failure tests; manual matrix |
 | Latency budget and no prediction | 0069 | 7 | Playtest p50/p95; physics tests |
 | Coyote time and jump buffer | 0069 | 7 | Physics/input-feel tests |
+| Signed room ticket and edge admission | 0082 | 3.5 | Router tests; invalid joins never call `ROOMS` |
+| Device IDs and three-socket cap | 0082 | 3.5 | DO admission tests; separate-device browser smoke |
+| Daily budgets, session/message caps, logs off | 0082 | 3.5 | Gate/config tests; `wrangler deploy --dry-run`; free-tier math |
 | Cloud-first, local relay optional | 0066, 0068, 0069 | 0, 3, 7 | Deployment check; measurement decision |
 
 ---
@@ -1071,8 +1170,9 @@ M4.1 (ADR-0081).
 
 ## 16. Next action
 
-Phases 1–6 are implemented, Phase 5.5 is complete, and the Cloudflare deployment
-spike passed. The next action is Phase 7:
+Phases 1–6 are implemented, Phase 5.5 is complete, Phase 3.5 (ADR-0082) is
+implemented, and the Cloudflare deployment spike passed. The next action is
+Phase 7:
 
 1. Add controller/host latency instrumentation for the playtest HUD.
 2. Add coyote time and jump buffering without changing keyboard/solo behavior.

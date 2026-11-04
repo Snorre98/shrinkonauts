@@ -178,7 +178,7 @@ flowchart TB
 - M4.0a: `platform` injects the `net` host-session adapter into `game`/`world`
   consumers. `net` may read public view types but adds no edge from `game` or
   `world` back to `net`; the Cloudflare `worker` is outside the client module
-  graph. See ADR-0066–0069, ADR-0081. Remote guest rendering and snapshots are
+  graph. See ADR-0066–0069, ADR-0081, ADR-0082. Remote guest rendering and snapshots are
   not planned.
 
 ## 3. Public API signatures

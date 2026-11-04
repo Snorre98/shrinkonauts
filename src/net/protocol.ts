@@ -32,6 +32,9 @@ export type ErrorCode =
   | "HOST_LEFT"
   | "CONTROLLER_LEFT"
   | "HOST_HIDDEN"
+  | "SESSION_EXPIRED"
+  | "DEVICE_REJECTED"
+  | "SLOT_RESERVED"
   | "PROTOCOL_ERROR";
 
 export interface ProtocolError {
@@ -222,6 +225,9 @@ const ERROR_CODES: ReadonlySet<string> = new Set<ErrorCode>([
   "HOST_LEFT",
   "CONTROLLER_LEFT",
   "HOST_HIDDEN",
+  "SESSION_EXPIRED",
+  "DEVICE_REJECTED",
+  "SLOT_RESERVED",
   "PROTOCOL_ERROR",
 ]);
 

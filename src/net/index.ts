@@ -64,7 +64,23 @@ export {
   normalizeRoomCode,
   parseControllerUrl,
 } from "./room-code";
-export type { ControllerUrl, RoomSocketRole } from "./room-code";
+export type {
+  ControllerUrl,
+  RoomSocketRole,
+  RoomSocketUrlOptions,
+} from "./room-code";
+export {
+  DemoClientError,
+  clearDeviceToken,
+  createRoomSession,
+  ensureDeviceToken,
+  releaseRoomSession,
+} from "./demo-client";
+export type {
+  DemoClientOptions,
+  DeviceToken,
+  RoomSession,
+} from "./demo-client";
 export {
   HostRunAdapter,
   createHostRunFactory,

@@ -46,6 +46,8 @@ export interface HostRunFactoryOptions {
   plan: InputPlan;
   room?: string;
   buildId: string;
+  ticket?: string;
+  deviceToken?: string;
   onStateChange?: (view: HostRunView) => void;
   onError?: (error: HostRunError) => void;
 }

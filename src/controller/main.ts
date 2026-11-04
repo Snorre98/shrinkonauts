@@ -5,6 +5,7 @@ import {
   type ControllerServerMessage,
   type PlayerSlot,
 } from "../net/protocol";
+import { ensureDeviceToken } from "../net/demo-client";
 import {
   buildControllerUrl,
   buildRoomSocketUrl,
@@ -36,6 +37,7 @@ let currentSlot: PlayerSlot = "p1";
 let lastState: ControllerSessionView["state"] = "idle";
 let wakeLock: WakeLockSentinel | null = null;
 let requestingWakeLock = false;
+let joinGeneration = 0;
 
 function pulse(): void {
   try {
@@ -50,7 +52,9 @@ function sendInputNow(): void {
 }
 
 ui = mountControllerUi(root, {
-  onJoin: (room, slot) => startJoin(room, slot),
+  onJoin: (room, slot) => {
+    void startJoin(room, slot);
+  },
   onControl: (control: TouchControl, pressed: boolean, pointerId: number) => {
     if (pressed) {
       touch.press(control, pointerId);
@@ -74,6 +78,16 @@ function endMessage(view: ControllerSessionView): string {
       return "The host switched this player to the keyboard.";
     case "reconnect-timeout":
       return "Could not reconnect within 60 seconds. Check the room code and try again.";
+    case "reconnect-exhausted":
+      return "Could not reconnect. Check the room code and try again.";
+    case "demo-time-limit":
+      return "This demo session reached its 5-minute limit.";
+    case "demo-message-limit":
+      return "This demo session reached its traffic limit.";
+    case "join-timeout":
+      return "The controller took too long to join. Try again.";
+    case "ready-timeout":
+      return "The controller took too long to get ready. Try again.";
     default:
       return view.endReason ?? "The session ended.";
   }
@@ -84,6 +98,7 @@ function handleView(view: ControllerSessionView): void {
   lastState = view.state;
 
   if (view.state === "ended") {
+    joinGeneration += 1;
     touch.clear();
     const ending = session;
     session = null;
@@ -100,6 +115,7 @@ function handleView(view: ControllerSessionView): void {
   }
 
   if (view.state === "error") {
+    joinGeneration += 1;
     touch.clear();
     const failed = session;
     session = null;
@@ -130,7 +146,7 @@ function startTicker(): void {
       // ControllerSession handles transport failures; a rejected tick is
       // allowed to leave the next tick to retry the reconnect.
     });
-    if (active.state === "ready") {
+    if (active.state === "ready" && !document.hidden) {
       active.sendInput(touch.snapshot());
     }
   }, 100);
@@ -151,12 +167,16 @@ function stopSession(): void {
   active?.destroy();
 }
 
-function setHash(room: string, slot: PlayerSlot): void {
+function setHash(
+  room: string,
+  slot: PlayerSlot,
+  ticket?: string,
+): void {
   try {
     history.replaceState(
       null,
       "",
-      buildControllerUrl(window.location.href, room, slot),
+      buildControllerUrl(window.location.href, room, slot, ticket),
     );
   } catch {
     // The page still works when history is unavailable (for example file://).
@@ -175,7 +195,12 @@ function clearHash(): void {
   }
 }
 
-function startJoin(rawRoom: string, slot: PlayerSlot): void {
+async function startJoin(
+  rawRoom: string,
+  slot: PlayerSlot,
+  ticket?: string,
+): Promise<void> {
+  const generation = ++joinGeneration;
   const room = normalizeRoomCode(rawRoom);
   if (!room.ok) {
     ui.showJoin({
@@ -192,12 +217,30 @@ function startJoin(rawRoom: string, slot: PlayerSlot): void {
     return;
   }
 
+  let deviceToken: string;
+  try {
+    const device = await ensureDeviceToken({ netUrl: NET_URL });
+    deviceToken = device.token;
+  } catch (error) {
+    if (generation !== joinGeneration) return;
+    ui.showJoin({
+      room: room.value,
+      slot,
+      message:
+        error instanceof Error
+          ? error.message
+          : "The demo relay could not issue a device token.",
+    });
+    return;
+  }
+  if (generation !== joinGeneration) return;
+
   stopSession();
   currentRoom = room.value;
   currentSlot = slot;
   lastState = "idle";
   ui.showBoard(currentRoom, currentSlot);
-  setHash(currentRoom, currentSlot);
+  setHash(currentRoom, currentSlot, ticket);
 
   let next: ControllerSession | null = null;
   next = new ControllerSession({
@@ -209,7 +252,11 @@ function startJoin(rawRoom: string, slot: PlayerSlot): void {
         ControllerClientMessage,
         ControllerServerMessage
       >({
-        url: buildRoomSocketUrl(NET_URL, currentRoom, "controller"),
+        url: buildRoomSocketUrl(NET_URL, currentRoom, "controller", {
+          slot: currentSlot,
+          ...(ticket ? { ticket } : {}),
+          device: deviceToken,
+        }),
         decode: decodeControllerServerMessage,
         onProtocolError: (error) => {
           next?.reportProtocolError(error);
@@ -254,7 +301,12 @@ window.addEventListener(
   { passive: true },
 );
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && session?.state === "ready") {
+  if (document.hidden) {
+    touch.clear();
+    sendInputNow();
+    return;
+  }
+  if (session?.state === "ready") {
     void requestWakeLock();
   }
 });
@@ -265,7 +317,11 @@ window.addEventListener("pagehide", () => {
 
 const initial = parseControllerUrl(window.location.href);
 if (initial.ok) {
-  startJoin(initial.value.room, initial.value.slot);
+  void startJoin(
+    initial.value.room,
+    initial.value.slot,
+    initial.value.ticket,
+  );
 } else {
   ui.showJoin({
     slot: "p1",

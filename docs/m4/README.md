@@ -8,7 +8,7 @@
 - **Depends on:** M1.75 per-player input; M1.8/M2/M3 are content dependencies for
   the final pack, not for M4.0a
 - **ADR domain:** [`../adr-controller/README.md`](../adr-controller/README.md) —
-  ADR-0066–0069 and ADR-0081
+  ADR-0066–0069, ADR-0081, and ADR-0082
 - **Plan:** [`phone-coop-implementation-plan.md`](phone-coop-implementation-plan.md)
 - **Baseline:** the current local co-op slice; `03-nerve-forest` and the M2 pack
   are the visual/content baseline, not a network dependency
@@ -91,8 +91,8 @@ shared screen; they do not change the controller architecture.
 
 ### M4.0a — Phone co-op
 
-- [ ] [ADR-0066–0069 and ADR-0081](../adr-controller/README.md) are the active
-  controller domain.
+- [ ] [ADR-0066–0069, ADR-0081, and ADR-0082](../adr-controller/README.md) are
+  the active controller domain.
 - [ ] [`phone-coop-implementation-plan.md`](phone-coop-implementation-plan.md) is
   the M4.0a authority.
 - [ ] Local co-op exposes `P1: Keyboard | Phone` and `P2: Keyboard | Phone`;
@@ -108,6 +108,17 @@ shared screen; they do not change the controller architecture.
   double-sampling and no cross-slot leakage.
 - [ ] The controller role claims exactly one slot; a third controller, duplicate
   slot, and unopened slot are rejected.
+- [ ] Signed room tickets gate QR joins at the Worker edge; an invalid, expired,
+  or wrong-room ticket never creates or wakes a room Durable Object.
+- [ ] The manual six-character code checks the demo gate and never creates a
+  room for an inactive code.
+- [ ] Server-issued device IDs bind one device per controller slot; the host
+  device cannot also be a controller; reconnect is same-device only.
+- [ ] The relay admits at most one host and two controllers before accepting a
+  socket; a second host, third controller, reserved slot, or unready join is
+  rejected without a `101` upgrade.
+- [ ] A demo session is capped at 5 minutes, 12,000 room messages, and 20
+  controller messages per second; Workers Logs is disabled.
 - [ ] The host creates a room with the phone-enabled slots; controllers join by
   QR or six-character code.
 - [ ] The controller page is a separate static entry with no Phaser, pack
@@ -136,8 +147,8 @@ shared screen; they do not change the controller architecture.
 
 M4.0a is done when:
 
-1. ADR-0066–0069 and ADR-0081 are accepted and the M4.0a implementation plan is
-   the authority for the controller phase.
+1. ADR-0066–0069, ADR-0081, and ADR-0082 are accepted and the M4.0a
+   implementation plan is the authority for the controller phase.
 2. Keyboard/keyboard local co-op is unchanged, is the default, and passes the
    existing regression suite.
 3. Keyboard/phone, phone/keyboard, and phone/phone each start from the hub and
@@ -167,6 +178,10 @@ M4.0a is done when:
     README/IMPLEMENTATION status, and the playtest note.
 15. M4.0a is identified as the complete multiplayer scope; no active plan
     promises M4.0b or M4.1.
+16. The demo quota guard is enforced and configurable: signed room tickets,
+    server-issued device IDs, one host plus two controllers, 5-minute sessions,
+    room message and controller rate caps, and Workers Logs disabled
+    (ADR-0082).
 
 ### 5.2 Not planned
 
@@ -184,15 +199,16 @@ range.
 | 1 | Input contracts and pure arbiter | 1–1.5 d | K/K, K/P, P/K, P/P unit coverage |
 | 2 | Protocol, transport seam, remote source, fake transport | 1–1.5 d | Host runs all four plans without a Worker |
 | 3 | Worker, DO, room codes, slot reservation, limits | 1.5–2 d | Two controllers join; third/duplicate rejected |
+| 3.5 | Demo quota guard, signed tickets, device admission, 5-minute caps | 2–3 d | Random joins never create a room; one host + two devices enforced |
 | 4 | Host session wiring, pause, keyboard fallback | 1 d | Real session drives the arbiter |
 | 5 | Controller web app, touch layout, reconnect | 1.5–2 d | Phone joins and controls one slot |
 | 5.5 | Remove obsolete online placeholder and catalog flag (done 2026-11-04) | 0.25–0.5 d | No online mode/panel/flag remains |
 | 6 | Hub input setup, QR pairing, explicit Start gate | 1–1.5 d | All four plans start from the hub only after readiness; no auto-start |
 | 7 | Latency measurement, coyote/buffer, playtest, docs | 1–1.5 d | DoD met or fallback documented |
 
-**Total:** roughly **8–11 focused days**, including the Worker/DO that remains
-useful for the input relay. If the Worker/DO is already deployed, the incremental
-controller work is roughly **5–7 focused days**.
+**Total:** roughly **10–14 focused days**, including the Worker/DO and the demo
+quota guard. If the Worker/DO is already deployed, the incremental controller
+work is roughly **7–10 focused days**.
 
 ## 7. Compatibility with planned features
 
@@ -230,7 +246,7 @@ controller work is roughly **5–7 focused days**.
 | Controller page is stale after deploy | Build ID check; reload message; no degraded join. |
 | Controller spoofs another slot or host action | Slot-bound connection; host allowlist; ownership validation; no global actions from controllers. |
 | Controller session creeps into remote online | ADR-0081: no snapshots, no phone rendering, no remote guest, no prediction. |
-| Cloudflare free-tier limits | Input-only traffic; heartbeat; measure a 30-minute session. |
+| Cloudflare free-tier limits | ADR-0082: daily session/attempt/device budgets, 5-minute sessions, 12k room message cap, 20/s controller rate, signed tickets and device admission, Workers Logs disabled. |
 | Evidence trust is overstated | Host-only export; document that controller input is not graded assessment. |
 | Keyboard regression | Keyboard-only path stays default; dedicated regression suite at every phase. |
 
@@ -258,13 +274,17 @@ Manual — M4.0a:
   menus;
 - QR and six-character code both join the correct slot; third/duplicate
   controllers rejected;
+- a random or old QR is rejected at the edge without creating a room; a fourth
+  device and a different device on a reserved slot are rejected;
+- the device ID is stable across a reconnect and distinct between the two
+  phones; the host screen cannot also join as a controller;
 - controller disconnect pauses; reconnect within grace restores; keyboard
   fallback resumes that slot;
 - host tab hidden/resumed; host leaves; controllers return to the join screen;
 - phone screen lock/wake, landscape, multi-touch, wake lock, accessibility;
 - latency measurement on 2.4 GHz, 5 GHz, TV/laptop, cloud in-region, with a
   keyboard baseline;
-- free-tier usage after a 30-minute phone session;
+- free-tier usage after several full 5-minute phone sessions;
 - hub shows Solo and Local co-op only; no online mode or host/join panel.
 
 ## 10. Scope cuts
@@ -276,7 +296,11 @@ Manual — M4.0a:
 - host display-only mode with two phones;
 - pure input arbiter with no double-sampling;
 - controller role, slot reservation, and third/duplicate rejection;
+- signed room tickets, server-issued device IDs, and the three-device admission
+  cap;
 - QR and six-character code pairing;
+- the demo quota guard, 5-minute session cap, message/rate caps, and Workers
+  Logs disabled;
 - controller page with no game assets or game state;
 - validated, coalesced controller input applied at the fixed step;
 - reconnect, pause, and keyboard fallback;
@@ -308,8 +332,11 @@ Manual — M4.0a:
 - P1/P2 attribution;
 - host-only save/evidence;
 - slot ownership validation;
+- signed room tickets and server-issued device admission;
+- one host plus two controller sockets, enforced before accept;
 - reconnect/failure UX;
 - Origin and rate limits;
+- demo quota guard and Workers Logs disabled;
 - latency measurement;
 - same-room product boundary (no remote guest).
 
@@ -342,7 +369,9 @@ The same-room decision is closed: no remote guest, no fourth device.
 ## 12. Relationship to other documents
 
 - [`../adr-controller/README.md`](../adr-controller/README.md) — active
-  controller domain, including ADR-0081.
+  controller domain, including ADR-0081 and ADR-0082.
+- [`../adr-controller/0082-demo-quota-guard-and-device-admission.md`](../adr-controller/0082-demo-quota-guard-and-device-admission.md)
+  — demo quota guard, signed tickets, device admission, and the three-socket cap.
 - [`phone-coop-implementation-plan.md`](phone-coop-implementation-plan.md) —
   M4.0a implementation plan.
 - [`../adr-online/README.md`](../adr-online/README.md) — historical remote-guest
