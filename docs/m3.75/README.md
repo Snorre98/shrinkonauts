@@ -250,28 +250,28 @@ The blueprint is presentation data and lives with the beats and node labels in
         "components": [
           {
             "id": "inputs",
-            "symbol": "ui.blueprint.symbol.inputs",
+            "symbol": "ui.blueprint.symbol.input-pair",
             "label": "Two inputs",
             "beatIds": ["input"],
             "x": 0
           },
           {
             "id": "threshold",
-            "symbol": "ui.blueprint.symbol.threshold",
+            "symbol": "ui.blueprint.symbol.threshold-gauge",
             "label": "Threshold",
             "beatIds": ["threshold"],
             "x": 1
           },
           {
             "id": "axon",
-            "symbol": "ui.blueprint.symbol.flow",
+            "symbol": "ui.blueprint.symbol.axon-flow",
             "label": "One-way flow",
             "beatIds": ["axon"],
             "x": 2
           },
           {
             "id": "exit",
-            "symbol": "ui.blueprint.symbol.gate",
+            "symbol": "ui.blueprint.symbol.exit-gate",
             "label": "Terminal / exit",
             "beatIds": ["terminal", "exit"],
             "x": 3
@@ -310,28 +310,28 @@ Rules:
 
 | Component | Groups beats | Symbol |
 |---|---|---|
-| Two inputs | `input` | `ui.blueprint.symbol.inputs` |
-| Threshold | `threshold` | `ui.blueprint.symbol.threshold` |
-| One-way flow | `axon` | `ui.blueprint.symbol.flow` |
-| Terminal / exit | `terminal`, `exit` | `ui.blueprint.symbol.gate` |
+| Two inputs | `input` | `ui.blueprint.symbol.input-pair` |
+| Threshold | `threshold` | `ui.blueprint.symbol.threshold-gauge` |
+| One-way flow | `axon` | `ui.blueprint.symbol.axon-flow` |
+| Terminal / exit | `terminal`, `exit` | `ui.blueprint.symbol.exit-gate` |
 
 #### 04 Muscle Effector — 4 components
 
 | Component | Groups beats | Symbol |
 |---|---|---|
-| Trigger + Ca²⁺ window | `trigger`, `release` | `ui.blueprint.symbol.timer` |
-| Carry ACh | `carry` | `ui.blueprint.symbol.carry` |
-| Bind receptor | `bind` | `ui.blueprint.symbol.receptor` |
-| Response + clearance | `respond`, `clear` | `ui.blueprint.symbol.relay` |
+| Trigger + Ca²⁺ window | `trigger`, `release` | `ui.blueprint.symbol.ca-window` |
+| Carry ACh | `carry` | `ui.blueprint.symbol.ach-carry` |
+| Bind receptor | `bind` | `ui.blueprint.symbol.receptor-bind` |
+| Response + clearance | `respond`, `clear` | `ui.blueprint.symbol.response-clear` |
 
 #### 01 Interrupt Loop — 4 components
 
 | Component | Groups beats | Symbol |
 |---|---|---|
-| Detect change | `detect` | `ui.blueprint.symbol.pulse` |
-| Route + integrate | `route`, `integrate` | `ui.blueprint.symbol.relay` |
-| Wake CPU | `wake` | `ui.blueprint.symbol.timer` |
-| Actuate response | `actuate` | `ui.blueprint.symbol.gate` |
+| Detect change | `detect` | `ui.blueprint.symbol.sensor-detect` |
+| Route + integrate | `route`, `integrate` | `ui.blueprint.symbol.route-integrate` |
+| Wake CPU | `wake` | `ui.blueprint.symbol.cpu-wake` |
+| Actuate response | `actuate` | `ui.blueprint.symbol.actuator-gate` |
 
 These groupings keep the learning-critical concepts while reducing 5–6 beats to
 four visual components.
@@ -368,10 +368,9 @@ should have authored blueprint data.
 The nanobanana symbol kit is specified in
 [`blueprint-symbol-asset-brief-v01.md`](blueprint-symbol-asset-brief-v01.md).
 Standalone prompts live in
-[`blueprint-symbol-prompts-v01.md`](blueprint-symbol-prompts-v01.md) for the
-anatomy pack and
-[`blueprint-symbol-prompts-silicon-v01.md`](blueprint-symbol-prompts-silicon-v01.md)
-for Silicon. The short version:
+[`blueprint-symbol-prompts-v02.md`](blueprint-symbol-prompts-v02.md). The v02
+set has 12 puzzle-specific symbols: four for 03, four for 04, and four for
+Silicon. No glyph is reused across puzzles. The short version:
 
 - 32×32 `ui-1x` pixel-art glyphs, transparent PNG, locked theme palette.
 - Abstract circuit/process symbols, no literal anatomy, no text.
@@ -511,13 +510,12 @@ Each phase must leave the game playable and the test suite green.
   density state, and measured safe-area plumbing.
 - The 03/04/01 blueprints are authored in their `level.json` feedback blocks
   and validated by `src/pack/validate.ts`.
-- The nine anatomy-pack symbol prompts are in
-  [`blueprint-symbol-prompts-v01.md`](blueprint-symbol-prompts-v01.md), with a
-  puzzle-to-component coverage matrix.
-- The four Silicon-specific prompts are in
-  [`blueprint-symbol-prompts-silicon-v01.md`](blueprint-symbol-prompts-silicon-v01.md).
-  Silicon reuses the `pulse`, `relay`, `timer`, and `gate` logical IDs but
-  resolves them to separate graphite/ceramic/signal-cyan masters.
+- The 12 puzzle-specific symbol prompts are in
+  [`blueprint-symbol-prompts-v02.md`](blueprint-symbol-prompts-v02.md), with a
+  puzzle-to-component coverage matrix. The v01 prompt files are superseded.
+- Silicon uses its own four IDs (`sensor-detect`, `route-integrate`, `cpu-wake`,
+  `actuator-gate`) and graphite/ceramic/signal-cyan art; it does not reuse
+  anatomy glyphs.
 - Blueprint symbols resolve through the asset provider; unresolved IDs render
   the CSS code glyph. `assets.placeholder.json` carries the placeholder entries.
   Final nanobanana art is not fabricated in this milestone.

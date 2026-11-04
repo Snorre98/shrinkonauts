@@ -1,6 +1,6 @@
 # M3.75 — Blueprint Symbol Prompts v01
 
-**Status:** prompt-ready — magenta-key output, no final art generated yet
+**Status:** superseded — use [`blueprint-symbol-prompts-v02.md`](blueprint-symbol-prompts-v02.md) for the current puzzle-specific set; magenta-key output, no final art generated yet
 **Date:** 2026-11-04
 **Scope:** the nine blueprint symbols used by the three current puzzles
 **Contract:** [`blueprint-symbol-asset-brief-v01.md`](blueprint-symbol-asset-brief-v01.md)
