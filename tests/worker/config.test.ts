@@ -73,4 +73,21 @@ describe("demo configuration", () => {
     expect(vars.DEMO_MAX_SESSION_MINUTES).toBe("5");
     expect(vars).not.toHaveProperty("DEMO_SIGNING_SECRET");
   });
+
+  it("allows the production Pages origin and local development only", () => {
+    const config = wrangler();
+    const vars = config.vars as Record<string, string>;
+    const origins = vars.ALLOWED_ORIGINS.split(",");
+    expect(origins).toEqual(
+      expect.arrayContaining([
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://127.0.0.1:4173",
+        "http://localhost:4173",
+        "https://snorre98.github.io",
+      ]),
+    );
+    expect(origins).not.toContain("https://shrinkonauts-m4-spike.pages.dev");
+    expect(origins.some((origin) => origin.includes("pages.dev"))).toBe(false);
+  });
 });

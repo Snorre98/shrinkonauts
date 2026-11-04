@@ -1176,9 +1176,16 @@ Phase 7:
 
 1. Add controller/host latency instrumentation for the playtest HUD.
 2. Add coyote time and jump buffering without changing keyboard/solo behavior.
-3. Run the latency and manual input matrix.
+3. Run the latency and manual input matrix on the stable GitHub Pages URL.
 4. Record the playtest note and close out the active documentation.
 
 Phase 6 is the explicit-Start boundary: the hub creates/reuses the host session
 before Start, K/K remains network-free, and controller readiness only enables
 Start. Keyboard/K keyboard co-op must remain unchanged throughout.
+
+Production deployment is GitHub Actions only: `.github/workflows/deploy-pages.yml`
+builds with `VITE_NET_URL`/`VITE_BUILD_ID` and publishes GitHub Pages;
+`.github/workflows/deploy-worker.yml` deploys the Worker/Durable Objects with
+`DEMO_SIGNING_SECRET` supplied from GitHub Actions. The checked-in `ALLOWED_ORIGINS` includes
+`https://snorre98.github.io` and local development only. Do not use hash preview
+origins for phone pairing, and do not deploy with manual Wrangler commands.

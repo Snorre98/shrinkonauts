@@ -287,6 +287,20 @@ Manual — M4.0a:
 - free-tier usage after several full 5-minute phone sessions;
 - hub shows Solo and Local co-op only; no online mode or host/join panel.
 
+### Deployment
+
+- Static hosting is GitHub Pages, deployed by
+  `.github/workflows/deploy-pages.yml`.
+- The Worker and both Durable Objects are deployed only by
+  `.github/workflows/deploy-worker.yml`.
+- The Pages build receives `VITE_NET_URL` and `VITE_BUILD_ID` from CI.
+- The Worker is configured by the checked-in `worker/wrangler.jsonc`; its
+  `ALLOWED_ORIGINS` includes `https://snorre98.github.io` and local
+  development origins only.
+- `DEMO_SIGNING_SECRET` is supplied by GitHub Actions, never committed.
+- Hash preview origins are not supported for phone pairing. Use the stable
+  GitHub Pages URL.
+
 ## 10. Scope cuts
 
 ### M4.0a — Must ship

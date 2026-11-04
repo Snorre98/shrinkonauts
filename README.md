@@ -46,8 +46,12 @@ Playwright's `channel: "chrome"`. It never downloads a bundled browser.
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Gameplay capture, GDD gallery build, type check + build, unit tests, pack validation, committed-mapping drift check, Playwright smoke |
+| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Gameplay capture, GDD gallery build, type check + build with the Worker URL/build ID, unit tests, Worker checks, pack validation, committed-mapping drift check, Playwright smoke |
 | `.github/workflows/deploy-pages.yml` | push to `main`, manual dispatch | Runs CI, then publishes the tested `dist/` artifact to GitHub Pages |
+| `.github/workflows/deploy-worker.yml` | push to `main` for Worker/shared relay changes, manual dispatch | Runs tests, Worker type check/dry run, then deploys the Worker and Durable Objects with the demo signing secret |
+
+Deployments are GitHub Actions only. Do not run `wrangler deploy` or
+`wrangler pages deploy` locally.
 
 Live build: <https://snorre98.github.io/shrinkonauts/>
 
@@ -76,9 +80,10 @@ Recommended hardening: require the **Verify** and **E2E smoke** checks on
 
 ### Rollback
 
-Re-run the last known-good **Deploy to GitHub Pages** workflow run from the
-Actions tab (or `gh run rerun <run-id>`). Reverting a commit on `main` also
-triggers a fresh deploy.
+Re-run the last known-good **Deploy to GitHub Pages** or **Deploy Worker**
+workflow run from the Actions tab (or `gh run rerun <run-id>`). Reverting a
+commit on `main` also triggers a fresh deploy. A Worker rollback disconnects
+active controller sessions; clients reconnect or start a new room.
 
 CI runs on Node 24 (pinned by `.nvmrc`) and installs with `npm ci`, so
 `package-lock.json` must stay in sync with `package.json`.

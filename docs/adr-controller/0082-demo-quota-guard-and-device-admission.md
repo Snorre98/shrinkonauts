@@ -236,10 +236,12 @@ listed in the appendix. Values are parsed with safe clamps in
 `worker/src/demo-config.ts`.
 
 `DEMO_SIGNING_SECRET` is a Worker secret, not a checked-in var. Local
-development and unit tests use a documented development fallback. A deployed
-Worker must set the secret with `wrangler secret put DEMO_SIGNING_SECRET`.
-`ALLOWED_ORIGINS` must include the deployed Pages origin; the checked-in
-default contains only local development origins.
+development and unit tests use a documented development fallback. The deployed
+Worker receives the secret from the GitHub Actions deployment, using the
+`DEMO_SIGNING_SECRET` repository secret.
+`ALLOWED_ORIGINS` must include the deployed Pages origin. The checked-in config
+contains the local development origins and the production GitHub Pages origin,
+`https://snorre98.github.io`; the Actions deployment uses that list directly.
 
 ### 11. Fail closed
 

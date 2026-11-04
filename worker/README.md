@@ -90,19 +90,17 @@ Worst case with the defaults:
 
 ## Configuration and secrets
 
-`ALLOWED_ORIGINS` is a comma-separated public allowlist. The checked-in default
-contains only local development origins. Before deploying, set the deployed
-Pages origin in the Cloudflare dashboard or via a Wrangler environment override.
+`ALLOWED_ORIGINS` is a comma-separated public allowlist checked into
+`wrangler.jsonc`. It contains the local development origins and the production
+GitHub Pages origin, `https://snorre98.github.io`. The production deployment
+uses this checked-in value directly; do not replace it with a dashboard-only
+override.
 
 `DEMO_SIGNING_SECRET` is a Worker secret used for room tickets and device
-tokens. Set it before deploying:
-
-```sh
-npx wrangler secret put DEMO_SIGNING_SECRET -c worker/wrangler.jsonc
-```
-
-Local development and unit tests use a documented development fallback. Do not
-put the secret in `wrangler.jsonc`.
+tokens. In production, GitHub Actions supplies it from the repository secret of
+the same name. Local development and unit tests use a documented development
+fallback. Do not put the secret in `wrangler.jsonc` and do not deploy without
+the Actions workflow setting it.
 
 Workers Logs is deliberately disabled in `wrangler.jsonc`. Use `wrangler tail`
 for live debugging. Do not add `console.log` to request or message paths: with
@@ -145,11 +143,17 @@ contexts for the host and each phone, so each has a distinct device ID.
 
 ## Deployment
 
-Deploy only from an approved branch after the Worker tests and dry-run pass:
+Deployments are GitHub Actions only. The
+`.github/workflows/deploy-worker.yml` workflow runs on `main` when Worker or
+shared relay code changes, and on manual dispatch. It runs the test suite,
+Worker type check, and dry run, then deploys `wrangler.jsonc` with
+`DEMO_SIGNING_SECRET` supplied from GitHub Actions.
 
-```sh
-npx wrangler deploy -c worker/wrangler.jsonc
-```
+Do not run `wrangler deploy`, `wrangler secret put`, or a dashboard deployment
+by hand. Required repository secrets are `CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_ACCOUNT_ID`, and `DEMO_SIGNING_SECRET`.
 
 The Worker deployment is independent of the GitHub Pages game build. A Worker
-deploy disconnects active sockets; clients reconnect or start a new room.
+deploy disconnects active sockets; clients reconnect or start a new room. The
+first deployment of the ADR-0082 guard also creates the singleton `DemoGate`
+Durable Object.
