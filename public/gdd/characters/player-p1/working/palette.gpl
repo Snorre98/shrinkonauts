@@ -1,0 +1,31 @@
+GIMP Palette
+Name: Shrinkonauts Player P1
+Columns: 3
+#
+  5   9  11	teal-shadow
+ 16  26  32	teal-base
+ 29  47  56	teal-highlight
+201 183 154	bone-shadow
+242 232 213	bone-base
+255 248 232	bone-highlight
+ 95 115 110	boneShadow-shadow
+122 143 138	boneShadow-base
+157 180 173	boneShadow-highlight
+184 134  43	nerve-shadow
+255 209 102	nerve-base
+255 243 176	nerve-highlight
+ 63 159 181	joint-shadow
+123 223 242	joint-base
+201 247 255	joint-highlight
+168  42  74	muscle-shadow
+239  71 111	muscle-base
+255 159 178	muscle-highlight
+129  49  21	orange-shadow
+229 155  52	orange-base
+255 210 138	orange-highlight
+111 132 125	sage-shadow
+157 180 173	sage-base
+196 212 206	sage-highlight
+  0   0   0	ink-shadow
+  5   9  11	ink-base
+ 42  63  71	ink-highlight

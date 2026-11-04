@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>Learning design brief — Shrinkonauts: The Reflex Arc — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">GBL / learning design</p>
+  <h1>Learning design brief — Shrinkonauts: The Reflex Arc</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <p><strong>Status:</strong> v0.1 · 26 October 2026<br><strong>Owner:</strong> Snorre (design) · Henrik and Hanna (theory) · Johannes and Marie (GDD)<br><strong>Source of truth for:</strong> learner profile, instructional sequence, scaffolding/fading, assessment validity, classroom integration, limitations.<br><strong>Learning contract:</strong> <a href="base-game/syllabus.md"><code>syllabus.md</code></a><br><strong>Curriculum alignment:</strong> <a href="docs/curriculum-alignment.html"><code>curriculum-alignment.md</code></a><br><strong>Theory:</strong> <a href="docs/theory-brief.html"><code>theory-brief.md</code></a><br><strong>Course compliance:</strong> <a href="docs/gbl-course-requirements.html"><code>gbl-course-requirements.md</code></a></p>
+<blockquote>
+<p>This is the pedagogy layer between the syllabus and the GDD/theory/video. The GDD’s <strong>Learning</strong> section, the theory section, and the video must translate this brief, not invent a parallel design.</p>
+</blockquote>
+<hr>
+<h2>1. Purpose and status</h2>
+<p>The base-game docs answer “how is the engine built?” and “what does the syllabus cover?” This brief answers:</p>
+<ul>
+<li><strong>Who</strong> is learning?</li>
+<li><strong>What</strong> do they already know, and what do they get wrong?</li>
+<li><strong>How</strong> does the game sequence the learning?</li>
+<li><strong>How</strong> does it scaffold and then fade support?</li>
+<li><strong>How</strong> do we know they understood, not just completed?</li>
+<li><strong>How</strong> does it fit a classroom?</li>
+<li><strong>What</strong> does it deliberately not claim?</li>
+</ul>
+<p>It is a <strong>design brief</strong>, not the theory section. The theory section explains how the design applies the course readings; this brief defines the design that the theory explains.</p>
+<hr>
+<h2>2. Audience and learner profile</h2>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Primary audience</strong></td>
+<td>Norwegian upper-secondary <strong>VG2</strong>, Biologi 1 (BIO01-02)</td>
+</tr>
+<tr>
+<td><strong>Secondary audience</strong></td>
+<td>VG3 revision; first-year anatomy &amp; physiology bridge — note only, no formal curriculum claim</td>
+</tr>
+<tr>
+<td><strong>Age</strong></td>
+<td>16–19</td>
+</tr>
+<tr>
+<td><strong>Prior knowledge</strong></td>
+<td>Basic cell/organ systems; “neurons carry electrical signals”; can label a simple diagram</td>
+</tr>
+<tr>
+<td><strong>Not assumed</strong></td>
+<td>A causal reflex-arc model; synapse transmission; the spinal bypass; lesion prediction</td>
+</tr>
+<tr>
+<td><strong>Reading level</strong></td>
+<td>Plain English, short sentences, glossary terms; avoid college-textbook prose</td>
+</tr>
+<tr>
+<td><strong>Context</strong></td>
+<td>Classroom (teacher-led or pair work) or home (self-directed)</td>
+</tr>
+<tr>
+<td><strong>Session length</strong></td>
+<td>Slice: 5–8 minutes; classroom lesson: 15–30 minutes; full pack: 15–30 minutes</td>
+</tr>
+<tr>
+<td><strong>Device</strong></td>
+<td>Desktop/laptop browser, keyboard, 16:9</td>
+</tr>
+<tr>
+<td><strong>Players</strong></td>
+<td>Solo or two-player local co-op on one keyboard</td>
+</tr>
+<tr>
+<td><strong>Accessibility</strong></td>
+<td>Keyboard-only, remappable, text size, colour-blind-safe, reduced motion, pause, no audio-only cues</td>
+</tr>
+<tr>
+<td><strong>Language</strong></td>
+<td>English; Norwegian localisation is future work</td>
+</tr>
+</tbody></table>
+<p><strong>Design implication:</strong> the game must not assume the player has read the textbook. The first agent dialogue must surface the misconception and give the player a reason to care; the debrief must use everyday language before the technical terms.</p>
+<hr>
+<h2>3. Learning problem</h2>
+<p><strong>Problem statement:</strong> students can label a reflex-arc diagram but cannot explain why the knee jerks before the brain feels it, trace the signal through the spinal cord, or predict the effect of a component failure.</p>
+<p><strong>Status:</strong> this is a <strong>design assumption</strong>, not a cited prevalence claim. It is grounded in the standard misconception literature and the card’s “brain in the loop” misconception, but the GBL report should not claim “most students” without a source. Validate it with the playtest/teacher review.</p>
+<p><strong>Why a game?</strong></p>
+<table>
+<thead>
+<tr>
+<th>Alternative</th>
+<th>What it does well</th>
+<th>What it misses</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Textbook diagram</td>
+<td>Names the parts</td>
+<td>Static; no causal run; no prediction</td>
+</tr>
+<tr>
+<td>Label quiz</td>
+<td>Tests recognition</td>
+<td>No system behaviour; no explanation</td>
+</tr>
+<tr>
+<td>Video</td>
+<td>Shows the sequence</td>
+<td>Passive; no decision; no feedback</td>
+</tr>
+<tr>
+<td>Worksheet</td>
+<td>Practice</td>
+<td>No exploration; no consequence</td>
+</tr>
+<tr>
+<td><strong>Game</strong></td>
+<td>Exploration, causal gates, feedback, map, debrief, co-op explanation</td>
+<td>Still a simplification; needs a teacher/debrief</td>
+</tr>
+</tbody></table>
+<p>The game is not better than a teacher or a lab. It is a <strong>guided practice environment</strong> for the causal model that a diagram cannot provide.</p>
+<hr>
+<h2>4. Curriculum alignment summary</h2>
+<p>The formal anchor is <strong>Biologi 1 (VG2)</strong>. The slice aligns to a <strong>part</strong> of:</p>
+<ul>
+<li><strong>A1</strong> — anatomy/physiology and life processes.</li>
+<li><strong>A2</strong> — cell structure/function and membrane communication (synapse; partial).</li>
+<li><strong>A3</strong> — regulatory mechanisms/homeostasis (reflex as one mechanism; partial).</li>
+</ul>
+<p>It does <strong>not</strong> cover A4 (laboratory investigation) or the full Biologi 1 course. See <a href="docs/curriculum-alignment.html"><code>curriculum-alignment.md</code></a> for exact Udir quotes, the alignment table, and the non-coverage list.</p>
+<p><strong>Claim:</strong> “aligned to a slice of Biologi 1 A1/A2, with a partial link to A3.”<br><strong>Non-claim:</strong> “covers the Biologi 1 curriculum” or “improves exam scores.”</p>
+<hr>
+<h2>5. Instructional sequence</h2>
+<h3>5.1 Mystery-first</h3>
+<p>The player meets the mystery before the mechanism:</p>
+<pre><code>Hook: “Why did the knee jerk before the brain knew?”
+  → surface the “brain is in the loop” misconception
+  → NERV-01 neuron (one-way signal)
+  → NERV-02 synapse (chemical gap, receptor-dependent effect)
+  → NERV-03 reflex arc (spinal bypass; lesion prediction)
+  → debrief (explain the bypass)
+  → Silicon transfer (sensor → controller → actuator)
+</code></pre>
+<p>The cards’ <code>prerequisites</code> are <strong>content dependencies</strong>, not play order. The player can explore in a different order, but the reflex core requires the neuron/synapse concepts.</p>
+<h3>5.2 Level sequence</h3>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Card(s)</th>
+<th>Level (back-pocket name)</th>
+<th>Player does</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0. Hook</td>
+<td>NERV-03</td>
+<td>Intro/Reflex mystery</td>
+<td>Answers “what do you think happens?”; sees the misconception</td>
+<td>Pre-game choice / observation</td>
+</tr>
+<tr>
+<td>1. Context</td>
+<td>Bone/joint cards (pending)</td>
+<td>Bone Gate / Joint Chamber</td>
+<td>Explores the bone/joint scaffold; scans structures</td>
+<td>Concept log</td>
+</tr>
+<tr>
+<td>2. Signal</td>
+<td>NERV-01</td>
+<td>Nerve Forest</td>
+<td>Traces the one-way neuron; orders dendrite → soma → axon → terminal</td>
+<td>Sequence gate</td>
+</tr>
+<tr>
+<td>3. Gap</td>
+<td>NERV-02</td>
+<td>Nerve Forest / Synapse Gap</td>
+<td>Crosses the cleft; matches transmitter/receptor/effect (core: cleft, release, NMJ)</td>
+<td>Match/sequence gate</td>
+</tr>
+<tr>
+<td>4. Reflex</td>
+<td>NERV-03</td>
+<td>Reflex Core</td>
+<td>Routes sensory → spinal → motor → muscle; predicts a lesion; sees the kick</td>
+<td>Core gate + debrief</td>
+</tr>
+<tr>
+<td>5. Transfer</td>
+<td>NERV-03#5</td>
+<td>Silicon fixture</td>
+<td>Maps sensor → interrupt → CPU → actuator</td>
+<td>Optional transfer prompt</td>
+</tr>
+</tbody></table>
+<h3>5.3 Activate → model → practice → feedback → explain → transfer</h3>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Design</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Activate</strong></td>
+<td>Hook question; “what do you think happens?”; surface the misconception.</td>
+</tr>
+<tr>
+<td><strong>Model</strong></td>
+<td>Agent dialogue explains its job with a visual; the scan labels the structure.</td>
+</tr>
+<tr>
+<td><strong>Practice</strong></td>
+<td>Concept gate: sequence/match/predict; the player applies, not recalls.</td>
+</tr>
+<tr>
+<td><strong>Feedback</strong></td>
+<td>Wrong answer: agent feedback + hint; no fail state; evidence recorded.</td>
+</tr>
+<tr>
+<td><strong>Explain</strong></td>
+<td>Debrief: one-sentence teach-back; model answer; 0–2 rubric for playtest.</td>
+</tr>
+<tr>
+<td><strong>Transfer</strong></td>
+<td>Silicon teaser/prompt: same loop, different system.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>6. Scaffolding and fading</h2>
+<table>
+<thead>
+<tr>
+<th>Support</th>
+<th>When</th>
+<th>Fades when</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Agent hints</td>
+<td>First attempts/wrong answers</td>
+<td>Player solves without hint; hint use is evidence</td>
+</tr>
+<tr>
+<td>Scan labels</td>
+<td>First two levels</td>
+<td>Later gates ask without labels; core gate is anatomy-only</td>
+</tr>
+<tr>
+<td>HUD objective</td>
+<td>Always (accessibility)</td>
+<td>Optional “clean HUD” for challenge</td>
+</tr>
+<tr>
+<td>Concept log</td>
+<td>Always</td>
+<td>Player can review; not a hint in the gate</td>
+</tr>
+<tr>
+<td>Gate feedback</td>
+<td>Every attempt</td>
+<td>Correct answer + explanation</td>
+</tr>
+<tr>
+<td>Co-op partner</td>
+<td>Optional</td>
+<td>Peer explanation; not required</td>
+</tr>
+</tbody></table>
+<p><strong>HUD vs anatomy decision:</strong> scan labels are a <strong>scaffold</strong>, not a permanent answer key. The first two levels can label structures; the reflex core asks the player to route the signal without labels. Assist mode keeps labels available. The debrief asks for an explanation without the HUD. This resolves the <code>LEARNING-DESIGN.md</code> tension “HUD vs anatomy.”</p>
+<p><strong>No fail state:</strong> hazards reset to the checkpoint; gates retry; hints are unlimited. The challenge is understanding, not survival.</p>
+<hr>
+<h2>7. Assessment and evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Objective</th>
+<th>In-game evidence</th>
+<th>Playtest evidence</th>
+<th>Rubric</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OBJ-1 Identify</td>
+<td>Concept log; scan; dialogue completion</td>
+<td>Pre/post Q1</td>
+<td>0–2: 0 = few parts; 1 = some; 2 = all core parts</td>
+</tr>
+<tr>
+<td>OBJ-2 Trace</td>
+<td>Nerve gate sequence; attempts/hints</td>
+<td>Pre/post Q2 + game export</td>
+<td>0–2: 0 = wrong order; 1 = partial; 2 = correct direction</td>
+</tr>
+<tr>
+<td>OBJ-3 Explain</td>
+<td>Debrief free text + model answer</td>
+<td>Pre/post Q3 + debrief</td>
+<td>0 = labels only; 1 = partial bypass; 2 = correct spinal bypass + brain later</td>
+</tr>
+<tr>
+<td>OBJ-4 Predict</td>
+<td>Optional lesion challenge/debrief</td>
+<td>Pre/post Q4</td>
+<td>0 = no effect; 1 = effect without reason; 2 = effect + reason</td>
+</tr>
+<tr>
+<td>OBJ-5 Transfer</td>
+<td>Optional Silicon prompt</td>
+<td>Observation</td>
+<td>Optional; not part of the core claim</td>
+</tr>
+</tbody></table>
+<p><strong>Debrief rubric (0–2):</strong></p>
+<ul>
+<li><strong>0</strong> — labels only / no bypass.</li>
+<li><strong>1</strong> — partial: mentions the spinal cord but not that the brain perceives it later.</li>
+<li><strong>2</strong> — correct: sensory → spinal cord → motor → muscle, and the brain feels it after.</li>
+</ul>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>The game records the debrief answer and shows a model answer; it does <strong>not</strong> auto-grade.</li>
+<li>The facilitator scores the playtest answers with the rubric; two raters where possible.</li>
+<li>The pre/post is 4 short questions, not a grade.</li>
+<li>No exam-score claim; no inferential statistics; 3 players/pairs is formative.</li>
+</ul>
+<hr>
+<h2>8. Classroom integration</h2>
+<p><strong>15–30 minute lesson (teacher-led):</strong></p>
+<ol>
+<li><strong>Hook (3 min):</strong> “Why does the knee jerk before the brain feels it?” Collect predictions; do not correct yet.</li>
+<li><strong>Play (8–12 min):</strong> pairs on one keyboard; one drives, one reads the agent; swap at the reflex core; teacher circulates.</li>
+<li><strong>Debrief (5–8 min):</strong> pairs explain the bypass; teacher uses the model answer; connect to the Udir aim and the textbook diagram.</li>
+<li><strong>Transfer (3 min):</strong> show the Silicon teaser; “where is the spinal cord in a computer?”</li>
+<li><strong>Exit ticket (2 min):</strong> one-sentence explanation or the pre/post Q3.</li>
+</ol>
+<p><strong>Teacher role:</strong> not to teach during play; to set the hook, observe, and run the debrief. The game is a <strong>guided practice</strong>, not a replacement for the lesson.</p>
+<p><strong>Home/self-directed:</strong> the game + debrief is a 5–8 minute review; the model answer and concept log support independent use.</p>
+<p><strong>Accessibility:</strong> keyboard-only, text size, colour-blind-safe, reduced motion, pause, no audio-only cues; pairs can share one keyboard.</p>
+<hr>
+<h2>9. Theory summary</h2>
+<p><strong>Four core lenses + Kiili supporting:</strong></p>
+<ul>
+<li><strong>Malone</strong> — intrinsic fantasy, curiosity, control, challenge.</li>
+<li><strong>SDT</strong> — autonomy, competence, relatedness (co-op).</li>
+<li><strong>Cognitive load</strong> — segmenting, signalling, dual coding, spatial contiguity.</li>
+<li><strong>Constructive alignment</strong> — objectives → mechanics → evidence.</li>
+<li><strong>Kiili/GameFlow</strong> — experience → reflection → feedback loop (supporting).</li>
+</ul>
+<p>The full selection, course-reading mapping, claims/non-claims, and word budget are in <a href="docs/theory-brief.html"><code>theory-brief.md</code></a>. The GDD’s Learning section and the theory section must use the same lens names and features.</p>
+<p><strong>Intrinsic vs extrinsic fantasy:</strong> Kjøpesmart’s cozy home is an extrinsic fantasy around the shopping task; Shrinkonauts’ body/system is the level and the knowledge is the key, so its fantasy is intrinsic. This is a cross-report consistency point.</p>
+<hr>
+<h2>10. Depth boundary</h2>
+<table>
+<thead>
+<tr>
+<th>Card</th>
+<th>Core for VG2</th>
+<th>Advanced/optional</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NERV-01 Neuron</td>
+<td>Parts/one-way, myelin, threshold, all-or-none</td>
+<td>Axon hillock, resting potential/Na⁺–K⁺ pump</td>
+</tr>
+<tr>
+<td>NERV-02 Synapse</td>
+<td>Cleft, Ca²⁺-triggered release, NMJ/ACh</td>
+<td>EPSP/IPSP, summation, clearance/electrical synapses</td>
+</tr>
+<tr>
+<td>NERV-03 Reflex</td>
+<td>Spindle, dorsal root, ventral root, brain later</td>
+<td>Reciprocal inhibition</td>
+</tr>
+</tbody></table>
+<p><strong>Rule:</strong> VG2 gates use core facts only. Advanced facts are optional scan/debrief/first-year bridge. The cards have a <code>Depth</code> section; <code>index.json</code> records <code>core</code>/<code>advanced</code> fact IDs.</p>
+<hr>
+<h2>11. Limitations and non-claims</h2>
+<ul>
+<li>The game is a <strong>simplified model</strong>, not a medical simulator.</li>
+<li>It covers a <strong>slice</strong> of Biologi 1 A1/A2, partial A3; not A4 or the full course.</li>
+<li>The content cards are sourced from OpenStax <em>A&amp;P</em> (college-level); the VG2 core is a simplification, not a textbook replacement.</li>
+<li>The playtest is <strong>3 external players/pairs</strong>, formative; it is not an efficacy study.</li>
+<li>No claim of exam-score improvement, clinical competence, or full curriculum coverage.</li>
+<li>The video/GBL report should say “designed to support” and “formative playtest,” not “proven to improve learning.”</li>
+<li>A teacher/curriculum review is recommended but may not be possible before 9 November.</li>
+</ul>
+<hr>
+<h2>12. QA gates and sign-off</h2>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Question</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>QA-1 Curriculum</strong></td>
+<td>Is the slice aligned to named Udir aims, with non-coverage stated?</td>
+<td>Snorre + Henrik/Hanna</td>
+<td>Drafted in <code>curriculum-alignment.md</code></td>
+</tr>
+<tr>
+<td><strong>QA-2 Learner</strong></td>
+<td>Is the prior knowledge/misconception/reading level explicit?</td>
+<td>Snorre</td>
+<td>This brief</td>
+</tr>
+<tr>
+<td><strong>QA-3 Sequence</strong></td>
+<td>Is the activate → model → practice → feedback → explain → transfer sequence explicit?</td>
+<td>Snorre + Johannes/Marie</td>
+<td>This brief</td>
+</tr>
+<tr>
+<td><strong>QA-4 Assessment</strong></td>
+<td>Do the gates test application, and is the debrief rubric defined?</td>
+<td>Snorre + Henrik/Hanna</td>
+<td>This brief</td>
+</tr>
+<tr>
+<td><strong>QA-5 Theory</strong></td>
+<td>Are 4 core + Kiili selected, applied, and cited?</td>
+<td>Henrik/Hanna</td>
+<td><code>theory-brief.md</code></td>
+</tr>
+<tr>
+<td><strong>QA-6 Course</strong></td>
+<td>Does the GBL submission meet the brief/template/checklist?</td>
+<td>Snorre + group</td>
+<td><code>gbl-course-requirements.md</code></td>
+</tr>
+<tr>
+<td><strong>QA-7 Playtest</strong></td>
+<td>Are 3 external players/pairs tested and evidence recorded?</td>
+<td>Snorre</td>
+<td>M3/M4</td>
+</tr>
+<tr>
+<td><strong>QA-8 Consistency</strong></td>
+<td>Do GDD/theory/video use the same claims/IDs?</td>
+<td>Group</td>
+<td>Before submission</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>13. Open questions</h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Do we have a Biologi 1 teacher for a 15-minute sanity check?</td>
+<td>Group</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>Is the hook question asked in-game or by the teacher?</td>
+<td>Snorre</td>
+<td>Open — recommend both (in-game + teacher)</td>
+</tr>
+<tr>
+<td>Do we show the exact Udir quotes in the GDD appendix?</td>
+<td>Johannes/Marie</td>
+<td>Open — recommend yes</td>
+</tr>
+<tr>
+<td>Is the Silicon transfer assessed or only shown?</td>
+<td>Snorre</td>
+<td>Open — recommend shown/optional</td>
+</tr>
+<tr>
+<td>Do we need a Norwegian-language version for the classroom?</td>
+<td>Group</td>
+<td>Open — recommend English for GBL, note localisation as future work</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>14. Change log</h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Version</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-10-26</td>
+<td>0.1</td>
+<td>Created as the pedagogy layer for the GBL submission: learner profile, sequence, scaffolding, assessment, classroom, limitations.</td>
+</tr>
+</tbody></table>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

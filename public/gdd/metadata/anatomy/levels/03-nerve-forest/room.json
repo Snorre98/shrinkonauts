@@ -1,0 +1,271 @@
+{
+  "schemaVersion": "1.1",
+  "id": "room-nerve-forest",
+  "title": "Nerve Forest",
+  "width": 40,
+  "height": 23,
+  "tileSize": 32,
+  "tileset": "tileset.anatomy",
+  "layers": {
+    "tiles": [
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#                                      #",
+      "#               ###                    #",
+      "#                                      #",
+      "#####                                  #",
+      "#           ####                       #",
+      "#                                      #",
+      "#      #####       ### ### ### ### ### #",
+      "#    ##                                #",
+      "#                                      #",
+      "#                                      #",
+      "########################################",
+      "########################################",
+      "########################################"
+    ]
+  },
+  "tileMaterials": [
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b                                      b",
+    "b               nnn                    b",
+    "b                                      b",
+    "bnnnn                                  b",
+    "b           nnnn                       b",
+    "b                                      b",
+    "b      nnnnn       nnn nnn nnn nnn nnn b",
+    "b    nn                                b",
+    "b                                      b",
+    "b                                      b",
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  ],
+  "tileMaterialLegend": {
+    "b": {
+      "materialId": "bone",
+      "autotile": "blob47"
+    },
+    "n": {
+      "materialId": "nerve",
+      "autotile": "edge"
+    }
+  },
+  "defaultMaterialId": "bone",
+  "materialSeed": 42,
+  "background": {
+    "id": "bg.nerve_forest",
+    "layers": [
+      {
+        "assetId": "bg.nerve_forest.sky",
+        "depth": -40,
+        "parallaxX": 0.05,
+        "parallaxY": 0.02,
+        "fit": "cover"
+      }
+    ]
+  },
+  "spawns": {
+    "player1": {
+      "x": 3,
+      "y": 20
+    },
+    "player2": {
+      "x": 5,
+      "y": 20
+    }
+  },
+  "checkpoints": [
+    {
+      "id": "checkpoint-entry",
+      "x": 4,
+      "y": 20
+    }
+  ],
+  "entities": [
+    {
+      "id": "agent-neuron",
+      "type": "agent",
+      "x": 4,
+      "y": 13,
+      "sprite": "sprite.agent.neuron",
+      "idleAnimation": "sprite.agent.neuron.idle",
+      "dialogueId": "dlg-neuron-01",
+      "label": "Neuron Keeper",
+      "presentation": {
+        "role": "npc"
+      }
+    },
+    {
+      "id": "scan-neuron",
+      "type": "scanTarget",
+      "x": 13,
+      "y": 14,
+      "sprite": "sprite.scan.neuron",
+      "factId": "NERV-01#1",
+      "conceptId": "CON-3",
+      "label": "Neuron"
+    },
+    {
+      "id": "scan-myelin",
+      "type": "scanTarget",
+      "x": 24,
+      "y": 16,
+      "sprite": "sprite.scan.myelin",
+      "factId": "NERV-01#3",
+      "conceptId": "CON-3",
+      "label": "Myelin sheath"
+    },
+    {
+      "id": "scan-pathway",
+      "type": "scanTarget",
+      "x": 32,
+      "y": 16,
+      "sprite": "sprite.scan.pathway",
+      "factId": "NERV-01#6",
+      "conceptId": "CON-3",
+      "label": "One-way conduction"
+    },
+    {
+      "id": "pad-input-a",
+      "type": "decor",
+      "x": 5,
+      "y": 17,
+      "sprite": "sprite.pad.dendrite",
+      "label": "Dendrite input A",
+      "presentation": {
+        "role": "interactable"
+      }
+    },
+    {
+      "id": "pad-input-b",
+      "type": "decor",
+      "x": 10,
+      "y": 16,
+      "sprite": "sprite.pad.dendrite",
+      "label": "Dendrite input B",
+      "presentation": {
+        "role": "interactable"
+      }
+    },
+    {
+      "id": "pad-terminal",
+      "type": "decor",
+      "x": 35,
+      "y": 16,
+      "sprite": "sprite.pad.terminal",
+      "label": "Axon terminal",
+      "presentation": {
+        "role": "interactable"
+      }
+    },
+    {
+      "id": "gate-threshold",
+      "type": "puzzleGate",
+      "x": 15,
+      "y": 14,
+      "sprite": "sprite.gate.ferry",
+      "label": "Threshold gate",
+      "components": {
+        "gate": {
+          "gateId": "gate-threshold"
+        },
+        "anchors": {
+          "center": {
+            "x": 32,
+            "y": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "gate-behind",
+      "type": "puzzleGate",
+      "x": 18,
+      "y": 11,
+      "sprite": "sprite.gate.ferry",
+      "label": "One-way gate",
+      "components": {
+        "gate": {
+          "gateId": "gate-behind"
+        },
+        "anchors": {
+          "center": {
+            "x": 32,
+            "y": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "gate-exit",
+      "type": "puzzleGate",
+      "x": 36,
+      "y": 16,
+      "sprite": "sprite.gate.ferry",
+      "label": "Axon exit gate",
+      "components": {
+        "gate": {
+          "gateId": "gate-exit"
+        },
+        "anchors": {
+          "center": {
+            "x": 32,
+            "y": 32
+          }
+        }
+      }
+    },
+    {
+      "id": "exit-nerve",
+      "type": "decor",
+      "x": 37,
+      "y": 15,
+      "sprite": "sprite.exit",
+      "label": "Muscle Effector exit",
+      "presentation": {
+        "role": "interactable"
+      }
+    }
+  ],
+  "exits": [
+    {
+      "id": "exit-to-muscle",
+      "x": 37,
+      "y": 15,
+      "width": 1,
+      "height": 1,
+      "toLevelId": "04-muscle-effector",
+      "puzzleId": "puzzle-node-run"
+    }
+  ],
+  "triggers": [],
+  "infoAreas": [
+    {
+      "id": "info-nerve-forest",
+      "x": 5,
+      "y": 7,
+      "width": 33,
+      "height": 13,
+      "puzzleId": "puzzle-node-run"
+    }
+  ],
+  "music": "audio.music.nerve_forest"
+}

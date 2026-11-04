@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.1",
+  "id": "anatomy-reflex",
+  "title": "Anatomy: The Reflex Arc",
+  "domain": "anatomy",
+  "version": "0.3.0",
+  "syllabusId": "anatomy-reflex",
+  "startLevelId": "03-nerve-forest",
+  "endLevelId": "04-muscle-effector",
+  "levels": [
+    "03-nerve-forest",
+    "04-muscle-effector"
+  ],
+  "theme": "theme.json",
+  "mapping": "mapping.json",
+  "licenses": "licenses.json",
+  "facts": "facts.json",
+  "materials": "materials.json",
+  "assetManifests": {
+    "placeholder": "assets.placeholder.json",
+    "final": "assets.final.json"
+  },
+  "presentation": {
+    "roles": {
+      "npc": { "display": [96, 96], "fidelity": "hero-1x" },
+      "interactable": { "display": [64, 64], "fidelity": "hero-1x" },
+      "prop": { "display": [48, 48], "fidelity": "hero-1x" },
+      "scan": { "display": [36, 36], "fidelity": "ui-1x" },
+      "decor": { "display": [36, 36], "fidelity": "world-2x" },
+      "player": { "display": [28, 44], "fidelity": "world-2x" }
+    }
+  },
+  "assets": {
+    "tilesets": [
+      "tileset.anatomy"
+    ],
+    "sprites": [
+      "sprite.agent.neuron",
+      "sprite.gate.nerve",
+      "sprite.scan.neuron",
+      "sprite.scan.synapse",
+      "sprite.scan.pathway",
+      "sprite.scan.myelin",
+      "sprite.scan.muscle",
+      "sprite.scan.reflex",
+      "sprite.pad.dendrite",
+      "sprite.pad.terminal",
+      "sprite.checkpoint",
+      "sprite.exit",
+      "sprite.prop.tracer",
+      "sprite.pulse.terminal",
+      "sprite.receptor.triangle",
+      "sprite.receptor.circle",
+      "sprite.gate.ferry"
+    ],
+    "audio": [
+      "audio.cue.boot",
+      "audio.cue.dialogue",
+      "audio.cue.scan",
+      "audio.cue.dash",
+      "audio.cue.gate",
+      "audio.cue.map",
+      "audio.cue.debrief",
+      "audio.cue.checkpoint",
+      "audio.cue.unlock",
+      "audio.cue.jump",
+      "audio.cue.land"
+    ]
+  },
+  "ageRating": "12+",
+  "description": "Shrink into the nerve forest, drive a signal past threshold, cross the neuromuscular junction, and reach the muscle.",
+  "metadata": {
+    "author": "Snorre",
+    "created": "2026-10-26",
+    "updated": "2026-10-27",
+    "stage": "M2 level factory"
+  }
+}

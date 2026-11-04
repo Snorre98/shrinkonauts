@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>M3 — Muscle Endplate and Shared Tile Atlas Asset Prompts v0.2 — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">Art pipeline / source notes</p>
+  <h1>M3 — Muscle Endplate and Shared Tile Atlas Asset Prompts v0.2</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <ul>
+<li><strong>Status:</strong> Draft prompt pack · 3 November 2026 · 04 batch accepted</li>
+<li><strong>Owner:</strong> Snorre</li>
+<li><strong>Scope:</strong> Additive art pass for <code>04-muscle-effector</code> plus the shared 03/04 material atlases</li>
+<li><strong>Target milestone:</strong> M3 additive pass; does not rewrite the original M3 scope</li>
+<li><strong>Generator:</strong> Nano Banana / Google Gemini, manual web UI</li>
+<li><strong>Depends on:</strong> ADR-0014–0017 (materials, patterns, atlases), ADR-0047–0049 and ADR-0070–0075 (pixel direction, presentation, hero scale), ADR-0060–0065 (source/working/runtime pipeline)</li>
+<li><strong>Related:</strong> <a href="docs/m3-asset-requirements-v01.html"><code>asset-requirements-v01.md</code></a> · <a href="background-asset-requirements-v01.md"><code>background-asset-requirements-v01.md</code></a> · <a href="docs/m3.5-hub-asset-prompts-v01.html"><code>../m3.5/hub-asset-prompts-v01.md</code></a> · <a href="docs/asset-prompt-library-v01.html"><code>../assets/prompt-library-v01.md</code></a> · <a href="../adr-assets/0078-audio-and-graphics-prompt-libraries.md"><code>../adr-assets/0078-audio-and-graphics-prompt-libraries.md</code></a> · <a href="../prompts/asset-generation-template.md"><code>../prompts/asset-generation-template.md</code></a> · <a href="../../public/packs/anatomy-reflex/materials.json"><code>../../public/packs/anatomy-reflex/materials.json</code></a> · <a href="../../src/materials/autotile.ts"><code>../../src/materials/autotile.ts</code></a> · <a href="../../src/world/background.ts"><code>../../src/world/background.ts</code></a></li>
+</ul>
+<blockquote>
+<p><strong>The rule:</strong> AI generates raster art only. Manifest wiring, atlas frame assembly, material variant sets, tints and tests stay in code. A generated prompt plate is not a runtime asset until it is processed and wired.</p>
+</blockquote>
+<blockquote>
+<p><strong>Additive-pass rule:</strong> the original M3 document deliberately kept <code>04-muscle-effector</code> backgrounds, muscle/membrane tiles and <code>sprite.gate.nerve</code> as placeholders. This document is the deliberate expansion of that scope. Do not silently rewrite the M3 status tables; add a pointer to this document instead.</p>
+</blockquote>
+<blockquote>
+<p><strong>Completion status (2026-11-03):</strong> all seven Nano Banana source plates are
+<strong>processed, wired, and accepted</strong> from
+<code>art-source/nanobanan/new/muscle-endplate-2026-11-03/</code>. The 04 sky, four
+material atlases, <code>sprite.gate.nerve</code> and <code>sprite.exit</code> now load their final
+runtime files with <code>placeholder</code> removed; the four material tints are removed
+because the atlases are coloured. §4.2 is historical. The canonical
+cross-discipline status is the
+<a href="docs/asset-prompt-library-v01.html#40-completion-matrix">completion matrix</a>.
+Evidence is in the reports/previews under <code>art-source/nanobanan/</code> and the
+prompt log in §12.</p>
+</blockquote>
+<hr>
+<h2>0. Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>04 background</td>
+<td>One pretty sky plate, <strong>1280×720 at 1×</strong>, opaque lossless WebP</td>
+</tr>
+<tr>
+<td>04 far/mid/near</td>
+<td>Remain declared placeholders; not wired to runtime files</td>
+</tr>
+<tr>
+<td>Material atlases</td>
+<td>Four: <code>tile.bone.atlas</code>, <code>tile.nerve.atlas</code>, <code>tile.muscle.atlas</code>, <code>tile.membrane.atlas</code></td>
+</tr>
+<tr>
+<td>03 tiles</td>
+<td>Bone and nerve atlases included; do not leave the bone/nerve tiles flat</td>
+</tr>
+<tr>
+<td>04 tiles</td>
+<td>Muscle and membrane atlases included</td>
+</tr>
+<tr>
+<td>04 sprites</td>
+<td><code>sprite.gate.nerve</code> and <code>sprite.exit</code> prompts plus a wiring plan</td>
+</tr>
+<tr>
+<td>Atlas assembly</td>
+<td><code>npm run art:atlas</code> deterministic assembler; no manual frame-by-frame atlas editing</td>
+</tr>
+<tr>
+<td>Old atlas</td>
+<td><code>tile.anatomy.atlas</code> is removed from the runtime manifest; the SVG stays as a test fixture</td>
+</tr>
+<tr>
+<td>Final state</td>
+<td>The processed 04 sky, four coloured atlases, gate and exit are wired; the interim procedural files and material tints are removed</td>
+</tr>
+<tr>
+<td>Source state</td>
+<td><strong>7 Nano Banana source JPEGs processed and accepted</strong> in <code>art-source/nanobanan/new/muscle-endplate-2026-11-03/</code></td>
+</tr>
+<tr>
+<td>Generation order</td>
+<td>Complete. Sky, four atlases, gate and exit were processed, wired and accepted on 2026-11-03</td>
+</tr>
+<tr>
+<td>Out of scope</td>
+<td>04 far/mid/near, 03 scan icons, audio, UI, levels 01/02/05, Silicon</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>1. Why this pass exists</h2>
+<p>The pass started from two distinct placeholder failures, both now resolved:</p>
+<ol>
+<li><strong>04 background.</strong> <code>room.json</code> declares <code>bg.muscle_endplate.sky</code>, <code>.far</code>,
+<code>.mid</code>, <code>.near</code>. At the start all four entries were <code>&quot;placeholder&quot;: true</code>
+with no <code>src</code>. The sky is now final; far/mid/near remain declared
+placeholders/future work.</li>
+<li><strong>Tile textures.</strong> <code>muscle</code> and <code>membrane</code> had no <code>variantSet</code>; <code>bone</code> had no
+variant set; <code>nerve</code> pointed at the placeholder <code>tile.anatomy.atlas</code>. The
+four final atlases now resolve <code>bone-blob47</code>, <code>nerve-edge</code>, <code>muscle-edge</code>
+and <code>membrane-edge</code> in 03 and 04.</li>
+</ol>
+<p>The fix is a content-and-tooling pass, not an engine rewrite. The engine already supports atlas-backed variant sets, 32×32 frames, <code>edge</code> and <code>blob47</code> rules, and cover-fit backgrounds.</p>
+<hr>
+<h2>2. Runtime constraints</h2>
+<p>These values are current implementation facts. Do not “fix” them during export.</p>
+<table>
+<thead>
+<tr>
+<th>Constraint</th>
+<th>Value</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>03 room</td>
+<td>40×23 tiles at 32 px = <strong>1280×736</strong></td>
+<td>03 sky is 1280×736 at 1×</td>
+</tr>
+<tr>
+<td>04 room</td>
+<td>40×22 tiles at 32 px = <strong>1280×704</strong></td>
+<td>04 sky must still cover the 1280×720 camera view</td>
+</tr>
+<tr>
+<td>Viewport</td>
+<td><strong>1280×720</strong></td>
+<td>04 sky is authored <strong>1280×720 at 1×</strong></td>
+</tr>
+<tr>
+<td>Tile frame</td>
+<td><strong>32×32</strong>, 1:1</td>
+<td>Never switch to 16×16 frames</td>
+</tr>
+<tr>
+<td>Cluster grid</td>
+<td>every colour block at least <strong>2×2 px</strong></td>
+<td>Pixel-clean at source, not at runtime</td>
+</tr>
+<tr>
+<td>Alpha</td>
+<td>hard 0/255 for pixel assets</td>
+<td>No semi-transparent tile or parallax pixels</td>
+</tr>
+<tr>
+<td><code>edge</code> rule</td>
+<td>16 canonical masks <code>0</code>–<code>15</code></td>
+<td>4×4 atlas, 128×128</td>
+</tr>
+<tr>
+<td><code>blob47</code> rule</td>
+<td>47 canonical masks</td>
+<td>8×6 atlas, 256×192; one empty cell</td>
+</tr>
+<tr>
+<td>04 membrane legend</td>
+<td>currently <code>corner</code></td>
+<td>Change to <code>edge</code> so the 16-frame membrane atlas is used</td>
+</tr>
+<tr>
+<td>Tint</td>
+<td><code>room-scene.ts</code> tints final atlas frames when <code>material.tint</code> or <code>rule.tint</code> exists</td>
+<td>Interim neutral atlases keep tint; final coloured atlases remove it</td>
+</tr>
+<tr>
+<td>04 sky fit</td>
+<td><code>cover</code>, parallax 0.05 / 0.02, depth −40</td>
+<td>1280×720 plate covers the view</td>
+</tr>
+<tr>
+<td>04 far/mid/near</td>
+<td><code>tile</code>, 1024×512 target, future</td>
+<td>Stay placeholders in this pass</td>
+</tr>
+</tbody></table>
+<h3>2.1 Tint decision</h3>
+<p>This pass has landed the final stage:</p>
+<ul>
+<li><strong>Final Nano Banana atlases:</strong> the atlases are authored in final material
+colours; the four <code>tint</code> fields are removed from <code>materials.json</code>; the
+<code>placeholder</code> flags are removed from the atlas entries. <code>room-scene.ts</code> does
+not tint them.</li>
+<li><strong>Historical interim state:</strong> the neutral greyscale atlases and tints were a
+temporary stage. They are retained for comparison only and must not be
+reintroduced alongside the coloured atlases.</li>
+</ul>
+<p>Do not mix the two stages in one atlas.</p>
+<h3>2.2 Old atlas replacement</h3>
+<p><code>tile.anatomy.atlas</code> is removed from <code>assets.final.json</code> and from the runtime variant sets. The SVG file <code>shared/tiles/anatomy-atlas.svg</code> remains in the repository only as a deterministic test fixture for atlas resolution tests. Tests that need a known-good atlas should use <code>tile.nerve.atlas</code> or the fixture.</p>
+<hr>
+<h2>3. Prompt pack version and assembly</h2>
+<p>Prompt pack: <code>muscle-endplate-2026-11-03.1</code></p>
+<pre><code class="language-text">CONCEPT PROMPT = SUBJECT + STYLE_&lt;CATEGORY&gt; + PALETTE + FRAME_&lt;CATEGORY&gt;
+NEGATIVE       = NEGATIVE_&lt;CATEGORY&gt; + NEGATIVE_&lt;ASSET&gt;
+</code></pre>
+<p>If the tool has a separate negative field, put the negative there. Otherwise append it after <code>NEGATIVE:</code>.</p>
+<h3>3.1 Shared style blocks</h3>
+<h4><code>STYLE_ATLAS</code></h4>
+<pre><code class="language-text">Pixel-art seamless material texture for a side-view platformer set inside a living human body. Native pixel grid, hard square pixels, every colour block at least 2×2 pixels, no anti-aliasing, no smoothing. Flat fills from three-step ramps; 50% dither. Uniform flat lighting; orthographic surface, seamless material swatch. Gross-cute biology, wry deadpan tone, 12+ friendly. The material reads as one coherent surface; no characters or scene.
+</code></pre>
+<h4><code>STYLE_BACKGROUND</code></h4>
+<pre><code class="language-text">Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing. Orthographic side view, landscape scale; atmospheric depth from layered values and dither, not a global gradient; local warm highlights only. Damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, 12+ friendly: never gory. The body is a landscape, not a textbook cutaway; use striated muscle, tendon plates and membrane folds as architecture.
+</code></pre>
+<h4><code>STYLE_SPRITE</code></h4>
+<pre><code class="language-text">Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
+</code></pre>
+<h4><code>PALETTE</code></h4>
+<pre><code class="language-text">Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+</code></pre>
+<h3>3.2 Shared frame blocks</h3>
+<h4><code>FRAME_ATLAS</code></h4>
+<pre><code class="language-text">1024×1024 seamless material swatch concept, uniform flat lighting, no grid, no labels, no frame, no directional highlight, no baked edge. Hard pixel edges; every colour block at least 2×2 pixels. Pixel-clean to a 512×512 working swatch; assemble 32×32 frames offline with npm run art:atlas.
+</code></pre>
+<h4><code>FRAME_SKY_PRETTY</code></h4>
+<pre><code class="language-text">16:9 wide composition, 1280×720 source, displayed at 1×. Opaque, edge-to-edge background plate. Keep the upper corners and lower third dark and low-contrast for HUD and player silhouettes; keep important detail inside the central 70%. No frame, no border, no text, no UI, no characters. Hard pixel edges; no anti-aliasing.
+</code></pre>
+<h4><code>FRAME_ENTITY</code></h4>
+<pre><code class="language-text">Full object, centred, with a clear empty margin on all sides, isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing.
+</code></pre>
+<h3>3.3 Shared negative blocks</h3>
+<h4><code>NEGATIVE_ATLAS</code></h4>
+<pre><code class="language-text">text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lines, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, open wound, viscera, exposed organs, grid, tile grid, checkerboard, directional highlight, baked edge shading, bevel, drop shadow, vignette, scene, character, object.
+</code></pre>
+<h4><code>NEGATIVE_BACKGROUND</code></h4>
+<pre><code class="language-text">text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lines, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, open wound, viscera, exposed organs, character, astronaut, creature, figure, face, frame, high-contrast centre, single focal landmark, hard horizon line, flat cartoon outline.
+</code></pre>
+<h4><code>NEGATIVE_SPRITE</code></h4>
+<pre><code class="language-text">text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lines, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, open wound, viscera, exposed organs, extra objects, multiple objects, scene background, ground, floor, pedestal, cast shadow, drop shadow, checkerboard, frame.
+</code></pre>
+<hr>
+<h2>4. Asset register</h2>
+<p>Paths are relative to <code>public/packs/anatomy-reflex/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Asset ID</th>
+<th>Type</th>
+<th align="right">Source</th>
+<th align="right">Display</th>
+<th>Runtime file</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>bg.muscle_endplate.sky</code></td>
+<td>background</td>
+<td align="right">1280×720</td>
+<td align="right">1280×720 at 1×</td>
+<td><code>shared/backgrounds/muscle-endplate-sky.webp</code></td>
+<td>P0</td>
+</tr>
+<tr>
+<td><code>tile.muscle.atlas</code></td>
+<td>atlas</td>
+<td align="right">128×128, 4×4</td>
+<td align="right">32×32 frames</td>
+<td><code>shared/tiles/muscle-atlas.png</code></td>
+<td>P0</td>
+</tr>
+<tr>
+<td><code>tile.membrane.atlas</code></td>
+<td>atlas</td>
+<td align="right">128×128, 4×4</td>
+<td align="right">32×32 frames</td>
+<td><code>shared/tiles/membrane-atlas.png</code></td>
+<td>P0</td>
+</tr>
+<tr>
+<td><code>tile.bone.atlas</code></td>
+<td>atlas</td>
+<td align="right">256×192, 8×6</td>
+<td align="right">32×32 frames</td>
+<td><code>shared/tiles/bone-atlas.png</code></td>
+<td>P0</td>
+</tr>
+<tr>
+<td><code>tile.nerve.atlas</code></td>
+<td>atlas</td>
+<td align="right">128×128, 4×4</td>
+<td align="right">32×32 frames</td>
+<td><code>shared/tiles/nerve-atlas.png</code></td>
+<td>P0</td>
+</tr>
+<tr>
+<td><code>sprite.gate.nerve</code></td>
+<td>sprite</td>
+<td align="right">64×64</td>
+<td align="right">64×64 at 1×</td>
+<td><code>shared/sprites/gate-nerve.png</code></td>
+<td>P1</td>
+</tr>
+<tr>
+<td><code>sprite.exit</code></td>
+<td>sprite</td>
+<td align="right">64×64</td>
+<td align="right">64×64 at 1×</td>
+<td><code>shared/sprites/exit.png</code></td>
+<td>P1</td>
+</tr>
+</tbody></table>
+<h3>4.1 Processed and accepted batch (2026-11-03)</h3>
+<p>Source paths in this table are repository paths, not paths inside
+<code>public/packs/</code>. All rows are <code>accepted</code>: the source is recorded, the runtime
+file exists, the manifest has <code>src</code>, the licence exists, the relevant tests
+pass, and <code>placeholder</code>/material tints are removed.</p>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Source file</th>
+<th align="right">Source size</th>
+<th>Processing evidence</th>
+<th>Runtime</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>bg.muscle_endplate.sky</code></td>
+<td><code>art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg</code></td>
+<td align="right">2752×1536</td>
+<td>2720×1530 crop at (16,3); Lanczos to 1280×720; lossless VP8L; 669,798 bytes; <code>reports/muscle-endplate-sky.process.json</code></td>
+<td><code>shared/backgrounds/muscle-endplate-sky.webp</code></td>
+</tr>
+<tr>
+<td><code>tile.muscle.atlas</code></td>
+<td><code>.../tile.muscle.atlas.jpeg</code></td>
+<td align="right">2048×2048</td>
+<td>nearest 512 swatch; palette quantise; 2×2 snap/weld; 128×128 4×4 edge atlas; <code>reports/tile-muscle-*</code></td>
+<td><code>shared/tiles/muscle-atlas.png</code></td>
+</tr>
+<tr>
+<td><code>tile.membrane.atlas</code></td>
+<td><code>.../tile.membrane.atlas.jpeg</code></td>
+<td align="right">2048×2048</td>
+<td>nearest 512 swatch; palette quantise; 2×2 snap/weld; 128×128 4×4 edge atlas; <code>reports/tile-membrane-*</code></td>
+<td><code>shared/tiles/membrane-atlas.png</code></td>
+</tr>
+<tr>
+<td><code>tile.bone.atlas</code></td>
+<td><code>.../tile.bone.atlas.jpeg</code></td>
+<td align="right">2048×2048</td>
+<td>nearest 512 swatch; palette quantise; 2×2 snap/weld; 256×192 8×6 <code>blob47</code>; <code>reports/tile-bone-*</code></td>
+<td><code>shared/tiles/bone-atlas.png</code></td>
+</tr>
+<tr>
+<td><code>tile.nerve.atlas</code></td>
+<td><code>.../tile.nerve.atlas.jpeg</code></td>
+<td align="right">2048×2048</td>
+<td>nearest 512 swatch; palette quantise; 2×2 snap/weld; 128×128 4×4 edge atlas; <code>reports/tile-nerve-*</code></td>
+<td><code>shared/tiles/nerve-atlas.png</code></td>
+</tr>
+<tr>
+<td><code>sprite.gate.nerve</code></td>
+<td><code>.../sprite.gate.nerve.jpeg</code></td>
+<td align="right">2048×2048</td>
+<td><code>#FF00FF</code> key; trim; 60×60 fit in 64×64; <code>reports/gate-nerve.*</code></td>
+<td><code>shared/sprites/gate-nerve.png</code></td>
+</tr>
+<tr>
+<td><code>sprite.exit</code></td>
+<td><code>.../sprite.exit.jpeg</code></td>
+<td align="right">2048×2048</td>
+<td><code>#FF00FF</code> key; trim; 59×60 fit in 64×64; <code>reports/exit.*</code></td>
+<td><code>shared/sprites/exit.png</code></td>
+</tr>
+</tbody></table>
+<p>Both sprite sources have a flat <code>#FF00FF</code> background and used the normal
+<code>npm run art:key</code> workflow. The atlases are source textures; they were
+downscaled, quantised, snapped and welded before the assembler, never passed in
+as raw 2048×2048 JPEGs.</p>
+<h3>4.2 Interim runtime placeholders (historical)</h3>
+<p>The prior neutral procedural atlases, 04 sky stand-in, gate and exit were
+interim files. They are superseded by the accepted outputs in §4.1. The old
+working <code>tile-*-swatch-neutral-512.png</code> files and their reports are retained for
+comparison only; they are not referenced by the manifest.</p>
+<hr>
+<h2>5. 04 pretty sky prompt</h2>
+<p><strong>Asset:</strong> <code>bg.muscle_endplate.sky</code>
+<strong>Style:</strong> <code>STYLE_BACKGROUND</code>
+<strong>Frame:</strong> <code>FRAME_SKY_PRETTY</code>
+<strong>Source/export:</strong> 1280×720 PNG/WebP, opaque, 1× cover, lossless WebP.
+<strong>File:</strong> <code>shared/backgrounds/muscle-endplate-sky.webp</code>
+<strong>Completion:</strong> prompt ✅ · source ✅ <code>art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg</code> · source accepted ✅ · processed ✅ · wired ✅ · final ✅
+<strong>Evidence:</strong> <code>reports/muscle-endplate-sky.process.json</code>; preview <code>previews/nanobanan/backgrounds/muscle-endplate-sky-1280x720.png</code>.</p>
+<pre><code class="language-text">SUBJECT: A wide, opaque pixel-art background plate of the neuromuscular junction as a living landscape, seen from inside the muscle. A deep muscle-pink and warm-rust cavern; thick, taut, striated muscle-fibre pillars rise like tree trunks at the left and right edges; wet membrane folds drape from the top corners like heavy fabric; bone-cream tendon plates form a broken shelf in the middle distance; a distant motor-nerve terminal bulb hangs above the centre, with a small nerve-yellow ACh glow and a few hard-edged joint-cyan synaptic sparks. Floating dust and condensation, damp sheen, scuffed mineral grit. The centre and lower third stay readable and low-contrast behind the player; the upper corners stay dark and quiet for the HUD. No characters, no faces, no labels, no arrows, no text, no gore. Orthographic side view; atmospheric depth from layered values and dither, not a global gradient; no single directional light, no hard horizon line at player height. Use muscle pink, warm rust, bone, bone shadow, nerve yellow, joint cyan, sage and ink; no purple, magenta, orange or pure red.
+</code></pre>
+<p><strong>Negative:</strong> <code>NEGATIVE_BACKGROUND</code> + <code>blood, wound, cut muscle, steak, meat, butcher diagram, exposed organ, anatomical cutaway, textbook labels, bright centre, hard horizon, single focal landmark, purple, magenta, orange.</code></p>
+<p><strong>Processing</strong></p>
+<ol>
+<li>Keep the full-resolution source under
+<code>art-source/nanobanan/new/muscle-endplate-2026-11-03/</code>.</li>
+<li>Crop to an exact 16:9 window and scale without squashing:
+<code>crop=2720:1530:16:3</code>, then Lanczos to 1280×720 (2.125×).</li>
+<li>Keep the upper corners and lower third low-contrast; check the player
+silhouette and HUD at 1280×720.</li>
+<li>Do not add a runtime pattern overlay and do not palette-quantise this opaque
+scene plate.</li>
+<li>Encode the accepted plate with:</li>
+</ol>
+<pre><code class="language-bash">ffmpeg -y -v error \
+  -i art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg \
+  -vf &quot;crop=2720:1530:16:3,scale=1280:720:flags=lanczos&quot; -pix_fmt rgb24 \
+  art-source/nanobanan/working/tmp/muscle-endplate-sky-1280x720.png
+
+cwebp -quiet -lossless -q 100 -m 6 \
+  art-source/nanobanan/working/tmp/muscle-endplate-sky-1280x720.png \
+  -o public/packs/anatomy-reflex/shared/backgrounds/muscle-endplate-sky.webp
+</code></pre>
+<p>The accepted runtime file is 669,798 bytes. This is a recorded opaque
+scene-plate exception to the ≤300 KB pixel-asset budget, matching the 03
+pretty-sky precedent.</p>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>1280×720, opaque, lossless WebP, 1× cover.</li>
+<li>Reads as a muscle/endplate landscape, not a textbook cutaway.</li>
+<li>Player and HUD remain readable; no busy detail in the lower third or upper corners.</li>
+<li>No characters, text, labels, arrows, gore or exposed organs.</li>
+<li>No purple, magenta, orange or pure red; muscle pink and warm rust are the dominant hues.</li>
+<li>Replaces <code>bg.muscle_endplate.sky</code> and removes its <code>placeholder</code> flag.</li>
+<li><code>bg.muscle_endplate.far</code>, <code>.mid</code> and <code>.near</code> stay declared placeholders; do not wire them.</li>
+</ul>
+<hr>
+<h2>6. Material atlas prompts</h2>
+<h3>6.1 Assembly workflow</h3>
+<p>Generate one seamless 2048×2048 material swatch concept per material. Downscale
+the full plate to <strong>512×512</strong> with nearest-neighbour sampling (this preserves the
+source pixel blocks and the seamless edges); do not crop an interior 512 window,
+which would break the swatch seam. Quantise to the material ramps with
+<code>npm run art:normalize -- --palette art-source/nanobanan/palette.atlas.json --ramps ...</code>, then snap to the 2×2 grid and weld the swatch edges with
+<code>npm run art:tile-clean -- --snap2x2 --weld-x union --weld-y union</code>. Approve the
+result at 32×32, then assemble the frames with
+<code>npm run art:atlas -- --selection single --weld-edges</code>.</p>
+<p>The assembler uses deterministic 32×32 windows from the approved 512×512 swatch
+and adds edge occlusion only on the sides where the mask bit is absent. The
+<code>--selection single</code> pass scores every aligned window and reuses the
+best-scoring, least-busy detailed window for every frame, so all masks show the
+same source texture instead of a per-mask patchwork. The accepted trade-off is a 32 px
+repeat. The explicit <code>--weld-edges</code> pass then makes that frame&#39;s opposite edges
+pixel-identical before occlusion, so the fully connected interior frame repeats
+without a seam. Use <code>--selection tileable</code> only when per-mask grain variation is
+wanted more than uniformity.
+It writes the atlas PNG, a JSON region map and a report. Do not ask the generator
+for a named atlas; it cannot produce one reliably.</p>
+<h3>6.2 <code>tile.muscle.atlas</code> — 16-frame <code>edge</code></h3>
+<p><strong>Style:</strong> <code>STYLE_ATLAS</code> · <strong>Frame:</strong> <code>FRAME_ATLAS</code>
+<strong>Source/export:</strong> 128×128 PNG, 4×4 grid, 32×32 frames, 2×2 clusters, opaque cells.
+<strong>File:</strong> <code>shared/tiles/muscle-atlas.png</code>
+<strong>Rule:</strong> <code>edge</code>, variant set <code>muscle-edge</code>
+<strong>Working swatch:</strong> <code>art-source/nanobanan/working/tile-muscle-swatch-nano-clean-512.png</code>
+<strong>Completion:</strong> prompt ✅ · source ✅ <code>art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.muscle.atlas.jpeg</code> · source accepted ✅ · processed ✅ · wired ✅ · final ✅
+<strong>Evidence:</strong> <code>reports/tile-muscle-swatch.normalize.json</code>, <code>reports/tile-muscle-swatch.clean.json</code>, <code>reports/tile-muscle-atlas.json</code>; tint removed.</p>
+<pre><code class="language-text">SUBJECT: A seamless pixel-art muscle-material texture swatch for a side-view platformer: wet, taut, striated muscle fibres, like bundles of long ropes. Muscle pink, warm rust and bone highlights; fine fibrous grain, subtle pores, damp sheen, broad soft mottling, a few darker striation bands. No large cracks, no embedded objects, no symbols, no labels, no grid, no border, no face, no gore. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
+</code></pre>
+<p><strong>Negative:</strong> <code>NEGATIVE_ATLAS</code> + <code>blood, wound, cut meat, steak, butcher diagram, exposed organ, face, eye, teeth, bone chunk, high contrast, directional light.</code></p>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Exactly 16 named regions <code>mask-0</code> … <code>mask-15</code>, 128×128.</li>
+<li>Interior frames (fully connected, and any frame with both opposite sides connected) tile without a seam; exposed sides keep their occlusion band.</li>
+<li>Striations read as muscle, not steak or fabric; no gore.</li>
+<li>No text, labels, grid lines or baked directional edge.</li>
+<li>Replaces the flat muscle tile; no material tint is applied because the atlas is coloured.</li>
+</ul>
+<h3>6.3 <code>tile.membrane.atlas</code> — 16-frame <code>edge</code></h3>
+<p><strong>Style:</strong> <code>STYLE_ATLAS</code> · <strong>Frame:</strong> <code>FRAME_ATLAS</code>
+<strong>Source/export:</strong> 128×128 PNG, 4×4 grid, 32×32 frames, 2×2 clusters, opaque cells.
+<strong>File:</strong> <code>shared/tiles/membrane-atlas.png</code>
+<strong>Rule:</strong> <code>edge</code>, variant set <code>membrane-edge</code>
+<strong>Change:</strong> the 04 room legend changes from <code>corner</code> to <code>edge</code>.
+<strong>Working swatch:</strong> <code>art-source/nanobanan/working/tile-membrane-swatch-nano-clean-512.png</code>
+<strong>Completion:</strong> prompt ✅ · source ✅ <code>art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.membrane.atlas.jpeg</code> · source accepted ✅ · processed ✅ · wired ✅ · final ✅
+<strong>Evidence:</strong> <code>reports/tile-membrane-swatch.normalize.json</code>, <code>reports/tile-membrane-swatch.clean.json</code>, <code>reports/tile-membrane-atlas.json</code>; tint removed.</p>
+<pre><code class="language-text">SUBJECT: A seamless pixel-art membrane-material texture swatch for a side-view platformer: a wet, translucent sheet of living membrane, like damp fabric stretched over cells. Sage, muted bone and cool teal; soft cellular pores, condensation, a faint sheen, broad mottling, a few darker fold lines. No large tears, no holes through the sheet, no embedded objects, no symbols, no labels, no grid, no border, no face, no gore. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
+</code></pre>
+<p><strong>Negative:</strong> <code>NEGATIVE_ATLAS</code> + <code>tear, hole, blood, wound, exposed organ, face, eye, teeth, high contrast, directional light, plastic wrap, bubble wrap.</code></p>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Exactly 16 named regions <code>mask-0</code> … <code>mask-15</code>, 128×128.</li>
+<li>Interior frames (fully connected, and any frame with both opposite sides connected) tile without a seam; exposed sides keep their occlusion band.</li>
+<li>Reads as wet membrane, not plastic wrap or bubble wrap; no gore.</li>
+<li>No text, labels, grid lines or baked directional edge.</li>
+<li>The 04 legend uses <code>edge</code>; the old <code>corner</code> rule is not kept.</li>
+</ul>
+<h3>6.4 <code>tile.bone.atlas</code> — 47-frame <code>blob47</code></h3>
+<p><strong>Style:</strong> <code>STYLE_ATLAS</code> · <strong>Frame:</strong> <code>FRAME_ATLAS</code>
+<strong>Source/export:</strong> 256×192 PNG, 8×6 grid, 32×32 frames, 2×2 clusters, opaque cells.
+<strong>File:</strong> <code>shared/tiles/bone-atlas.png</code>
+<strong>Rule:</strong> <code>blob47</code>, variant set <code>bone-blob47</code>
+<strong>Working swatch:</strong> <code>art-source/nanobanan/working/tile-bone-swatch-nano-clean-512.png</code>
+<strong>Completion:</strong> prompt ✅ · source ✅ <code>art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.bone.atlas.jpeg</code> · source accepted ✅ · processed ✅ · wired ✅ · final ✅
+<strong>Evidence:</strong> <code>reports/tile-bone-swatch.normalize.json</code>, <code>reports/tile-bone-swatch.clean.json</code>, <code>reports/tile-bone-atlas.json</code>; tint removed.</p>
+<pre><code class="language-text">SUBJECT: A seamless pixel-art bone-material texture swatch for a side-view platformer: the hard outer surface of bone, like wet chalky stone. Bone cream and bone shadow, deep teal in the pores, fine mineral grit, subtle pores and grime, broad soft mottling. No large cracks, no embedded objects, no symbols, no labels, no grid, no border. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
+</code></pre>
+<p><strong>Negative:</strong> <code>NEGATIVE_ATLAS</code> + <code>skull, skeleton, teeth, skull face, blood, wound, exposed organ, high contrast, directional light, generic stone, brick, rock wall.</code></p>
+<p><strong>Atlas assembly</strong></p>
+<ul>
+<li>Grid: 8 columns × 6 rows, row-major, <code>x = column × 32</code>, <code>y = row × 32</code>.</li>
+<li>47 used regions in this order:
+<code>0, 1, 4, 5, 7, 16, 17, 20, 21, 23, 28, 29, 31, 64, 65, 68, 69, 71, 80, 81, 84, 85, 87, 92, 93, 95, 112, 113, 116, 117, 119, 124, 125, 127, 193, 197, 199, 209, 213, 215, 221, 223, 241, 245, 247, 253, 255</code>.</li>
+<li>Region names: <code>mask-&lt;key&gt;</code>. The last cell (row index 5, column index 7) has no region; fill it with an opaque neutral base colour so the atlas has no transparent holes.</li>
+<li>For each frame, draw edge occlusion only on the sides where the mask bit is absent. Do not bake a single top edge into every frame.</li>
+<li>Keep every 32×32 cell fully opaque and on the 2×2 cluster grid. Do not trim, add gutters or leave transparent seams.</li>
+</ul>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Exactly 47 named regions, coordinates matching the grid; the empty cell has no region.</li>
+<li>Interior frames (fully connected, and any frame with both opposite sides connected) tile without a seam; exposed sides keep their occlusion band.</li>
+<li>Mask variants are visually distinct; the edge direction matches the mask.</li>
+<li>No text, labels, grid lines or baked directional edge.</li>
+<li>The swatch reads as wet chalky bone, not generic stone or a diagram.</li>
+<li>256×192, opaque, 2×2 clusters, ≤80 KB.</li>
+</ul>
+<h3>6.5 <code>tile.nerve.atlas</code> — 16-frame <code>edge</code></h3>
+<p><strong>Style:</strong> <code>STYLE_ATLAS</code> · <strong>Frame:</strong> <code>FRAME_ATLAS</code>
+<strong>Source/export:</strong> 128×128 PNG, 4×4 grid, 32×32 frames, 2×2 clusters, opaque cells.
+<strong>File:</strong> <code>shared/tiles/nerve-atlas.png</code>
+<strong>Rule:</strong> <code>edge</code>, variant set <code>nerve-edge</code>
+<strong>Working swatch:</strong> <code>art-source/nanobanan/working/tile-nerve-swatch-nano-clean-512.png</code>
+<strong>Completion:</strong> prompt ✅ · source ✅ <code>art-source/nanobanan/new/muscle-endplate-2026-11-03/tile.nerve.atlas.jpeg</code> · source accepted ✅ · processed ✅ · wired ✅ · final ✅
+<strong>Evidence:</strong> <code>reports/tile-nerve-swatch.normalize.json</code>, <code>reports/tile-nerve-swatch.clean.json</code>, <code>reports/tile-nerve-atlas.json</code>; tint removed.</p>
+<pre><code class="language-text">SUBJECT: A seamless pixel-art nerve-material texture swatch for a side-view platformer: bundles of pale wet nerve fibres, like bundled cables or wires. Nerve yellow and sage, joint-cyan edge sheen, fine fibrous grain, subtle pores and grime, broad soft mottling. No large cracks, no embedded objects, no symbols, no labels, no grid, no border. Uniform flat lighting, no directional highlight, no baked edge shading, no vignette, no bevel, no drop shadow. Orthographic surface; every colour block at least 2×2 pixels; tile seamlessly on all four edges at 32×32. Pixel-clean to a 512×512 working swatch.
+</code></pre>
+<p><strong>Negative:</strong> <code>NEGATIVE_ATLAS</code> + <code>spaghetti, rope, cable bundle, wire harness, blood, wound, exposed organ, high contrast, directional light, circuit board.</code></p>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Exactly 16 named regions <code>mask-0</code> … <code>mask-15</code>, 128×128.</li>
+<li>Interior frames (fully connected, and any frame with both opposite sides connected) tile without a seam; exposed sides keep their occlusion band.</li>
+<li>The soft edge matches the <code>edge</code> autotile rule; frames are visually distinct.</li>
+<li>No text, labels, grid lines or baked directional edge.</li>
+<li>The swatch reads as bundles of pale wet cables, not spaghetti or a diagram.</li>
+<li>128×128, opaque, 2×2 clusters, ≤80 KB.</li>
+</ul>
+<hr>
+<h2>7. 04 sprite prompts</h2>
+<h3>7.1 <code>sprite.gate.nerve</code> — Ca²⁺ channel gate</h3>
+<p><strong>Fact anchor:</strong> puzzle abstraction, not a literal ion channel. <strong>Reference:</strong> P1 for style/palette only. <strong>Style:</strong> <code>STYLE_SPRITE</code>. <strong>Frame:</strong> <code>FRAME_ENTITY</code>.
+<strong>Source/export:</strong> 64×64 PNG, alpha, 1:1. <strong>File:</strong> <code>shared/sprites/gate-nerve.png</code>.
+<strong>Completion:</strong> prompt ✅ · source ✅ <code>art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.gate.nerve.jpeg</code> (flat <code>#FF00FF</code>) · source accepted ✅ · processed ✅ · wired ✅ · final ✅
+<strong>Evidence:</strong> <code>reports/gate-nerve.key.json</code>, <code>reports/gate-nerve.fit.json</code>; 60×60 content in 64×64; 5,444 bytes; palette/alpha clean. The source-to-fit and palette-distance warnings are recorded and accepted because the silhouette reads.</p>
+<pre><code class="language-text">SUBJECT: A closed organic Ca²⁺ channel gate, flat side view. A thick bone-and-muscle rim around a closed aperture; a taut curtain of wet muscle-membrane tissue stretches across the opening; one nerve-yellow seam runs down the centre; small joint-cyan calcium-channel clasps sit at the hinges; a few bone plates frame the base. Closed state only. No receptor sockets, no keyhole, no mechanical parts, no face, no label. Strong silhouette; base at the bottom.
+</code></pre>
+<p><strong>Negative:</strong> <code>NEGATIVE_SPRITE</code> + <code>receptor socket, keyhole, lock, mechanical hinge, gear, chain, character, face, label, gore.</code></p>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Reads as a closed gate at 64×64; no receptor sockets or keyhole.</li>
+<li>Distinct from <code>sprite.exit</code> and <code>sprite.gate.ferry</code>.</li>
+<li>Works over muscle, membrane and bone backgrounds.</li>
+<li>No text, no baked glow, no gore.</li>
+</ul>
+<h3>7.2 <code>sprite.exit</code> — membrane airlock</h3>
+<p><strong>Fact anchor:</strong> level fiction; no anatomical claim. <strong>Reference:</strong> P1 for style/palette only. <strong>Style:</strong> <code>STYLE_SPRITE</code>. <strong>Frame:</strong> <code>FRAME_ENTITY</code>.
+<strong>Source/export:</strong> 64×64 PNG, alpha, 1:1. <strong>File:</strong> <code>shared/sprites/exit.png</code>.
+<strong>Completion:</strong> prompt ✅ · source ✅ <code>art-source/nanobanan/new/muscle-endplate-2026-11-03/sprite.exit.jpeg</code> (flat <code>#FF00FF</code>) · source accepted ✅ · processed ✅ · wired ✅ · final ✅
+<strong>Evidence:</strong> <code>reports/exit.key.json</code>, <code>reports/exit.fit.json</code>; 59×60 content in 64×64; 6,043 bytes; palette/alpha clean. The exit has no joint-ramp pixels; the warm destination light is the read, not a cyan rim.</p>
+<pre><code class="language-text">SUBJECT: A membrane airlock, flat side view. A ring of bone and teal tissue forms a round opening; warm nerve-yellow light glows beyond; wet folds and a few bone struts frame the opening. The opening fills most of the canvas. No character, no face, no label, no gore. Strong silhouette; base at the bottom.
+</code></pre>
+<p><strong>Negative:</strong> <code>NEGATIVE_SPRITE</code> + <code>character, face, label, gore, gate, door handle, mechanical hinge.</code></p>
+<p><strong>Acceptance</strong></p>
+<ul>
+<li>Reads as a destination at 64×64; warm light is visible.</li>
+<li>Distinct from the gate; no character or text.</li>
+<li>Works in both 03 and 04; one shared asset.</li>
+</ul>
+<hr>
+<h2>8. Atlas assembler: <code>npm run art:atlas</code></h2>
+<h3>8.1 Purpose</h3>
+<p><code>scripts/art-atlas.ts</code> turns an approved seamless 32×32 or 512×512 swatch into a deterministic atlas. It is a local art tool, not a runtime dependency.</p>
+<p>The CLI examples below use the <strong>accepted Nano Banana swatches</strong> from the
+2026-11-03 batch. The full 2048×2048 plate is nearest-downscaled to 512,
+quantised, 2×2-snapped and edge-welded before <code>--in</code>. Do not feed the raw
+2048×2048 JPEG to the assembler.</p>
+<h3>8.2 CLI</h3>
+<pre><code class="language-bash">npm run art:atlas -- \
+  --in art-source/nanobanan/working/tile-muscle-swatch-nano-clean-512.png \
+  --out public/packs/anatomy-reflex/shared/tiles/muscle-atlas.png \
+  --rule edge \
+  --edge-color &quot;#05090b&quot; \
+  --asset-id tile.muscle.atlas \
+  --seed 1 \
+  --selection single \
+  --weld-edges \
+  --report art-source/nanobanan/reports/tile-muscle-atlas.json \
+  --preview art-source/previews/nanobanan/tiles/tile-muscle-atlas-4x.png \
+  --preview-scale 4 \
+  --background &quot;#101a20&quot;
+</code></pre>
+<p>For the bone atlas:</p>
+<pre><code class="language-bash">npm run art:atlas -- \
+  --in art-source/nanobanan/working/tile-bone-swatch-nano-clean-512.png \
+  --out public/packs/anatomy-reflex/shared/tiles/bone-atlas.png \
+  --rule blob47 \
+  --edge-color &quot;#05090b&quot; \
+  --fill-color &quot;#c9b79a&quot; \
+  --asset-id tile.bone.atlas \
+  --seed 1 \
+  --selection single \
+  --weld-edges \
+  --report art-source/nanobanan/reports/tile-bone-atlas.json
+</code></pre>
+<h3>8.3 Behaviour</h3>
+<ul>
+<li>Accepts a PNG swatch at least 32×32. Larger swatches are sampled through deterministic 32×32 windows; a 512×512 swatch gives 16×16 possible windows.</li>
+<li><code>edge</code> writes 16 frames in a 4×4 grid, keys <code>0</code>–<code>15</code>.</li>
+<li><code>blob47</code> writes 47 frames in an 8×6 grid using the canonical mask list above.</li>
+<li>Adds edge/corner occlusion only where the mask bit is absent.</li>
+<li>With <code>--selection single</code>, scores every aligned 32×32 window by opposite-edge
+difference and reuses the best-scoring, least-busy detailed window for every
+frame. This is reported as <code>selection: &quot;single&quot;</code>; the <code>windows</code> map is
+identical for every mask. The accepted trade-off is a 32 px repeat.</li>
+<li>With <code>--selection tileable</code>, scores every aligned 32×32 window by opposite-edge
+difference and chooses different windows per mask from the lowest-scoring
+detailed windows. Interior frames use the best window. This is reported as
+<code>selection: &quot;tileable&quot;</code> plus a per-mask <code>windows</code> map.</li>
+<li>With <code>--weld-edges</code>, copies each frame&#39;s left/top 2×2 blocks to its right/bottom
+edges before occlusion. This is an explicit seam closure, not a silent repair;
+it is reported as <code>weldEdges: true</code> and is required for <code>mask-15</code>/<code>mask-255</code>
+interior tiles to repeat without a texture seam.</li>
+<li>Writes an opaque PNG; every cell is alpha 255.</li>
+<li>Writes a JSON report with the region map and the exact <code>frames</code> mapping for <code>materials.json</code>.</li>
+<li>Optionally writes a nearest-neighbour preview.</li>
+<li>Warns about 2×2 cluster violations, semi-transparent source pixels, and swatch edges that do not appear to tile; it does not silently repair the source art.</li>
+</ul>
+<h3>8.4 Report contract</h3>
+<pre><code class="language-json">{
+  &quot;schemaVersion&quot;: 1,
+  &quot;rule&quot;: &quot;edge&quot;,
+  &quot;frameWidth&quot;: 32,
+  &quot;columns&quot;: 4,
+  &quot;rows&quot;: 4,
+  &quot;weldEdges&quot;: true,
+  &quot;selection&quot;: &quot;single&quot;,
+  &quot;regions&quot;: {
+    &quot;mask-0&quot;: { &quot;x&quot;: 0, &quot;y&quot;: 0, &quot;width&quot;: 32, &quot;height&quot;: 32 }
+  },
+  &quot;frames&quot;: {
+    &quot;0&quot;: { &quot;kind&quot;: &quot;atlas&quot;, &quot;assetId&quot;: &quot;tile.muscle.atlas&quot;, &quot;frame&quot;: &quot;mask-0&quot; }
+  },
+  &quot;warnings&quot;: []
+}
+</code></pre>
+<p>The report does not edit JSON automatically; copy the generated region/frame maps into the manifest and materials.</p>
+<hr>
+<h2>9. Runtime wiring plan</h2>
+<h3>9.1 <code>assets.final.json</code></h3>
+<p>Add the four atlas entries. Atlas entries carry <code>width</code>, <code>height</code>, <code>regions</code> and a licence; they do not carry animation metadata.</p>
+<pre><code class="language-json">&quot;tile.muscle.atlas&quot;: {
+  &quot;type&quot;: &quot;atlas&quot;,
+  &quot;src&quot;: &quot;shared/tiles/muscle-atlas.png&quot;,
+  &quot;width&quot;: 128,
+  &quot;height&quot;: 128,
+  &quot;license&quot;: &quot;Nano Banana / Google Gemini (plan TBD)&quot;,
+  &quot;regions&quot;: {
+    &quot;mask-0&quot;: { &quot;x&quot;: 0, &quot;y&quot;: 0, &quot;width&quot;: 32, &quot;height&quot;: 32 }
+  }
+}
+</code></pre>
+<p>Repeat for <code>tile.membrane.atlas</code> (128×128), <code>tile.nerve.atlas</code> (128×128) and <code>tile.bone.atlas</code> (256×192, 47 regions plus one empty cell).</p>
+<p>Add the 04 sky source:</p>
+<pre><code class="language-json">&quot;bg.muscle_endplate.sky&quot;: {
+  &quot;type&quot;: &quot;background&quot;,
+  &quot;src&quot;: &quot;shared/backgrounds/muscle-endplate-sky.webp&quot;,
+  &quot;license&quot;: &quot;Nano Banana / Google Gemini (plan TBD)&quot;
+}
+</code></pre>
+<p>Keep <code>bg.muscle_endplate.far</code>, <code>.mid</code> and <code>.near</code> as declared placeholders with no <code>src</code>.</p>
+<p>The accepted state (2026-11-03):</p>
+<ul>
+<li><code>&quot;placeholder&quot;: true</code> is removed from the four atlas entries, the 04 sky,
+<code>sprite.gate.nerve</code> and <code>sprite.exit</code>.</li>
+<li>The licence strings are the Nano Banana provenance.</li>
+<li>The four material <code>tint</code> values are removed because the atlases are coloured.</li>
+</ul>
+<h3>9.2 <code>materials.json</code></h3>
+<p>Add three variant sets and repoint the nerve set:</p>
+<ul>
+<li><code>bone-blob47</code>: <code>rule: &quot;blob47&quot;</code>, atlas <code>tile.bone.atlas</code>, 47 frames, fallback <code>mask-0</code>.</li>
+<li><code>nerve-edge</code>: atlas <code>tile.nerve.atlas</code>, 16 frames, fallback <code>mask-0</code>.</li>
+<li><code>muscle-edge</code>: <code>rule: &quot;edge&quot;</code>, atlas <code>tile.muscle.atlas</code>, 16 frames, fallback <code>mask-0</code>.</li>
+<li><code>membrane-edge</code>: <code>rule: &quot;edge&quot;</code>, atlas <code>tile.membrane.atlas</code>, 16 frames, fallback <code>mask-0</code>.</li>
+</ul>
+<p>Set <code>variantSet</code> on each material: <code>bone-blob47</code>, <code>nerve-edge</code>, <code>muscle-edge</code>, <code>membrane-edge</code>.</p>
+<p>The final coloured atlases have <strong>no <code>tint</code> values</strong>: <code>bone</code>, <code>nerve</code>, <code>muscle</code>
+and <code>membrane</code> resolve their colour directly from the atlas texture. Do not
+reintroduce a tint without reverting to a neutral atlas.</p>
+<h3>9.3 <code>room.json</code></h3>
+<ul>
+<li><code>03-nerve-forest</code>: no tile-grid change. Bone now resolves through <code>bone-blob47</code>; nerve resolves through the repointed <code>nerve-edge</code>.</li>
+<li><code>04-muscle-effector</code>: change the <code>e</code> legend from <code>&quot;autotile&quot;: &quot;corner&quot;</code> to <code>&quot;autotile&quot;: &quot;edge&quot;</code>. The background keeps all four layers declared; only the sky resolves.</li>
+<li>Do not change collision: <code>layers.tiles</code> remains the sole collision authority.</li>
+</ul>
+<h3>9.4 <code>licenses.json</code></h3>
+<p>Add one entry per runtime file:</p>
+<ul>
+<li><code>shared/tiles/bone-atlas.png</code></li>
+<li><code>shared/tiles/nerve-atlas.png</code></li>
+<li><code>shared/tiles/muscle-atlas.png</code></li>
+<li><code>shared/tiles/membrane-atlas.png</code></li>
+<li><code>shared/backgrounds/muscle-endplate-sky.webp</code></li>
+</ul>
+<p>Use <code>Nano Banana / Google Gemini (plan TBD)</code> for the seven accepted runtime
+files and record the source/runtime hashes in each entry. Keep the old
+<code>shared/tiles/anatomy-atlas.svg</code> entry only because the SVG remains a tracked
+test fixture.</p>
+<h3>9.5 Tests</h3>
+<ul>
+<li><code>tests/materials.test.ts</code> expects four variant sets, the new atlas IDs, and no
+default material tints.</li>
+<li><code>tests/tile-autotile.test.ts</code> resolves <code>tile.nerve.atlas</code> or
+<code>tile.muscle.atlas</code> instead of <code>tile.anatomy.atlas</code>.</li>
+<li><code>tests/art-atlas.test.ts</code> covers 16/47 regions, region bounds, opaque cells,
+mask direction, and the explicit <code>--weld-edges</code> seam closure.</li>
+<li><code>tests/background-assets.test.ts</code> covers the final 04 sky, the three declared
+04 placeholders, and the matching licence.</li>
+<li><code>tests/tile-atlases.test.ts</code> covers final/no-placeholder state, palette and
+alpha, 2×2 clustering, connected-edge continuity, licences and variant frames.</li>
+<li><code>tests/entity-sprites.test.ts</code> covers the final 64×64 <code>sprite.gate.nerve</code> and
+<code>sprite.exit</code>, palette/alpha/margins and licences.</li>
+</ul>
+<h3>9.6 Documentation updates</h3>
+<ul>
+<li>Add a pointer to this document from <code>docs/m3/asset-requirements-v01.md</code> and <code>docs/m3/background-asset-requirements-v01.md</code>.</li>
+<li>Update <code>docs/gdd/GDD-MAP.md</code> and <code>docs/gdd/CAPTURES.md</code> with the accepted 04
+sky/atlas/gate/exit state.</li>
+<li>Update <code>public/packs/anatomy-reflex/levels/04-muscle-effector/README.md</code> room
+facts and remaining-gap notes.</li>
+<li>Update the top-level <code>README.md</code>, <code>IMPLEMENTATION.md</code> and the graphics status
+lines in <code>docs/gdd/</code>.</li>
+<li>Regenerate the GDD site with <code>npm run gdd:site</code>.</li>
+</ul>
+<hr>
+<h2>10. Verification</h2>
+<pre><code class="language-text">npm test
+npm run pack:validate
+npm run pack:smoke
+npm run build
+npm run smoke:e2e
+</code></pre>
+<p>Expected results:</p>
+<ul>
+<li>03 and 04 no longer warn about unresolved tile textures.</li>
+<li>04 shows the 04 sky plate instead of the procedural gradient.</li>
+<li><code>tile.bone.atlas</code>, <code>tile.nerve.atlas</code>, <code>tile.muscle.atlas</code> and <code>tile.membrane.atlas</code> resolve all variant frames used by the rooms.</li>
+<li><code>tile.anatomy.atlas</code> is absent from the final runtime manifest.</li>
+<li><code>sprite.gate.nerve</code> and <code>sprite.exit</code> render from the accepted 64×64
+Nano Banana sprites with <code>placeholder</code> removed.</li>
+<li>The seven source plates remain under
+<code>art-source/nanobanan/new/muscle-endplate-2026-11-03/</code> and are wired through
+the accepted runtime files in §4.1.</li>
+<li>No duplicate tinting: the coloured atlases are not tinted at runtime.</li>
+</ul>
+<hr>
+<h2>11. Stop rules</h2>
+<ul>
+<li>A generated source plate is not a runtime asset. Do not mark any row <code>processed</code>, <code>wired</code>, or <code>final</code> without the matching report, file, manifest entry, licence, and test.</li>
+<li>If a sprite source does not have a removable flat background, stop and regenerate; do not key a vignette or paint a mask by hand without recording the method.</li>
+<li>If a swatch does not tile, reject it before assembling; do not hide a seam with a frame border.</li>
+<li>Do not crop an interior 512 window from a seamless 2048 plate; downscale the full plate, then 2×2-snap and weld.</li>
+<li>If a fully connected frame&#39;s opposite edges differ, run the explicit <code>--weld-edges</code> pass or reject the atlas; do not hide the seam with a border.</li>
+<li>If a generated atlas has a transparent cell, reject it; every cell is opaque.</li>
+<li>If an atlas frame reads as a different mask than its key, reject the atlas.</li>
+<li>If the 04 sky is too busy behind the player or HUD, simplify it; do not add a dark overlay at runtime.</li>
+<li>If the 04 sky fails after two attempts, keep the interim plate and record the failure; do not wire far/mid/near as a rescue.</li>
+<li>If the final coloured atlas requires engine changes, stop; this is an art/content task.</li>
+</ul>
+<hr>
+<h2>12. Prompt log template</h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Prompt pack</th>
+<th>Asset</th>
+<th>Generator</th>
+<th>Source</th>
+<th>Chosen file</th>
+<th>Runtime export</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-11-03</td>
+<td>muscle-endplate-2026-11-03.1</td>
+<td><code>bg.muscle_endplate.sky</code></td>
+<td>Nano Banana / Google Gemini (manual web UI; model/seed not recorded)</td>
+<td><code>art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg</code></td>
+<td>same</td>
+<td><code>shared/backgrounds/muscle-endplate-sky.webp</code></td>
+<td>accepted</td>
+<td>2720×1530 crop at (16,3); Lanczos to 1280×720; lossless VP8L; 669,798 bytes; <code>reports/muscle-endplate-sky.process.json</code></td>
+</tr>
+<tr>
+<td>2026-11-03</td>
+<td>muscle-endplate-2026-11-03.1</td>
+<td><code>tile.muscle.atlas</code></td>
+<td>Nano Banana / Google Gemini</td>
+<td><code>.../tile.muscle.atlas.jpeg</code></td>
+<td><code>working/tile-muscle-swatch-nano-clean-512.png</code></td>
+<td><code>shared/tiles/muscle-atlas.png</code></td>
+<td>accepted</td>
+<td>nearest 512; ramps muscle/bone/boneShadow/teal/ink/sage; max distance 66.51; 2×2 clean; single-window selection + edge weld; <code>reports/tile-muscle-*</code></td>
+</tr>
+<tr>
+<td>2026-11-03</td>
+<td>muscle-endplate-2026-11-03.1</td>
+<td><code>tile.membrane.atlas</code></td>
+<td>Nano Banana / Google Gemini</td>
+<td><code>.../tile.membrane.atlas.jpeg</code></td>
+<td><code>working/tile-membrane-swatch-nano-clean-512.png</code></td>
+<td><code>shared/tiles/membrane-atlas.png</code></td>
+<td>accepted</td>
+<td>nearest 512; ramps sage/bone/boneShadow/teal/ink/joint; max distance 56.05; 2×2 clean; single-window selection + edge weld; <code>reports/tile-membrane-*</code></td>
+</tr>
+<tr>
+<td>2026-11-03</td>
+<td>muscle-endplate-2026-11-03.1</td>
+<td><code>tile.bone.atlas</code></td>
+<td>Nano Banana / Google Gemini</td>
+<td><code>.../tile.bone.atlas.jpeg</code></td>
+<td><code>working/tile-bone-swatch-nano-clean-512.png</code></td>
+<td><code>shared/tiles/bone-atlas.png</code></td>
+<td>accepted</td>
+<td>nearest 512; ramps bone/boneShadow/teal/ink/sage; max distance 74.23; 2×2 clean; single-window selection + edge weld; <code>reports/tile-bone-*</code></td>
+</tr>
+<tr>
+<td>2026-11-03</td>
+<td>muscle-endplate-2026-11-03.1</td>
+<td><code>tile.nerve.atlas</code></td>
+<td>Nano Banana / Google Gemini</td>
+<td><code>.../tile.nerve.atlas.jpeg</code></td>
+<td><code>working/tile-nerve-swatch-nano-clean-512.png</code></td>
+<td><code>shared/tiles/nerve-atlas.png</code></td>
+<td>accepted</td>
+<td>nearest 512; ramps nerve/sage/joint/boneShadow/teal/ink/bone; max distance 62.20; 2×2 clean; single-window selection + edge weld; <code>reports/tile-nerve-*</code></td>
+</tr>
+<tr>
+<td>2026-11-03</td>
+<td>muscle-endplate-2026-11-03.1</td>
+<td><code>sprite.gate.nerve</code></td>
+<td>Nano Banana / Google Gemini</td>
+<td><code>.../sprite.gate.nerve.jpeg</code></td>
+<td><code>keyed/gate-nerve.png</code> (ignored)</td>
+<td><code>shared/sprites/gate-nerve.png</code></td>
+<td>accepted</td>
+<td>flat <code>#FF00FF</code>; key 0.18/0.08 despill trim; 60×60 fit in 64×64; 5,444 bytes; palette/alpha clean; sourceScale 31.2 and maxDistance 52.7 warnings reviewed</td>
+</tr>
+<tr>
+<td>2026-11-03</td>
+<td>muscle-endplate-2026-11-03.1</td>
+<td><code>sprite.exit</code></td>
+<td>Nano Banana / Google Gemini</td>
+<td><code>.../sprite.exit.jpeg</code></td>
+<td><code>keyed/exit.png</code> (ignored)</td>
+<td><code>shared/sprites/exit.png</code></td>
+<td>accepted</td>
+<td>flat <code>#FF00FF</code>; key 0.18/0.08 despill trim; 59×60 fit in 64×64; 6,043 bytes; palette/alpha clean; sourceScale 30.1, maxDistance 63.6 and no-joint-ramp warnings reviewed</td>
+</tr>
+</tbody></table>
+<p>Processing evidence:</p>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Key/report</th>
+<th>Fit/atlas report</th>
+<th>Preview</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>bg.muscle_endplate.sky</code></td>
+<td><code>reports/muscle-endplate-sky.process.json</code></td>
+<td>—</td>
+<td><code>previews/nanobanan/backgrounds/muscle-endplate-sky-1280x720.png</code></td>
+</tr>
+<tr>
+<td><code>tile.muscle.atlas</code></td>
+<td><code>reports/tile-muscle-swatch.normalize.json</code>, <code>.clean.json</code></td>
+<td><code>reports/tile-muscle-atlas.json</code></td>
+<td><code>previews/nanobanan/tiles/tile-muscle-atlas-4x.png</code></td>
+</tr>
+<tr>
+<td><code>tile.membrane.atlas</code></td>
+<td><code>reports/tile-membrane-swatch.normalize.json</code>, <code>.clean.json</code></td>
+<td><code>reports/tile-membrane-atlas.json</code></td>
+<td><code>previews/nanobanan/tiles/tile-membrane-atlas-4x.png</code></td>
+</tr>
+<tr>
+<td><code>tile.bone.atlas</code></td>
+<td><code>reports/tile-bone-swatch.normalize.json</code>, <code>.clean.json</code></td>
+<td><code>reports/tile-bone-atlas.json</code></td>
+<td><code>previews/nanobanan/tiles/tile-bone-atlas-4x.png</code></td>
+</tr>
+<tr>
+<td><code>tile.nerve.atlas</code></td>
+<td><code>reports/tile-nerve-swatch.normalize.json</code>, <code>.clean.json</code></td>
+<td><code>reports/tile-nerve-atlas.json</code></td>
+<td><code>previews/nanobanan/tiles/tile-nerve-atlas-4x.png</code></td>
+</tr>
+<tr>
+<td><code>sprite.gate.nerve</code></td>
+<td><code>reports/gate-nerve.key.json</code></td>
+<td><code>reports/gate-nerve.fit.json</code></td>
+<td><code>previews/nanobanan/entities/gate-nerve-2x.png</code></td>
+</tr>
+<tr>
+<td><code>sprite.exit</code></td>
+<td><code>reports/exit.key.json</code></td>
+<td><code>reports/exit.fit.json</code></td>
+<td><code>previews/nanobanan/entities/exit-2x.png</code></td>
+</tr>
+</tbody></table>
+<p>Record the exact prompt version, source file, crop, palette, processing command
+and acceptance result for every generated asset. “Accepted” here means the
+runtime file, manifest <code>src</code>, licence, prompt-log row and relevant tests all
+exist; the generator model/seed remain unrecorded.</p>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

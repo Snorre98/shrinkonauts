@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>Source art — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">Art pipeline / source notes</p>
+  <h1>Source art</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <p>This directory is the <strong>source layer</strong> from ADR-0060. It is not served by Vite
+and must never be referenced by a runtime manifest.</p>
+<pre><code>art-source/
+  characters/&lt;character&gt;/
+    ludo/&lt;action&gt;-&lt;frames&gt;f-&lt;date&gt;/   # immutable Ludo exports + provenance
+    working/                          # cleaned masters, palettes, clips.json
+  nanobanan/                          # magenta-keyed concept plates
+    keyed/                            # generated keyed PNGs (ignored)
+  previews/                           # generated GIFs/contact sheets
+</code></pre>
+<p>Rules:</p>
+<ul>
+<li>Keep every Ludo PNG and its JSON together.</li>
+<li>Do not edit the original exports. Work on copies in <code>working/</code>.</li>
+<li>Record prompt, model, seed, plan, and licence in the folder README.</li>
+<li>Runtime output belongs in <code>public/</code>, not here.</li>
+<li><code>working/frames/</code>, <code>working/tmp/</code>, and <code>nanobanan/keyed/</code> are generated or
+intermediate; keep them out of the shipped bundle.</li>
+</ul>
+<h2>Player sources</h2>
+<p>P1 (<code>characters/player-p1/ludo/</code>):</p>
+<ul>
+<li><code>walk-49f-2026-10-29/</code> — 49-frame continuous walk, 264×352 per frame.
+This is the P1 walk and the idle frame-0 source.</li>
+<li><code>walk-36f-2026-10-29/</code> — 36-frame jump take, 342×603 per frame. The folder
+name is historical: it contains the jump phases (idle, crouch, takeoff, air,
+landing, recovery). Runtime clips use frames 6–17 (jump), 18–27 (fall), and
+28–35 (land).</li>
+</ul>
+<p>P2 (<code>characters/player-p2/</code>):</p>
+<ul>
+<li><code>walk/</code> — 36-frame walk, 248×352 per frame.</li>
+<li><code>jump/</code> — 36-frame jump, 304×528 per frame.</li>
+</ul>
+<p>P2 is the approved bone-suit / joint-cyan visor concept from ADR-0065. It
+supersedes the orange P2 permutation in ADR-0064.</p>
+<h2>Slicing, building, and previews</h2>
+<p>Slice a Ludo sheet and write a GIF preview:</p>
+<pre><code class="language-bash">npm run art:slice -- \
+  --sheet art-source/characters/player-p1/ludo/walk-49f-2026-10-29/&lt;sheet&gt;.png \
+  --out art-source/characters/player-p1/working/frames/walk-49f \
+  --gif art-source/previews/player-p1-walk-49f.gif
+</code></pre>
+<p>Build the POC player sheets from <code>working/clips.json</code>:</p>
+<pre><code class="language-bash">npm run art:build-player -- --character all --sampler downscale --write-runtime
+</code></pre>
+<p>Use <code>--sampler both</code> without <code>--write-runtime</code> to compare the semantic remaster
+and the downscale + palette-quantize path before choosing runtime output.</p>
+<p><code>working/frames/</code> is ignored by git; previews are kept for review. The
+profile-driven remaster (<code>npm run art:remaster</code>) classifies the source frame
+into semantic roles and writes a palette-quantized master. Palette variants are
+derived with <code>npm run art:variant</code> from the indexed master (ADR-0061 and
+ADR-0065). See
+<a href="docs/nanobanan-README.html"><code>characters/player-p1/working/README.md</code></a>
+for the profile, the Aseprite/LibreSprite touch-up path, and the commands.</p>
+<p>The canonical P1 palette and P2 role map are defined in
+<code>characters/player-p1/working/palette.json</code>; the reusable segmentation profile
+is <code>characters/player-p1/working/remaster.json</code>. Raw Ludo frames are never
+resized automatically into final art without an explicit build pass, and the
+original exports are never edited.</p>
+<h2>Background removal</h2>
+<p><code>art-source/nanobanan/</code> contains magenta-keyed concept JPEGs. Remove the
+background with:</p>
+<pre><code class="language-bash">npm run art:key -- \
+  --in art-source/nanobanan/&lt;plate&gt;.jpeg \
+  --out art-source/nanobanan/keyed/&lt;plate&gt;.png \
+  --despill --trim \
+  --preview art-source/previews/nanobanan/&lt;plate&gt;.png
+</code></pre>
+<p>The keyed review copies are not runtime assets. See
+<a href="docs/nanobanan-README.html"><code>nanobanan/README.md</code></a> for the plate list and status.</p>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

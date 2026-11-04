@@ -1,0 +1,372 @@
+{
+  "schemaVersion": "1.0",
+  "assets": [
+    {
+      "file": "shared/tiles/anatomy-atlas.svg",
+      "type": "image",
+      "source": "Generated in-repo placeholder",
+      "author": "Snorre",
+      "license": "CC0-1.0",
+      "modified": "M1.8 placeholder atlas; retained as a test fixture"
+    },
+    {
+      "file": "shared/tiles/bone-atlas.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local nearest downscale, palette quantisation, 2x2 weld and blob47 atlas assembly",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 33bd0a61de0f88e23573a1c034a94876431b8a48b781f2e010d2882e5941afaa; 512x512 working swatch; 47-frame 8x6 blob47; opaque; runtime sha256 20b807037dc952c2844d487fa0b9e83af0e54f587237bbc364c9861e77ff000e",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/tiles/nerve-atlas.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local nearest downscale, palette quantisation, 2x2 weld and edge atlas assembly",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 14e0c5f17a47e282698e9b9e6ef73ef0d95af657a1becb74dddb37fcd5bd39e0; 512x512 working swatch; 16-frame 4x4 edge; opaque; runtime sha256 ea608d1bc78916895f2a1262f5c4feb275c6c634d87d31d7b133c013989f3473",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/tiles/muscle-atlas.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local nearest downscale, palette quantisation, 2x2 weld and edge atlas assembly",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 4f1d82aff46a383d9734f923347ce5f5c784e295a457b36a9bd4638376ebc0bf; 512x512 working swatch; 16-frame 4x4 edge; opaque; runtime sha256 96b15d0769bf7cf6f12ca967c90b94eca5ffb5af2ad57c781f41fc52bf120523",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/tiles/membrane-atlas.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local nearest downscale, palette quantisation, 2x2 weld and edge atlas assembly",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 001542eea1d9e59e28de5319991fa5b8cc33783cf2d6264598f740a2e3105d72; 512x512 working swatch; 16-frame 4x4 edge; opaque; runtime sha256 60a8e7be6e8864cfce834cf54bf1e6eb7ef98df30754b236a14f30fa2b491e44",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/backgrounds/muscle-endplate-sky.webp",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local crop + Lanczos downscale; lossless WebP",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2752x1536 source sha256 a8064528e94ad0a3a712860f9d012ed337f8c4384be6b0165c8f0a1fa090d7d4; crop 2720x1530 at (16,3); Lanczos to 1280x720; no palette quantisation; lossless VP8L; 669798 bytes; runtime sha256 fd8da92e2188e70787fb98149dffa9102e796db96626f2c1cf1e2bdbc68f6579",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/sprites/gate-nerve.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 64x64 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 9bc304a48bdfc92d835e7f9bb9680bd90da5514496b06672f3063fdd143d51e1; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 60x60 in 64x64 with 2px margins; palette/alpha clean; runtime sha256 59f4b34041072801f71617141840e7876d1729e07f81496bfba914f672312d8a",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/sprites/exit.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 64x64 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 bfcd6d18fba7e65cbcf384d776d1d1a83f43e1fee6dcc256234c1138a3e96e0f; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 59x60 in 64x64 with 2px margins; palette/alpha clean; runtime sha256 ca9f1a3234de73d436798be904df3d26c1f43d12b9d2f96ca8ab24f8df8b04f6",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/sprites/player-p1.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; idle from walk-49 frame 0"
+    },
+    {
+      "file": "shared/sprites/player-p1-walk.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; 49-frame walk sheet"
+    },
+    {
+      "file": "shared/sprites/player-p1-jump.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; jump frames 6-17 of the 36-frame source"
+    },
+    {
+      "file": "shared/sprites/player-p1-fall.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; fall frames 18-27 of the 36-frame source"
+    },
+    {
+      "file": "shared/sprites/player-p1-land.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; land frames 28-35 of the 36-frame source"
+    },
+    {
+      "file": "shared/sprites/player-p2.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; idle from the approved P2 walk frame 0"
+    },
+    {
+      "file": "shared/sprites/player-p2-walk.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; 36-frame walk sheet"
+    },
+    {
+      "file": "shared/sprites/player-p2-jump.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; jump frames 6-17 of the 36-frame source"
+    },
+    {
+      "file": "shared/sprites/player-p2-fall.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; fall frames 18-27 of the 36-frame source"
+    },
+    {
+      "file": "shared/sprites/player-p2-land.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-10-31; land frames 28-35 of the 36-frame source"
+    },
+    {
+      "file": "shared/sprites/agent-neuron.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; frame 0 of the 36-frame Neuron Keeper idle sheet; 96x96 hero fit; palette quantized"
+    },
+    {
+      "file": "shared/sprites/agent-neuron-idle.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; 36-frame Neuron Keeper idle sheet; 96x96 frames; palette quantized"
+    },
+    {
+      "file": "shared/sprites/scan-synapse.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; magenta keyed; trimmed; fitted to 36x36; palette quantized"
+    },
+    {
+      "file": "shared/sprites/scan-muscle.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; magenta keyed; trimmed; fitted to 36x36; palette quantized"
+    },
+    {
+      "file": "shared/sprites/pad-dendrite.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; dendrite input pad; magenta keyed; fitted to 64x64; palette quantized"
+    },
+    {
+      "file": "shared/sprites/pad-terminal.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; axon terminal pad; magenta keyed; fitted to 64x64; palette quantized"
+    },
+    {
+      "file": "shared/sprites/gate-ferry.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; closed organic gate; magenta keyed; fitted to 64x64; palette quantized"
+    },
+    {
+      "file": "shared/sprites/prop-tracer.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; ACh packet; magenta keyed; fitted to 48x48; palette quantized"
+    },
+    {
+      "file": "shared/sprites/pulse-terminal.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; motor terminal; magenta keyed; fitted to 64x64; palette quantized"
+    },
+    {
+      "file": "shared/sprites/receptor-triangle.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; triangular receptor socket; magenta keyed; fitted to 64x64; palette quantized"
+    },
+    {
+      "file": "shared/sprites/receptor-circle.png",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local magenta key + per-class fit + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-02; circular receptor socket; magenta keyed; fitted to 64x64; palette quantized"
+    },
+    {
+      "file": "shared/backgrounds/nerve-forest-sky.webp",
+      "type": "image",
+      "source": "Ludo.ai / Nanobanan concept plate; local crop + high-quality downscale; lossless WebP",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-01; 2752x1536 source sha256 29103f0b12b59f497fabe3702fd4cc39a11244fe8588dda4681448391df3e5ca; 2672x1536 crop at x=40 (40 px each side); Lanczos downscale to 1280x736; no palette quantization; lossless WebP; muscle-pink drapes retained"
+    },
+    {
+      "file": "shared/audio/jump.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "Generated 2026-11-03; seed 2; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/land.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "Generated 2026-11-03; seed 4; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/scan.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "Generated 2026-11-03; seed 4; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/boot.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds hum=11, hiss=3; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/boot/boot.receipt.json sha256 70f0dd9644b00b4c77b5ffa0206982cf456889444b62a34bdf78a43e37fa9a68",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/dialogue.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds dialogue=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/dialogue/dialogue.receipt.json sha256 d8df98b6011ff786904bd6594ca2447ce8e422e950d0d9faca73b03c8b3cb23f",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/dash.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds dash=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/dash/dash.receipt.json sha256 120452424a2c4ead13052cef09e460d57c5f32213d104c13c5490995a4859caa",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/gate.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds gate=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/gate/gate.receipt.json sha256 179b11eb64cbd04f84ccbbf6ab240b786b89b06943d5293448efb8d377aef553",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/map.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds map=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/map/map.receipt.json sha256 34cff6305c57c17d2146ae8bdcc4dc0f544638ab44ab87238c6ccf81080f433f",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/debrief.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds debrief=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/debrief/debrief.receipt.json sha256 886bb1cc6aca8af16bb89b6922514711beec0ad90412f11426bb87c04348ac2b",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/checkpoint.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds checkpoint=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/checkpoint/checkpoint.receipt.json sha256 0b3bf367057d946114727d630b1dab650b855490bcbb0126b17c3a099a948504",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/unlock.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds unlock=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/unlock/unlock.receipt.json sha256 682bee9d439334f96e4723f5110d76dce203b768d422d8c1299d3e5095e6a10f",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/wrong.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds wrong=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/wrong/wrong.receipt.json sha256 40961e163d3afe9fd203db5002bafeb0787d1a613d7bc48224a39b8c9f9168d6",
+      "aiGenerated": true
+    }
+  ]
+}

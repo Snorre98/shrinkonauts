@@ -1,0 +1,679 @@
+{
+  "schemaVersion": 1,
+  "generated": "2026-11-04T01:19:12.721Z",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "captures": [
+    {
+      "id": "03-coop-wide",
+      "title": "03 Nerve Forest — co-op wide shot",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "co-op-wide",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "bg.nerve_forest.sky",
+        "sprite.player.p1",
+        "sprite.player.p2",
+        "sprite.agent.neuron"
+      ],
+      "whatToNotice": "Two players start at the entry checkpoint with the Node Run beats and full HUD visible. The final sky is the only wired background layer in this slice. The dendrite branches, soma, hillock and myelin-node catwalk are floating platforms, so the whole puzzle is played above the ground.",
+      "art": "final",
+      "order": 7,
+      "alt": "Two players at the Nerve Forest entry checkpoint with the final sky",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-coop-wide.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:18:58.607Z"
+    },
+    {
+      "id": "key-art-03",
+      "title": "03 Nerve Forest — key art (no HUD)",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "key-art",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "bg.nerve_forest.sky",
+        "sprite.agent.neuron",
+        "sprite.player.p1",
+        "sprite.player.p2"
+      ],
+      "whatToNotice": "A clean view of the final Nerve Forest scene with the HUD and feedback layers hidden. Use it as a page or thumbnail background.",
+      "art": "final",
+      "order": 8,
+      "alt": "Nerve Forest scene with the HUD hidden",
+      "docs": [
+        "GDD-MAP"
+      ],
+      "file": "key-art-03.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:18:58.881Z"
+    },
+    {
+      "id": "03-dialogue-neuron",
+      "title": "03 — Neuron Keeper dialogue",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "dialogue-neuron",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "sprite.agent.neuron",
+        "bg.nerve_forest.sky",
+        "sprite.player.p1"
+      ],
+      "whatToNotice": "The Neuron Keeper introduces the threshold rule in a speech bubble anchored to the character. The dialogue is DOM, so it scales with text size and stays readable.",
+      "art": "final",
+      "order": 9,
+      "alt": "Neuron Keeper dialogue bubble in Nerve Forest",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-dialogue-neuron.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:18:59.292Z"
+    },
+    {
+      "id": "03-scan-feedback",
+      "title": "03 — scan feedback",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "scan-pathway",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "sprite.scan.pathway",
+        "sprite.pad.dendrite"
+      ],
+      "whatToNotice": "Scanning the one-way pathway returns a concept cue in the world. The cue names the concept before the player opens the log.",
+      "art": "final",
+      "order": 10,
+      "alt": "Scan cue for the one-way pathway in Nerve Forest",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-scan-feedback.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:18:59.891Z"
+    },
+    {
+      "id": "03-concept-log",
+      "title": "03 — concept log",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "concept-log",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "sprite.scan.pathway",
+        "sprite.scan.neuron"
+      ],
+      "whatToNotice": "The concept log shows discovered terms, definitions and relationships. Undiscovered concepts stay listed as hidden so the player can see the shape of the syllabus.",
+      "art": "final",
+      "order": 11,
+      "alt": "Concept log overlay with the discovered sensory and motor pathways entry",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-concept-log.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:00.134Z"
+    },
+    {
+      "id": "03-map",
+      "title": "03 — system map",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "map",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "bg.nerve_forest.sky",
+        "sprite.scan.pathway"
+      ],
+      "whatToNotice": "The map exposes the current node and revealed connections. It is a navigation aid, not a minimap; unknown paths stay unlabeled.",
+      "art": "final",
+      "order": 12,
+      "alt": "System map overlay showing the Nerve Forest node",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-map.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:00.350Z"
+    },
+    {
+      "id": "03-threshold-gate",
+      "title": "03 — threshold gate",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "threshold-gate",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "sprite.gate.ferry",
+        "sprite.pad.dendrite"
+      ],
+      "whatToNotice": "The threshold gate is the Node Run progression marker on the soma platform. It opens after the stimulus counter reaches two inputs; the platform route, not gate collision, is what forces the player to climb.",
+      "art": "final",
+      "order": 13,
+      "alt": "Threshold gate and dendrite pads in Nerve Forest",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-threshold-gate.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:04.068Z"
+    },
+    {
+      "id": "03-node-run-input",
+      "title": "03 — one dendrite input ready",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "node-run-input",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "sprite.pad.dendrite",
+        "sprite.gate.ferry"
+      ],
+      "whatToNotice": "One input is below threshold: the first dendrite pad is active, but the threshold gate is still closed. The counter and beat tracker make that state visible.",
+      "art": "final",
+      "order": 14,
+      "alt": "First dendrite input active while the threshold gate remains closed",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-node-run-input.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:04.462Z"
+    },
+    {
+      "id": "03-node-run-threshold",
+      "title": "03 — threshold reached",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "node-run-threshold",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "sprite.pad.dendrite",
+        "sprite.gate.ferry",
+        "sprite.pad.terminal"
+      ],
+      "whatToNotice": "Two inputs reach threshold and the threshold gate opens. The spike is all-or-none from here; the terminal is the next required step.",
+      "art": "final",
+      "order": 15,
+      "alt": "Both dendrite inputs active and the threshold gate open",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-node-run-threshold.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:04.842Z"
+    },
+    {
+      "id": "03-node-run-exit-open",
+      "title": "03 — exit gate open",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "node-run-exit-open",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "sprite.gate.ferry",
+        "sprite.pad.terminal",
+        "sprite.player.p1"
+      ],
+      "whatToNotice": "The terminal relay opens the exit gate. The player can now leave Node Run and the debrief becomes available.",
+      "art": "final",
+      "order": 16,
+      "alt": "Exit gate open after the terminal relay in Nerve Forest",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-node-run-exit-open.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:05.222Z"
+    },
+    {
+      "id": "03-debrief-prompt",
+      "title": "03 — debrief prompt",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "debrief-prompt",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "sprite.agent.neuron",
+        "sprite.scan.pathway"
+      ],
+      "whatToNotice": "The debrief asks the player to explain the threshold rule in their own words. The evidence panel starts in the missing state until the answer is recorded.",
+      "art": "final",
+      "order": 17,
+      "alt": "Nerve Forest debrief overlay with an empty answer",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-debrief-prompt.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:05.473Z"
+    },
+    {
+      "id": "03-debrief-filled",
+      "title": "03 — debrief answer recorded",
+      "flow": "03-nerve-forest",
+      "pack": "anatomy",
+      "level": "03-nerve-forest",
+      "room": "room-nerve-forest",
+      "beat": "debrief-filled",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-3",
+        "CON-5"
+      ],
+      "relatedAssets": [
+        "sprite.agent.neuron",
+        "sprite.scan.pathway"
+      ],
+      "whatToNotice": "Recording the answer updates the evidence panel and enables Finish level. The answer stays visible so the player can review it before continuing.",
+      "art": "final",
+      "order": 18,
+      "alt": "Nerve Forest debrief with a recorded answer and evidence",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "03-debrief-filled.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:05.704Z"
+    },
+    {
+      "id": "04-wide",
+      "title": "04 Muscle Effector — co-op wide shot",
+      "flow": "04-muscle-effector",
+      "pack": "anatomy",
+      "level": "04-muscle-effector",
+      "room": "room-muscle-effector",
+      "beat": "co-op-wide",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-4",
+        "CON-6"
+      ],
+      "relatedAssets": [
+        "sprite.agent.neuron",
+        "sprite.pulse.terminal",
+        "sprite.prop.tracer",
+        "sprite.player.p2"
+      ],
+      "whatToNotice": "The ferry starts inactive. The presynaptic tower, elevated cleft bridge and postsynaptic receptor platform are all off the ground; the motor terminal, ACh packet, receptors and muscle gate are visible in final sprite art.",
+      "art": "final",
+      "order": 19,
+      "alt": "Muscle Effector room with the Endplate Ferry objects",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "04-wide.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:06.055Z"
+    },
+    {
+      "id": "key-art-04",
+      "title": "04 Muscle Effector — key art (no HUD)",
+      "flow": "04-muscle-effector",
+      "pack": "anatomy",
+      "level": "04-muscle-effector",
+      "room": "room-muscle-effector",
+      "beat": "key-art",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-4",
+        "CON-6"
+      ],
+      "relatedAssets": [
+        "sprite.pulse.terminal",
+        "sprite.receptor.triangle",
+        "sprite.gate.ferry"
+      ],
+      "whatToNotice": "A clean Muscle Effector layout with the UI hidden. Sprite art is final; the muscle background layer is not wired yet, so the plate is a gradient.",
+      "art": "final",
+      "order": 20,
+      "alt": "Muscle Effector scene with the HUD hidden",
+      "docs": [
+        "GDD-MAP"
+      ],
+      "file": "key-art-04.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:06.382Z"
+    },
+    {
+      "id": "04-ferry-active",
+      "title": "04 — Endplate Ferry active",
+      "flow": "04-muscle-effector",
+      "pack": "anatomy",
+      "level": "04-muscle-effector",
+      "room": "room-muscle-effector",
+      "beat": "ferry-active",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-4",
+        "CON-6"
+      ],
+      "relatedAssets": [
+        "sprite.pulse.terminal",
+        "sprite.gate.ferry",
+        "sprite.prop.tracer"
+      ],
+      "whatToNotice": "Starting the motor terminal activates the ferry beats. The HUD now tracks the Ca²⁺ window, ACh carry and receptor binding.",
+      "art": "final",
+      "order": 21,
+      "alt": "Endplate Ferry active with the motor terminal and ferry beats",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "04-ferry-active.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:06.789Z"
+    },
+    {
+      "id": "04-ach-carry",
+      "title": "04 — P2 carrying the ACh packet",
+      "flow": "04-muscle-effector",
+      "pack": "anatomy",
+      "level": "04-muscle-effector",
+      "room": "room-muscle-effector",
+      "beat": "ach-carry",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-4",
+        "CON-6"
+      ],
+      "relatedAssets": [
+        "sprite.prop.tracer",
+        "sprite.player.p2"
+      ],
+      "whatToNotice": "P2 carries the ACh packet; the HUD marks the carrier and the prop gets a carried outline. In co-op, only P2 can carry.",
+      "art": "final",
+      "order": 22,
+      "alt": "P2 carrying the ACh packet in Muscle Effector",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "04-ach-carry.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:08.855Z"
+    },
+    {
+      "id": "04-nicotinic-receptor",
+      "title": "04 — nicotinic receptor interaction",
+      "flow": "04-muscle-effector",
+      "pack": "anatomy",
+      "level": "04-muscle-effector",
+      "room": "room-muscle-effector",
+      "beat": "nicotinic-receptor",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-4",
+        "CON-6"
+      ],
+      "relatedAssets": [
+        "sprite.receptor.triangle",
+        "sprite.receptor.circle",
+        "sprite.prop.tracer"
+      ],
+      "whatToNotice": "The carrier prompt changes to Place ACh packet at the nicotinic receptor. The matching triangle receptor is the target; the circle receptor is the decoy.",
+      "art": "final",
+      "order": 23,
+      "alt": "P2 carrying ACh at the nicotinic receptor",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "04-nicotinic-receptor.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:09.255Z"
+    },
+    {
+      "id": "04-pulse-muscle-wave",
+      "title": "04 — pulse and muscle wave",
+      "flow": "04-muscle-effector",
+      "pack": "anatomy",
+      "level": "04-muscle-effector",
+      "room": "room-muscle-effector",
+      "beat": "pulse-muscle-wave",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-4",
+        "CON-6"
+      ],
+      "relatedAssets": [
+        "sprite.pulse.terminal",
+        "sprite.gate.ferry",
+        "sprite.scan.muscle"
+      ],
+      "whatToNotice": "P1 pulses the motor terminal after ACh binds. The screen caption confirms the signal and the muscle gate carries the wave effect.",
+      "art": "final",
+      "order": 24,
+      "alt": "Motor terminal pulse and muscle response in Muscle Effector",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "04-pulse-muscle-wave.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:09.867Z"
+    },
+    {
+      "id": "04-debrief-prompt",
+      "title": "04 — debrief prompt",
+      "flow": "04-muscle-effector",
+      "pack": "anatomy",
+      "level": "04-muscle-effector",
+      "room": "room-muscle-effector",
+      "beat": "debrief-prompt",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-4",
+        "CON-6"
+      ],
+      "relatedAssets": [
+        "sprite.agent.neuron",
+        "sprite.scan.muscle"
+      ],
+      "whatToNotice": "The Muscle Effector debrief asks for the Ca²⁺ → ACh → receptor → response chain. The evidence panel is still missing the written answer.",
+      "art": "final",
+      "order": 25,
+      "alt": "Muscle Effector debrief overlay with an empty answer",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "04-debrief-prompt.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:12.450Z"
+    },
+    {
+      "id": "04-level-complete",
+      "title": "04 — level complete",
+      "flow": "04-muscle-effector",
+      "pack": "anatomy",
+      "level": "04-muscle-effector",
+      "room": "room-muscle-effector",
+      "beat": "level-complete",
+      "mode": "co-op",
+      "objectiveIds": [
+        "OBJ-2"
+      ],
+      "conceptIds": [
+        "CON-4",
+        "CON-6"
+      ],
+      "relatedAssets": [
+        "sprite.agent.neuron",
+        "sprite.scan.muscle"
+      ],
+      "whatToNotice": "Finishing the debrief opens the completion overlay, with evidence export, replay and return-to-hub actions.",
+      "art": "final",
+      "order": 26,
+      "alt": "Signal restored completion overlay after Muscle Effector",
+      "docs": [
+        "GDD-MAP",
+        "learning-design-brief"
+      ],
+      "file": "04-level-complete.png",
+      "width": 1280,
+      "height": 720,
+      "capturedAt": "2026-11-04T01:19:12.721Z"
+    }
+  ]
+}

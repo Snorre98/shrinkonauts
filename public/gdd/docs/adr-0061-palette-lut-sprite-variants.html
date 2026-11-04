@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>ADR-0061: Palette-LUT sprite variants — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">Art pipeline / source notes</p>
+  <h1>ADR-0061: Palette-LUT sprite variants</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <ul>
+<li><strong>Status:</strong> Accepted</li>
+<li><strong>Date:</strong> 2026-10-29</li>
+<li><strong>Deciders:</strong> Snorre</li>
+<li><strong>Related:</strong> ADR-0047, ADR-0060, ADR-0062</li>
+</ul>
+<h2>Context</h2>
+<p>The game needs colour variants of the same character: P2&#39;s accent swap, hub
+civilians, NPC factions, damage flashes, and future palette scripts. Re-prompting
+Ludo for each variant changes the silhouette, pose, proportions, and frame
+timing, and it spends credits for a colour-only change. The M3 direction already
+fixes P1/P2 as the same silhouette with different accents, so variants must be
+derived rather than regenerated.</p>
+<p>Raw Ludo sheets are not indexed. They contain roughly 46k–66k unique colours
+and faux-pixel noise. A global hue rotation shifts the visor, tanks, outline,
+and grime along with the suit, producing muddy edges and unintended colours.
+Nearest-colour quantization without semantic masks can also map orange/brown
+details to the muscle ramp.</p>
+<h2>Decision</h2>
+<p>Clean and quantize the base sprite to an indexed palette before generating any
+variant. Define a semantic palette map in
+<code>art-source/characters/&lt;character&gt;/working/palette.json</code> with named ramps:</p>
+<ul>
+<li><code>suit</code> — bone ramp by default.</li>
+<li><code>joints</code> — dark teal ramp.</li>
+<li><code>visor</code> — nerve/amber ramp.</li>
+<li><code>tanks</code> — nerve-yellow ramp.</li>
+<li><code>accent</code> — joint-cyan for P1, muscle-pink for P2.</li>
+<li><code>outline</code> — ink/teal ramp.</li>
+<li><code>shadow</code> / <code>grime</code> — bone-shadow or sage ramp.</li>
+</ul>
+<p>Variants are deterministic lookup-table (LUT) transforms of the indexed base:</p>
+<ul>
+<li>P2 is an <strong>accent-only</strong> swap: <code>accent.joint → accent.muscle</code>. Suit, joints,
+tanks, outline, and grime stay byte-identical.</li>
+<li>Suit variants map <code>suit.bone</code> to another approved ramp (sage, joint, muscle,
+or teal) while keeping visor, tanks, joints, and outline fixed.</li>
+<li>Transient effects such as a damage flash may use a runtime tint, but final
+colour variants are baked PNGs.</li>
+<li>Every variant shares the base clip set and frame timing (ADR-0062).</li>
+</ul>
+<p>No Ludo regeneration is used for a colour-only change. A new hue family is a
+palette decision, not an ad hoc per-asset edit.</p>
+<h2>Consequences</h2>
+<p><strong>Easier:</strong></p>
+<ul>
+<li>Exact silhouette and frame parity across variants.</li>
+<li>Cheap, reproducible, and testable variants.</li>
+<li>P2 and future NPCs derive from one master.</li>
+<li>Pixel-diff QA can prove that only the intended mask changed.</li>
+</ul>
+<p><strong>Harder:</strong></p>
+<ul>
+<li>The base must be cleaned and indexed first.</li>
+<li>Palette maps and masks need maintenance.</li>
+<li>Adding a new hue requires an approved palette extension.</li>
+</ul>
+<p><strong>Constrained:</strong></p>
+<ul>
+<li>No raw hue rotation on unquantized sheets.</li>
+<li>No variant that changes shape, props, or pose.</li>
+<li>No off-palette intermediate blends.</li>
+<li>No per-variant regeneration through Ludo.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li>The P1/P2 pixel diff is limited to the accent mask; every other pixel is
+identical.</li>
+<li>The contact sheet at 28×44 shows an identical silhouette.</li>
+<li>Every pixel belongs to an approved ramp.</li>
+<li>No anti-aliased or semi-transparent edge pixels.</li>
+<li>The variant&#39;s file size stays inside the player/entity budget.</li>
+</ul>
+<h2>Alternatives considered</h2>
+<ul>
+<li><strong>Re-prompt Ludo for each variant</strong> — rejected: pose drift, cost, and
+inconsistent silhouettes.</li>
+<li><strong>Global hue rotation</strong> — rejected: bleeds into visor, tanks, and outline.</li>
+<li><strong>Per-pixel manual recolour</strong> — rejected: slow and error-prone across frames.</li>
+<li><strong>Runtime tint only</strong> — rejected for final variants: a tint affects every
+pixel and cannot isolate suit versus accent; it remains acceptable for
+transient effects.</li>
+<li><strong>Separate hand-drawn variants</strong> — rejected: unnecessary duplication and
+drift.</li>
+</ul>
+<h2>References</h2>
+<ul>
+<li><a href="docs/m3-asset-requirements-v01.html"><code>docs/m3/asset-requirements-v01.md</code></a>, §4.3
+(palette), §4.4 (character rules), §8.17 (P1/P2 prompts)</li>
+<li>ADR-0047 (pixel-art direction)</li>
+<li>ADR-0060 (source/working/runtime layers)</li>
+<li>ADR-0062 (animation clips)</li>
+</ul>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

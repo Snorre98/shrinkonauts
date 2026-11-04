@@ -1,0 +1,150 @@
+{
+  "schemaVersion": "1.0",
+  "id": "bathroom.final",
+  "assets": {
+    "bg.bathroom.wall": {
+      "type": "background",
+      "src": "shared/backgrounds/bathroom-wall.webp",
+      "width": 640,
+      "height": 360,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.washer": {
+      "type": "sprite",
+      "src": "shared/sprites/washer.png",
+      "width": 180,
+      "height": 240,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.washer.door": {
+      "type": "sprite",
+      "src": "shared/sprites/washer-door.png",
+      "width": 88,
+      "height": 88,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.washer.drum": {
+      "type": "sprite",
+      "src": "shared/sprites/washer-drum.png",
+      "width": 80,
+      "height": 80,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.player.civilian": {
+      "type": "sprite",
+      "src": "shared/sprites/civilian.png",
+      "width": 32,
+      "height": 64,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.player.p1": {
+      "type": "sprite",
+      "src": "shared/sprites/tiny-astronaut.png",
+      "width": 14,
+      "height": 22,
+      "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "ui.logo.shrinkonauts": {
+      "type": "image",
+      "placeholder": true,
+      "license": "Approved CSS fallback: Silkscreen wordmark; delivered plate rejected because a washing machine is baked behind the letters"
+    },
+    "sprite.prop.poster": {
+      "type": "sprite",
+      "src": "shared/sprites/poster.png",
+      "width": 48,
+      "height": 64,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.cartridge.anatomy": {
+      "type": "sprite",
+      "src": "shared/sprites/cartridge-anatomy.png",
+      "width": 24,
+      "height": 32,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.cartridge.silicon": {
+      "type": "sprite",
+      "src": "shared/sprites/cartridge-silicon.png",
+      "width": 24,
+      "height": 32,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.icon.cycle.anatomy": {
+      "type": "image",
+      "src": "shared/ui/icon-cycle-anatomy.png",
+      "width": 16,
+      "height": 16,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.icon.cycle.silicon": {
+      "type": "image",
+      "src": "shared/ui/icon-cycle-silicon.png",
+      "width": 16,
+      "height": 16,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.plush.neuron": {
+      "type": "sprite",
+      "src": "shared/sprites/plush-neuron.png",
+      "width": 24,
+      "height": 24,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.detergent.bottles": {
+      "type": "sprite",
+      "src": "shared/sprites/detergent-bottles.png",
+      "width": 32,
+      "height": 32,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.laundry.basket": {
+      "type": "sprite",
+      "src": "shared/sprites/laundry-basket.png",
+      "width": 32,
+      "height": 24,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "sprite.prop.towel": {
+      "type": "sprite",
+      "src": "shared/sprites/towel.png",
+      "width": 16,
+      "height": 32,
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "audio.cue.hub.click": {
+      "type": "audio",
+      "src": "shared/audio/hub-click.mp3",
+      "license": "Stability AI Community License"
+    },
+    "audio.cue.hub.door": {
+      "type": "audio",
+      "src": "shared/audio/hub-door.mp3",
+      "license": "Stability AI Community License"
+    },
+    "audio.cue.hub.spin": {
+      "type": "audio",
+      "src": "shared/audio/hub-spin.mp3",
+      "license": "Stability AI Community License"
+    },
+    "audio.cue.hub.shrink": {
+      "type": "audio",
+      "src": "shared/audio/hub-shrink.mp3",
+      "license": "Stability AI Community License"
+    },
+    "audio.cue.hub.arrive": {
+      "type": "audio",
+      "src": "shared/audio/hub-arrive.mp3",
+      "license": "Stability AI Community License"
+    },
+    "audio.cue.hub.hum": {
+      "type": "audio",
+      "src": "shared/audio/hub-hum.mp3",
+      "license": "Stability AI Community License"
+    },
+    "audio.music.menu": {
+      "type": "audio",
+      "placeholder": true
+    }
+  }
+}

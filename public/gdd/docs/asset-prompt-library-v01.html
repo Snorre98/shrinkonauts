@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>Asset Prompt Library — Audio and Graphics v0.2 — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">Art pipeline / source notes</p>
+  <h1>Asset Prompt Library — Audio and Graphics v0.2</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <ul>
+<li><strong>Status:</strong> Draft</li>
+<li><strong>Last updated:</strong> 2026-11-03</li>
+<li><strong>Date:</strong> 2026-11-03</li>
+<li><strong>Owner:</strong> Snorre</li>
+<li><strong>Scope:</strong> Cross-discipline inventory and prompt routing for graphics and audio assets across the authored packs and the bathroom hub</li>
+<li><strong>Prompt version:</strong> <code>assets-2026-11-03.1</code></li>
+<li><strong>Governing ADR:</strong> <a href="../adr-assets/0078-audio-and-graphics-prompt-libraries.md"><code>docs/adr-assets/0078-audio-and-graphics-prompt-libraries.md</code></a></li>
+<li><strong>Related:</strong> <a href="docs/m3-asset-requirements-v01.html"><code>docs/m3/asset-requirements-v01.md</code></a> · <a href="../m3/background-asset-requirements-v01.md"><code>docs/m3/background-asset-requirements-v01.md</code></a> · <a href="docs/m3-muscle-endplate-asset-requirements-v01.html"><code>docs/m3/muscle-endplate-asset-requirements-v01.md</code></a> · <a href="docs/m3.5-hub-asset-prompts-v01.html"><code>docs/m3.5/hub-asset-prompts-v01.md</code></a> · <a href="../audio/audio-requirements-and-prompts-v01.md"><code>docs/audio/audio-requirements-and-prompts-v01.md</code></a> · <a href="../audio/room-and-menu-themes-v01.md"><code>docs/audio/room-and-menu-themes-v01.md</code></a></li>
+</ul>
+<blockquote>
+<p><strong>The rule:</strong> this document is the index, not a duplicate prompt bible. The discipline documents own the full prompt text and acceptance checks. This library owns the cross-discipline inventory, status, generation order, and the gap prompts that have no other owner.</p>
+</blockquote>
+<hr>
+<h2>1. Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Graphics prompt sources</td>
+<td>M3, background, muscle-endplate, M3.5 hub, Silicon level packs</td>
+</tr>
+<tr>
+<td>Audio prompt sources</td>
+<td>18 SFX cues; four music themes</td>
+</tr>
+<tr>
+<td>Current graphics state</td>
+<td>Final 04 batch, POC-integrated earlier art, and the deliberate placeholder/fallback assets listed in §3.1 and §4.3 coexist</td>
+</tr>
+<tr>
+<td>Current 04 source batch</td>
+<td><strong>7 source plates processed, wired and accepted</strong> (<code>2026-11-03</code>)</td>
+</tr>
+<tr>
+<td>Current audio state</td>
+<td>3 of 18 SFX cues installed; 15 cues and four themes remain placeholders</td>
+</tr>
+<tr>
+<td>Visible placeholder-only sprites</td>
+<td><code>sprite.scan.neuron</code>, <code>sprite.scan.myelin</code>, <code>sprite.scan.pathway</code>, <code>sprite.scan.interrupt</code>, <code>sprite.exit.silicon</code></td>
+</tr>
+<tr>
+<td>Audio delivery</td>
+<td>File-backed cue and theme playback implemented; three pilot SFX files exist, themes are silent</td>
+</tr>
+<tr>
+<td>Prompt versioning</td>
+<td>Per-discipline document version plus the umbrella version above</td>
+</tr>
+<tr>
+<td>Canonical status</td>
+<td>§4.0 completion matrix</td>
+</tr>
+<tr>
+<td>Generation order</td>
+<td>04 source processing ✅ → remaining visible placeholders (blocked on new sources) → SFX → themes</td>
+</tr>
+</tbody></table>
+<p><strong>The one-line rule:</strong> every visible placeholder must be in the inventory; every generated asset must have a prompt source, a source file, an acceptance result, and a licence.</p>
+<hr>
+<h2>2. Current branch state</h2>
+<p>The branch now contains:</p>
+<ol>
+<li><strong>04 graphics batch accepted</strong> (<code>2026-11-03</code>):<ul>
+<li>Seven Nano Banana source plates under
+<code>art-source/nanobanan/new/muscle-endplate-2026-11-03/</code>.</li>
+<li>Processed 04 sky, four coloured material atlases, <code>sprite.gate.nerve</code> and
+<code>sprite.exit</code>; manifest <code>src</code>, licences, prompt log and tests complete.</li>
+<li>Material tints removed; <code>placeholder</code> removed from the seven entries.</li>
+<li>The atlas assembler has an explicit <code>--weld-edges</code> pass and a
+<code>--selection single</code> mode that reuses one source window across all masks;
+<code>art:normalize</code> accepts a <code>--ramps</code> subset for material swatches.</li>
+</ul>
+</li>
+<li><strong>Earlier POC graphics integrated</strong>:<ul>
+<li>P1/P2 players, Neuron Keeper static + 36-frame idle.</li>
+<li>Readable scans/entities, the 03 pretty sky and the hub M3.5 art.</li>
+</ul>
+</li>
+<li><strong>Remaining placeholder decisions</strong>:<ul>
+<li>The three 03 scans (<code>scan.neuron</code>, <code>scan.myelin</code>, <code>scan.pathway</code>) remain
+placeholder-only; the old neuron/pathway plates fail the 36×36 read and no
+new source exists. The new fact-specific prompts are in
+<a href="docs/scan-prompts-v02.html"><code>scan-prompts-v02.md</code></a>.</li>
+<li>Silicon scan interrupt and Silicon exit remain placeholder-only.</li>
+<li>The hub logo uses the approved Silkscreen CSS fallback; the toy astronaut
+is cut; the HUD badge keeps its CSS fallback.</li>
+</ul>
+</li>
+<li><strong>Audio partially delivered</strong> (<code>278d687</code>):<ul>
+<li>Three SFX cues (<code>scan</code>, <code>jump</code>, <code>land</code>) are installed in both packs.</li>
+<li>15 cues and all four themes remain placeholders.</li>
+<li>File-backed cue playback and ADR-0077 theme playback are implemented;
+missing files resolve to the synth or silence.</li>
+</ul>
+</li>
+</ol>
+<h3>2.1 Status vocabulary</h3>
+<p><strong>Runtime status</strong> describes what the game currently loads:</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>final</code></td>
+<td>Approved runtime file; <code>placeholder</code> removed; licence and prompt log exist</td>
+</tr>
+<tr>
+<td><code>interim</code></td>
+<td>Runtime file exists but is procedural/interim; <code>placeholder: true</code> remains</td>
+</tr>
+<tr>
+<td><code>placeholder-only</code></td>
+<td>No runtime file; <code>PlaceholderProvider</code> or synth fallback renders</td>
+</tr>
+<tr>
+<td><code>reserve</code></td>
+<td>Declared but not referenced by authored content</td>
+</tr>
+<tr>
+<td><code>deferred</code></td>
+<td>Deliberately outside the current pass; prompt may exist or be future work</td>
+</tr>
+</tbody></table>
+<p><strong>Pipeline stage</strong> describes how far an asset has moved through the art
+pipeline. Record the stage separately from the runtime status; a file can be
+<code>source-generated</code> while the game still loads an <code>interim</code> placeholder.</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Evidence required</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>prompt-ready</code></td>
+<td>Prompt exists in a discipline document</td>
+</tr>
+<tr>
+<td><code>source-generated</code></td>
+<td>Raw generator plate exists under <code>art-source/</code></td>
+</tr>
+<tr>
+<td><code>source-accepted</code></td>
+<td>Source passes composition, background, silhouette and readability checks</td>
+</tr>
+<tr>
+<td><code>processed</code></td>
+<td>Keyed/cropped/fitted/palette-checked/atlas-assembled, with previews and reports</td>
+</tr>
+<tr>
+<td><code>wired</code></td>
+<td>Runtime file exists, manifest has <code>src</code>, licence exists, and relevant tests pass</td>
+</tr>
+<tr>
+<td><code>accepted</code></td>
+<td><code>placeholder</code> removed and every acceptance/prompt-log gate passes</td>
+</tr>
+</tbody></table>
+<p><strong>Rules</strong></p>
+<ul>
+<li>Update this document’s <a href="#40-completion-matrix">completion matrix</a> first, then
+update the discipline document’s summary line.</li>
+<li>A stage is checked only when its evidence exists. A prompt is not a source; a
+source is not a processed asset; a processed file is not accepted until it is
+wired and reviewed.</li>
+<li>Never call a generated JPEG “final”. Raw source plates are not runtime assets.</li>
+<li>A blocked asset keeps its current stage and records the blocker in the matrix.</li>
+</ul>
+<hr>
+<h2>3. Placeholder legend</h2>
+<p>The bright cyan/yellow squares in the game are <strong>not tiles</strong>. They are the
+procedural placeholder provider’s entity sprites:</p>
+<ul>
+<li><code>src/assets/placeholder-provider.ts</code> <code>shapeSpec()</code> draws a 48×48 rounded
+square with a 2 px dark stroke and a 4-character label.</li>
+<li>Fill is deterministic by asset-ID hash:<ul>
+<li><code>hashString(id) % 2 === 0</code> → <code>palette.nerve</code> (<code>#ffd166</code>, yellow)</li>
+<li>otherwise → <code>palette.accent</code> (<code>#7bdff2</code>, cyan)</li>
+</ul>
+</li>
+<li>The label is the first four characters of the last asset-ID segment:<ul>
+<li><code>sprite.scan.neuron</code> → <strong>NEUR</strong></li>
+<li><code>sprite.scan.myelin</code> → <strong>MYEL</strong></li>
+<li><code>sprite.scan.pathway</code> → <strong>PATH</strong></li>
+<li><code>sprite.scan.synapse</code> → <strong>SYNA</strong></li>
+<li><code>sprite.scan.muscle</code> → <strong>MUSC</strong></li>
+<li><code>sprite.scan.reflex</code> → <strong>REFL</strong></li>
+<li><code>sprite.scan.interrupt</code> → <strong>INTE</strong></li>
+<li><code>sprite.exit.silicon</code> → <strong>SILI</strong></li>
+</ul>
+</li>
+</ul>
+<p>The provider is reached only when a manifest entry has no <code>src</code>. An entry with
+<code>src</code> and <code>placeholder: true</code> renders the file and is therefore “interim”, not
+a colored box.</p>
+<h3>3.1 Current visible placeholders</h3>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Color/label</th>
+<th>Where</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sprite.scan.neuron</code></td>
+<td>yellow <strong>NEUR</strong></td>
+<td><code>03-nerve-forest</code>: <code>scan-neuron</code></td>
+<td>Old plate fits 32×17; new compact-cell prompt is ready, no new source</td>
+</tr>
+<tr>
+<td><code>sprite.scan.myelin</code></td>
+<td>cyan <strong>MYEL</strong></td>
+<td><code>03-nerve-forest</code>: <code>scan-myelin</code></td>
+<td>New dedicated sleeve prompt; no source yet</td>
+</tr>
+<tr>
+<td><code>sprite.scan.pathway</code></td>
+<td>cyan <strong>PATH</strong></td>
+<td><code>03-nerve-forest</code>: <code>scan-pathway</code></td>
+<td>Old plate fits 32×13; new node-chain prompt is ready, no new source</td>
+</tr>
+<tr>
+<td><code>sprite.scan.interrupt</code></td>
+<td>cyan <strong>INTE</strong></td>
+<td><code>01-interrupt-loop</code>: <code>scan-interrupt</code></td>
+<td>Old plate fits 32×7, 220 opaque pixels; square scan read and rim lost</td>
+</tr>
+<tr>
+<td><code>sprite.exit.silicon</code></td>
+<td>yellow <strong>SILI</strong></td>
+<td><code>01-interrupt-loop</code>: <code>exit-silicon</code></td>
+<td>No Silicon source; reuse of the organic/warm anatomy exit rejected; placeholder retained</td>
+</tr>
+</tbody></table>
+<p>The three 03 scan targets now have separate assets and separate card facts:
+<code>scan-neuron</code> (NERV-01#1), <code>scan-myelin</code> (NERV-01#3), and <code>scan-pathway</code>
+(NERV-01#6). <code>scan-myelin</code> no longer reuses <code>sprite.scan.neuron</code>. The pads and
+terminal are interactable props, not scans.</p>
+<hr>
+<h2>4. Graphics inventory</h2>
+<h3>4.0 Completion matrix</h3>
+<p><strong>Last updated:</strong> 2026-11-03</p>
+<p>This is the single source of truth for graphics evidence and per-asset status.
+For the consolidated “what do I do next?” checklist across graphics, audio, and
+integration, see <a href="docs/asset-remaining-work.html"><code>remaining-work.md</code></a>. “Runtime” uses the
+status vocabulary in §2.1; “Stage” uses the pipeline stages in §2.1.</p>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Priority</th>
+<th>Runtime</th>
+<th>Stage</th>
+<th>Source / evidence</th>
+<th>Next action</th>
+<th>Blocker / pending</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>bg.muscle_endplate.sky</code></td>
+<td>P0</td>
+<td><code>final</code></td>
+<td><code>accepted</code></td>
+<td><code>.../bg.muscle_endplate.sky.jpeg</code> (2752×1536) → 2720×1530 crop → 1280×720 lossless VP8L, 669,798 bytes</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>tile.muscle.atlas</code></td>
+<td>P0</td>
+<td><code>final</code></td>
+<td><code>accepted</code></td>
+<td><code>.../tile.muscle.atlas.jpeg</code> → 512 swatch → 128×128 4×4 edge atlas; palette/2×2/edge checks</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>tile.membrane.atlas</code></td>
+<td>P0</td>
+<td><code>final</code></td>
+<td><code>accepted</code></td>
+<td><code>.../tile.membrane.atlas.jpeg</code> → 512 swatch → 128×128 4×4 edge atlas</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>tile.bone.atlas</code></td>
+<td>P0</td>
+<td><code>final</code></td>
+<td><code>accepted</code></td>
+<td><code>.../tile.bone.atlas.jpeg</code> → 512 swatch → 256×192 8×6 <code>blob47</code></td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>tile.nerve.atlas</code></td>
+<td>P0</td>
+<td><code>final</code></td>
+<td><code>accepted</code></td>
+<td><code>.../tile.nerve.atlas.jpeg</code> → 512 swatch → 128×128 4×4 edge atlas</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>sprite.gate.nerve</code></td>
+<td>P1</td>
+<td><code>final</code></td>
+<td><code>accepted</code></td>
+<td><code>.../sprite.gate.nerve.jpeg</code> → key/trim → 60×60 in 64×64; 5,444 bytes</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>sprite.exit</code></td>
+<td>P1</td>
+<td><code>final</code></td>
+<td><code>accepted</code></td>
+<td><code>.../sprite.exit.jpeg</code> → key/trim → 59×60 in 64×64; 6,043 bytes</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p>The full source folder is
+<code>art-source/nanobanan/new/muscle-endplate-2026-11-03/</code>. Evidence paths are in
+<a href="docs/m3-muscle-endplate-asset-requirements-v01.html#12-prompt-log-template">muscle-endplate §12</a>
+and the licence entries.</p>
+<p><strong>Current counts:</strong> 7 source-generated; 7 source-accepted; 7 processed; 7 wired;
+7 accepted. The interim procedural files and material tints are gone from the
+runtime.</p>
+<h3>4.1 Final runtime graphics</h3>
+<p>These are approved or POC-integrated and have <code>src</code> paths:</p>
+<ul>
+<li>P1/P2 static and animation sheets.</li>
+<li>Neuron Keeper static + 36-frame idle.</li>
+<li><code>sprite.scan.synapse</code>, <code>sprite.scan.muscle</code>.</li>
+<li><code>sprite.pad.dendrite</code>, <code>sprite.pad.terminal</code>.</li>
+<li><code>sprite.gate.ferry</code>, <code>sprite.prop.tracer</code>, <code>sprite.pulse.terminal</code>.</li>
+<li><code>sprite.receptor.triangle</code>, <code>sprite.receptor.circle</code>.</li>
+<li><code>bg.nerve_forest.sky</code>.</li>
+<li>Silicon final sprites and <code>bg.silicon_board.sky</code>.</li>
+<li>Hub final scene/props/sprites listed in <code>docs/m3.5/hub-asset-prompts-v01.md</code>.</li>
+</ul>
+<h3>4.2 Interim graphics</h3>
+<p>There are no <code>interim</code> graphics left in the authored packs. The 04 batch moved
+from <code>interim</code> to <code>final</code>/<code>accepted</code>; the neutral procedural atlases, 04 sky
+stand-in, gate and exit placeholders are retained only as historical working
+files and are not referenced by a manifest.</p>
+<p>The Silicon <code>tile.circuit.atlas</code> remains a manifest-only placeholder SVG; it is
+outside this pass and is not a visible placeholder.</p>
+<h3>4.3 Placeholder-only graphics</h3>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Scope</th>
+<th>Prompt source</th>
+<th>Decision / next action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sprite.scan.neuron</code></td>
+<td>03, <code>scan-neuron</code></td>
+<td><a href="docs/scan-prompts-v02.html"><code>scan-prompts-v02.md</code></a> §1</td>
+<td>Keep placeholder. Old plate fits 32×17 and fails; new compact-cell prompt is ready, no new source.</td>
+</tr>
+<tr>
+<td><code>sprite.scan.myelin</code></td>
+<td>03, <code>scan-myelin</code></td>
+<td><a href="docs/scan-prompts-v02.html"><code>scan-prompts-v02.md</code></a> §2</td>
+<td>Keep placeholder. New dedicated sleeve prompt; shared neuron/myelin icon retired.</td>
+</tr>
+<tr>
+<td><code>sprite.scan.pathway</code></td>
+<td>03, <code>scan-pathway</code></td>
+<td><a href="docs/scan-prompts-v02.html"><code>scan-prompts-v02.md</code></a> §3</td>
+<td>Keep placeholder. Old plate fits 32×13 and fails; new node-chain prompt is ready, no new source.</td>
+</tr>
+<tr>
+<td><code>sprite.scan.interrupt</code></td>
+<td>Silicon</td>
+<td><code>docs/prompts/levels/01-interrupt-loop-assets.md</code> §8.2</td>
+<td>Keep placeholder. Old plate fits 32×7/220 px and fails; needs a square recomposition.</td>
+</tr>
+<tr>
+<td><code>sprite.exit.silicon</code></td>
+<td>Silicon</td>
+<td><code>docs/prompts/levels/01-interrupt-loop-assets.md</code> §12.2</td>
+<td>Keep placeholder. Reuse of the organic/warm anatomy exit is rejected for the Silicon tech style.</td>
+</tr>
+<tr>
+<td><code>sprite.scan.reflex</code></td>
+<td>reserve, not referenced</td>
+<td>M3</td>
+<td>Keep reserve; not rendered.</td>
+</tr>
+<tr>
+<td><code>sprite.checkpoint</code></td>
+<td>reserve, not rendered</td>
+<td>M3</td>
+<td>Keep reserve; data point is used instead.</td>
+</tr>
+<tr>
+<td><code>ui.icon.badge</code></td>
+<td>HUD</td>
+<td>M3 §8.22</td>
+<td>Keep the CSS fallback. 14×14 fit loses the helmet dome; dedicated 16×16 redraw deferred.</td>
+</tr>
+<tr>
+<td><code>ui.icon.scan/map/log</code></td>
+<td>UI</td>
+<td>M3</td>
+<td>Deferred; UI does not render them.</td>
+</tr>
+<tr>
+<td><code>ui.portrait.neuron</code>, UI panels</td>
+<td>UI</td>
+<td>M3</td>
+<td>Deferred; UI does not render them.</td>
+</tr>
+<tr>
+<td><code>bg.nerve_forest.far/mid/near</code></td>
+<td>03 deferred</td>
+<td>background requirements</td>
+<td>Deferred layered pass.</td>
+</tr>
+<tr>
+<td><code>bg.muscle_endplate.far/mid/near</code></td>
+<td>04 deferred</td>
+<td>muscle-endplate / future</td>
+<td>Declared placeholders; not wired.</td>
+</tr>
+<tr>
+<td><code>bg.silicon_board.far/mid/near</code></td>
+<td>Silicon deferred</td>
+<td>Silicon prompt pack</td>
+<td>Deferred.</td>
+</tr>
+<tr>
+<td><code>ui.logo.shrinkonauts</code></td>
+<td>Hub</td>
+<td>M3.5 hub prompts</td>
+<td>CSS Silkscreen fallback approved; delivered plate rejected (washer baked behind letters).</td>
+</tr>
+<tr>
+<td><code>sprite.prop.toy.astronaut</code></td>
+<td>Hub</td>
+<td>M3.5 hub prompts</td>
+<td><strong>Cut.</strong> No source and not referenced by <code>hub.json</code>.</td>
+</tr>
+</tbody></table>
+<p><code>tileset.anatomy</code> and <code>tileset.silicon</code> remain declared placeholder entries but
+are not used when the material grid resolves; they are not visible placeholders.</p>
+<hr>
+<h2>5. New graphics gap prompts</h2>
+<blockquote>
+<p><strong>On hold (2026-11-03):</strong> the 03 scan taxonomy is under
+<a href="docs/nanobanan-README.html">M2.75</a> review. Do not generate final scan sources until
+M2.75 chooses whether myelin and pathway are separate objects, parts, or
+process overlays. The prompts below are review-ready, not commissioned.</p>
+</blockquote>
+<p>The 03 scan set is now three fact-specific icons, not two shared whole-cell
+diagrams. The full copy-paste prompts are in
+<a href="docs/scan-prompts-v02.html"><code>scan-prompts-v02.md</code></a>. Use <code>STYLE_SPRITE</code>, <code>PALETTE</code>, and
+<code>FRAME_ENTITY_SQUARE</code>; do <strong>not</strong> use the old <code>FRAME_ENTITY_CONCEPT</code> block for
+these icons.</p>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Card fact</th>
+<th>Silhouette</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sprite.scan.neuron</code></td>
+<td>NERV-01#1 — neuron parts and direction</td>
+<td>round cell, curled axon</td>
+<td>prompt-ready, no new source</td>
+</tr>
+<tr>
+<td><code>sprite.scan.myelin</code></td>
+<td>NERV-01#3 — sheath, nodes, speed</td>
+<td>capsule with a pinched node</td>
+<td>prompt-ready, no new source</td>
+</tr>
+<tr>
+<td><code>sprite.scan.pathway</code></td>
+<td>NERV-01#6 — all-or-none, one-way, saltatory</td>
+<td>three-bead chain + terminal fork</td>
+<td>prompt-ready, no new source</td>
+</tr>
+</tbody></table>
+<p>The reasons for the change:</p>
+<ul>
+<li>The old neuron and pathway plates fit <strong>32×17</strong> and <strong>32×13</strong>; the new art
+must fit at least <strong>24×24</strong> in the 36×36 cell.</li>
+<li>The old pathway was the neuron icon plus a small pulse. At 36×36 the two
+silhouettes were effectively identical (alpha IoU ~0.99). The new pathway
+drops the soma and dendrites and becomes a node chain.</li>
+<li><code>scan-myelin</code> now has its own sprite. The shared neuron/myelin icon is retired.</li>
+<li>The pads and terminal are interactable props, not scans. The Keeper dialogue
+reveals CON-3, CON-5, and NERV-01#5; the three scans reveal NERV-01#1, #3,
+and #6.</li>
+<li>The old root JPEGs (<code>sprite-scan-neuron.jpeg</code>, <code>sprite-scan-pathway.jpeg</code>) are
+old-prompt outputs. They are reference only; they are not sources for the new
+concepts.</li>
+</ul>
+<h3>5.1 <code>sprite.scan.neuron</code> — compact cell structure</h3>
+<p>See <a href="docs/scan-prompts-v02.html#1-spritescanneuron"><code>scan-prompts-v02.md</code></a> for the full
+prompt. The icon is a round soma with a five-branch dendrite crown and a short
+curled axon ending in a fork. No myelin beads; no face, arms, or lantern.</p>
+<h3>5.2 <code>sprite.scan.pathway</code> — one-way conduction chain</h3>
+<p>See <a href="docs/scan-prompts-v02.html#3-spritescanpathway"><code>scan-prompts-v02.md</code></a> for the full
+prompt. The icon is a diagonal chain of three myelin beads with a dim-to-bright
+pulse in the node gaps and a forked terminal. No soma or dendrites; the pulse is
+in a node gap, not inside a sleeve.</p>
+<h3>5.3 <code>sprite.scan.myelin</code> — dedicated sheath icon</h3>
+<p>See <a href="docs/scan-prompts-v02.html#2-spritescanmyelin"><code>scan-prompts-v02.md</code></a> for the full
+prompt. The icon is a diagonal capsule with two pale sleeves and one dark node.
+No cell body, dendrites, terminal fork, or pulse. This is now required; it is no
+longer an optional future asset.</p>
+<hr>
+<h2>6. Graphics prompt sources</h2>
+<table>
+<thead>
+<tr>
+<th>Asset family</th>
+<th>Prompt source</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Shared sprites, scans, gates, props, receptors, badge</td>
+<td><a href="docs/m3-asset-requirements-v01.html"><code>docs/m3/asset-requirements-v01.md</code></a></td>
+<td>M3 style blocks, per-asset prompts, atlas maps, prompt log</td>
+</tr>
+<tr>
+<td>03 background layers</td>
+<td><a href="../m3/background-asset-requirements-v01.md"><code>docs/m3/background-asset-requirements-v01.md</code></a></td>
+<td>Current 03 sky wired; far/mid/near future</td>
+</tr>
+<tr>
+<td>04 sky, four atlases, gate, exit</td>
+<td><a href="docs/m3-muscle-endplate-asset-requirements-v01.html"><code>docs/m3/muscle-endplate-asset-requirements-v01.md</code></a></td>
+<td>Accepted 2026-11-03; evidence in §12</td>
+</tr>
+<tr>
+<td>Hub scene/props/UI</td>
+<td><a href="docs/m3.5-hub-asset-prompts-v01.html"><code>docs/m3.5/hub-asset-prompts-v01.md</code></a></td>
+<td>Nano Banana first, Ludo fallback</td>
+</tr>
+<tr>
+<td>Silicon entities/theme</td>
+<td><a href="../prompts/silicon-theme.md"><code>docs/prompts/silicon-theme.md</code></a> and <a href="../prompts/levels/01-interrupt-loop-assets.md"><code>docs/prompts/levels/01-interrupt-loop-assets.md</code></a></td>
+<td>Final Silicon entities; interrupt/exit gaps</td>
+</tr>
+<tr>
+<td>03 scan gaps</td>
+<td><a href="docs/scan-prompts-v02.html"><code>scan-prompts-v02.md</code></a></td>
+<td>Three fact-specific square prompts</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. Audio inventory</h2>
+<h3>7.1 Current state</h3>
+<ul>
+<li><strong>18 SFX cues</strong> are declared across the anatomy, Silicon and hub manifests.</li>
+<li><strong>3 cues are installed</strong> (<code>scan</code>, <code>jump</code>, <code>land</code>) from the 2026-11-03 pilot;
+<strong>15 remain placeholders with no <code>src</code></strong>.</li>
+<li><strong>Four themes</strong> are proposed in ADR-0076; no files exist.</li>
+<li><code>ManifestAudioProvider</code> is implemented: it fetches, decodes, caches and plays
+file-backed cues, keeping the synth fallback for missing or failed files.
+ADR-0077 theme playback is also implemented; missing themes resolve to
+silence.</li>
+<li>Licence records exist for the three installed SFX; no theme licences exist.</li>
+</ul>
+<h3>7.2 SFX index</h3>
+<p>Full prompts, durations, negative prompts and acceptance: <a href="../audio/audio-requirements-and-prompts-v01.md"><code>docs/audio/audio-requirements-and-prompts-v01.md</code></a>.</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Asset IDs</th>
+<th>Prompt sections</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>M3 anatomy (11)</td>
+<td><code>audio.cue.boot</code>, <code>dialogue</code>, <code>scan</code>, <code>dash</code>, <code>gate</code>, <code>map</code>, <code>debrief</code>, <code>checkpoint</code>, <code>unlock</code>, <code>jump</code>, <code>land</code></td>
+<td>§7.1–7.11</td>
+</tr>
+<tr>
+<td>M3 optional (1)</td>
+<td><code>audio.cue.wrong</code></td>
+<td>§9</td>
+</tr>
+<tr>
+<td>M3.5 hub (6)</td>
+<td><code>audio.cue.hub.click</code>, <code>hub.door</code>, <code>hub.spin</code>, <code>hub.shrink</code>, <code>hub.arrive</code>, <code>hub.hum</code></td>
+<td>§8.1–8.6</td>
+</tr>
+</tbody></table>
+<p>Shared anatomy style block: §4.1. Hub style block: §4.2. Global negative: §4.4.
+Format, loudness, trimming and QA: §5 and §12.</p>
+<h3>7.3 Theme index</h3>
+<p>Full prompts, motif, lengths and loop checks: <a href="../audio/room-and-menu-themes-v01.md"><code>docs/audio/room-and-menu-themes-v01.md</code></a>.</p>
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Asset ID</th>
+<th>Prompt section</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Menu / hub</td>
+<td><code>audio.music.menu</code></td>
+<td>§4.1</td>
+<td>Proposed, no file</td>
+</tr>
+<tr>
+<td><code>03-nerve-forest</code></td>
+<td><code>audio.music.nerve_forest</code></td>
+<td>§4.2</td>
+<td>Proposed, no file</td>
+</tr>
+<tr>
+<td><code>04-muscle-effector</code></td>
+<td><code>audio.music.muscle_effector</code></td>
+<td>§4.3</td>
+<td>Proposed, no file</td>
+</tr>
+<tr>
+<td><code>01-interrupt-loop</code></td>
+<td><code>audio.music.interrupt_loop</code></td>
+<td>§4.4</td>
+<td>Proposed, no file</td>
+</tr>
+</tbody></table>
+<h3>7.4 Audio completion gates</h3>
+<p>A final audio asset is not delivered until all of these are true:</p>
+<ol>
+<li><code>ManifestAudioProvider</code> fetches, decodes, caches and plays the file.</li>
+<li>ADR-0077 theme playback is implemented for themes.</li>
+<li>The manifest entry has <code>src</code> and <code>license</code>; <code>placeholder</code> is removed.</li>
+<li>The cue/theme passes the prompt document’s format, loudness and duration checks.</li>
+<li>The prompt log records tool, model, prompt version, seed, source, working file,
+runtime export, post-processing, licence and reviewer.</li>
+<li>The browser smoke confirms the first-gesture unlock and a room/menu theme
+starts.</li>
+<li>Manual three-loop QA passes for themes; no seam or clipped tail.</li>
+</ol>
+<p>Do not commit audio files before gate 1. A silent file hides the provider gap.</p>
+<hr>
+<h2>8. Generation order</h2>
+<h3>P0 — remaining visible placeholders</h3>
+<ol>
+<li><code>sprite.scan.neuron</code> — compact-cell prompt in
+<a href="docs/scan-prompts-v02.html"><code>scan-prompts-v02.md</code></a> §1; needs a new source.</li>
+<li><code>sprite.scan.myelin</code> — dedicated sheath prompt in
+<a href="docs/scan-prompts-v02.html"><code>scan-prompts-v02.md</code></a> §2; needs a new source.</li>
+<li><code>sprite.scan.pathway</code> — one-way chain prompt in
+<a href="docs/scan-prompts-v02.html"><code>scan-prompts-v02.md</code></a> §3; needs a new source.</li>
+<li><code>sprite.scan.interrupt</code> — needs a square recomposition/new source.</li>
+<li><code>sprite.exit.silicon</code> — needs a Silicon-specific source; anatomy reuse
+rejected.</li>
+</ol>
+<h3>P1 — 04 source processing ✅</h3>
+<p>The seven source plates are processed, wired and accepted:</p>
+<ol start="5">
+<li><code>bg.muscle_endplate.sky</code> — crop/resize, export, accept.</li>
+<li>Four atlas swatches — bone, nerve, muscle, membrane; tile/pixel checks, then
+atlas assembly and tint removal.</li>
+<li><code>sprite.gate.nerve</code>, <code>sprite.exit</code> — magenta key, 64×64 fit, palette/alpha
+acceptance.</li>
+<li>Manifest <code>src</code>/licence entries wired; <code>placeholder</code> and material tints
+removed.</li>
+</ol>
+<h3>P2 — audio</h3>
+<ol start="8">
+<li><del>Implement <code>ManifestAudioProvider</code> and theme playback.</del> Done.</li>
+<li>Generate and wire the 18 SFX cues. <strong>3/18 installed; 15 remain.</strong></li>
+<li>Generate and wire the four themes.</li>
+</ol>
+<h3>P3 — deferred graphics</h3>
+<ol start="11">
+<li>03/04/Silicon far/mid/near layers.</li>
+<li>UI badge, portraits, panels.</li>
+<li>Hub logo fallback approved; toy astronaut cut; optional props deferred.</li>
+<li>Reserve <code>scan.reflex</code> and <code>checkpoint</code>.</li>
+</ol>
+<hr>
+<h2>9. Shared rules</h2>
+<ul>
+<li><strong>Source/working/runtime:</strong> follow ADR-0060. Raw prompt outputs live under
+<code>art-source/</code>; runtime files live under <code>public/</code>.</li>
+<li><strong>No raw files in <code>public/</code>:</strong> manifests reference only processed runtime files.</li>
+<li><strong>Naming:</strong> lowercase kebab-case; asset IDs stay stable.</li>
+<li><strong>Graphics format:</strong> 32×32 atlas frames at 1:1; 36×36 scans at 1:1; 64×64
+interactables at 1:1; hard alpha; 2×2 clusters; lossless WebP/PNG for pixel
+assets.</li>
+<li><strong>Audio format:</strong> 48 kHz; cue budget ≤120 KB; themes ≤1.5 MB; OGG q4–q6 with
+MP3 fallback; themes −18 to −16 LUFS, true peak ≤ −1 dBTP.</li>
+<li><strong>Licensing:</strong> every non-placeholder entry needs a licence record and prompt log.</li>
+<li><strong>Placeholder flags:</strong> remove <code>placeholder</code> only when the final asset passes
+acceptance. Interim files keep the flag.</li>
+<li><strong>Tint:</strong> the 04 atlases are final coloured art; their material tints are
+removed. A future neutral atlas must keep a tint, never both.</li>
+</ul>
+<hr>
+<h2>10. Validation</h2>
+<pre><code class="language-text">npm test
+npm run pack:validate
+npm run pack:smoke
+npm run build
+npm run smoke:e2e
+npm run gdd:site
+</code></pre>
+<p>Expected:</p>
+<ul>
+<li>Every placeholder-only asset referenced by an authored room appears in §3.1
+or §4.3.</li>
+<li>The 03 scan prompts produce square 36×36 runtime PNGs, not wide strips.</li>
+<li>Audio files are not committed while the provider is a stub.</li>
+<li>Final replacements remove <code>placeholder</code> and keep licence/prompt-log entries.</li>
+<li>The umbrella library, discipline prompt documents and manifests agree.</li>
+</ul>
+<hr>
+<h2>11. Prompt log template</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Asset ID</td>
+<td></td>
+</tr>
+<tr>
+<td>Prompt document + version</td>
+<td></td>
+</tr>
+<tr>
+<td>Tool/model</td>
+<td></td>
+</tr>
+<tr>
+<td>Seed / variation</td>
+<td></td>
+</tr>
+<tr>
+<td>Source file</td>
+<td></td>
+</tr>
+<tr>
+<td>Working file</td>
+<td></td>
+</tr>
+<tr>
+<td>Runtime export</td>
+<td></td>
+</tr>
+<tr>
+<td>Acceptance result</td>
+<td></td>
+</tr>
+<tr>
+<td>Licence</td>
+<td></td>
+</tr>
+<tr>
+<td>Reviewer/date</td>
+<td></td>
+</tr>
+<tr>
+<td>Notes</td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>12. Open decisions</h2>
+<ul>
+<li>Dedicated <code>sprite.scan.myelin</code>: <strong>now required</strong>. The facts model gives
+<code>scan-myelin</code> its own NERV-01#3 card, so it no longer shares
+<code>sprite.scan.neuron</code>. The shared icon is retired.</li>
+<li>03 scan content: <strong>facts model</strong>. The Keeper dialogue reveals CON-3, CON-5,
+and NERV-01#5; the three scans reveal NERV-01#1, #3, and #6. The pads and
+terminal are interactable props, not scans.</li>
+<li>Reuse <code>sprite.exit</code> for Silicon: <strong>rejected</strong>. The organic/warm anatomy exit
+does not meet the Silicon tech style; keep the Silicon placeholder until a
+dedicated source exists.</li>
+<li><code>ManifestAudioProvider</code>: <strong>done</strong>; three pilot SFX are installed.</li>
+<li>Placeholder inventory warning in <code>pack:validate</code>: still a follow-up.</li>
+<li>03/04/Silicon far/mid/near layers: deferred for this milestone.</li>
+<li>Hub logo: <strong>CSS Silkscreen fallback approved</strong>. Toy astronaut: <strong>cut</strong>.</li>
+</ul>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

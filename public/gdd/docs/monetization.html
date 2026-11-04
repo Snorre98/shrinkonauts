@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>Monetization — Shrinkonauts — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">Art pipeline / source notes</p>
+  <h1>Monetization — Shrinkonauts</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <p><strong>Status:</strong> draft v0.1 · 29 October 2026
+<strong>Owner:</strong> Johannes/Marie (GDD), Snorre (technical fit)
+<strong>Scope:</strong> the GDD&#39;s mandatory <strong>Monetization</strong> section (T-GDD / L-G6) and the IAP plan
+<strong>Constraint source:</strong> <a href="shrinkonauts/base-game/requirements.md"><code>base-game/requirements.md</code></a>, <a href="shrinkonauts/base-game/architecture.md"><code>base-game/architecture.md</code></a>, <a href="shrinkonauts/DESIGN.md"><code>DESIGN.md</code></a></p>
+<hr>
+<h2>1. Model in one line</h2>
+<p><strong>Free prologue → one-time premium base game → paid gamepack expansions → classroom licence.</strong></p>
+<p>No ads, no currency, no consumables. Every purchase unlocks content permanently.</p>
+<hr>
+<h2>2. Why this model</h2>
+<table>
+<thead>
+<tr>
+<th>Reason</th>
+<th>Fit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>The game is about cartridges in a rig</td>
+<td>A new gamepack <em>is</em> a new cartridge; DLC is part of the fiction</td>
+</tr>
+<tr>
+<td>The pack boundary is a hard requirement (G7)</td>
+<td>A new pack loads without engine changes, so paid content is a clean unit</td>
+</tr>
+<tr>
+<td>No backend, accounts, or telemetry</td>
+<td>Storefront-handled purchases are cheaper and safer than a live economy</td>
+</tr>
+<tr>
+<td>Audience is 12+ and classroom-facing</td>
+<td>Visible pricing and a real demo survive teacher and parent review</td>
+</tr>
+<tr>
+<td>Evidence, hints, and debrief are the learning product</td>
+<td>They stay free; the game sells content, never progress or answers</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>3. Tiers and pricing</h2>
+<p>Prices are placeholders for the GDD, not a commitment.</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Contents</th>
+<th>Price</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Free prologue</strong></td>
+<td>The existing <code>03-nerve-forest</code> slice: dialogue, scan, one puzzle, debrief</td>
+<td>Free</td>
+</tr>
+<tr>
+<td><strong>Base game</strong></td>
+<td>Rig/console + full anatomy pack (5 levels, solo and local co-op, map, evidence export)</td>
+<td>149 NOK / ~$14.99</td>
+</tr>
+<tr>
+<td><strong>Expansion gamepack</strong></td>
+<td>One new system per cartridge: <em>Silicon</em>, circulatory, respiratory, immune</td>
+<td>49–79 NOK / ~$4.99–7.99</td>
+</tr>
+<tr>
+<td><strong>Bundle</strong></td>
+<td>Base game + all current packs</td>
+<td>~299 NOK / ~$29.99</td>
+</tr>
+<tr>
+<td><strong>Classroom licence</strong></td>
+<td>All packs for teacher/school use, evidence export, future dashboard</td>
+<td>~990 NOK/teacher/year, or site licence</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>4. In-app purchases</h2>
+<p>Treat these as <strong>non-consumable content unlocks</strong> (DLC-style), not free-to-play IAP.</p>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Type</th>
+<th>Contents</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pack.silicon</code></td>
+<td>Non-consumable</td>
+<td>Silicon transfer pack</td>
+<td>Permanent, restoreable</td>
+</tr>
+<tr>
+<td><code>pack.circulatory</code></td>
+<td>Non-consumable</td>
+<td>Circulatory system pack</td>
+<td>Permanent</td>
+</tr>
+<tr>
+<td><code>pack.respiratory</code></td>
+<td>Non-consumable</td>
+<td>Respiratory system pack</td>
+<td>Permanent</td>
+</tr>
+<tr>
+<td><code>pack.immune</code></td>
+<td>Non-consumable</td>
+<td>Immune system pack</td>
+<td>Permanent</td>
+</tr>
+<tr>
+<td><code>bundle.all</code></td>
+<td>Bundle</td>
+<td>Base + all packs</td>
+<td>Best value per pack</td>
+</tr>
+<tr>
+<td><code>supporter.cosmetic</code></td>
+<td>Cosmetic only</td>
+<td>Suit palette/skin set</td>
+<td>No gameplay or learning effect</td>
+</tr>
+<tr>
+<td><code>classroom.license</code></td>
+<td>Term licence</td>
+<td>All packs + export</td>
+<td>Not sold to under-18 individuals</td>
+</tr>
+</tbody></table>
+<h3>Purchase rules</h3>
+<ol>
+<li>The <strong>cartridge shelf</strong> is the only store surface.</li>
+<li><strong>No purchase prompt</strong> during a level, puzzle, or debrief.</li>
+<li>Every locked cartridge shows its learning objectives and one free sample level.</li>
+<li>Entitlements live with <strong>settings/licence state</strong>, not the run save.</li>
+<li><strong>Classroom mode</strong> unlocks all packs and hides purchase UI.</li>
+<li><strong>Restore purchases</strong> is always available; refunds follow the storefront.</li>
+<li>If mobile is added later, add a parental gate and follow Apple/Google rules. It is not a current requirement.</li>
+</ol>
+<h3>Deliberately excluded</h3>
+<p>No ads · no loot boxes · no energy or stamina · no consumable hints · no pay-to-skip puzzles · no premium currency · no selling learner data.</p>
+<hr>
+<h2>5. Technical shape (minimum viable)</h2>
+<p>Keep commerce out of the domain and out of <code>game/runtime.ts</code>.</p>
+<ul>
+<li>Add an <code>entitlements</code> interface: <code>isOwned(packId)</code>, <code>purchase(packId)</code>, <code>restore()</code>.</li>
+<li>Add a <code>platform/billing</code> adapter: <code>NoopBilling</code> (dev: everything owned), <code>WebBilling</code> (storefront redirect), later <code>SteamBilling</code>.</li>
+<li>Add an optional <code>commerce: { productId, priceTier, demoLevel? }</code> block to the pack manifest, with a minor schema bump and validator tests for locked/unlocked packs (same pattern as ADR-0008).</li>
+<li>Gate <strong>pack loading only</strong>. Levels, evidence, debrief, hints, accessibility, and save data are unaffected.</li>
+<li>For the prototype and the 2-minute video, simulate purchases with a URL flag such as <code>?iap=sim</code>.</li>
+</ul>
+<hr>
+<h2>6. Risks and open questions</h2>
+<table>
+<thead>
+<tr>
+<th>Risk / question</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Platform not final</td>
+<td>Browser/itch.io and Steam both support one-time purchases; mobile would change the IAP wording</td>
+</tr>
+<tr>
+<td>Classroom as a real sales target</td>
+<td>If yes, lead with the classroom licence; if no, treat it as a future tier</td>
+</tr>
+<tr>
+<td>Store fees</td>
+<td>Budget roughly 30% (15% at higher volume) on storefront revenue</td>
+</tr>
+<tr>
+<td>VAT and consumer law</td>
+<td>Prices must be shown inclusive of VAT in Norway; refunds follow the store</td>
+</tr>
+<tr>
+<td>Trust</td>
+<td>Any ads or consumables would undermine the classroom positioning</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. GDD-ready summary</h2>
+<blockquote>
+<p><em>Shrinkonauts</em> uses a premium, one-time-purchase model. A free browser prologue contains the complete Nerve Forest slice so players and teachers can evaluate the game before paying. The base game is a single purchase and includes the rig and the full anatomy gamepack. Additional systems ship as paid gamepack expansions — starting with <em>Silicon</em> — sold individually or as a bundle. Schools can buy a classroom licence that unlocks all packs and keeps evidence export available. In-app purchases are non-consumable content unlocks only: no ads, no currency, no consumables, no loot boxes, and no purchase prompts during play. Learning evidence, hints, debriefs, and accessibility settings are never paywalled. This matches the game&#39;s cartridge fiction and pack architecture, and keeps a 12+ educational product trustworthy for teachers and parents.</p>
+</blockquote>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

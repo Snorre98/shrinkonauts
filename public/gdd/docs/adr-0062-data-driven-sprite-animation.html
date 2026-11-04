@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>ADR-0062: Data-driven sprite animation and runtime state machine — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">Art pipeline / source notes</p>
+  <h1>ADR-0062: Data-driven sprite animation and runtime state machine</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <ul>
+<li><strong>Status:</strong> Accepted</li>
+<li><strong>Date:</strong> 2026-10-29</li>
+<li><strong>Deciders:</strong> Snorre</li>
+<li><strong>Related:</strong> ADR-0030, ADR-0048, ADR-0060, ADR-0061, ADR-0063</li>
+</ul>
+<h2>Context</h2>
+<p>Ludo exports are flat frame grids with no clip names, no loop points, and no
+game-state mapping. The current runtime loads <code>type: &quot;sheet&quot;</code> textures but
+creates <code>this.add.image(...)</code> for players and entities; it never calls
+<code>anims.create</code>, so a sheet would display frame 0 only. The player simulation
+already exposes the state needed for animation: <code>onGround</code>, <code>vy</code>, <code>vx</code>,
+<code>facing</code>, <code>dashTime</code>, and the <code>jump</code>/<code>land</code>/<code>dash</code> gameplay cues.</p>
+<p>Hardcoding frame ranges, fps, and transitions in <code>room-scene.ts</code> will not scale
+to multiple characters, variants, and actions. The animation system must be
+data-driven, testable, and independent of the palette-variant pipeline.</p>
+<h2>Decision</h2>
+<p>Define animation clips in a portable descriptor per character or shared clip
+set, for example <code>player.anim.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;texture&quot;: &quot;sprite.player.p1&quot;,
+  &quot;frameWidth&quot;: 14,
+  &quot;frameHeight&quot;: 22,
+  &quot;origin&quot;: [0.5, 1],
+  &quot;animations&quot;: {
+    &quot;idle&quot;: { &quot;frames&quot;: [0, 1, 2, 3], &quot;fps&quot;: 6, &quot;loop&quot;: true },
+    &quot;walk&quot;: {
+      &quot;frames&quot;: [4, 5, 6, 7, 8, 9],
+      &quot;fps&quot;: 10,
+      &quot;loop&quot;: true,
+      &quot;speedFromVelocity&quot;: true,
+      &quot;events&quot;: { &quot;2&quot;: &quot;footstep&quot;, &quot;5&quot;: &quot;footstep&quot; }
+    },
+    &quot;jump&quot;: { &quot;frames&quot;: [10, 11], &quot;fps&quot;: 12, &quot;loop&quot;: false },
+    &quot;fall&quot;: { &quot;frames&quot;: [12, 13], &quot;fps&quot;: 10, &quot;loop&quot;: true },
+    &quot;land&quot;: { &quot;frames&quot;: [14, 15], &quot;fps&quot;: 12, &quot;loop&quot;: false, &quot;next&quot;: &quot;idle&quot; }
+  }
+}
+</code></pre>
+<p>The runtime creates Phaser animations once, using the sheet texture:</p>
+<pre><code class="language-ts">this.anims.create({
+  key: `${textureKey}:walk`,
+  frames: this.anims.generateFrameNumbers(textureKey, { start: 4, end: 9 }),
+  frameRate: 10,
+  repeat: -1,
+});
+</code></pre>
+<p>A small <code>PlayerAnimator</code> state machine selects the clip:</p>
+<pre><code class="language-ts">function chooseState(player: PlayerState, oneShot: string | null) {
+  if (oneShot) return oneShot;
+  if (player.dashTime &gt; 0) return &quot;dash&quot;;
+  if (!player.onGround) return player.vy &lt; 0 ? &quot;jump&quot; : &quot;fall&quot;;
+  if (Math.abs(player.vx) &gt; 20) return &quot;walk&quot;;
+  return &quot;idle&quot;;
+}
+</code></pre>
+<p>Rules:</p>
+<ul>
+<li>Priority: one-shot action (land, scan, hurt) &gt; dash &gt; air (jump/fall) &gt;
+ground locomotion (walk/idle).</li>
+<li>Play only when the state changes, with <code>sprite.play(key, true)</code> so a running
+loop is not restarted every frame.</li>
+<li>One-shot clips use <code>loop: false</code>; return to the locomotion state on
+<code>animationcomplete</code>, or use the descriptor&#39;s <code>next</code>.</li>
+<li>Facing uses <code>sprite.setFlipX(player.facing === -1)</code>. Do not bake left-facing
+frames.</li>
+<li>Walk/run speed uses <code>sprite.anims.timeScale</code>, clamped from velocity, to reduce
+foot sliding.</li>
+<li>Transitions are immediate by default. The installed Phaser 4.2.1 types do not
+expose the old <code>crossFade</code> play option; if a fade is required, use a short
+alpha tween or a dual-sprite blend. <code>chain()</code> remains available for sequences.</li>
+<li>Reduced motion pauses or slows the animator globally.</li>
+<li>Frame events emit visual cues such as footsteps and dust. Gameplay audio and
+effects continue to use the existing <code>jump</code>/<code>land</code>/<code>dash</code> cues.</li>
+<li>Palette variants share the same clip set; the animator binds it to the
+variant&#39;s texture.</li>
+</ul>
+<p>The descriptor is the source of truth. The asset manifest may reference it or
+the loader may resolve it by asset ID; either way, frame ranges and fps are not
+hardcoded in the scene.</p>
+<h2>Consequences</h2>
+<p><strong>Easier:</strong></p>
+<ul>
+<li>Add or tune clips without editing the scene.</li>
+<li>Share one clip set between P1 and P2.</li>
+<li>Unit-test state selection and clip validation.</li>
+<li>Control speed, looping, one-shots, and events consistently.</li>
+<li>Keep the static path by shipping a one-frame clip.</li>
+</ul>
+<p><strong>Harder:</strong></p>
+<ul>
+<li>Need a descriptor schema, parser, and validator.</li>
+<li><code>room-scene.ts</code> must create sprites and animations, not images.</li>
+<li>Animation lifecycle and one-shot completion need tests.</li>
+</ul>
+<p><strong>Constrained:</strong></p>
+<ul>
+<li>No hardcoded frame ranges in scene code.</li>
+<li>No per-frame texture swaps or manual frame indices.</li>
+<li>No GIF playback at runtime (ADR-0063).</li>
+<li>No transition matrix for every pair; state priority plus optional fades is
+enough.</li>
+</ul>
+<h2>Validation</h2>
+<ul>
+<li>The descriptor parser rejects missing clips, out-of-range frames, invalid fps,
+and unknown <code>next</code> targets.</li>
+<li>Unit tests cover idle/walk/jump/fall/land/dash selection and one-shot return.</li>
+<li>P1/P2 share the same clip names and frame counts.</li>
+<li>A running loop is not restarted while the state is unchanged.</li>
+<li>Playwright screenshots cover idle, walk, jump, dash, and landing.</li>
+<li><code>prefers-reduced-motion</code> pauses or slows the animation.</li>
+</ul>
+<h2>Alternatives considered</h2>
+<ul>
+<li><strong>Hardcode animations in <code>room-scene.ts</code></strong> — rejected: does not scale and
+mixes content with rendering.</li>
+<li><strong>One sheet per clip with a single manifest fps</strong> — rejected: cannot express
+multiple clips per character and creates too many textures.</li>
+<li><strong>Aseprite tags as the only format</strong> — rejected as the sole mechanism: it
+locks the pipeline to one tool; Aseprite can still be an import source.</li>
+<li><strong>GIF textures</strong> — rejected: no reliable speed control, events, alpha, or
+performance.</li>
+<li><strong>Full transition matrix</strong> — rejected: overkill; state priority plus optional
+fades covers the game.</li>
+</ul>
+<h2>References</h2>
+<ul>
+<li>Phaser 4.2.1 animation manager (<code>anims.create</code>, <code>generateFrameNumbers</code>,
+<code>play</code>, <code>chain</code>, <code>animationcomplete</code>, <code>timeScale</code>)</li>
+<li><a href="../../src/world/room-scene.ts"><code>src/world/room-scene.ts</code></a></li>
+<li><a href="../../src/world/physics.ts"><code>src/world/physics.ts</code></a></li>
+<li>ADR-0030 (sprite/animation format policy)</li>
+<li>ADR-0048 (half-resolution rendering)</li>
+<li>ADR-0060 (asset layers), ADR-0061 (palette variants), ADR-0063 (previews)</li>
+</ul>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

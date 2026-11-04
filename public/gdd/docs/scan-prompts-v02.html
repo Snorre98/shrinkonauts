@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>Scan prompts v02 — 03 Nerve Forest — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">Art pipeline / source notes</p>
+  <h1>Scan prompts v02 — 03 Nerve Forest</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <p><strong>Status:</strong> on hold — the 03 concept is under M2.75 rescope
+<strong>Scope:</strong> <code>sprite.scan.neuron</code>, <code>sprite.scan.myelin</code>, <code>sprite.scan.pathway</code>
+<strong>Replaces:</strong> the whole-cell scan prompts in
+<a href="docs/asset-prompt-library-v01.html"><code>prompt-library-v01.md</code></a> §5.1–§5.3 and the older
+whole-cell prompts in
+<a href="docs/m3-asset-requirements-v01.html"><code>../m3/asset-requirements-v01.md</code></a> §8.18.</p>
+<blockquote>
+<p><strong>Hold (2026-11-03):</strong> these prompts are complete enough to review, but do not
+generate final sources yet. The room currently treats a cell, a part of a
+cell, and a process/route as peer scan objects; M2.75 is deciding whether that
+taxonomy is correct. See <a href="docs/nanobanan-README.html"><code>../m2.75/README.md</code></a>. The
+prompts may survive a rescope, but the asset set may not.</p>
+</blockquote>
+<h2>Why this revision exists</h2>
+<p>The old scan prompts produced a long horizontal neuron with a beaded tail. At
+36×36 that plate fits <strong>32×13</strong> and reads as a strip. The old neuron and
+pathway prompts were also almost the same image; the pathway added only a small
+pulse. The new set is <strong>three different objects with three different jobs</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Card fact</th>
+<th>Job</th>
+<th>Silhouette</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sprite.scan.neuron</code></td>
+<td>NERV-01#1</td>
+<td>neuron parts and direction</td>
+<td>round cell with a star crown and curled axon</td>
+</tr>
+<tr>
+<td><code>sprite.scan.myelin</code></td>
+<td>NERV-01#3</td>
+<td>sheath, nodes, speed</td>
+<td>capsule with a pinched node</td>
+</tr>
+<tr>
+<td><code>sprite.scan.pathway</code></td>
+<td>NERV-01#6</td>
+<td>all-or-none, one-way, saltatory</td>
+<td>three-bead chain with a terminal fork</td>
+</tr>
+</tbody></table>
+<p><code>scan-myelin</code> now has its own sprite. The pads and terminal are interactable
+props, not scans. The Keeper dialogue reveals CON-3, CON-5, and NERV-01#5.</p>
+<h2>Generation settings</h2>
+<ul>
+<li><strong>1:1 square canvas</strong>, 1024 px on the long edge (2048 if the model supports it).</li>
+<li><strong>No reference image.</strong> An image reference pulls the old horizontal layout back in.</li>
+<li>Flat solid magenta <code>#FF00FF</code> background.</li>
+<li>Four variations per prompt.</li>
+<li>Key with <code>npm run art:key</code>; fit with <code>npm run art:fit</code> at 36×36, 2 px margin.</li>
+<li>Do <strong>not</strong> use the old root JPEGs as sources. They are old-prompt outputs.</li>
+</ul>
+<h2>Silhouette test first</h2>
+<p>The concept was checked as flat shapes before writing final art. The review
+sheet is at
+<a href="../../art-source/scan-silhouettes/scan-silhouette-review.png"><code>art-source/scan-silhouettes/scan-silhouette-review.png</code></a>.
+It shows the three proposed silhouettes at 1× in the actual room and at 8× next
+to the Keeper, pads, and accepted scans. The first pass failed: the neuron read
+as a blob, myelin as two eggs, and pathway as three dots. The current sheet uses
+a star-crowned teardrop cell, a continuous capsule with a pinched node, and a
+beaded chain with a terminal fork.</p>
+<p>Re-run that sheet if the prompts change the silhouette. Do not generate final
+art until the round/capsule/chain distinction survives at 1×. The neuron is the
+remaining risk: its dendrite crown still reads as a blob in flat white. The
+final 1px dark outline, bone/teal separation, and cyan rim must do the work that
+the silhouette cannot; check it next to the Keeper after generation.</p>
+<h2>Shared blocks</h2>
+<p>These are the complete shared blocks. Each prompt below already includes them.</p>
+<h3>STYLE_SPRITE</h3>
+<pre><code class="language-text">Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
+</code></pre>
+<h3>PALETTE</h3>
+<pre><code class="language-text">Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+</code></pre>
+<h3>FRAME_ENTITY_SQUARE</h3>
+<pre><code class="language-text">Full object, centred inside a 1:1 square composition, with a clear empty margin on all sides; the subject fills about 80% of both the width and height. Isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing. Do not compose the subject as a long horizontal strip or a wide diagram.
+</code></pre>
+<h3>NEGATIVE_SPRITE</h3>
+<pre><code class="language-text">text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lines, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, open wound, viscera, exposed organs, extra arms, extra tails, wings, detailed fingers, human face, multiple characters, scene background, ground, floor, pedestal, cast shadow, drop shadow, checkerboard, frame
+</code></pre>
+<hr>
+<h2>1. <code>sprite.scan.neuron</code></h2>
+<p><strong>Fact:</strong> NERV-01#1 — dendrites, soma, one axon, axon terminals; information
+flows dendrite → soma → axon → terminal.
+<strong>File:</strong> <code>shared/sprites/scan-neuron.png</code> · <strong>Display:</strong> 36×36
+<strong>Silhouette target:</strong> round cell, not a strip.</p>
+<h3>Prompt</h3>
+<pre><code class="language-text">SUBJECT: A single compact diagrammatic scan icon of one nerve cell, designed to read in a square 36×36 cell — not a character. A round bone-cream cell body fills the centre. Five short, stubby, branching dendrites radiate from the top and left of the body, separated from each other and from the body by clear dark gaps. One short cable-like axon leaves the lower right of the body, curves down and to the right as a separate cable outside the body, and ends in a small forked tip. A pale nerve-yellow nucleus glows inside the body. A thin joint-cyan rim traces the silhouette. The composition is roughly circular and fills about 80% of both the width and height of the square.
+
+IN PLAIN SHAPES: the round body is the soma; the five branches are the dendrites; the short curled cable is the single axon; the forked tip is the axon terminals; the yellow glow is the nucleus. No myelin beads — myelin is a separate scan.
+
+No face, eyes, arms, lantern, humanoid pose, labels, arrows, second axon, second cell body, long horizontal strip, or gore.
+
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred inside a 1:1 square composition, with a clear empty margin on all sides; the subject fills about 80% of both the width and height. Isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing. Do not compose the subject as a long horizontal strip or a wide diagram.
+</code></pre>
+<h3>Negative</h3>
+<pre><code class="language-text">text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lines, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, open wound, viscera, exposed organs, extra arms, extra tails, wings, detailed fingers, human face, multiple characters, scene background, ground, floor, pedestal, cast shadow, drop shadow, checkerboard, frame, long horizontal strip, wide diagram, full-width tail, myelin beads, character, face, eyes, arms, lantern, humanoid, fur, hair, second axon, second cell body, labels, arrows
+</code></pre>
+<h3>Acceptance</h3>
+<ul>
+<li>At 36×36 the round soma, five dendrites with clear dark gaps, one curled
+axon, forked terminal, and cyan rim read.</li>
+<li>Fitted subject fills at least 24×24 in the 36×36 cell; trimmed aspect ≤ 1.35.</li>
+<li>At least 300 opaque pixels at 36×36.</li>
+<li>Silhouette is a compact round cell, not a horizontal strip.</li>
+<li>Distinct from <code>sprite.agent.neuron</code>; no face, arms, or lantern.</li>
+<li>No text, arrows, or gore.</li>
+</ul>
+<hr>
+<h2>2. <code>sprite.scan.myelin</code></h2>
+<p><strong>Fact:</strong> NERV-01#3 — myelin is a lipid-rich sheath made by glial cells; gaps
+are nodes of Ranvier; myelin speeds conduction.
+<strong>File:</strong> <code>shared/sprites/scan-myelin.png</code> · <strong>Display:</strong> 36×36
+<strong>Silhouette target:</strong> continuous capsule with a pinched node, not two eggs.</p>
+<h3>Prompt</h3>
+<pre><code class="language-text">SUBJECT: A single compact diagrammatic scan icon of a myelinated axon segment, designed to read in a square 36×36 cell — not a character. A thick dark teal axon cable runs diagonally from the lower left to the upper right. Two large pale bone-cream, bead-like myelin sleeves wrap the cable, with one clear dark node gap between them. Short bare cable stubs show at both ends. A thin joint-cyan rim traces the silhouette. The capsule fills about 80% of both the width and height of the square.
+
+IN PLAIN SHAPES: the thick cable is the axon; the two pale beads are myelin sleeves; the dark gap between them is a node of Ranvier. No cell body, no dendrites, no terminal fork, no pulse.
+
+No face, eyes, arms, lantern, labels, arrows, second cable, long horizontal strip, or gore.
+
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred inside a 1:1 square composition, with a clear empty margin on all sides; the subject fills about 80% of both the width and height. Isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing. Do not compose the subject as a long horizontal strip or a wide diagram.
+</code></pre>
+<h3>Negative</h3>
+<pre><code class="language-text">text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lines, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, open wound, viscera, exposed organs, extra arms, extra tails, wings, detailed fingers, human face, multiple characters, scene background, ground, floor, pedestal, cast shadow, drop shadow, checkerboard, frame, cell body, dendrites, terminal fork, pulse, long horizontal strip, second cable, character, face, eyes, arms, lantern, humanoid, labels, arrows
+</code></pre>
+<h3>Acceptance</h3>
+<ul>
+<li>At 36×36 two sleeves, one node gap, the dark cable stubs, and the cyan rim
+read.</li>
+<li>Fitted subject fills at least 24×24; trimmed aspect ≤ 1.35; ≥300 opaque px.</li>
+<li>Distinct from <code>sprite.scan.pathway</code>: capsule vs three-bead chain; no pulse.</li>
+<li>No cell body, dendrites, terminal fork, text, or arrows.</li>
+</ul>
+<hr>
+<h2>3. <code>sprite.scan.pathway</code></h2>
+<p><strong>Fact:</strong> NERV-01#6 — action potentials are all-or-none; stronger stimuli
+increase frequency, not amplitude; the refractory period keeps the signal
+one-way; myelinated axons use saltatory conduction.
+<strong>File:</strong> <code>shared/sprites/scan-pathway.png</code> · <strong>Display:</strong> 36×36
+<strong>Silhouette target:</strong> three-bead diagonal chain with a terminal fork.</p>
+<h3>Prompt</h3>
+<pre><code class="language-text">SUBJECT: A single compact diagrammatic scan icon of one-way conduction along a myelinated axon, designed to read in a square 36×36 cell — not a character. Three pale bone-cream, bead-like myelin sleeves sit in a diagonal chain from the upper left to the lower right, on a dark teal axon cable, with dark node gaps between them. A dim nerve-yellow spark sits at the upper-left node gap; a bright nerve-yellow pulse bursts at the middle node gap; the cable ends in a small forked terminal at the lower right. A thin joint-cyan rim traces the silhouette. The diagonal chain fills about 80% of both the width and height of the square.
+
+IN PLAIN SHAPES: the three beads are myelin sleeves; the dark gaps are nodes of Ranvier; the dim-to-bright sparks are the action potential moving one way; the forked tip is the axon terminal. The pulse is in the node gap, not inside a sleeve.
+
+No cell body, no dendrites, no face, eyes, arms, lantern, labels, arrows, second axon, long horizontal strip, or gore. The one-way reading comes from the dim-to-bright pulse sequence and the forked terminal, not an arrow.
+
+Pixel art for a side-view 2D platformer set inside a living human body. Native pixel grid, hard square pixels, crisp edges, no anti-aliasing, no smoothing, no mixed pixel sizes. Bold dark teal-brown outlines, one pixel at final sprite scale; flat fills from three-step ramps; 50% dither for damp membrane sheen, condensation, dust and grime. Gross-cute biology, wry deadpan tone, weird and fleshy but 12+ friendly: never gory, no shock humour. Strong readable shapes; characters and props must read as small sprites. Side view or slight 3/4 view.
+
+Palette ramps: teal #05090b #101a20 #1d2f38; bone #c9b79a #f2e8d5 #fff8e8; bone shadow #5f736e #7a8f8a #9db4ad; nerve #b8862b #ffd166 #fff3b0; joint #3f9fb5 #7bdff2 #c9f7ff; muscle #a82a4a #ef476f #ff9fb2; sage #6f847d #9db4ad #c4d4ce; ink #000000 #05090b #2a3f47. Use only these ramp steps; no intermediate blends, no unapproved orange.
+
+Full object, centred inside a 1:1 square composition, with a clear empty margin on all sides; the subject fills about 80% of both the width and height. Isolated on a flat solid magenta #FF00FF background; no ground, no pedestal, no cast shadow, no scene, no frame. Draw the object large and clear; do not draw a pixel grid, a tiny sprite, or a sprite sheet. Hard pixel edges; no anti-aliasing. Do not compose the subject as a long horizontal strip or a wide diagram.
+</code></pre>
+<h3>Negative</h3>
+<pre><code class="language-text">text, letters, numbers, logo, watermark, border, UI, labels, arrows, diagram lines, anti-aliasing, smooth gradient, painterly, 3D render, photorealism, anime, clean vector, high-res detail, mixed pixel sizes, faux pixel art, blurry edges, glossy plastic, neon cyberpunk, purple, neon green, orange, pure red, blood, gore, open wound, viscera, exposed organs, extra arms, extra tails, wings, detailed fingers, human face, multiple characters, scene background, ground, floor, pedestal, cast shadow, drop shadow, checkerboard, frame, cell body, dendrites, arrow, long horizontal strip, static sheath only, second axon, character, face, eyes, arms, lantern, humanoid
+</code></pre>
+<h3>Acceptance</h3>
+<ul>
+<li>At 36×36 three beads, two node gaps, the dim-to-bright pulse sequence, the
+forked terminal, and the cyan rim read.</li>
+<li>Fitted subject fills at least 24×24; trimmed aspect ≤ 1.35; ≥300 opaque px.</li>
+<li>Pulse is in a node gap, not inside a sleeve.</li>
+<li>Distinct from <code>sprite.scan.myelin</code>: chain + terminal vs capsule; distinct
+from <code>sprite.scan.neuron</code>: no soma.</li>
+<li>No text, arrows, or gore.</li>
+</ul>
+<hr>
+<h2>Prompt log template</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Prompt version</td>
+<td><code>scan-v02</code></td>
+</tr>
+<tr>
+<td>Style version</td>
+<td><code>style-pixel-v2</code></td>
+</tr>
+<tr>
+<td>Asset ID</td>
+<td></td>
+</tr>
+<tr>
+<td>Fact</td>
+<td></td>
+</tr>
+<tr>
+<td>Model / seed</td>
+<td></td>
+</tr>
+<tr>
+<td>Aspect</td>
+<td>1:1</td>
+</tr>
+<tr>
+<td>Reference</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Variations</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Chosen file</td>
+<td></td>
+</tr>
+<tr>
+<td>Key / fit report</td>
+<td></td>
+</tr>
+<tr>
+<td>Fit dimensions / opaque px</td>
+<td></td>
+</tr>
+<tr>
+<td>Silhouette check</td>
+<td>round / capsule / chain</td>
+</tr>
+<tr>
+<td>In-room 1× check</td>
+<td></td>
+</tr>
+<tr>
+<td>Reviewer / date</td>
+<td></td>
+</tr>
+<tr>
+<td>Licence</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>Record failed attempts; do not overwrite history.</p>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0",
+  "id": "dlg-neuron-01",
+  "speaker": "Neuron Keeper",
+  "portrait": "neuron",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "text": "You are inside a neuron. The signal is stuck below threshold, so the exit to the terminal is closed.",
+      "next": "problem"
+    },
+    "problem": {
+      "text": "A neuron does not fire for every nudge. The input has to reach threshold. Once it does, the spike is full-size and travels one way.",
+      "next": "clue"
+    },
+    "clue": {
+      "text": "Two inputs are enough here; one is not. Press both dendrite inputs, then run the axon to the terminal. The route is dendrite → trigger zone → axon → terminal. Myelin speeds conduction; it does not make the spike bigger.",
+      "next": "check"
+    },
+    "check": {
+      "text": "Quick check: what happens once the input reaches threshold?",
+      "choices": [
+        { "id": "wrong", "text": "The spike gets bigger with more input", "next": "retry" },
+        { "id": "right", "text": "A full-size spike fires and travels one way", "next": "right" }
+      ]
+    },
+    "retry": {
+      "text": "No — stronger or extra input increases the frequency of spikes, not the amplitude of one spike. Try again.",
+      "next": "check"
+    },
+    "right": {
+      "text": "Exactly. Press both dendrite inputs to reach threshold, then follow the axon to the terminal. Scan the neuron, myelin, and pathway labels if you want the details.",
+      "effects": [
+        { "type": "revealConcept", "conceptId": "CON-3" },
+        { "type": "revealConcept", "conceptId": "CON-5" },
+        { "type": "revealFact", "factId": "NERV-01#5" },
+        { "type": "recordEvidence", "event": "concept_revealed", "conceptId": "CON-3" },
+        { "type": "revealMap", "nodeId": "map-nerve-forest" }
+      ],
+      "next": null
+    }
+  }
+}

@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>Asset list — GBL submission (own vs sourced) — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">GDD pack</p>
+  <h1>Asset list — GBL submission (own vs sourced)</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <p>Companion to <code>C5</code> / <code>T-ASSETS</code>: “List all assets; separate own vs. sourced.”
+This list covers the visual/audio assets used by the GDD, report, video and
+playtest build. It follows the project convention that <strong>AI-generated work is
+logged as own work</strong>, with the tool, prompt/reference, date and terms URL named
+where known; third-party work is <strong>sourced</strong> with its licence.</p>
+<blockquote>
+<p><strong>Status:</strong> working draft for the GBL submission. Several AI provenance
+fields are still TBD. Do not invent a licence or a prompt that is not
+recorded in the repository.</p>
+</blockquote>
+<hr>
+<h2>1. Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th align="right">Count</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Runtime sprite/background/UI images</td>
+<td align="right">62 manifest entries (some shared P1/P2 files repeated)</td>
+<td>POC integrated / final approval pending</td>
+</tr>
+<tr>
+<td>Concept plates</td>
+<td align="right">38</td>
+<td>Source/review only</td>
+</tr>
+<tr>
+<td>04 Nano Banana source batch</td>
+<td align="right">7 JPEGs</td>
+<td>Source-generated only; not processed/wired</td>
+</tr>
+<tr>
+<td>Character source sheets</td>
+<td align="right">3 characters, 5 sheets</td>
+<td>Immutable source</td>
+</tr>
+<tr>
+<td>Screenshots</td>
+<td align="right">17</td>
+<td>Mixed: current hub, placeholder-era gameplay, historical</td>
+</tr>
+<tr>
+<td>Contact sheets</td>
+<td align="right">10</td>
+<td>Generated for this pack</td>
+</tr>
+<tr>
+<td>Fonts</td>
+<td align="right">2 families</td>
+<td>Sourced, SIL OFL 1.1</td>
+</tr>
+<tr>
+<td>Audio</td>
+<td align="right">0 files; 12 anatomy + 6 hub cues declared</td>
+<td>All placeholders</td>
+</tr>
+<tr>
+<td>Third-party images</td>
+<td align="right">0</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Third-party audio</td>
+<td align="right">0</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p>The authoritative runtime licences are in:</p>
+<ul>
+<li><code>final/anatomy/metadata/licenses.json</code></li>
+<li><code>final/silicon/metadata/licenses.json</code></li>
+<li><code>final/hub/metadata/assets.final.json</code> (hub has no separate licences file)</li>
+</ul>
+<hr>
+<h2>2. Own work</h2>
+<p>“Own” here means created by the group for this project, including code-authored
+placeholders and derived review material.</p>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>What it is</th>
+<th>Licence / note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>final/anatomy/tiles/bone-atlas.png</code>, <code>nerve-atlas.png</code>, <code>muscle-atlas.png</code>, <code>membrane-atlas.png</code></td>
+<td>Final coloured material atlases</td>
+<td>Nano Banana / Google Gemini (plan TBD); processed 2×2-welded atlases</td>
+</tr>
+<tr>
+<td><code>art-source/nanobanan/new/muscle-endplate-2026-11-03/*.jpeg</code> (repo, not the GDD pack)</td>
+<td>04 raw source batch: sky, four swatches, gate, exit</td>
+<td>Nano Banana; prompt pack <code>muscle-endplate-2026-11-03.1</code>; accepted source, not runtime</td>
+</tr>
+<tr>
+<td><code>final/anatomy/tiles/anatomy-atlas.svg</code></td>
+<td>In-repo placeholder atlas retained as a test fixture</td>
+<td>CC0-1.0; no longer wired</td>
+</tr>
+<tr>
+<td><code>final/silicon/tiles/circuit-atlas.svg</code></td>
+<td>In-repo placeholder circuit atlas</td>
+<td>CC0-1.0; replace with final atlas</td>
+</tr>
+<tr>
+<td><code>screenshots/current/*</code></td>
+<td>Project screenshots / contact sheets</td>
+<td>Group work; contains AI-generated art</td>
+</tr>
+<tr>
+<td><code>screenshots/placeholder-era/*</code></td>
+<td>Project screenshots of the placeholder build</td>
+<td>Group work</td>
+</tr>
+<tr>
+<td><code>screenshots/historical/*</code></td>
+<td>Milestone screenshots</td>
+<td>Group work</td>
+</tr>
+<tr>
+<td><code>contact-sheets/*</code></td>
+<td>Generated overview boards</td>
+<td>Group work; derived from the assets above</td>
+</tr>
+<tr>
+<td><code>gdd-assets/README.md</code>, <code>ASSET-INDEX.md</code>, <code>GDD-MAP.md</code>, <code>PIPELINE.md</code>, <code>ASSET-LIST-GBL.md</code>, <code>LICENCE-NOTES.md</code>, <code>manifest.json</code>, <code>gallery.html</code></td>
+<td>Documentation and index</td>
+<td>Group work</td>
+</tr>
+<tr>
+<td><code>tools/build.mjs</code></td>
+<td>Local pack-generation script</td>
+<td>Group work</td>
+</tr>
+<tr>
+<td>Game code and UI (not shipped as art)</td>
+<td>HUD, dialogue, map, concept log, debrief, menu</td>
+<td>Group work; CSS/DOM, not raster assets</td>
+</tr>
+</tbody></table>
+<p>The screenshots and contact sheets contain AI-generated art; the underlying art
+is logged in §3, not re-licensed by the screenshot.</p>
+<hr>
+<h2>3. AI-generated art (logged as own, with tool provenance)</h2>
+<p>All runtime art in this pack is AI-generated from Ludo.ai / Nanobanan
+(Google Gemini) sources, with art direction and local processing by Snorre.
+The current licence labels are:</p>
+<ul>
+<li><code>Ludo.ai source (POC; plan TBD)</code> — player, Neuron Keeper, scans, entities, sky, Silicon.</li>
+<li><code>Nano Banana / Google Gemini (plan TBD)</code> — bathroom hub art.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Asset family</th>
+<th>Files / IDs</th>
+<th>Tool</th>
+<th>Current licence</th>
+<th>Provenance</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P1 player</td>
+<td><code>player-p1.png</code>, <code>player-p1-walk.png</code>, <code>.jump</code>, <code>.fall</code>, <code>.land</code></td>
+<td>Ludo.ai sprite sheet</td>
+<td>Ludo.ai POC; plan TBD</td>
+<td>Prompt/model/seed TBD; source sheet + JSON in <code>characters/player-p1/</code></td>
+</tr>
+<tr>
+<td>P2 player</td>
+<td><code>player-p2.png</code>, <code>player-p2-walk.png</code>, <code>.jump</code>, <code>.fall</code>, <code>.land</code></td>
+<td>Ludo.ai sprite sheet</td>
+<td>Ludo.ai POC; plan TBD</td>
+<td>Approved ADR-0065 sheets; prompt/model/seed TBD</td>
+</tr>
+<tr>
+<td>Neuron Keeper</td>
+<td><code>agent-neuron.png</code>, <code>agent-neuron-idle.png</code></td>
+<td>Ludo.ai sprite sheet</td>
+<td>Ludo.ai POC; plan TBD</td>
+<td>36-frame source in <code>characters/neuron-agent/</code>; prompt/model/seed TBD</td>
+</tr>
+<tr>
+<td>Anatomy scans</td>
+<td><code>scan-synapse.png</code>, <code>scan-muscle.png</code></td>
+<td>Ludo/Nanobanan concept + local key/fit</td>
+<td>Ludo.ai POC; plan TBD</td>
+<td><code>scan-neuron</code> and <code>scan-pathway</code> are placeholders</td>
+</tr>
+<tr>
+<td>Anatomy interactables</td>
+<td><code>gate-ferry.png</code>, <code>prop-tracer.png</code>, <code>pulse-terminal.png</code>, <code>receptor-triangle.png</code>, <code>receptor-circle.png</code>, <code>pad-dendrite.png</code>, <code>pad-terminal.png</code>, <code>gate-nerve.png</code>, <code>exit.png</code></td>
+<td>Ludo/Nanobanan concept + local key/fit</td>
+<td>Ludo.ai POC / Nano Banana; plan TBD</td>
+<td>Fit reports in <code>source/reports/</code>; <code>gate-nerve</code> and <code>exit</code> are the final 04 batch</td>
+</tr>
+<tr>
+<td>Anatomy material atlases</td>
+<td><code>bone-atlas.png</code>, <code>nerve-atlas.png</code>, <code>muscle-atlas.png</code>, <code>membrane-atlas.png</code></td>
+<td>Nano Banana / Google Gemini + local swatch/atlas pipeline</td>
+<td>Nano Banana; plan TBD</td>
+<td>Final coloured atlases; 32×32 frames; tints removed</td>
+</tr>
+<tr>
+<td>Muscle Endplate sky</td>
+<td><code>muscle-endplate-sky.webp</code></td>
+<td>Nano Banana / Google Gemini + local crop/Lanczos</td>
+<td>Nano Banana; plan TBD</td>
+<td>2752×1536 source → 1280×720 lossless VP8L; recorded no-quantise exception</td>
+</tr>
+<tr>
+<td>Nerve Forest sky</td>
+<td><code>nerve-forest-sky.webp</code></td>
+<td>Ludo/Nanobanan concept</td>
+<td>Ludo.ai POC; plan TBD</td>
+<td>2752×1536 source; crop/Lanczos/WebP; recorded no-quantise exception</td>
+</tr>
+<tr>
+<td>Bathroom scene</td>
+<td><code>bathroom-wall.webp</code></td>
+<td>Nano Banana / Google Gemini</td>
+<td>Nano Banana; plan TBD</td>
+<td>640×360 scene plate; crop/pad/downscale; no palette quantisation</td>
+</tr>
+<tr>
+<td>Hub props</td>
+<td>washer, door, drum, civilian, poster, cartridges, plush, basket, towel, detergent, cycle icons</td>
+<td>Nano Banana / Google Gemini</td>
+<td>Nano Banana; plan TBD</td>
+<td>Source batch absent; reports in <code>source/reports/hub/</code></td>
+</tr>
+<tr>
+<td>Silicon sprites</td>
+<td>CPU, consoles, sockets, gate, pad, plug, scans</td>
+<td>Ludo/Nanobanan concept + local key/fit</td>
+<td>Ludo.ai POC; plan TBD</td>
+<td><code>fit.silicon.config.json</code>; reports in <code>source/reports/silicon/</code></td>
+</tr>
+<tr>
+<td>Silicon sky</td>
+<td><code>silicon-board-sky.webp</code></td>
+<td>Ludo/Nanobanan concept</td>
+<td>Ludo.ai POC; plan TBD</td>
+<td>Crop/dither/WebP; report in <code>source/reports/silicon/</code></td>
+</tr>
+<tr>
+<td>04 source batch</td>
+<td><code>bg.muscle_endplate.sky</code>, four <code>tile.*.atlas</code>, <code>sprite.gate.nerve</code>, <code>sprite.exit</code></td>
+<td>Nano Banana / Google Gemini</td>
+<td>Nano Banana; plan TBD</td>
+<td>7 raw JPEGs in repo <code>art-source/nanobanan/new/muscle-endplate-2026-11-03/</code>; processed and wired runtime files</td>
+</tr>
+<tr>
+<td>Concept plates</td>
+<td>38 JPEGs in <code>concepts/</code></td>
+<td>Nanobanan / Ludo.ai</td>
+<td>Same as the intended runtime asset</td>
+<td>Review/source only; not runtime</td>
+</tr>
+</tbody></table>
+<p><strong>Log line template for the report:</strong></p>
+<pre><code class="language-text">AI-gen — Ludo.ai / Nanobanan (Google Gemini), &lt;prompt version / asset card&gt;,
+&lt;date&gt;, &lt;plan/terms URL&gt;; art direction: Snorre; processed locally with
+art-key/art-fit/art-build-player.
+</code></pre>
+<p>The exact prompt, model and seed are <strong>not</strong> recorded for most assets. The
+prompt packs in <code>source/notes/m3-asset-requirements-v01.md</code> and
+<code>source/notes/m3.5-hub-asset-prompts-v01.md</code> are the closest available record.</p>
+<hr>
+<h2>4. Sourced material</h2>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Source</th>
+<th>Licence</th>
+<th>Files</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Silkscreen</td>
+<td>Google Fonts / SIL Open Font License</td>
+<td>SIL OFL 1.1</td>
+<td><code>final/shared/fonts/silkscreen-400.woff2</code>, <code>silkscreen-700.woff2</code>, <code>OFL-Silkscreen.txt</code></td>
+</tr>
+<tr>
+<td>Pixelify Sans</td>
+<td>Google Fonts / SIL Open Font License</td>
+<td>SIL OFL 1.1</td>
+<td><code>final/shared/fonts/pixelify-sans-400-700.woff2</code>, <code>OFL-PixelifySans.txt</code></td>
+</tr>
+</tbody></table>
+<p>No third-party images, sprites, music or sound effects are included. The game
+audio cues are placeholders with no files.</p>
+<hr>
+<h2>5. Audio cue list (all placeholder)</h2>
+<p>Anatomy declares 12 cues; the M3 scope covers 11 (<code>audio.cue.wrong</code> stays
+placeholder). The hub adds 6 cues. None have files.</p>
+<table>
+<thead>
+<tr>
+<th>Pack</th>
+<th>Cue IDs</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Anatomy</td>
+<td><code>boot</code>, <code>dialogue</code>, <code>scan</code>, <code>dash</code>, <code>gate</code>, <code>map</code>, <code>debrief</code>, <code>checkpoint</code>, <code>unlock</code>, <code>wrong</code>, <code>jump</code>, <code>land</code></td>
+</tr>
+<tr>
+<td>Hub</td>
+<td><code>click</code>, <code>door</code>, <code>spin</code>, <code>shrink</code>, <code>arrive</code>, <code>hum</code></td>
+</tr>
+</tbody></table>
+<p>In the GDD Sound &amp; Music page, state: <strong>“The cue vocabulary is implemented as
+placeholders. Cue/theme playback is implemented, but no audio or theme files
+ship; the menu and room themes are silent until files land, and there is no
+separate ambience loop.”</strong></p>
+<hr>
+<h2>6. Known licence/provenance gaps</h2>
+<ol>
+<li><strong>Ludo/Nano Banana plan and terms</strong> are TBD. The current labels say “POC;
+plan TBD”.</li>
+<li><strong>Prompt, model and seed</strong> are TBD for most assets. The prompt packs exist,
+but the per-asset log is a template.</li>
+<li><strong>Anatomy <code>licenses.json</code></strong> does not list every new entity (pads, gate,
+tracer, pulse, receptors); it does list the scans and sky.</li>
+<li><strong>Hub</strong> has no separate <code>licenses.json</code>; licence strings live in
+<code>assets.final.json</code>.</li>
+<li><strong>Raw hub source batch</strong> is absent, so the hub’s source-to-runtime chain is
+documented but not fully reproducible.</li>
+<li><strong>Final art approval</strong> is pending for POC-integrated sprites and the sky.</li>
+<li><strong>Placeholders</strong> must not be described as final: badge, <code>scan.neuron</code>,
+<code>scan.pathway</code>, <code>scan.reflex</code>, the Silicon interrupt/exit, the 03/04
+far/mid/near layers, the Silicon circuit atlas, the hub logo CSS fallback,
+and the 15 remaining SFX plus four themes. The toy astronaut is cut.</li>
+<li><strong>04 source batch</strong> is processed and wired; the final files and licences are
+in the runtime manifest. Do not list the raw JPEGs as runtime assets.</li>
+</ol>
+<p>See <code>LICENCE-NOTES.md</code> for the exact labels and the files they apply to.</p>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

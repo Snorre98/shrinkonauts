@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "id": "gate-transfer",
+  "type": "concept",
+  "objectiveId": "OBJ-5",
+  "conceptIds": ["CON-7", "CON-8"],
+  "prompt": "Where is the 'spinal cord' in this system?",
+  "puzzle": {
+    "type": "singleChoice",
+    "options": [
+      { "id": "sensor", "text": "The sensor" },
+      { "id": "line", "text": "The interrupt line" },
+      { "id": "controller", "text": "The interrupt controller" },
+      { "id": "cpu", "text": "The CPU" },
+      { "id": "actuator", "text": "The actuator" }
+    ],
+    "answerId": "controller"
+  },
+  "hints": [
+    "The sensor is the input; the CPU is the output side.",
+    "The integration point is between them.",
+    "The interrupt controller is the 'spinal cord' analogue."
+  ],
+  "onSolve": [
+    { "type": "setFlag", "flagId": "transfer-known", "value": true },
+    { "type": "revealMap", "nodeId": "map-interrupt-loop" }
+  ],
+  "onFail": [
+    { "type": "recordEvidence", "event": "gate_failed", "gateId": "gate-transfer" }
+  ]
+}

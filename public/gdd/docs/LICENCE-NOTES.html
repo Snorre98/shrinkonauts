@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>Licence notes — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">GDD pack</p>
+  <h1>Licence notes</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <p>This is a provenance/status note, not legal advice. It records what the
+repository currently says. Do not replace a “TBD” with a guessed licence.</p>
+<h2>1. Current labels</h2>
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Current licence string</th>
+<th>Source of record</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P1, P2, Neuron Keeper, anatomy entities, Nerve Forest sky, Silicon art</td>
+<td><code>Ludo.ai source (POC; plan TBD)</code></td>
+<td><code>final/anatomy/metadata/licenses.json</code>, <code>final/silicon/metadata/licenses.json</code>, <code>assets.final.json</code></td>
+</tr>
+<tr>
+<td>Bathroom hub art</td>
+<td><code>Nano Banana / Google Gemini (plan TBD)</code></td>
+<td><code>final/hub/metadata/assets.final.json</code></td>
+</tr>
+<tr>
+<td>In-repo placeholder atlases</td>
+<td><code>CC0-1.0</code></td>
+<td><code>final/anatomy/metadata/licenses.json</code>, <code>final/silicon/metadata/licenses.json</code></td>
+</tr>
+<tr>
+<td>Silkscreen, Pixelify Sans</td>
+<td><code>SIL OFL 1.1</code></td>
+<td><code>final/shared/fonts/OFL-*.txt</code>, <code>NOTICES.md</code></td>
+</tr>
+<tr>
+<td>Screenshots / contact sheets / docs</td>
+<td>Group work; contains AI-generated art</td>
+<td>This pack</td>
+</tr>
+</tbody></table>
+<p>The exact per-file entries are in <code>manifest.json</code> and
+<code>ASSET-INDEX.md</code>. The original licence snapshots are copied into each pack’s
+<code>metadata/</code> folder.</p>
+<hr>
+<h2>2. What is covered</h2>
+<h3>Anatomy</h3>
+<p><code>final/anatomy/metadata/licenses.json</code> covers:</p>
+<ul>
+<li>P1 and P2 static + animation sheets</li>
+<li>Neuron Keeper static + idle</li>
+<li><code>scan.synapse</code>, <code>scan.muscle</code></li>
+<li><code>pad.dendrite</code>, <code>pad.terminal</code></li>
+<li><code>gate.ferry</code>, <code>prop.tracer</code>, <code>pulse.terminal</code></li>
+<li>both receptors</li>
+<li><code>bg.nerve_forest.sky</code></li>
+<li><code>bg.muscle_endplate.sky</code> (Nano Banana; final)</li>
+<li><code>tile.bone.atlas</code>, <code>tile.nerve.atlas</code>, <code>tile.muscle.atlas</code>,
+<code>tile.membrane.atlas</code> (Nano Banana; final)</li>
+<li><code>tile.anatomy.atlas</code> (CC0 test fixture; no longer wired)</li>
+<li><code>sprite.gate.nerve</code>, <code>sprite.exit</code> (Nano Banana; final)</li>
+</ul>
+<p>The seven 2026-11-03 Nano Banana source plates in
+<code>art-source/nanobanan/new/muscle-endplate-2026-11-03/</code> are processed and wired;
+their runtime files have licence entries with source/runtime hashes. The raw
+JPEGs remain source assets, not runtime assets.</p>
+<p>The licence file does <strong>not</strong> yet list every remaining placeholder (for example
+<code>scan.neuron</code>, <code>scan.pathway</code>, <code>scan.reflex</code>, the Silicon interrupt/exit, the
+badge, the deferred UI panels or the remaining audio). Those are placeholders
+without final art, so the missing entries should be added before any of them
+becomes final.</p>
+<h3>Silicon</h3>
+<p><code>final/silicon/metadata/licenses.json</code> covers the Silicon sprites, the board
+sky and the placeholder circuit atlas. P1/P2 entries are repeated because the
+pack shares the player IDs.</p>
+<h3>Hub</h3>
+<p>There is <strong>no</strong> <code>public/hub/bathroom/licenses.json</code>. The licence strings are
+embedded in <code>assets.final.json</code>:</p>
+<ul>
+<li><code>Nano Banana / Google Gemini (plan TBD)</code> for the scene, washer parts,
+civilian, poster, cartridges, cycle icons, plush, basket, towel and detergent.</li>
+<li><code>Ludo.ai source (POC; plan TBD)</code> for the reused P1 tiny astronaut.</li>
+<li><code>Approved CSS fallback: Silkscreen wordmark...</code> for the logo.</li>
+<li>The toy astronaut entry was removed; the prop is cut.</li>
+</ul>
+<hr>
+<h2>3. Fonts</h2>
+<p>Silkscreen and Pixelify Sans are distributed under the <strong>SIL Open Font
+License 1.1</strong>. The licence texts are copied next to the font files:</p>
+<pre><code class="language-text">final/shared/fonts/
+  OFL-Silkscreen.txt
+  OFL-PixelifySans.txt
+  NOTICES.md
+</code></pre>
+<p>Keep the OFL text with any redistribution of the font files. The GDD itself
+does not need to embed the font file; it only needs the attribution/licence
+note if the font is redistributed.</p>
+<hr>
+<h2>4. Gaps to resolve before submission</h2>
+<ol>
+<li><strong>Ludo/Nano Banana plan and terms URL.</strong> The current labels say “plan TBD”.
+Record the actual plan and terms URL, or keep the POC wording and state that
+the assets are prototype-only.</li>
+<li><strong>Prompt/model/seed log.</strong> The M3 prompt pack has a log template but no
+filled rows. Add a row per accepted asset (tool, prompt version, model,
+seed, date, plan/terms URL, chosen file).</li>
+<li><strong>Anatomy <code>licenses.json</code> completeness.</strong> Add the new entity IDs if they are
+going to be described as final. The current POC build can keep the
+placeholder wording.</li>
+<li><strong>Hub licences file.</strong> Consider adding <code>public/hub/bathroom/licenses.json</code>
+for parity with the packs, or keep the embedded strings and say so in the
+report.</li>
+<li><strong>Raw hub source batch.</strong> The ignored <code>new-main-menu/</code> batch is absent; the
+processed exports/reports are the only record. Do not claim the hub is fully
+reproducible from source.</li>
+<li><strong>Final approval.</strong> POC-integrated sprites and the pretty sky are not final
+approved. The GDD/video should say “POC integrated; final approval pending”
+where that distinction matters.</li>
+<li><strong>Placeholders and final art.</strong> The badge, <code>scan.neuron</code>, <code>scan.pathway</code>,
+<code>scan.reflex</code>, the Silicon interrupt/exit, the 03/04 far/mid/near layers,
+the Silicon circuit atlas, the hub logo CSS fallback, and the remaining
+audio are placeholders. The 2026-11-03 04 batch (sky, four atlases, gate,
+exit) is final and licensed. Do not present placeholders or raw source JPEGs
+as final runtime assets.</li>
+</ol>
+<hr>
+<h2>5. Suggested report wording</h2>
+<blockquote>
+<p>The visual assets are AI-generated in Ludo.ai / Nanobanan (Google Gemini)
+under the group’s art direction, then keyed, fitted, palette-quantised and
+packed locally. The current repository labels them as POC assets with the
+final plan/terms still TBD. The two typefaces are Silkscreen and Pixelify
+Sans, both under the SIL Open Font License 1.1. The in-repo placeholder
+atlases are CC0-1.0. No third-party images or audio are included.</p>
+</blockquote>
+<p>Do not write “all assets are original” without also saying that the art is
+AI-generated and that the final commercial plan is unresolved.</p>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>

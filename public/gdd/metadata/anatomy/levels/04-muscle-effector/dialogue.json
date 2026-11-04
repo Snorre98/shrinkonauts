@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "id": "dlg-muscle-01",
+  "speaker": "Muscle Effector",
+  "portrait": "neuron",
+  "start": "intro",
+  "nodes": {
+    "intro": {
+      "text": "You are at the motor end plate. The muscle is waiting, but the release window is closed and the ACh packet is stuck at the vesicle dock.",
+      "next": "problem"
+    },
+    "problem": {
+      "text": "The nerve does not touch the muscle. The terminal fires, calcium goes in, and the vesicle releases its chemical message across the cleft.",
+      "next": "clue"
+    },
+    "clue": {
+      "text": "Step on the terminal plate to start the Ca²⁺ window. Carry the ACh packet across the cleft and place it on the nicotinic receptor. Pulse the terminal to bind it. AChE clears the ACh after the response.",
+      "next": "check"
+    },
+    "check": {
+      "text": "Quick check: what must happen before the muscle responds?",
+      "choices": [
+        { "id": "wrong", "text": "The muscle decides to contract", "next": "retry" },
+        { "id": "right", "text": "ACh crosses the cleft and binds the nicotinic receptor", "next": "right" }
+      ]
+    },
+    "retry": {
+      "text": "No — the muscle responds only after the motor signal reaches the end plate. ACh must cross the cleft and bind the nicotinic receptor. Try again.",
+      "next": "check"
+    },
+    "right": {
+      "text": "Exactly. The ACh packet is an abstraction for the released chemical message, not a vesicle you carry in real life. AChE breaks it down to end the signal. The receptor, not the transmitter alone, determines the effect — an advanced detail you do not need for this puzzle.",
+      "effects": [
+        { "type": "revealConcept", "conceptId": "CON-4" },
+        { "type": "revealConcept", "conceptId": "CON-6" }
+      ],
+      "next": "handoff"
+    },
+    "handoff": {
+      "text": "Start the ferry at the motor terminal. Step on the terminal plate, wait for the Ca²⁺ window, carry the ACh packet across, place it on the nicotinic receptor, then pulse the terminal. Scan the cleft and muscle labels if you want the details.",
+      "next": null
+    }
+  }
+}

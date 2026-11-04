@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<base href="../">
+<title>M2.75 — Nerve Forest Concept Rescope — Shrinkonauts GDD</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="doc-page">
+<header class="site-header">
+  <a class="brand" href="./">Shrinkonauts <span>GDD assets</span></a>
+  <nav>
+    <a href="./">Gallery</a>
+    <a href="walkthrough.html">Walkthrough</a>
+    <a href="docs/" aria-current="page">Docs</a>
+    <a href="about.html">About</a>
+    <a href="https://snorre98.github.io/shrinkonauts/" target="_blank" rel="noreferrer">Play</a>
+    <a href="https://github.com/snorre98/shrinkonauts" target="_blank" rel="noreferrer">GitHub</a>
+  </nav>
+</header>
+<main class="doc">
+  <p class="doc-kicker">GDD pack</p>
+  <h1>M2.75 — Nerve Forest Concept Rescope</h1>
+  <p class="doc-banner">Copied from the working docs. Some cross-links may still point to the original repository or Obsidian vault.</p>
+  <p><strong>Status:</strong> scaffold — problem framing and option space only. No solution selected.
+<strong>Date:</strong> 2026-11-03
+<strong>Owner:</strong> Snorre
+<strong>Scope:</strong> <code>03-nerve-forest</code> learning design, puzzle abstraction, scan/content model, visual ontology, and the asset brief that follows from them.
+<strong>Not in scope:</strong> final puzzle implementation, final art, engine changes, curriculum rewrite, or new runtime features.
+<strong>Why this exists:</strong> the current room mixes a cell, a part of a cell, and a process/route as if they were peer objects; it carries more concepts than one small puzzle can assess; and its “inside a neuron” metaphor is very literal. Before more art or content is commissioned, the room needs a focused conceptual redesign.</p>
+<hr>
+<h2>0. How to use this document</h2>
+<p>This is a <strong>decision scaffold</strong>, not a specification.</p>
+<ul>
+<li>It captures the problem, the evidence, the tensions, and several possible directions.</li>
+<li>It does <strong>not</strong> choose a direction.</li>
+<li>The options are prompts for focused work and playtesting, not proposals to implement.</li>
+<li>The output of M2.75 is a short decision record plus a revised level/asset brief, not code or final art.</li>
+<li>If a direction is chosen later, it should be recorded in an ADR and then handed to implementation.</li>
+</ul>
+<hr>
+<h2>1. Why M2.75 exists</h2>
+<p>The current 03 Nerve Forest room was designed as a literal journey through a neuron:</p>
+<ul>
+<li>dendrite input plates;</li>
+<li>a soma/trigger-zone gate;</li>
+<li>an axon catwalk;</li>
+<li>myelin-node platforms;</li>
+<li>a terminal exit gate;</li>
+<li>optional scan markers for “neuron”, “myelin”, and “pathway”.</li>
+</ul>
+<p>That produced a coherent-looking room, but the conceptual model underneath it is unstable:</p>
+<ul>
+<li><strong>Myelin is a part of a neuron</strong>, not a peer of the neuron.</li>
+<li><strong>“Pathway” is ambiguous</strong>: it can mean one-way conduction along a single axon (a process), or a sensory → spinal cord → motor route (a multi-cell system). The room uses the word for both.</li>
+<li>The room asks the scan system to teach cell structure, a part, a process, a route, and threshold/all-or-none facts as if they were the same kind of thing.</li>
+<li>The required puzzle assesses only a subset of that material; the rest is optional lore or decoration.</li>
+<li>The visual assets inherit the same confusion: a neuron icon, a myelin icon, and a pathway icon become three similar “cell-like” objects when the underlying ideas are an entity, a part, and a process.</li>
+</ul>
+<p>The result is not a small art problem. It is a learning-design and representation problem. M2.75 exists to resolve it before the next art, prompt, or room pass.</p>
+<h3>1.1 Milestone boundary</h3>
+<table>
+<thead>
+<tr>
+<th>In scope</th>
+<th>Out of scope</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Problem framing, ontology audit, and option space</td>
+<td>Final puzzle implementation</td>
+</tr>
+<tr>
+<td>A single learning contract for 03</td>
+<td>Final art or prompt generation</td>
+</tr>
+<tr>
+<td>The CON-3/CON-5 boundary decision</td>
+<td>Curriculum rewrite outside 03/05</td>
+</tr>
+<tr>
+<td>Paper tests and a playtest plan</td>
+<td>Engine or runtime feature work</td>
+</tr>
+<tr>
+<td>An asset-delta decision</td>
+<td>Commissioning new assets</td>
+</tr>
+<tr>
+<td>An ADR and revised 03 brief</td>
+<td>Shipping the redesign</td>
+</tr>
+</tbody></table>
+<p>M2.75 does not supersede M2 wholesale. It may revise the 03 portion and the asset brief that depends on it.</p>
+<hr>
+<h2>2. Problem statement</h2>
+<h3>2.1 The surface symptom</h3>
+<p>The player sees several neuron-like objects in one screen:</p>
+<ul>
+<li>the Neuron Keeper;</li>
+<li>two dendrite input plates;</li>
+<li>a neuron scan marker;</li>
+<li>a myelin scan marker;</li>
+<li>a one-way pathway scan marker;</li>
+<li>an axon terminal plate.</li>
+</ul>
+<p>The icons and labels ask the player to distinguish entities that are not on the same conceptual level. The current silhouette test can make the <em>shapes</em> distinct, but it cannot make the <em>categories</em> correct.</p>
+<h3>2.2 The ontology problem: entity, part, process, route</h3>
+<p>The room currently treats these as peer scan targets:</p>
+<table>
+<thead>
+<tr>
+<th>Current object</th>
+<th>What it actually is</th>
+<th>Why the peer-object model fails</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Neuron</td>
+<td>A cell/entity</td>
+<td>This one is legitimately an object.</td>
+</tr>
+<tr>
+<td>Myelin</td>
+<td>A part of the neuron (a sheath around the axon)</td>
+<td>A separate “myelin object” implies myelin exists apart from the cell. The player can scan “myelin” without seeing it as part of the neuron.</td>
+</tr>
+<tr>
+<td>Pathway</td>
+<td>A process (one-way conduction) <strong>or</strong> a route (sensory/motor circuit)</td>
+<td>The word hides two different ideas. A process is not an object; a route is not a single cell.</td>
+</tr>
+</tbody></table>
+<p>A more precise vocabulary would separate:</p>
+<ul>
+<li><strong>Entity:</strong> neuron, glial cell, muscle fibre.</li>
+<li><strong>Part:</strong> soma, dendrite, axon, myelin sheath, node of Ranvier, axon terminal.</li>
+<li><strong>Process:</strong> threshold, action potential, all-or-none firing, saltatory conduction, one-way propagation.</li>
+<li><strong>Route:</strong> receptor → sensory neuron → spinal cord → motor neuron → muscle.</li>
+<li><strong>Observation:</strong> scan, inspect, trace, measure.</li>
+</ul>
+<p>The current room mixes these levels: it turns parts and processes into places, gates, and scan objects. That can be a powerful metaphor, but only if the design is deliberate about which level the player is on.</p>
+<h3>2.3 The load problem: too many ideas for one small puzzle</h3>
+<p>The current room’s material includes:</p>
+<table>
+<thead>
+<tr>
+<th>Idea</th>
+<th>Current delivery</th>
+<th>Is it assessed by the required puzzle?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Neuron parts (dendrites, soma, axon, terminal)</td>
+<td>Keeper dialogue, scan, room layout</td>
+<td>Partly, through movement; not formally assessed</td>
+</tr>
+<tr>
+<td>Threshold</td>
+<td>Two input plates, dialogue, debrief</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>All-or-none</td>
+<td>Threshold counter, dialogue, debrief</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>One-way conduction</td>
+<td>Behind gate, route, dialogue</td>
+<td>Partly, through movement</td>
+</tr>
+<tr>
+<td>Myelin speeds conduction</td>
+<td>Myelin catwalk, optional scan/debrief</td>
+<td>No required action</td>
+</tr>
+<tr>
+<td>Saltatory conduction</td>
+<td>Optional scan/debrief</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Sensory/motor pathway</td>
+<td>CON-5 label, optional scans, dialogue claim</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Reflex arc</td>
+<td>Reserved for 05</td>
+<td>No</td>
+</tr>
+</tbody></table>
+<p>The required puzzle is essentially a threshold/all-or-none puzzle. The other ideas are exposed but not assessed. That is not automatically wrong — a room can expose more than it tests — but the room currently presents the optional material as if it were equally central. The player is asked to hold too many nouns at once.</p>
+<h3>2.4 The literalism problem</h3>
+<p>The room is “inside a neuron” and turns anatomy into platforming architecture:</p>
+<ul>
+<li>dendrites become input plates;</li>
+<li>the axon becomes a catwalk;</li>
+<li>myelin becomes stepping stones;</li>
+<li>the terminal becomes a gate;</li>
+<li>the threshold becomes a gate latch.</li>
+</ul>
+<p>This is vivid, but it is almost a one-to-one illustration of a diagram. The player may learn the room layout rather than the biology. A more abstract representation might create better transfer: the player should recognize the <em>pattern</em> (threshold, all-or-none, one-way flow) in a new context, not memorize the room’s literal body parts.</p>
+<p>The unresolved question is not “literal or abstract?” but <strong>which level of abstraction belongs to 03</strong>, and which levels belong to 04/05.</p>
+<h3>2.5 The assessment problem</h3>
+<p>What does the player actually have to do to prove the learning?</p>
+<ul>
+<li>Press two inputs instead of one.</li>
+<li>Run right along the axon.</li>
+<li>Open the terminal gate.</li>
+<li>Answer a debrief prompt about threshold and all-or-none.</li>
+</ul>
+<p>The puzzle does not require the player to use myelin, saltatory conduction, neuron-part vocabulary, or a sensory/motor route. The room’s concept list and scan set overclaim what the required path assesses. This is the gap between <strong>exposure</strong>, <strong>practice</strong>, and <strong>assessment</strong>.</p>
+<h3>2.6 The asset problem</h3>
+<p>The current asset question — “do we need a neuron, a myelin, and a pathway icon?” — is a symptom of the ontology problem.</p>
+<p>If the room teaches <strong>cell structure</strong>, the right visual unit is one cell with inspectable parts, not three peer objects.</p>
+<p>If the room teaches <strong>one-way conduction</strong>, the right visual unit is a process/route diagram, not a second cell icon.</p>
+<p>If the room teaches <strong>myelin</strong>, myelin should be a highlighted part of the neuron or a close-up of the axon, not a standalone creature.</p>
+<p>The asset set should follow the chosen learning model. It should not drive it.</p>
+<p>The current three-icon set is provisional. The existing prompts, placeholders, and silhouette test are useful evidence, but they are not a commitment to the current taxonomy.</p>
+<table>
+<thead>
+<tr>
+<th>Current asset</th>
+<th>Ontological category</th>
+<th>Current visual form</th>
+<th>The mismatch</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sprite.scan.neuron</code></td>
+<td>Entity (a cell)</td>
+<td>Cell icon</td>
+<td>Legitimately an object.</td>
+</tr>
+<tr>
+<td><code>sprite.scan.myelin</code></td>
+<td>Part of a cell</td>
+<td>Separate cell-like icon</td>
+<td>Implies myelin is a peer of the neuron.</td>
+</tr>
+<tr>
+<td><code>sprite.scan.pathway</code></td>
+<td>Process (one-way) or route (multi-cell)</td>
+<td>Separate cell-like icon</td>
+<td>A process/route is drawn as another cell.</td>
+</tr>
+<tr>
+<td><code>sprite.pad.dendrite</code></td>
+<td>Part / place</td>
+<td>64×64 interactable</td>
+<td>A part becomes a platform.</td>
+</tr>
+<tr>
+<td><code>sprite.pad.terminal</code></td>
+<td>Part / place</td>
+<td>64×64 interactable</td>
+<td>A part becomes a destination.</td>
+</tr>
+<tr>
+<td><code>sprite.agent.neuron</code></td>
+<td>Entity / character</td>
+<td>Character sprite</td>
+<td>The only unambiguous cell-as-character.</td>
+</tr>
+</tbody></table>
+<p>This table is the shortest version of the problem: the asset set is a taxonomy of unlike things presented as like things.</p>
+<hr>
+<h2>3. Current state and evidence</h2>
+<h3>3.1 What the room currently does</h3>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Current role</th>
+<th>Current fact/concept</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>agent-neuron</code></td>
+<td>Neuron Keeper, narrative NPC</td>
+<td>CON-3 context</td>
+</tr>
+<tr>
+<td><code>scan-neuron</code></td>
+<td>Optional scan</td>
+<td>NERV-01#1 (neuron parts and direction)</td>
+</tr>
+<tr>
+<td><code>scan-myelin</code></td>
+<td>Optional scan</td>
+<td>NERV-01#3 (myelin sheath, nodes, speed)</td>
+</tr>
+<tr>
+<td><code>scan-pathway</code></td>
+<td>Optional scan</td>
+<td>NERV-01#6 (all-or-none, one-way, saltatory)</td>
+</tr>
+<tr>
+<td><code>pad-input-a/b</code></td>
+<td>Threshold plates</td>
+<td>Interactables; no scan</td>
+</tr>
+<tr>
+<td><code>pad-terminal</code></td>
+<td>Terminal plate</td>
+<td>Interactable; no scan</td>
+</tr>
+<tr>
+<td>Keeper dialogue</td>
+<td>CON-3, CON-5, NERV-01#5</td>
+<td>Narrative + fact</td>
+</tr>
+<tr>
+<td>Required puzzle</td>
+<td>Threshold, all-or-none, one-way route</td>
+<td>Evidence/debrief</td>
+</tr>
+</tbody></table>
+<h3>3.2 What the required puzzle actually assesses</h3>
+<ul>
+<li>A stimulus must reach threshold.</li>
+<li>The response is all-or-none.</li>
+<li>The route goes forward from the input side to the terminal.</li>
+<li>Myelin and pathway vocabulary are optional/narrative, not required actions.</li>
+<li>The debrief asks about threshold and all-or-none.</li>
+</ul>
+<h3>3.3 What the documentation currently claims</h3>
+<ul>
+<li>The room lists <strong>CON-3 neuron structure</strong> and <strong>CON-5 sensory/motor pathways</strong>.</li>
+<li>The M2 design says the room is “about the neuron, not the whole reflex arc.”</li>
+<li>The Keeper dialogue teaches threshold, all-or-none, one-way, and myelin.</li>
+<li>The scan facts are NERV-01#1, #3, #6; the dialogue covers #5.</li>
+<li>The room’s README describes the pads as interactable props after the fact-model change.</li>
+<li>The asset docs describe three fact-specific icons.</li>
+</ul>
+<p>These documents are internally consistent enough to ship a POC, but they do not answer the ontology or assessment questions.</p>
+<h3>3.4 Visual evidence</h3>
+<ul>
+<li>The old neuron/pathway plates fit 32×17 and 32×13 at 36×36; they failed the readability gate.</li>
+<li>The new neuron/pathway silhouettes were effectively identical at 36×36 (alpha IoU ~0.99) because the pathway was the neuron plus a small pulse.</li>
+<li>The silhouette test v2 separates <strong>round cell / capsule / chain</strong>, but the neuron still reads as a blob in flat white; final outline/color has to carry it.</li>
+<li>The pads (<code>pad-dendrite</code>, <code>pad-terminal</code>) are the old scan plates used at 64×64. They are already neuron-like objects in the room.</li>
+<li>The three proposed icons are visually distinguishable in silhouette, but their conceptual relationship is still unresolved.</li>
+</ul>
+<h3>3.5 What is provisional</h3>
+<ul>
+<li>The three-icon set.</li>
+<li>The fact model (it is a useful runtime capability, but it currently encodes the contested content model).</li>
+<li>The room layout and entity list.</li>
+<li>The CON-5 presence in 03.</li>
+<li>The number of scans and the scan system’s role in 03.</li>
+<li>The “inside a neuron” metaphor.</li>
+<li>The prompts in <code>docs/assets/scan-prompts-v02.md</code>.</li>
+</ul>
+<hr>
+<h2>4. Constraints and non-negotiables</h2>
+<h3>4.1 Likely non-negotiable</h3>
+<ul>
+<li><strong>OBJ-2</strong> remains the level objective: trace the signal.</li>
+<li>The room is a single-screen 03 room in the current M2 slice.</li>
+<li>The three supplied nervous-system cards and the anatomy-fidelity ledger remain the authority for claims.</li>
+<li>12+ friendly, gross-cute, non-gory tone.</li>
+<li>One active puzzle per room in the current HUD model.</li>
+<li>The player must still be able to complete the room in solo and local co-op.</li>
+<li>Any curriculum change needs a deliberate content decision, not a side effect.</li>
+</ul>
+<h3>4.2 Revisitable</h3>
+<ul>
+<li>Which card facts belong to 03.</li>
+<li>Whether CON-5 is taught, previewed, or deferred.</li>
+<li>Whether the room has scans at all.</li>
+<li>Whether the room is literal, diagrammatic, or abstract.</li>
+<li>The number and kind of entities.</li>
+<li>The room’s spatial metaphor.</li>
+<li>The puzzle verb(s).</li>
+<li>The debrief question.</li>
+<li>The asset set and prompt brief.</li>
+</ul>
+<h3>4.3 Do not assume</h3>
+<ul>
+<li>That three icons are required because there are three current scan targets.</li>
+<li>That myelin and pathway must be separate assets.</li>
+<li>That the current room layout should be preserved.</li>
+<li>That the current fact model is the right content model.</li>
+<li>That “more scans” means “more learning.”</li>
+</ul>
+<hr>
+<h2>5. Questions the focused work must answer</h2>
+<ol>
+<li><strong>What is the one learning claim 03 must assess?</strong> Threshold, all-or-none, one-way conduction, neuron structure, myelin, or a route?</li>
+<li><strong>What is the unit of the representation?</strong> A cell, a part, a process, a route, or a system?</li>
+<li><strong>What is the abstraction level?</strong> Literal inside-the-body, diagrammatic cross-section, signal-as-traveler, network map, or abstract puzzle?</li>
+<li><strong>What does the player do that proves the claim?</strong> Not what they read or scan; what action or decision demonstrates understanding?</li>
+<li><strong>What is the scan system’s job in 03?</strong> Optional lore, part inspection, process tracing, assessment, or nothing?</li>
+<li><strong>What is the minimum asset set</strong> that follows from the chosen model?</li>
+<li><strong>What belongs in 03 versus 04/05?</strong> Where does myelin live? Where does the sensory/motor route live?</li>
+<li><strong>What is the player fantasy?</strong> Are they the signal, a traveler, a surgeon, an electrician, a cell biologist, or something else?</li>
+<li><strong>What does success sound like in the debrief?</strong> One sentence the player should be able to say.</li>
+<li><strong>What can be cut without weakening OBJ-2?</strong></li>
+</ol>
+<hr>
+<h2>6. Design tensions</h2>
+<p>These are not problems to solve by default; they are tensions to hold consciously.</p>
+<table>
+<thead>
+<tr>
+<th>Tension</th>
+<th>One pole</th>
+<th>Other pole</th>
+<th>Why it matters</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Part vs whole</td>
+<td>Myelin as a part of the neuron</td>
+<td>Myelin as a separate scan object</td>
+<td>The current model treats a part as a peer.</td>
+</tr>
+<tr>
+<td>Structure vs process</td>
+<td>Neuron anatomy</td>
+<td>One-way conduction / threshold</td>
+<td>The room mixes nouns and verbs.</td>
+</tr>
+<tr>
+<td>Literal vs abstract</td>
+<td>Inside-a-neuron platforming</td>
+<td>Diagrammatic/pattern puzzle</td>
+<td>Literal is vivid but may teach the room, not the biology.</td>
+</tr>
+<tr>
+<td>Breadth vs depth</td>
+<td>Many facts and scans</td>
+<td>One claim, one assessment</td>
+<td>One small puzzle cannot do everything.</td>
+</tr>
+<tr>
+<td>Cell vs route</td>
+<td>Single-neuron story</td>
+<td>Sensory→motor circuit</td>
+<td>CON-5 needs a route, not a second cell icon.</td>
+</tr>
+<tr>
+<td>Icon vs diagram vs place</td>
+<td>Three scan icons</td>
+<td>One cell with parts, or one route map</td>
+<td>The asset form should follow the concept form.</td>
+</tr>
+<tr>
+<td>Scan vs action</td>
+<td>Read a fact</td>
+<td>Use the idea to solve</td>
+<td>Scans are optional; the puzzle is the assessment.</td>
+</tr>
+<tr>
+<td>Narrative vs assessment</td>
+<td>Keeper explains a lot</td>
+<td>Player proves one thing</td>
+<td>The room currently over-narrates and under-assesses.</td>
+</tr>
+<tr>
+<td>Reuse vs distinctness</td>
+<td>Reuse the old plates</td>
+<td>New distinct icons</td>
+<td>Reuse caused the current visual similarity.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. Possible solution directions</h2>
+<p>These are <strong>directions to explore</strong>, not ranked proposals. Each could be combined with parts of another. None is chosen.</p>
+<h3>Direction A — One cell, many inspectable parts</h3>
+<p><strong>Core idea:</strong> The room is one neuron. Myelin, nodes, dendrites, and terminal are parts or overlays on that cell, not peer entities. Scanning highlights a part of the same object; the player can inspect parts in place.</p>
+<p><strong>What it fixes:</strong> The part-whole error; the “three peer objects” problem; the asset taxonomy.</p>
+<p><strong>Risks:</strong> Still needs a way to show a process; a single cell can become visually crowded; the scan system may become a part-inspection UI rather than a world interaction.</p>
+<p><strong>Evidence needed:</strong> Can players identify parts on one cell at 36×36? Does highlighting a part teach more than a separate icon?</p>
+<p><strong>Rough effort:</strong> Medium.</p>
+<h3>Direction B — One process, one room</h3>
+<p><strong>Core idea:</strong> Choose one claim for 03 — for example, threshold/all-or-none <strong>or</strong> one-way conduction — and cut the others from the required path. Myelin and neuron structure become dialogue/debrief context or move to another room.</p>
+<p><strong>What it fixes:</strong> Cognitive overload; assessment ambiguity; the room’s overclaiming.</p>
+<p><strong>Risks:</strong> Cuts content the cards consider core; may weaken the neuron-structure objective; needs a clear home for myelin.</p>
+<p><strong>Evidence needed:</strong> Which single claim best fits OBJ-2 and the current puzzle? What does the debrief actually ask?</p>
+<p><strong>Rough effort:</strong> Small to medium.</p>
+<h3>Direction C — Structure room vs route room</h3>
+<p><strong>Core idea:</strong> Split the content by representation. 03 teaches <strong>neuron structure / one-way conduction</strong> inside one cell. A later room (05 or a new room) teaches the <strong>sensory→motor route</strong> across multiple cells. CON-5 moves out of 03.</p>
+<p><strong>What it fixes:</strong> The CON-3/CON-5 conflation; the “pathway” ambiguity; the single-cell vs route mismatch.</p>
+<p><strong>Risks:</strong> Curriculum sequencing changes; 03 may lose a concept it currently claims; 05 may become overloaded.</p>
+<p><strong>Evidence needed:</strong> Where does CON-5 first need to be known? Is 03 the right introduction?</p>
+<p><strong>Rough effort:</strong> Medium.</p>
+<h3>Direction D — Choose an abstraction level</h3>
+<p><strong>Core idea:</strong> Decide whether 03 is literal (inside the body), diagrammatic (a cell map), or abstract (a signal-routing puzzle). Commit to one level and remove the others.</p>
+<p><strong>What it fixes:</strong> The mixed metaphor; the “too literal” feeling; the visual inconsistency.</p>
+<p><strong>Risks:</strong> A literal room is memorable but may not transfer; a diagrammatic room may feel less like a platformer; an abstract room may lose the biology.</p>
+<p><strong>Evidence needed:</strong> Paper-test 2–3 metaphors with players; which one produces the best explanation in the debrief?</p>
+<p><strong>Rough effort:</strong> Medium.</p>
+<h3>Direction E — Signal-as-traveler</h3>
+<p><strong>Core idea:</strong> The player is the signal, not a visitor inside a cell. Parts of the neuron are landmarks/obstacles on a journey. The room’s mechanics become the signal’s behavior (threshold, all-or-none, one-way, saltatory jumps).</p>
+<p><strong>What it fixes:</strong> The literal “inside a body” tour; gives the player a clear role; makes the mechanics and biology the same thing.</p>
+<p><strong>Risks:</strong> The player may learn the game’s rules rather than the biology; the metaphor may break for myelin or routes; co-op roles need definition.</p>
+<p><strong>Evidence needed:</strong> Can players explain the biology after playing as the signal? Does the metaphor survive 36×36?</p>
+<p><strong>Rough effort:</strong> Medium to large.</p>
+<h3>Direction F — Assessment-first redesign</h3>
+<p><strong>Core idea:</strong> Start from the debrief sentence and the evidence. Decide what the player must be able to say/do, then design the minimum puzzle and visuals to produce it. Cut everything that does not serve that claim.</p>
+<p><strong>What it fixes:</strong> The exposure/assessment gap; over-narration; asset sprawl.</p>
+<p><strong>Risks:</strong> May produce a thin room if the claim is too narrow; may discard good exploratory content.</p>
+<p><strong>Evidence needed:</strong> What is the one debrief sentence? What action proves it?</p>
+<p><strong>Rough effort:</strong> Small to medium.</p>
+<h3>Direction G — Minimal repair of the current room</h3>
+<p><strong>Core idea:</strong> Keep the room and puzzle. Reduce the scan set to one or two meaningful objects, remove the peer “myelin/pathway” icons, and use labels/dialogue for the rest. No new metaphor.</p>
+<p><strong>What it fixes:</strong> The immediate visual redundancy and scan no-ops with the least disruption.</p>
+<p><strong>Risks:</strong> Does not solve the ontology or literalism; may leave the room conceptually muddy; may preserve a model the user dislikes.</p>
+<p><strong>Evidence needed:</strong> Does the room still teach the right claim? Does removing scans weaken the learning?</p>
+<p><strong>Rough effort:</strong> Small.</p>
+<h3>Direction H — Neuron-as-place, parts-as-terrain</h3>
+<p><strong>Core idea:</strong> Keep the “inside a neuron” fantasy, but make it coherent: the cell is the place; myelin is terrain; the axon is the road; the terminal is the exit. Parts are not scan objects; they are the environment. The scan system is removed or repurposed.</p>
+<p><strong>What it fixes:</strong> The part/place confusion; the peer-object problem; the scan clutter.</p>
+<p><strong>Risks:</strong> Terrain can become too literal; the player may not learn part names; the room may become a generic platformer with biology paint.</p>
+<p><strong>Evidence needed:</strong> Do players name the parts after traversing them? Does the environment carry the concept without labels?</p>
+<p><strong>Rough effort:</strong> Medium.</p>
+<h3>Direction I — Two-neuron route for CON-5</h3>
+<p><strong>Core idea:</strong> If 03 must teach sensory/motor pathways, make the route explicit: receptor → sensory neuron → spinal cord → motor neuron → muscle. This is a different visual unit from a single cell and may belong in 05.</p>
+<p><strong>What it fixes:</strong> The CON-5 mismatch; the “pathway” ambiguity.</p>
+<p><strong>Risks:</strong> Overlaps 05; may be too complex for one screen; requires new art and puzzle logic.</p>
+<p><strong>Evidence needed:</strong> Is CON-5 a 03 concept or a 05 concept? What does the player need before 05?</p>
+<p><strong>Rough effort:</strong> Large.</p>
+<h3>Direction J — Remove the scan system from 03</h3>
+<p><strong>Core idea:</strong> The room uses dialogue, environment, and the puzzle to teach. Scans are not required to carry the content. If scans remain, they are optional flavor with no peer-object taxonomy.</p>
+<p><strong>What it fixes:</strong> The scan no-op/redundancy problem; the need for three similar icons; the content/asset coupling.</p>
+<p><strong>Risks:</strong> Loses optional exploration; the concept log may feel empty; the Keeper’s “scan the labels” line must change.</p>
+<p><strong>Evidence needed:</strong> Do players still learn the claim without scans? Do they miss the optional lore?</p>
+<p><strong>Rough effort:</strong> Small.</p>
+<h3>Direction K — Rebuild as a single “signal journey” with one visual anchor</h3>
+<p><strong>Core idea:</strong> One strong visual anchor (a neuron diagram, a signal wave, or a route map) carries the room. The puzzle is a small set of interactions on that anchor. Assets are parts of the anchor, not separate creatures.</p>
+<p><strong>What it fixes:</strong> Visual sprawl; ontology; icon similarity.</p>
+<p><strong>Risks:</strong> Needs a strong art/UX concept; may be expensive; may not fit the platformer room.</p>
+<p><strong>Evidence needed:</strong> Can one anchor carry structure, process, and assessment? Does it read at 1×?</p>
+<p><strong>Rough effort:</strong> Large.</p>
+<hr>
+<h2>8. Evaluation criteria for the later decision</h2>
+<p>Do not score these yet. Use them to compare directions when the focused work is done.</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Question</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Learning focus</td>
+<td>Does the room assess one clear claim?</td>
+</tr>
+<tr>
+<td>Ontology</td>
+<td>Does it represent entities, parts, processes, and routes at the right level?</td>
+</tr>
+<tr>
+<td>Cognitive load</td>
+<td>How many new terms/facts must the player hold at once?</td>
+</tr>
+<tr>
+<td>Abstraction</td>
+<td>Is the metaphor deliberate rather than accidental?</td>
+</tr>
+<tr>
+<td>Assessment</td>
+<td>What action or explanation proves the claim?</td>
+</tr>
+<tr>
+<td>Play</td>
+<td>Is there one clear verb and a satisfying solo/co-op loop?</td>
+</tr>
+<tr>
+<td>Visual</td>
+<td>Does it work at 36×36 and in the actual room?</td>
+</tr>
+<tr>
+<td>Asset cost</td>
+<td>What is the minimum asset set?</td>
+</tr>
+<tr>
+<td>Curriculum</td>
+<td>Does it fit the CON sequence and card facts?</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>Can it fit one room and the current engine?</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>What breaks if the direction is wrong?</td>
+</tr>
+<tr>
+<td>Testability</td>
+<td>Can it be paper-tested before art/implementation?</td>
+</tr>
+</tbody></table>
+<p>A blank decision matrix can be filled during the focused work:</p>
+<table>
+<thead>
+<tr>
+<th>Direction</th>
+<th>Learning focus</th>
+<th>Ontology</th>
+<th>Load</th>
+<th>Abstraction</th>
+<th>Assessment</th>
+<th>Play</th>
+<th>Visual</th>
+<th>Cost</th>
+<th>Risk</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>B</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>...</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>9. Focused work plan (for the later session)</h2>
+<p>This is a suggested shape, not a commitment.</p>
+<h3>Phase 0 — Re-read the authority</h3>
+<ul>
+<li>Cards: NERV-01, NERV-02, NERV-03.</li>
+<li>Syllabus: CON-3, CON-4, CON-5, CON-7.</li>
+<li>M2 03 design and anatomy-fidelity ledger.</li>
+<li>Current room, dialogue, puzzle, scans, and debrief.</li>
+<li>Current asset/prompt state.</li>
+</ul>
+<p><strong>Exit:</strong> a one-page inventory of every claim the room currently makes and where it is delivered.</p>
+<h3>Phase 1 — Build the ontology map</h3>
+<p>Classify every current element as entity / part / process / route / observation.</p>
+<ul>
+<li>Which level does each element belong to?</li>
+<li>Which elements are peers, and which are parts of another?</li>
+<li>Which are assessed, exposed, or decorative?</li>
+</ul>
+<p><strong>Exit:</strong> a corrected ontology diagram and a list of category errors.</p>
+<h3>Phase 2 — Choose the learning claim</h3>
+<p>Pick one primary claim for 03 and one debrief sentence.</p>
+<ul>
+<li>What must the player be able to say?</li>
+<li>What must they do to prove it?</li>
+<li>What is narrative context only?</li>
+<li>What moves to 04/05?</li>
+</ul>
+<p><strong>Exit:</strong> a one-page learning contract.</p>
+<h3>Phase 3 — Generate 3–4 candidate designs</h3>
+<p>Use the directions in §7 as raw material. Each candidate should specify:</p>
+<ul>
+<li>metaphor/abstraction level;</li>
+<li>player role and verb;</li>
+<li>room beat sheet;</li>
+<li>scan/observation role;</li>
+<li>asset delta;</li>
+<li>assessment;</li>
+<li>what is cut.</li>
+</ul>
+<p><strong>Exit:</strong> 3–4 paper designs, not final answers.</p>
+<h3>Phase 4 — Paper-test / playtest</h3>
+<ul>
+<li>Test the metaphor and the verb with 2–3 people.</li>
+<li>Ask them to explain the concept after the paper run.</li>
+<li>Check whether the intended claim is the one they remember.</li>
+<li>Check whether the assets are distinguishable at 1×.</li>
+</ul>
+<p><strong>Exit:</strong> evidence for/against each candidate.</p>
+<h3>Phase 5 — Decide and record</h3>
+<ul>
+<li>Choose a direction, or choose a hybrid.</li>
+<li>Record rejected alternatives and why.</li>
+<li>Write an ADR.</li>
+<li>Rewrite the 03 design brief, fact/scan mapping, and asset delta.</li>
+</ul>
+<p><strong>Exit:</strong> an accepted decision record and updated docs, <strong>not</strong> implementation.</p>
+<h3>Phase 6 — Hand off</h3>
+<p>Only after Phase 5:</p>
+<ul>
+<li>rewrite prompts;</li>
+<li>generate art;</li>
+<li>change room content;</li>
+<li>implement puzzle changes;</li>
+<li>update tests/captures.</li>
+</ul>
+<hr>
+<h2>10. Candidate M2.75 deliverables</h2>
+<p>The milestone should produce a small set of durable artifacts:</p>
+<ul>
+<li><input disabled="" type="checkbox"> A one-page <strong>03 learning contract</strong>: one claim, one assessment, one debrief sentence.</li>
+<li><input disabled="" type="checkbox"> A <strong>concept/ontology map</strong>: entity, part, process, route, observation.</li>
+<li><input disabled="" type="checkbox"> A <strong>metaphor/abstraction decision</strong>: literal, diagrammatic, or abstract.</li>
+<li><input disabled="" type="checkbox"> A <strong>room beat sheet</strong>: what the player does, sees, and scans.</li>
+<li><input disabled="" type="checkbox"> A <strong>scan/content decision</strong>: keep, reduce, repurpose, or remove.</li>
+<li><input disabled="" type="checkbox"> An <strong>asset delta</strong>: keep, cut, overlay, or new; no final prompts yet.</li>
+<li><input disabled="" type="checkbox"> A <strong>paper-test/playtest plan</strong> and evidence.</li>
+<li><input disabled="" type="checkbox"> An <strong>ADR</strong> recording the chosen direction and rejected alternatives.</li>
+<li><input disabled="" type="checkbox"> A list of <strong>what moves to 04/05</strong> (CON-5, myelin, route, etc.).</li>
+</ul>
+<p>Not all of these are required. The first three are the minimum.</p>
+<hr>
+<h2>11. Definition of done for M2.75</h2>
+<p>M2.75 is done when:</p>
+<ol>
+<li>The room has one explicit primary learning claim.</li>
+<li>Every current element is classified as entity, part, process, route, or observation.</li>
+<li>The room’s assessment matches the claim; optional exposure is labeled as optional.</li>
+<li>The CON-3/CON-5 boundary is explicit: what 03 teaches, what it previews, and what moves.</li>
+<li>The scan system’s job is explicit: assessment, inspection, lore, or none.</li>
+<li>The asset set follows from the model, not the reverse.</li>
+<li>A paper test or playtest has tested the metaphor and the assessment.</li>
+<li>A decision record and revised brief exist.</li>
+<li>No final art is commissioned before the decision.</li>
+</ol>
+<hr>
+<h2>12. Risks and failure modes</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Why it matters</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Treating this as an art reskin</td>
+<td>The ontology and assessment problems remain.</td>
+</tr>
+<tr>
+<td>Starting from the current assets</td>
+<td>The asset taxonomy is a symptom, not a requirement.</td>
+</tr>
+<tr>
+<td>Adding more scans/facts</td>
+<td>More content does not fix overload.</td>
+</tr>
+<tr>
+<td>Over-abstracting</td>
+<td>The player may learn a generic puzzle, not biology.</td>
+</tr>
+<tr>
+<td>Curriculum creep</td>
+<td>03 may absorb 04/05 content.</td>
+</tr>
+<tr>
+<td>Preserving the room by default</td>
+<td>The literal layout may be the problem.</td>
+</tr>
+<tr>
+<td>Choosing a metaphor by asset cost</td>
+<td>The cheapest icon may be the wrong concept.</td>
+</tr>
+<tr>
+<td>No assessment</td>
+<td>The room exposes but does not teach.</td>
+</tr>
+<tr>
+<td>No playtest</td>
+<td>The designer’s metaphor may not survive contact with players.</td>
+</tr>
+<tr>
+<td>Breaking the card authority</td>
+<td>The redesign must stay inside the supplied facts.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>13. Open questions for the user</h2>
+<p>These are for the focused work, not for immediate answers:</p>
+<ul>
+<li>Is 03 allowed to drop CON-5 entirely, or must it preview the route?</li>
+<li>Is the scan system required in 03, or can the room teach through dialogue/puzzle/environment?</li>
+<li>Is the “inside a neuron” fantasy fixed, or can 03 become a diagram/abstract space?</li>
+<li>Is myelin a required fact in 03, or can it live in the debrief/01/05?</li>
+<li>Is the one-screen constraint fixed?</li>
+<li>Can 03 and 05 swap content or share a route?</li>
+<li>Is the player the signal, a traveler, a surgeon, an electrician, or a cell biologist?</li>
+<li>What is the one sentence the player should say after the room?</li>
+<li>Is the target one concept, one fact, or one process?</li>
+<li>What is the smallest version of 03 that still satisfies OBJ-2?</li>
+</ul>
+<hr>
+<h2>14. Related documents</h2>
+<ul>
+<li><a href="docs/nanobanan-README.html"><code>../m2/nervous-puzzles/README.md</code></a></li>
+<li><a href="../m2/nervous-puzzles/03-nerve-forest.md"><code>../m2/nervous-puzzles/03-nerve-forest.md</code></a></li>
+<li><a href="../m2/nervous-puzzles/anatomy-fidelity.md"><code>../m2/nervous-puzzles/anatomy-fidelity.md</code></a></li>
+<li><a href="../m2/nervous-puzzles/mechanics-and-evidence.md"><code>../m2/nervous-puzzles/mechanics-and-evidence.md</code></a></li>
+<li><a href="../../public/syllabi/anatomy-reflex.json"><code>../../public/syllabi/anatomy-reflex.json</code></a></li>
+<li><a href="../../public/packs/anatomy-reflex/facts.json"><code>../../public/packs/anatomy-reflex/facts.json</code></a></li>
+<li><a href="../../public/packs/anatomy-reflex/levels/03-nerve-forest/room.json"><code>../../public/packs/anatomy-reflex/levels/03-nerve-forest/room.json</code></a></li>
+<li><a href="../../public/packs/anatomy-reflex/levels/03-nerve-forest/dialogue.json"><code>../../public/packs/anatomy-reflex/levels/03-nerve-forest/dialogue.json</code></a></li>
+<li><a href="../../public/packs/anatomy-reflex/levels/03-nerve-forest/puzzle.json"><code>../../public/packs/anatomy-reflex/levels/03-nerve-forest/puzzle.json</code></a></li>
+<li><a href="docs/scan-prompts-v02.html"><code>../assets/scan-prompts-v02.md</code></a></li>
+<li><a href="../../art-source/scan-silhouettes/scan-silhouette-review.png"><code>../../art-source/scan-silhouettes/scan-silhouette-review.png</code></a></li>
+<li><a href="../adr-assets/0079-scan-facts.md"><code>../adr-assets/0079-scan-facts.md</code></a></li>
+</ul>
+<hr>
+<h2>15. Decision log</h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Decision</th>
+<th>Rationale</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>16. Next action</h2>
+<p>Do not implement anything yet. The next focused session should start at <strong>Phase 0–2</strong> of §9 and produce:</p>
+<ol>
+<li>the ontology map;</li>
+<li>the one-sentence learning contract;</li>
+<li>the CON-3/CON-5 boundary.</li>
+</ol>
+<p>Only after those three artifacts should the candidate directions be tested.</p>
+
+</main>
+<footer class="site-footer">
+  <span>Generated 2026-11-03 · <a href="https://snorre98.github.io/shrinkonauts/gdd/">https://snorre98.github.io/shrinkonauts/gdd/</a></span>
+</footer>
+</body>
+</html>
