@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   boot,
   bootSilicon,
@@ -12,6 +12,44 @@ interface GlyphProbe {
   url: string;
   width: number;
   height: number;
+}
+
+interface Rgb {
+  r: number;
+  g: number;
+  b: number;
+}
+
+/**
+ * `color-mix()` serializes as `color(srgb …)` or `rgba(…)` depending on the
+ * Chrome build, and the canvas alpha round-trip can shift a channel by one.
+ */
+async function expectPlayerBorderColor(
+  locator: Locator,
+  expected: Rgb,
+): Promise<void> {
+  await expect(async () => {
+    const actual = await locator.evaluate((node): Rgb | null => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      if (!context) return null;
+      context.fillStyle = getComputedStyle(node).borderTopColor;
+      context.fillRect(0, 0, 1, 1);
+      const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+      return { r, g, b };
+    });
+    expect(actual).not.toBeNull();
+    if (!actual) return;
+    const delta = Math.max(
+      Math.abs(actual.r - expected.r),
+      Math.abs(actual.g - expected.g),
+      Math.abs(actual.b - expected.b),
+    );
+    expect(
+      delta,
+      `Expected ${JSON.stringify(actual)} to match ${JSON.stringify(expected)} within one channel step`,
+    ).toBeLessThanOrEqual(1);
+  }).toPass({ timeout: 15_000 });
 }
 
 async function expectImageBackedGlyphs(
@@ -201,36 +239,12 @@ test("player-coded feedback uses the orange and blue player tokens", async ({
   await page.keyboard.press("q");
   const p1 = page.locator('.feedback-surface[data-owner="p1"]').first();
   await expect(p1).toBeVisible();
-  await expect
-    .poll(() =>
-      p1.evaluate((node) => {
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        if (!context) return null;
-        context.fillStyle = getComputedStyle(node).borderTopColor;
-        context.fillRect(0, 0, 1, 1);
-        const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
-        return { r, g, b };
-      }),
-    )
-    .toEqual({ r: 229, g: 155, b: 52 });
+  await expectPlayerBorderColor(p1, { r: 229, g: 155, b: 52 });
 
   await page.keyboard.press(".");
   const p2 = page.locator('.feedback-surface[data-owner="p2"]').first();
   await expect(p2).toBeVisible();
-  await expect
-    .poll(() =>
-      p2.evaluate((node) => {
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        if (!context) return null;
-        context.fillStyle = getComputedStyle(node).borderTopColor;
-        context.fillRect(0, 0, 1, 1);
-        const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
-        return { r, g, b };
-      }),
-    )
-    .toEqual({ r: 123, g: 223, b: 242 });
+  await expectPlayerBorderColor(p2, { r: 123, g: 223, b: 242 });
 
   expect(consoleErrors).toEqual([]);
 });
