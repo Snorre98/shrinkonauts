@@ -9,6 +9,7 @@ import { silentLogger } from "../src/core/logger";
 import { NODE_EFFECT_SOCKETS, effectPresetIds } from "../src/feedback";
 import { GameRuntime, type AudioPort, type RuntimeInput } from "../src/game/runtime";
 import {
+  collectLevelBlueprintAssetIds,
   collectMaterialAssetIds,
   collectRoomAssetIds,
   collectRoomMaterialAssetIds,
@@ -520,6 +521,7 @@ function assertPackAssets(
       ...Object.values(content.rooms).flatMap(collectRoomMaterialAssetIds),
       ...collectMaterialAssetIds(content.materials),
       ...collectThemeAssetIds(content.theme),
+      ...collectLevelBlueprintAssetIds(content.levels),
       ...Object.values(PLAYER_ASSET_IDS),
     ]),
   ];

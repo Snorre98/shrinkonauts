@@ -26,6 +26,7 @@ import type {
   EntityPropComponent,
   EntityPulseSourceComponent,
   EntityReceptorComponent,
+  LevelDocument,
   RoomBackgroundLayer,
   RoomCheckpoint,
   RoomDocument,
@@ -1287,6 +1288,20 @@ export function collectThemeAssetIds(theme: ThemeDocument): AssetId[] {
   }
   for (const cue of Object.values(theme.audio?.cues ?? {})) {
     ids.add(cue);
+  }
+  return [...ids];
+}
+
+export function collectLevelBlueprintAssetIds(
+  levels: readonly LevelDocument[],
+): AssetId[] {
+  const ids = new Set<AssetId>();
+  for (const level of levels) {
+    for (const puzzle of Object.values(level.feedback?.puzzles ?? {})) {
+      for (const component of puzzle.blueprint?.components ?? []) {
+        if (isAssetId(component.symbol)) ids.add(component.symbol);
+      }
+    }
   }
   return [...ids];
 }

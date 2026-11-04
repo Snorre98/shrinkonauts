@@ -54,6 +54,7 @@ export interface GameUiOptions {
   badge?: ResolvedAsset;
   diagnostics: GameUiDiagnostics;
   callbacks: GameUiCallbacks;
+  resolveBlueprintSymbol?: (symbol: string) => ResolvedAsset | null;
 }
 
 export interface GameUi {
@@ -268,9 +269,13 @@ export function mountGameUi(
   blueprintSlot.setAttribute("aria-label", "Blueprint");
 
   const progress = mountHudProgress();
-  const blueprintUi = mountCompactBlueprint(blueprintSlot, {
+  const blueprintOptions = {
     onOpen: () => callbacks.onToggleMap(),
-  });
+    ...(options.resolveBlueprintSymbol
+      ? { resolveSymbol: options.resolveBlueprintSymbol }
+      : {}),
+  };
+  const blueprintUi = mountCompactBlueprint(blueprintSlot, blueprintOptions);
 
   const hintButton = button("Hint", "hud__hint-button", () =>
     callbacks.onPuzzleHint(),
@@ -763,7 +768,7 @@ export function mountGameUi(
 
     const update = (next: RuntimeSnapshot): void => {
       blueprintHost.replaceChildren(
-        renderExpandedBlueprint(next.blueprint),
+        renderExpandedBlueprint(next.blueprint, blueprintOptions),
       );
       const hints = next.puzzle?.revealedHints ?? [];
       hintList.replaceChildren(
