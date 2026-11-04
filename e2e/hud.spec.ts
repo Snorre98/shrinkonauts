@@ -15,12 +15,18 @@ test("header carries the checklist, hint strip, and player-coloured cards", asyn
   await expect(bar.locator(".hud__hint-text")).toContainText(
     "No hint requested yet.",
   );
+  await expect(
+    page.locator('.blueprint__component[data-state="active"]'),
+  ).toHaveCount(1);
 
   await page.getByRole("button", { name: "Hint", exact: true }).click();
   await expect(bar.locator(".hud__hint-count")).toHaveText("Hint 1/3");
   await expect(bar.locator(".hud__hint-text")).toContainText(
     "One input is below threshold",
   );
+  await expect(
+    page.locator('.blueprint__component[data-state="active"]'),
+  ).toHaveCount(1);
 
   await expect(page.locator(".hud__help")).toHaveCount(0);
   const p1Card = page.locator(".hud__controls-card--p1");
@@ -62,6 +68,72 @@ test("header carries the checklist, hint strip, and player-coloured cards", asyn
   expect(geometry.card).not.toBeNull();
   expect(geometry.prompt!.top).toBeGreaterThanOrEqual(geometry.bar!.bottom);
   expect(geometry.prompt!.bottom).toBeLessThanOrEqual(geometry.card!.top);
+
+  await page.keyboard.press("p");
+  await expect(page.locator(".hud__toast")).toBeVisible();
+  const toastGeometry = await page.evaluate(() => {
+    const rect = (selector: string) => {
+      const node = document.querySelector<HTMLElement>(selector);
+      if (!node) return null;
+      const box = node.getBoundingClientRect();
+      return { top: box.top, bottom: box.bottom };
+    };
+    return {
+      bar: rect(".hud__bar"),
+      toast: rect(".hud__toast"),
+      card: rect(".hud__controls-card--p1"),
+    };
+  });
+  expect(toastGeometry.toast).not.toBeNull();
+  expect(toastGeometry.toast!.top).toBeGreaterThanOrEqual(
+    toastGeometry.bar!.bottom,
+  );
+  expect(toastGeometry.toast!.bottom).toBeLessThanOrEqual(
+    toastGeometry.card!.top,
+  );
+
+  expect(consoleErrors).toEqual([]);
+});
+
+test("player-coded feedback uses the orange and blue player tokens", async ({
+  page,
+}) => {
+  const consoleErrors = await boot(page);
+
+  await teleport(page, "scan-pathway", "scan-neuron");
+  await page.keyboard.press("q");
+  const p1 = page.locator('.feedback-surface[data-owner="p1"]').first();
+  await expect(p1).toBeVisible();
+  await expect
+    .poll(() =>
+      p1.evaluate((node) => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        if (!context) return null;
+        context.fillStyle = getComputedStyle(node).borderTopColor;
+        context.fillRect(0, 0, 1, 1);
+        const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+        return { r, g, b };
+      }),
+    )
+    .toEqual({ r: 229, g: 155, b: 52 });
+
+  await page.keyboard.press(".");
+  const p2 = page.locator('.feedback-surface[data-owner="p2"]').first();
+  await expect(p2).toBeVisible();
+  await expect
+    .poll(() =>
+      p2.evaluate((node) => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        if (!context) return null;
+        context.fillStyle = getComputedStyle(node).borderTopColor;
+        context.fillRect(0, 0, 1, 1);
+        const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+        return { r, g, b };
+      }),
+    )
+    .toEqual({ r: 123, g: 223, b: 242 });
 
   expect(consoleErrors).toEqual([]);
 });
@@ -146,6 +218,9 @@ test("density states switch with text scale and viewport width", async ({
   await expect(hud).toHaveAttribute("data-hud-density", "minimal");
   await expect(page.locator(".hud__controls-card--p1")).toBeHidden();
   await expect(page.getByRole("button", { name: "Hint", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Open blueprint" }),
+  ).toBeVisible();
 
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "100%" }).click();
