@@ -94,6 +94,35 @@ function stationPoint(
 }
 
 describe("level geometry audit", () => {
+  it("04 keeps the ground corridor below the presynaptic tower walkable", () => {
+    const fixture = LEVELS.find(
+      (entry) => entry.label === "04-muscle-effector",
+    );
+    if (!fixture) throw new Error("04-muscle-effector fixture missing");
+    const parsed = parseRoom(readJson(fixture.dir, "room.json"));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+
+    // The route from the spawn to the muscle-chamber doorway must clear the
+    // 44 px player. A solid at row 18 leaves only a 32 px gap; row 17 or higher
+    // leaves the required 64 px walk-under gap.
+    for (let column = 3; column <= 29; column += 1) {
+      let nearestAbove: number | null = null;
+      for (let row = 19; row >= 0; row -= 1) {
+        if (parsed.value.layers.tiles[row]?.[column] === "#") {
+          nearestAbove = row;
+          break;
+        }
+      }
+      if (nearestAbove === null) continue;
+      const clearance = (20 - nearestAbove - 1) * parsed.value.tileSize;
+      expect(
+        clearance,
+        `column ${column} has only ${clearance}px below row ${nearestAbove}`,
+      ).toBeGreaterThanOrEqual(64);
+    }
+  });
+
   for (const fixture of LEVELS) {
     it(`${fixture.label} keeps required stations off the main floor and on solid platforms`, () => {
       const parsed = parseRoom(readJson(fixture.dir, "room.json"));

@@ -35,15 +35,17 @@ and the neuromuscular junction.
 spawn (checkpoint-muscle-entry)
   → agent-muscle         dlg-muscle-01 (cleft, Ca²⁺, ACh, nicotinic receptor, AChE)
       └─ correct choice reveals CON-4 and CON-6
-  → motor-terminal       interact activation (puzzle starts)
-  → climb presynaptic tower to pad-terminal
-  → pad-terminal         terminal plate starts the Ca²⁺ timer
+  → climb presynaptic tower (T0 → T1 → T2)
+  → motor-terminal       interact activation on the middle shelf (puzzle starts)
+  → ach-packet           pick up the packet on the next shelf (T3)
+  → pad-terminal         continue to the top plate (T6); starts the Ca²⁺ timer
   → ca-gate              opens when the timer elapses (non-latched)
-  → ach-packet           P2 carries the packet across the elevated cleft bridge
+  → cross the cleft      upper stones to the postsynaptic receptor ledge
   → nicotinic-receptor   place the packet in the matching socket on the muscle side
-  → motor-terminal       P1 returns to the terminal and pulses; the receptor binds
+  → motor-terminal       return to the terminal and pulse; the receptor binds
   → muscle-gate          Ca²⁺ gate + receptor relay opens the latched gate
-  → exit-to-reflex-core  debrief for OBJ-2 → next level or evidence export
+  → muscle chamber       optional lower room; drop from the endplate or enter the ground doorway
+  → exit-muscle          debrief for OBJ-2 → next level or evidence export
 ```
 
 ## Puzzle rules
@@ -96,21 +98,34 @@ trace do.
 | Room | `room-muscle-effector`, 40 × 22 tiles at 32 px (1280 × 704) |
 | Background | `bg.muscle_endplate`; final 1280×720 sky wired, far/mid/near declared placeholders |
 | Spawns | P1 `(3, 20)`, P2 `(5, 20)` |
-| Checkpoint | `checkpoint-muscle-entry` at `(4, 20)` |
-| Agent | `agent-muscle` at `(6, 20)` (ground guide) |
-| Presynaptic tower | motor terminal `(8, 18)`; terminal plate `(14, 14)`; sensor rect x 448–512, y 408–456 |
-| Packet | `ach-packet` / `body-ach-packet` at `(17, 12)` on the vesicle dock |
-| Ca²⁺ gate | `ca-gate` at `(20, 11)` at the presynaptic edge |
-| Cleft | elevated bridge `(20–22, row 11)` and `(24–29, row 10)`; visible scan label at `(27, 10)` |
-| Receptors | wrong socket at `(31, 9)` (snap 1008, 268); nicotinic at `(34, 9)` (snap 1104, 268) |
-| Muscle gate | `muscle-gate` at `(37, 9)` |
-| Exit | `exit-to-reflex-core` at `(37, 13)`, locked by `puzzle-endplate-ferry` |
-| Tether | `off`; puzzle geometry spans about 832 × 320 px, inside 1280 × 720 |
+| Checkpoints | `checkpoint-muscle-entry` `(4, 20)`, `checkpoint-cleft` `(22, 20)`, `checkpoint-endplate` `(33, 8)` |
+| Agent | `agent-muscle` at `(8, 20)` (ground guide) |
+| Presynaptic tower | T0 `(1–2, 19)`, T1 `(4–7, 17)`, T2 `(8–11, 15)`, T3 `(12–15, 13)`, T4 `(5–8, 11)`, T5 `(1–4, 9)`, T6 `(8–12, 7)` |
+| Motor terminal | `motor-terminal` at `(10, 15)` on T2; interact activation |
+| Packet | `ach-packet` / `body-ach-packet` at `(13, 13)` on the T3 shelf; spawn `(432, 406)` |
+| Terminal plate | `pad-terminal` at `(10, 7)` on T6; sensor rect x 320–384, y 184–232 |
+| Ca²⁺ gate | `ca-gate` at `(14, 7)` between T6 and the first cleft stone |
+| Cleft | upper stones `(16–18, 7)`, `(20–22, 8)`, `(24–26, 9)`; scan perch `(21–23, 14)` |
+| Receptors | wrong socket at `(31, 8)` (snap 1008, 236); nicotinic at `(35, 8)` (snap 1136, 236) |
+| Muscle gate | `muscle-gate` at `(37, 8)` at the top of the chamber drop |
+| Muscle chamber | wall `x=30, rows 9–16`; doorway `rows 17–19`; exit dais `(31–32, 19)`; `scan-muscle` `(34, 20)`; drop shaft from the endplate |
+| Exit | `exit-to-reflex-core` at `(31, 18)`, decor lever at `(31, 19)`; locked by `puzzle-endplate-ferry` |
+| Tether | `off`; puzzle geometry spans about 880 × 280 px, inside 1280 × 720 |
 
-The ground remains as a safe fallback, but the ferry route is now a presynaptic
-tower, an elevated cleft bridge, and a postsynaptic receptor platform. The
-terminal plate, ACh dock, Ca²⁺ gate, receptors, muscle gate and exit are all
-off the floor. The player must climb before any ferry step can advance.
+The ground corridor from the spawn to the muscle-chamber doorway is intentionally
+walkable end to end. The lowest platform above it is T1 at row 17, which leaves a
+two-tile (64 px) gap above the row-20 floor. The only one-tile step on the route
+is T0 at the far-left wall, outside the spawn corridor. This fixes the previous
+geometry where the lowest platform sat directly on the floor and blocked the
+ground route.
+
+The ferry itself remains above the ground: the motor terminal, ACh shelf,
+terminal plate, Ca²⁺ gate, receptors, muscle gate and exit are all on platforms
+or the raised exit dais. The player must climb before any ferry step can advance.
+
+Checkpoints are placed at the entry, cleft floor and endplate ledge; they use
+the existing invisible checkpoint markers because `sprite.checkpoint` is still
+placeholder-only art.
 
 Visible pads and labels are `scanTarget` entities aligned with the puzzle
 sensors. The engine does not render plate/zone sensor rects, and puzzle gates
@@ -133,8 +148,8 @@ cosmetic bursts; these are presentation, not physical doors.
   empty.
 - Solve counters: `pickups`, `drops`, `placements`, `pulses`, `wrongReceptor`,
   `wrongSide`, `resets`. Hint use is a separate `hint_used` learning event.
-- Optional scans: `pad-terminal`, `scan-cleft`, and `scan-receptor` (CON-4);
-  `scan-muscle` (CON-6). The dialogue also reveals CON-4 and CON-6.
+- Optional scans: `pad-terminal` and `scan-cleft` (CON-4); `scan-muscle`
+  (CON-6). The dialogue also reveals CON-4 and CON-6.
 
 Suggested debrief answer for the playtest: "The action potential opens Ca²⁺
 channels at the terminal; Ca²⁺ triggers vesicle release. ACh crosses the cleft
@@ -147,15 +162,18 @@ the caveat rather than adding a curriculum/schema change without an ADR.
 
 ## Co-op and solo
 
-- **Co-op:** P1 climbs to the terminal plate, descends to the motor terminal,
-  and pulses; P2 climbs to the vesicle dock and carries the ACh packet across
-  the elevated cleft bridge. The roles are additive.
-- **Solo:** P1 uses the solo union. Climb to the terminal plate, descend to the
-  motor terminal, wait for the Ca²⁺ window, climb to the packet, carry it
-  across the bridge, place it on the nicotinic receptor, then return to the
-  motor terminal to pulse. The plates and timer do not require a second body.
+- **Co-op:** P1 can activate the motor terminal on the T2 shelf and climb to
+  the Ca²⁺ plate; P2 can take the ACh packet from T3 and cross the upper stones
+  to the receptor. P1 returns to the terminal to pulse. Both players can use the
+  ground corridor and the muscle-chamber doorway if they fall or want to explore
+  the lower exit route. The roles are additive.
+- **Solo:** P1 uses the solo union. Climb to the motor terminal (T2), take the
+  packet (T3), continue to the plate (T6), cross the cleft, place the packet on
+  the nicotinic receptor, return to the terminal to pulse, then reach the exit
+  in the muscle chamber by dropping from the endplate or walking through the
+  lower doorway. The plates and timer do not require a second body.
 - **No co-op-only route:** solo completes the same sequence.
-- **Tether:** `off`; the room is one screen and the platform geometry fits the
+- **Tether:** `off`; the room is one screen and the puzzle span fits the
   1280 × 720 guard.
 
 ## Controls
@@ -175,9 +193,18 @@ pause/close, `M` mute.
   `clear` link action. The engine feedback layer is content-driven by the
   `feedback` block in `level.json`; no per-level runtime branch was added.
 - The Ca²⁺ gate is logic/visual state, not a collision body. The relay enforces
-  the Ca²⁺ requirement for the win, but the player can walk across the cleft
+  the Ca²⁺ requirement for the win, but the player can cross the cleft stones
   before the gate opens. The dialogue and hints state the intended order; the
   README records the gap.
+- The muscle chamber is reachable before the puzzle is solved: the doorway under
+  the cleft and the drop from the endplate both lead to the locked exit. This is
+  intentional exploration. The exit refuses until `muscle-gate` latches, and the
+  ground doorway prevents a soft lock; the chamber is a loop, not a trap.
+- The first climb is at the far-left wall (T0/T1). The ground corridor from the
+  spawn to the chamber doorway has no platform lower than row 17 above it, so
+  the player can walk beneath the tower. The jump envelope is two tiles (64 px)
+  vertically per hop and up to three tiles horizontally; the upper cleft stones
+  use two-tile gaps and one three-tile jump to the receptor ledge.
 - The AChE timer resets the Ca²⁺ timer, closes the Ca²⁺ gate, and clears the ACh
   packet. The packet body/collision are removed and the sprite hides; the
   persistent `ACh packet cleared` surface and the `fx.ach.dissolve` ring/burst
@@ -209,10 +236,10 @@ pause/close, `M` mute.
 
 ## M1.8 material proof
 
-The room is fully materialized: muscle walls/floor and the postsynaptic/exit
-platforms use the final coloured `muscle-edge` atlas, while the presynaptic
-tower, vesicle dock and cleft bridge use the final coloured `membrane-edge`
-atlas. The `muscle-gate` retains its explicit world-space `muscle-fibers`
+The room is fully materialized: muscle walls/floor, the receptor ledge, the
+muscle chamber and its exit dais use the final coloured `muscle-edge` atlas,
+while the presynaptic switchback tower, ACh shelf, upper cleft stones and chasm
+perch use the final coloured `membrane-edge` atlas. The `muscle-gate` retains its explicit world-space `muscle-fibers`
 overlay as an object treatment; the muscle and membrane floor tiles use the
 single-window atlases without a procedural overlay, so they are uniform rather
 than sharing the gate's pattern phase. The material tints are removed because
@@ -227,9 +254,10 @@ remain declared placeholders. Materials are visual only; collision comes from
   `01-bone-gate`, and `02-joint-chamber` remain unauthored.
 - The 04 exit / next-level / map-edge references to `05-reflex-core` are
   expected forward-reference warnings.
-- The Ca²⁺ bridge has no physical collision; the ACh packet now has a visual
-  clear plus a persistent cleared surface. The shared `prompt-obj-2` still means
-  03 shows OBJ-2 as partial. These are recorded deviations, not hidden claims.
+- The Ca²⁺ gate and muscle gate have no physical collision; the ACh packet now
+  has a visual clear plus a persistent cleared surface. The shared `prompt-obj-2`
+  still means 03 shows OBJ-2 as partial. These are recorded deviations, not
+  hidden claims.
 - Human playtesting and the optional advanced NERV-02#3 debrief are pending.
   The required dialogue includes the receptor-specificity line as optional
   reading; it is not a required assessment.

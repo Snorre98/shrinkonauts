@@ -151,7 +151,9 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
     if (!runtime) throw new Error("runtime bridge is missing");
     const exit = runtime.entityPixel("exit-muscle");
     if (!exit) throw new Error("exit-muscle is missing");
-    runtime.placePlayer("p1", exit.x, exit.y + 48);
+    // The exit lever stands on the chamber dais; place the player inside the
+    // exit trigger cell directly above it.
+    runtime.placePlayer("p1", exit.x, exit.y - 16);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
   await expect(page.getByRole("dialog", { name: "Level complete" })).toHaveCount(0);

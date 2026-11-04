@@ -442,7 +442,7 @@ export const CAPTURE_STATES: readonly CaptureState[] = [
       "sprite.player.p2",
     ],
     whatToNotice:
-      "The ferry starts inactive. The presynaptic tower, elevated cleft bridge and postsynaptic receptor platform are all off the ground; the motor terminal, ACh packet, receptors and muscle gate are visible in final sprite art.",
+      "The ferry starts inactive. The room is a three-zone junction: a presynaptic switchback tower, a cleft crossing with a floating scan perch, and a postsynaptic receptor ledge with a muscle chamber and exit below. The ground corridor stays walkable and the three checkpoints support the exploration loop.",
     art: "final",
     order: 19,
     alt: "Muscle Effector room with the Endplate Ferry objects",

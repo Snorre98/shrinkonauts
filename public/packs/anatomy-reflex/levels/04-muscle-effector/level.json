@@ -226,12 +226,12 @@
   ],
   "coop": {
     "supported": true,
-    "notes": "P1 operates the terminal plate and pulse; P2 carries and places the ACh packet. Solo uses the P1 union: step on the plate, carry and place the packet, then pulse the terminal."
+    "notes": "P1 can take the motor terminal and the Ca\u00b2\u207a plate while P2 retrieves and carries the ACh packet. Both can use the upper cleft crossing; the lower muscle-chamber doorway is the recovery and exploration loop. Solo uses the P1 union: climb to the motor terminal, take the plate at the top of the tower, carry the packet across, place it on the triangle receptor, return to the terminal to pulse, then reach the exit inside the muscle chamber."
   },
   "authoring": {
     "levelSpec": "README.md",
     "playtestedSolo": false,
     "playtestedCoop": false,
-    "notes": "M2 Endplate Ferry: interact at the motor terminal; the terminal plate starts the Ca\u00b2\u207a window; the ACh packet crosses the cleft to the nicotinic receptor; the terminal pulse binds it; the Ca\u00b2\u207a gate + receptor relay opens the latched muscle gate. Uses prompt-obj-2 because per-level debrief prompts are not authored. Automated unit, pack validation, smoke, and browser checks passed; human solo/co-op playtesting is pending. Geometry pass: all puzzle-critical stations are on floating platforms/catwalks above the ground; the ground remains a safe fallback."
+    "notes": "M2 Endplate Ferry: interact at the motor terminal; the terminal plate starts the Ca\u00b2\u207a window; the ACh packet crosses the cleft to the nicotinic receptor; the terminal pulse binds it; the Ca\u00b2\u207a gate + receptor relay opens the latched muscle gate. Uses prompt-obj-2 because per-level debrief prompts are not authored. Automated unit, pack validation, smoke, and browser checks passed; human solo/co-op playtesting is pending. Geometry pass 2 (exploration): the room is a three-zone junction. The presynaptic switchback tower carries the motor terminal, ACh shelf and Ca\u00b2\u207a plate. The cleft has an upper stepping-stone crossing and a floating scan perch. The postsynaptic side has the receptor ledge and a ground-level muscle chamber below the endplate with the exit and a walk-out doorway. The ground corridor is clear from spawn to the chamber doorway; the lowest platform over it is three tiles above the floor, leaving a two-tile walk-under gap. Checkpoints at entry, cleft floor and endplate."
   }
 }
