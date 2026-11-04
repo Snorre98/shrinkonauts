@@ -20,7 +20,7 @@
       "type": "plate",
       "rect": {
         "x": 320,
-        "y": 472,
+        "y": 440,
         "width": 64,
         "height": 48
       },
@@ -44,8 +44,8 @@
       ],
       "shape": "plug",
       "spawn": {
-        "x": 528,
-        "y": 374
+        "x": 496,
+        "y": 406
       }
     },
     {
@@ -53,7 +53,7 @@
       "type": "plate",
       "rect": {
         "x": 736,
-        "y": 216,
+        "y": 312,
         "width": 64,
         "height": 48
       },
@@ -67,8 +67,8 @@
       "id": "cpu-socket",
       "type": "plate",
       "rect": {
-        "x": 864,
-        "y": 216,
+        "x": 640,
+        "y": 440,
         "width": 64,
         "height": 48
       },
@@ -163,7 +163,7 @@
       "action": "move",
       "actor": "p1",
       "x": 352,
-      "y": 496
+      "y": 464
     },
     {
       "action": "wait",
@@ -172,8 +172,8 @@
     {
       "action": "move",
       "actor": "p1",
-      "x": 528,
-      "y": 374
+      "x": 496,
+      "y": 406
     },
     {
       "action": "pickup",
@@ -184,7 +184,7 @@
       "action": "move",
       "actor": "p1",
       "x": 768,
-      "y": 240
+      "y": 336
     },
     {
       "action": "drop",
@@ -197,8 +197,9 @@
     }
   ],
   "hints": [
-    "The sensor does not shout directly at the CPU. Route the interrupt line to the controller.",
-    "The controller socket is the integration point. The CPU socket is the decoy.",
-    "The CPU is the output side. The controller wakes it, then the actuator responds."
+    "The sensor rings the interrupt controller, not the CPU. Start at the sensor console on the first ledge above the ground.",
+    "Follow the switchback: press the sensor pad, then carry the route plug up to the controller catwalk.",
+    "The CPU socket is the tempting lower branch and a decoy. The controller socket is the integration point.",
+    "After the controller wakes the CPU, drop through the actuator roof hole or walk into the exit chamber through the ground doorway."
   ]
 }

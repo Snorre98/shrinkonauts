@@ -39,7 +39,7 @@
       "next": "handoff"
     },
     "handoff": {
-      "text": "Start the loop at the sensor console. Step on the sensor pad, carry the route plug to the controller socket, and wait for the controller to wake me. Then the actuator responds.",
+      "text": "Start at the sensor console on the first ledge above the ground. Follow the switchback: press the sensor pad, carry the route plug to the controller catwalk, and leave the CPU socket below alone. When the actuator opens, drop through its roof or walk into the exit chamber through the ground doorway.",
       "next": null
     }
   }

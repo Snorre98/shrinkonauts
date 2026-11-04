@@ -213,12 +213,12 @@
   "nextLevelIds": [],
   "coop": {
     "supported": true,
-    "notes": "P1 can solo the whole loop; P2 can carry the route plug and either player can scan. The sensor trigger latches so no second body is required."
+    "notes": "P1 can activate the sensor console and press the sensor pad while P2 carries the route plug up the switchback to the controller catwalk. The CPU socket is a lower decoy branch under the catwalk; either player can scan. Solo uses the P1 union: climb the far-left step, activate the console, press the pad, carry the plug to the controller socket, wait for the timer, then reach the exit chamber through the roof drop hole or the ground doorway. The chamber loops back to the corridor."
   },
   "authoring": {
     "levelSpec": "README.md",
     "playtestedSolo": false,
     "playtestedCoop": false,
-    "notes": "M2 Silicon fixture: sensor pad latches the trigger, the route plug feeds the integration relay, the relay starts the CPU timer (ADR-0047), and the elapsed timer opens the latched actuator gate. The transfer gate is optional evidence. Automated unit, pack validation, and solution replay passed; human solo/co-op playtesting is pending. Uses prompt-obj-5 because per-level debrief prompts are not authored. Geometry pass: all puzzle-critical stations are on floating platforms/catwalks above the ground; the ground remains a safe fallback."
+    "notes": "M2 Silicon fixture: sensor pad latches the trigger, the route plug feeds the integration relay, the relay starts the CPU timer (ADR-0047), and the elapsed timer opens the latched actuator gate. The transfer gate is optional evidence. Automated unit, pack validation, and solution replay passed; human solo/co-op playtesting is pending. Uses prompt-obj-5 because per-level debrief prompts are not authored. Geometry pass 2 (exploration): the room is a three-zone loop. The sensor-bus ground corridor from spawn to the exit-chamber doorway is clear; the first climb is a one-tile step at the far-left wall, then a two-tile switchback to the sensor console, sensor pad, route plug and controller catwalk. The CPU socket is a lower side branch under the catwalk. The actuator ledge sits above an exit chamber with a roof drop hole and a ground doorway; the chamber loops back to the corridor. All puzzle stations are on solid platforms above the ground; the exit is puzzle-locked."
   }
 }

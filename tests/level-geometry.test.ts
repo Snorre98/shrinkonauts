@@ -123,6 +123,37 @@ describe("level geometry audit", () => {
     }
   });
 
+  it("01-interrupt-loop keeps the sensor-bus corridor and chamber doorway walkable", () => {
+    const fixture = LEVELS.find(
+      (entry) => entry.label === "01-interrupt-loop",
+    );
+    if (!fixture) throw new Error("01-interrupt-loop fixture missing");
+    const parsed = parseRoom(readJson(fixture.dir, "room.json"));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+
+    // The route from the spawn to the exit-chamber dais must clear the 44 px
+    // player. A solid at row 18 leaves only a 32 px gap; row 17 or higher
+    // leaves the required 64 px walk-under gap. The dais at x33-36 is an
+    // intentional one-tile step, so the corridor check stops at x32.
+    for (let column = 3; column <= 32; column += 1) {
+      let nearestAbove: number | null = null;
+      for (let row = fixture.mainFloorRow - 1; row >= 0; row -= 1) {
+        if (parsed.value.layers.tiles[row]?.[column] === "#") {
+          nearestAbove = row;
+          break;
+        }
+      }
+      if (nearestAbove === null) continue;
+      const clearance =
+        (fixture.mainFloorRow - nearestAbove - 1) * parsed.value.tileSize;
+      expect(
+        clearance,
+        `column ${column} has only ${clearance}px below row ${nearestAbove}`,
+      ).toBeGreaterThanOrEqual(64);
+    }
+  });
+
   for (const fixture of LEVELS) {
     it(`${fixture.label} keeps required stations off the main floor and on solid platforms`, () => {
       const parsed = parseRoom(readJson(fixture.dir, "room.json"));

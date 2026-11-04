@@ -1083,8 +1083,8 @@ function runSiliconRuntime(): RuntimeResult {
   const p2X = p2.x;
   const walkRight = GameRuntime.emptyInput();
   walkRight.intents.p1.moveX = 1;
-  // Keep the movement check short: walking into the route plug would push it
-  // toward the controller socket before the puzzle is activated.
+  // Keep the movement check short: the route plug is on the switchback above
+  // the ground, so this only exercises the clear sensor-bus corridor.
   for (let frame = 0; frame < 40; frame += 1) {
     runtime.step(1 / 60, walkRight);
   }
