@@ -4,7 +4,7 @@
 **Pack:** `anatomy-reflex`
 **Objective:** OBJ-2 — trace the signal from the sensory receptor through the pathway
 **Concepts:** CON-3 neuron structure, CON-5 sensory/motor pathways
-**Card facts:** NERV-01#1, #5, #6 (core); #3 in the optional myelin scan/debrief
+**Card facts:** NERV-01#1, #5, #6 (core); #3 in the optional myelin scan
 **Puzzle:** `puzzle-node-run`
 **Win:** `gateOpen gate-exit`
 
@@ -31,15 +31,25 @@ exit still gates the 03 → 04 transition.
 
 ```text
 spawn (checkpoint-entry)
+  → climb dendrite branches
   → agent-neuron          dlg-neuron-01 (threshold, all-or-none, one-way, myelin)
-      └─ correct choice reveals CON-3, CON-5 and map-nerve-forest
+      └─ correct choice reveals CON-3, CON-5, NERV-01#5 and map-nerve-forest
+  → scan-neuron           optional NERV-01#1 fact (neuron parts and direction)
+  → scan-myelin           optional NERV-01#3 fact (sheath, nodes, speed)
+  → scan-pathway          optional NERV-01#6 fact (all-or-none, one-way)
   → pad-input-a/b         one input is below threshold; two reach it
   → gate-threshold        opens and latches when the counter reaches 2
-  → axon-entry            the behind gate closes as a one-way cue
+  → axon-entry            the behind gate closes and the hillock drops into the axon
+  → myelin catwalk        jump the node gaps along the axon
   → pad-terminal          terminal zone reached
   → gate-exit             threshold + terminal relay opens the gate
   → exit-to-muscle        debrief for OBJ-2 → evidence export
 ```
+
+The room is now a vertical route rather than a flat floor. The ground remains as
+a safe fallback, but every puzzle station sits on a floating dendrite, soma,
+hillock, myelin-node, or terminal platform. The axon drop is four tiles high, so
+the one-way gate cue is also physically one-way without dash.
 
 ## Puzzle rules
 
@@ -88,25 +98,31 @@ bursts are presentation, not physical doors.
 | Background | `bg.nerve_forest`, sky plate only (POC); far/mid/near source-only/deferred |
 | Spawns | P1 `(3, 20)`, P2 `(5, 20)` |
 | Checkpoint | `checkpoint-entry` at `(4, 20)` |
-| Inputs | `input-a` at x 224–288, `input-b` at x 320–384, floor row 20 |
-| Axon entry | zone at x 544–672, y 552–656; the bridge is the axon |
-| Terminal | zone at x 1088–1184, floor row 20; `pad-terminal` at `(34, 20)` |
-| Gates | `gate-threshold` at `(14, 20)`, `gate-behind` at `(18, 18)`, `gate-exit` at `(36, 20)` |
-| Exit | `exit-to-muscle` at `(37, 19)`, locked by `puzzle-node-run` |
-| Tether | `off`; puzzle geometry fits inside the 1280 × 720 viewport |
+| Neuron Keeper | `agent-neuron` on the left perch at `(4, 13)`; perch platform `x 1–4`, row 13 |
+| Inputs | `input-a` on dendrite A, rect x 160–224, y 504–552; `input-b` on dendrite B, rect x 320–384, y 472–520 |
+| Route step | `x 7–8`, row 16 connects dendrite A to dendrite B and the Keeper perch |
+| Soma | threshold platform at row 14; `gate-threshold` at `(15, 14)` |
+| Axon entry | hillock platform at row 11; zone x 512–608, y 264–368; five-tile drop to the axon |
+| Axon | myelin-node catwalk at row 16 from x 19–21, 23–25, 27–29, 31–33, then terminal x 35–37 |
+| Terminal | zone x 1120–1184, y 472–520; `pad-terminal` at `(35, 16)` |
+| Gates | `gate-threshold` at `(15, 14)`, `gate-behind` at `(18, 11)`, `gate-exit` at `(36, 16)` |
+| Exit | `exit-to-muscle` at `(37, 15)`, locked by `puzzle-node-run` |
+| Tether | `off`; the puzzle span is about 1056 × 288 px, inside the 1280 × 720 viewport |
 
-Visible pads (`pad-input-a`, `pad-input-b`, `pad-terminal`) are `scanTarget`
-entities aligned with the plate/zone rects. The engine does not render puzzle
-sensor rects, so these pads are the player-facing surface. They are also scans
-for CON-3/CON-5.
+Visible pads (`pad-input-a`, `pad-input-b`, `pad-terminal`) are interactable
+props aligned with the plate/zone rects. The engine does not render puzzle
+sensor rects, so these pads are the player-facing surface. They are not scans;
+the optional scans are the three 36×36 markers (`scan-neuron`, `scan-myelin`,
+`scan-pathway`).
 
 ## Evidence and debrief
 
 - `puzzle_solved` filtered by `puzzle-node-run`, required for OBJ-2.
 - `debrief_answered` filtered by `prompt-obj-2`, required for OBJ-2.
 - Solve counters: `resets`. Hint use is a separate `hint_used` learning event.
-- Optional scans: `scan-neuron` and `scan-myelin` (CON-3), `scan-pathway` and
-  `pad-terminal` (CON-5).
+- Optional scans: `scan-neuron` (NERV-01#1), `scan-myelin` (NERV-01#3), and
+  `scan-pathway` (NERV-01#6), all under CON-3. CON-5 is revealed by the Keeper
+  dialogue, not by a scan.
 
 Suggested debrief for the playtest: "Why does one input fail, and why does a
 third input not make a bigger spike?" Model answer: "The first input is below
@@ -120,12 +136,12 @@ authored in this chunk.
 
 ## Co-op and solo
 
-- **Co-op:** P1 and P2 can each stand on one dendrite input; the two plate events
-  raise the counter. Either player can scan and run the axon.
-- **Solo:** P1 presses input A, steps to input B, then runs the axon. The plates
+- **Co-op:** P1 and P2 can climb the dendrite branches and each stand on one
+  input. Either player can then jump the myelin catwalk to the terminal.
+- **Solo:** P1 presses input A, climbs to input B, then runs the axon. The plates
   latch their events, so a second body is never required.
-- **Tether:** `off`; the room's puzzle geometry fits one screen. The room is
-  1280 × 736 px, but the `off` guard measures the puzzle geometry, not the room.
+- **Tether:** `off`; the room is one screen and the platform route keeps the
+  puzzle geometry inside the 1280 × 720 viewport.
 
 ## Controls
 
@@ -164,12 +180,13 @@ pause/close, `M` mute.
 
 ## M1.8 material proof
 
-The room is fully materialized for M1.8: bone walls/floor use `blob47`
-placeholder variants, the central platform uses `edge` autotiling backed by the
-`nerve-edge` atlas variant set, and the tile material grid never changes
-collision. The sky uses a screen-space nerve pattern and the mid background
-layer uses a world-space bone pattern. See `materials.json` and `theme.json` for
-the shared world/UI definitions. Human visual review is pending.
+The room is fully materialized: bone walls/floor use the `bone-blob47` atlas
+variant set, the Keeper perch, route step, dendrite, soma, hillock, myelin and
+terminal platforms use `edge` autotiling backed by the `nerve-edge` atlas
+variant set, and the tile material grid never changes collision. The checked-in atlases are the final coloured Nano Banana
+`bone-blob47` and `nerve-edge` atlases; the material tints are removed. See
+`materials.json` and `theme.json` for the shared world/UI definitions. Human
+visual review is pending.
 
 ## Remaining implementation gaps (M2 chunk boundary)
 
@@ -191,6 +208,13 @@ the shared world/UI definitions. Human visual review is pending.
   the whole anatomy pack. The command was run as specified.
 - The room spec uses `gate-exit`; the mechanics summary calls the same node
   `exit-gate`. The implementation follows the room spec's `gate-exit` name.
+- `sprite.scan.neuron`, `sprite.scan.myelin`, and `sprite.scan.pathway` remain
+  procedural placeholder-only assets. They are the yellow **NEUR**, cyan
+  **MYEL**, and cyan **PATH** boxes. The shared neuron/myelin icon is retired.
+  The original wide Nanobanan plates lost their reading at 36×36; the new
+  fact-specific prompts are in
+  [`docs/assets/scan-prompts-v02.md`](../../../../../docs/assets/scan-prompts-v02.md).
+  Replace them before treating the room's scan set as final.
 
 ## Verification
 
@@ -203,5 +227,6 @@ npm run build
 git diff --check
 ```
 
-`pack:validate` is expected to report 1/5 objectives and 2/8 concepts (CON-3 and
-CON-5), plus the 04/map forward references. Those are not failures.
+`pack:validate` is expected to report 1/5 objectives and 4/8 concepts (CON-3,
+CON-4, CON-5, and CON-6), plus the 04/map forward references. Those are not
+failures.

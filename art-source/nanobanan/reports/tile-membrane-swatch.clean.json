@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "input": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/art-source/nanobanan/working/tile-membrane-swatch-nano-512.png",
+  "output": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/art-source/nanobanan/working/tile-membrane-swatch-nano-clean-512.png",
+  "cell": {
+    "width": 512,
+    "height": 512
+  },
+  "band": 2,
+  "minComponent": 4,
+  "weldX": "union",
+  "weldY": "union",
+  "snap2x2": true,
+  "before": {
+    "opaquePixels": 262144,
+    "coverage": 1,
+    "alphaViolations": 0,
+    "uniqueColours": 8,
+    "non2x2Pixels": 39342,
+    "edgeMismatch": {
+      "leftRight": 101,
+      "topBottom": 112
+    }
+  },
+  "removal": {
+    "removedComponents": 0,
+    "removedPixels": 0
+  },
+  "after": {
+    "opaquePixels": 262144,
+    "coverage": 1,
+    "alphaViolations": 0,
+    "uniqueColours": 7,
+    "non2x2Pixels": 0,
+    "edgeMismatch": {
+      "leftRight": 0,
+      "topBottom": 0
+    }
+  }
+}

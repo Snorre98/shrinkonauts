@@ -5,10 +5,12 @@
  * Usage:
  *   npm run art:normalize -- --in <master.png> --palette <palette.json>
  *     --out <normalized.png> [--preview <preview.png>] [--scale 2]
- *     [--background "#101a20"] [--report <report.json>]
+ *     [--ramps muscle,bone,...] [--background "#101a20"]
+ *     [--report <report.json>]
  *
  * This tool does not trace or resize faux-pixel Ludo frames. The input must
- * already be the normalized cell size (14×22 for the player).
+ * already be the normalized cell size (14×22 for the player, 512×512 for a
+ * material swatch).
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -32,6 +34,7 @@ interface Options {
   out: string;
   preview?: string;
   scale: number;
+  ramps?: string[];
   background: ReturnType<typeof parseHexColor>;
   report?: string;
 }
@@ -43,6 +46,7 @@ function usage(): string {
     "Options:",
     "  --preview <path>     write a nearest-neighbour preview PNG",
     "  --scale <n>          preview scale, positive integer (default 2)",
+    "  --ramps <list>       comma-separated ramp names to allow (default: all roles)",
     "  --background <hex>   preview background (default #101a20)",
     "  --report <path>      write a JSON validation report",
   ].join("\n");
@@ -66,6 +70,18 @@ function positiveInteger(value: string, label: string): number {
   return parsed;
 }
 
+function parseRamps(value: string | undefined): string[] | undefined {
+  if (value === undefined) return undefined;
+  const ramps = value
+    .split(",")
+    .map((ramp) => ramp.trim())
+    .filter((ramp) => ramp !== "");
+  if (ramps.length === 0) {
+    throw new Error("--ramps must contain at least one ramp name");
+  }
+  return ramps;
+}
+
 function parseArgs(args: string[]): Options {
   const input = readOption(args, "--in");
   const palette = readOption(args, "--palette");
@@ -77,6 +93,7 @@ function parseArgs(args: string[]): Options {
   const scaleValue = readOption(args, "--scale");
   const scale =
     scaleValue === undefined ? 2 : positiveInteger(scaleValue, "--scale");
+  const ramps = parseRamps(readOption(args, "--ramps"));
 
   return {
     input: resolve(input),
@@ -86,6 +103,7 @@ function parseArgs(args: string[]): Options {
       ? { preview: resolve(readOption(args, "--preview") as string) }
       : {}),
     scale,
+    ...(ramps ? { ramps } : {}),
     background: parseHexColor(
       readOption(args, "--background") ?? "#101a20",
     ),
@@ -128,7 +146,8 @@ function main(): void {
     );
   }
 
-  const baseRamps = [...new Set(Object.values(document.roles))];
+  const baseRamps =
+    options.ramps ?? [...new Set(Object.values(document.roles))];
   const result = quantizeImage(input, document, baseRamps);
   if (result.alphaViolations > 0) {
     throw new Error(
@@ -158,6 +177,7 @@ function main(): void {
   const report = {
     character: document.character,
     cell: document.cell,
+    ramps: baseRamps,
     sourceOffPalettePixels: result.offPalettePixels,
     quantizedPixels: result.changedPixels,
     maxDistance: Number(result.maxDistance.toFixed(2)),
@@ -174,6 +194,7 @@ function main(): void {
     [
       `Character: ${document.character}`,
       `Cell: ${document.cell.width}×${document.cell.height}`,
+      `Ramps: ${baseRamps.join(", ")}`,
       `Source off-palette pixels: ${result.offPalettePixels}`,
       `Quantized pixels: ${result.changedPixels}`,
       `Max quantization distance: ${result.maxDistance.toFixed(2)}`,

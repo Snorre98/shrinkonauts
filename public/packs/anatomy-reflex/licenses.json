@@ -7,7 +7,70 @@
       "source": "Generated in-repo placeholder",
       "author": "Snorre",
       "license": "CC0-1.0",
-      "modified": "M1.8 placeholder atlas; replace with final art"
+      "modified": "M1.8 placeholder atlas; retained as a test fixture"
+    },
+    {
+      "file": "shared/tiles/bone-atlas.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local nearest downscale, palette quantisation, 2x2 weld and blob47 atlas assembly",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 33bd0a61de0f88e23573a1c034a94876431b8a48b781f2e010d2882e5941afaa; 512x512 working swatch; 47-frame 8x6 blob47; opaque; runtime sha256 20b807037dc952c2844d487fa0b9e83af0e54f587237bbc364c9861e77ff000e",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/tiles/nerve-atlas.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local nearest downscale, palette quantisation, 2x2 weld and edge atlas assembly",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 14e0c5f17a47e282698e9b9e6ef73ef0d95af657a1becb74dddb37fcd5bd39e0; 512x512 working swatch; 16-frame 4x4 edge; opaque; runtime sha256 ea608d1bc78916895f2a1262f5c4feb275c6c634d87d31d7b133c013989f3473",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/tiles/muscle-atlas.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local nearest downscale, palette quantisation, 2x2 weld and edge atlas assembly",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 4f1d82aff46a383d9734f923347ce5f5c784e295a457b36a9bd4638376ebc0bf; 512x512 working swatch; 16-frame 4x4 edge; opaque; runtime sha256 96b15d0769bf7cf6f12ca967c90b94eca5ffb5af2ad57c781f41fc52bf120523",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/tiles/membrane-atlas.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local nearest downscale, palette quantisation, 2x2 weld and edge atlas assembly",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 001542eea1d9e59e28de5319991fa5b8cc33783cf2d6264598f740a2e3105d72; 512x512 working swatch; 16-frame 4x4 edge; opaque; runtime sha256 60a8e7be6e8864cfce834cf54bf1e6eb7ef98df30754b236a14f30fa2b491e44",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/backgrounds/muscle-endplate-sky.webp",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local crop + Lanczos downscale; lossless WebP",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2752x1536 source sha256 a8064528e94ad0a3a712860f9d012ed337f8c4384be6b0165c8f0a1fa090d7d4; crop 2720x1530 at (16,3); Lanczos to 1280x720; no palette quantisation; lossless VP8L; 669798 bytes; runtime sha256 fd8da92e2188e70787fb98149dffa9102e796db96626f2c1cf1e2bdbc68f6579",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/sprites/gate-nerve.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 64x64 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 9bc304a48bdfc92d835e7f9bb9680bd90da5514496b06672f3063fdd143d51e1; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 60x60 in 64x64 with 2px margins; palette/alpha clean; runtime sha256 59f4b34041072801f71617141840e7876d1729e07f81496bfba914f672312d8a",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/sprites/exit.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 64x64 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-03; 2048x2048 source sha256 bfcd6d18fba7e65cbcf384d776d1d1a83f43e1fee6dcc256234c1138a3e96e0f; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 59x60 in 64x64 with 2px margins; palette/alpha clean; runtime sha256 ca9f1a3234de73d436798be904df3d26c1f43d12b9d2f96ca8ab24f8df8b04f6",
+      "aiGenerated": true
     },
     {
       "file": "shared/sprites/player-p1.png",
@@ -184,6 +247,218 @@
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
       "modified": "2026-11-01; 2752x1536 source sha256 29103f0b12b59f497fabe3702fd4cc39a11244fe8588dda4681448391df3e5ca; 2672x1536 crop at x=40 (40 px each side); Lanczos downscale to 1280x736; no palette quantization; lossless WebP; muscle-pink drapes retained"
+    },
+    {
+      "file": "shared/audio/jump.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "Generated 2026-11-03; seed 2; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/land.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "Generated 2026-11-03; seed 4; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/scan.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "Generated 2026-11-03; seed 4; trimmed to window; 35 Hz HPF; -5 dBFS sample peak / <= -1 dBTP; 10 ms fade; 48 kHz mono; MP3 160 kbps",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/boot.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds hum=11, hiss=3; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/boot/boot.receipt.json sha256 70f0dd9644b00b4c77b5ffa0206982cf456889444b62a34bdf78a43e37fa9a68",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/dialogue.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds dialogue=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/dialogue/dialogue.receipt.json sha256 d8df98b6011ff786904bd6594ca2447ce8e422e950d0d9faca73b03c8b3cb23f",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/dash.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds dash=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/dash/dash.receipt.json sha256 120452424a2c4ead13052cef09e460d57c5f32213d104c13c5490995a4859caa",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/gate.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds gate=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/gate/gate.receipt.json sha256 179b11eb64cbd04f84ccbbf6ab240b786b89b06943d5293448efb8d377aef553",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/map.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds map=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/map/map.receipt.json sha256 34cff6305c57c17d2146ae8bdcc4dc0f544638ab44ab87238c6ccf81080f433f",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/debrief.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds debrief=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/debrief/debrief.receipt.json sha256 886bb1cc6aca8af16bb89b6922514711beec0ad90412f11426bb87c04348ac2b",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/checkpoint.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds checkpoint=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/checkpoint/checkpoint.receipt.json sha256 0b3bf367057d946114727d630b1dab650b855490bcbb0126b17c3a099a948504",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/unlock.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds unlock=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/unlock/unlock.receipt.json sha256 682bee9d439334f96e4723f5110d76dce203b768d422d8c1299d3e5095e6a10f",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/wrong.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 3 Small SFX (local)",
+      "author": "AI-generated with Stable Audio 3 Small SFX; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-03; seeds wrong=1; mastered by cueforge (48 kHz mono MP3 160 kbps); receipt ../../../../../../Users/snorresaether/Projects/cueforge/var/wrong/wrong.receipt.json sha256 40961e163d3afe9fd203db5002bafeb0787d1a613d7bc48224a39b8c9f9168d6",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/theme-nerve-forest.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 2.5 (local)",
+      "author": "AI-generated with Stable Audio 2.5; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-04; source 03-nerve-forest-best.wav sha256 c3b7f48a6863acfa396bda397ace3418bf386eb496a1df6993d0c78e6cfcf679; trimmed to last musical bar; 0.641 s tail-to-head loop crossfade; 48 kHz stereo; -17.3 LUFS; true peak -3.2 dBFS; MP3 192 kbps; loop 29.331 s",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/audio/theme-muscle-effector.mp3",
+      "type": "audio",
+      "source": "Stability AI Stable Audio 2.5 (local)",
+      "author": "AI-generated with Stable Audio 2.5; sound direction by Snorre",
+      "license": "Stability AI Community License",
+      "url": "https://stability.ai/license",
+      "modified": "2026-11-04; source 04-muscle-effector-best.wav sha256 94e2e4aa1810f21abcc6158efe5d475a4ee0f583259609ea009ed0135d4f39a5; trimmed to last musical bar; 1.289 s tail-to-head loop crossfade; 48 kHz stereo; -17.3 LUFS; true peak -3.2 dBFS; MP3 192 kbps; loop 27.685 s",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/input-pair.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 2b3c0456b4bf4a795d0ee9805e2dd0b9707389f71f21e9896c92cc4ec4fe9e87; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x22 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 427b8f1ed843106794836cbd45946c16dc61d7a6325ca7c3fee5ef39f463b9ff",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/threshold-gauge.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 80a4b204c8e996719040ce26cd8a970391fae342d42495167ee726ae1a861c2d; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 16x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 46637ec39cae026f30eac1180b808401e5168f10f428c813e788afc89ad8e86e",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/axon-flow.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 ec94c18d65c8a5bcd093e66cd27744bfd2eebffa3318e17dbc24db1b54fbcf3e; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 9x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 f64f150c71b99026cd0b9d6af3464a60b02e71935e2cb2f64f768cf435eda2d9",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/exit-gate.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 14c60abe641ba4dd78de58de91737c1fef56e545affb97582f8bd1dca7ec0a29; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 a1411daeb704ad5ed310c9d817b0ece1832851c7ebffb73d1edc2ed5f355842c",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/ca-window.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 3a8c9625f90f807c98cd6823f50817f4590c504f0a9d2bb7b422a0a02c000002; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 57182ca84836d101323e2bcf27673da5bfac721ddece9a29d70e13bc81002fbe",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/ach-carry.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 8ce7d3a9eceafc9d25f8d2e874df37ff7ab855f08ee59b0d6c7e2329efef93b2; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x23 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 8e8264be13900b7a13a874af5e0a80858be25a04e5cf9c26926249364b7b8914",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/receptor-bind.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 3ffde09f9123762d07afba17e5f35abc56f70f36b9ace169472c599f333fe88c; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 17x28 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 fe23e598f0e2f4cdee1dc9678d6d328de7f847aff8bd791ac44a1780f304987e",
+      "aiGenerated": true
+    },
+    {
+      "file": "shared/ui/blueprint-symbols/response-clear.png",
+      "type": "image",
+      "source": "Nano Banana / Google Gemini concept plate; local magenta key + 32x32 fit + palette quantisation",
+      "author": "AI-generated in Nano Banana / Google Gemini; art direction by Snorre",
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "modified": "2026-11-04; 2048x2048 source sha256 c35072c8b80ef0be7e12396326a15efc83ff226623732e12322a26e1dfbc71a8; keyed #ff00ff tolerance 0.18 softness 0.08 despill trim; fitted 28x14 in 32x32 with 2px margins; palette/alpha clean; runtime sha256 5209e6fd3acb0f62ffcf524723d2e1e30904cbb184011a652967298215b88f66",
+      "aiGenerated": true
     }
   ]
 }

@@ -61,7 +61,9 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // Wait for the scan cue before opening the log; otherwise both actions land
   // in the same frame and the log transition consumes the scan.
   await expect(
-    page.locator(".feedback-surface", { hasText: "Sensory and motor pathways" }),
+    page.locator(".feedback-surface", {
+      hasText: "All-or-none and one-way conduction",
+    }),
   ).toBeVisible();
   await page.keyboard.press("c");
   await expect(page.getByRole("dialog", { name: "Concept log" })).toBeVisible();
@@ -73,7 +75,7 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // Node Run: P1 and P2 press one dendrite input each, then P1 reaches the
   // terminal. The threshold counter and terminal relay open the exit gate.
   await teleport(page, "pad-input-a", "pad-input-b");
-  await teleport(page, "pad-terminal");
+  await teleport(page, "pad-terminal", "pad-input-b");
   await page.keyboard.press("q");
   await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
     "Signal restored",
@@ -90,8 +92,10 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
-    runtime.placePlayer("p1", 1200, 640);
-    runtime.placePlayer("p2", 1180, 640);
+    const exit = runtime.entityPixel("exit-nerve");
+    if (!exit) throw new Error("exit-nerve is missing");
+    runtime.placePlayer("p1", exit.x, exit.y + 48);
+    runtime.placePlayer("p2", exit.x - 32, exit.y + 48);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
 
@@ -133,11 +137,11 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   // P1 pulses the terminal; the Ca gate + receptor relay opens the muscle gate.
   await teleport(page, "motor-terminal");
   await page.keyboard.press("f");
+  await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry ✓");
   await page.keyboard.press("q");
   await expect(page.locator(".feedback-surface--screenCaption")).toContainText(
     "Signal restored",
   );
-  await expect(page.locator(".hud__meta")).toContainText("Endplate Ferry ✓");
   await expect(
     page.locator('.feedback-surface[data-surface-id="fb:carrier:ach-packet"]'),
   ).toContainText("ACh packet cleared", { timeout: 6_000 });
@@ -145,7 +149,9 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
-    runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+    const exit = runtime.entityPixel("exit-muscle");
+    if (!exit) throw new Error("exit-muscle is missing");
+    runtime.placePlayer("p1", exit.x, exit.y + 48);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
   await expect(page.getByRole("dialog", { name: "Level complete" })).toHaveCount(0);
@@ -283,13 +289,13 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await page.keyboard.press("p");
   await expect(page.locator(".hud__meta")).toContainText("co-op");
 
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
-
-  await page.getByRole("button", { name: "Show puzzle hint" }).click();
-  await expect(page.locator(".pause__hint")).toContainText(
+  await page.getByRole("button", { name: "Hint", exact: true }).click();
+  await expect(page.locator(".hud__hint")).toContainText(
     "One input is below threshold. The trigger gate needs a second dendrite input.",
   );
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
 
   await page.getByRole("button", { name: "Reset puzzle" }).click();
   await expect(page.locator(".hud__save")).toContainText("Puzzle reset");
@@ -318,7 +324,7 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await expect(page.locator(".overlay--pause")).toHaveCount(0);
 
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("dialog", { name: "System map" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Blueprint" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.locator(".overlay--map")).toHaveCount(0);
 

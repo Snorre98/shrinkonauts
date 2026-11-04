@@ -99,9 +99,16 @@ it publishes the `dist` artifact, which already contains the merged gallery.
   `level.json` has `"gateIds": []`; no 03 room entity opens it. The walkthrough
   captures the 03 threshold gate as a world object and the Silicon
   `gate-transfer` overlay as the concept-gate example.
-- **04 background:** `bg.muscle_endplate.sky` is declared without a source
-  file, so the room renders a procedural gradient behind the final sprites.
-  The 04 captions call this out.
-- No audio files exist; every cue is a placeholder.
+- **04 background:** the 2026-11-03 batch wires the final 1280×720
+  `bg.muscle_endplate.sky`, four coloured material atlases, and the final
+  `sprite.gate.nerve` / `sprite.exit`. Captures after this pass show the final
+  04 art; far/mid/near remain declared placeholders.
+- **03 scan placeholders:** `sprite.scan.neuron`, `sprite.scan.myelin`, and
+  `sprite.scan.pathway` are separate colored placeholder boxes (yellow NEUR,
+  cyan MYEL, cyan PATH). The shared neuron/myelin icon is retired. The new
+  fact-specific prompts are in
+  [`../assets/scan-prompts-v02.md`](../assets/scan-prompts-v02.md).
+- Three pilot SFX (`scan`, `jump`, `land`) are installed; the other 15 cues and
+  four themes remain placeholders.
 - The key-art shots are stills with the UI hidden, not separately authored
   marketing art.

@@ -85,6 +85,9 @@ art-source/nanobanan/keyed/
 *.seed
 /tmp/
 /temp/
+# SFX generation scratch: raw model takes (WAV) and previews (MP3) — never commit
+# raw WAVs; installed cues are copied into public/ by sfx-generate.ts adopt.
+/var/
 
 # Raw M3.5 hub delivery batch; processed exports live under shared/.
 art-source/nanobanan/new-main-menu/

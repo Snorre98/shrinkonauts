@@ -1,0 +1,823 @@
+{
+  "schemaVersion": 1,
+  "rule": "blob47",
+  "frameWidth": 32,
+  "columns": 8,
+  "rows": 6,
+  "seed": 1,
+  "source": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/art-source/nanobanan/working/tile-bone-swatch-nano-clean-512.png",
+  "output": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/public/packs/anatomy-reflex/shared/tiles/bone-atlas.png",
+  "edgeColor": "#05090b",
+  "fillColor": "#c9b79a",
+  "assetId": "tile.bone.atlas",
+  "weldEdges": true,
+  "selection": "single",
+  "regions": {
+    "mask-0": {
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-1": {
+      "x": 32,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-4": {
+      "x": 64,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-5": {
+      "x": 96,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-7": {
+      "x": 128,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-16": {
+      "x": 160,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-17": {
+      "x": 192,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-20": {
+      "x": 224,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-21": {
+      "x": 0,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-23": {
+      "x": 32,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-28": {
+      "x": 64,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-29": {
+      "x": 96,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-31": {
+      "x": 128,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-64": {
+      "x": 160,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-65": {
+      "x": 192,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-68": {
+      "x": 224,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-69": {
+      "x": 0,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-71": {
+      "x": 32,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-80": {
+      "x": 64,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-81": {
+      "x": 96,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-84": {
+      "x": 128,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-85": {
+      "x": 160,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-87": {
+      "x": 192,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-92": {
+      "x": 224,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-93": {
+      "x": 0,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-95": {
+      "x": 32,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-112": {
+      "x": 64,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-113": {
+      "x": 96,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-116": {
+      "x": 128,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-117": {
+      "x": 160,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-119": {
+      "x": 192,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-124": {
+      "x": 224,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-125": {
+      "x": 0,
+      "y": 128,
+      "width": 32,
+      "height": 32
+    },
+    "mask-127": {
+      "x": 32,
+      "y": 128,
+      "width": 32,
+      "height": 32
+    },
+    "mask-193": {
+      "x": 64,
+      "y": 128,
+      "width": 32,
+      "height": 32
+    },
+    "mask-197": {
+      "x": 96,
+      "y": 128,
+      "width": 32,
+      "height": 32
+    },
+    "mask-199": {
+      "x": 128,
+      "y": 128,
+      "width": 32,
+      "height": 32
+    },
+    "mask-209": {
+      "x": 160,
+      "y": 128,
+      "width": 32,
+      "height": 32
+    },
+    "mask-213": {
+      "x": 192,
+      "y": 128,
+      "width": 32,
+      "height": 32
+    },
+    "mask-215": {
+      "x": 224,
+      "y": 128,
+      "width": 32,
+      "height": 32
+    },
+    "mask-221": {
+      "x": 0,
+      "y": 160,
+      "width": 32,
+      "height": 32
+    },
+    "mask-223": {
+      "x": 32,
+      "y": 160,
+      "width": 32,
+      "height": 32
+    },
+    "mask-241": {
+      "x": 64,
+      "y": 160,
+      "width": 32,
+      "height": 32
+    },
+    "mask-245": {
+      "x": 96,
+      "y": 160,
+      "width": 32,
+      "height": 32
+    },
+    "mask-247": {
+      "x": 128,
+      "y": 160,
+      "width": 32,
+      "height": 32
+    },
+    "mask-253": {
+      "x": 160,
+      "y": 160,
+      "width": 32,
+      "height": 32
+    },
+    "mask-255": {
+      "x": 192,
+      "y": 160,
+      "width": 32,
+      "height": 32
+    }
+  },
+  "windows": {
+    "mask-0": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-1": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-4": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-5": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-7": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-16": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-17": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-20": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-21": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-23": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-28": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-29": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-31": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-64": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-65": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-68": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-69": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-71": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-80": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-81": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-84": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-85": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-87": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-92": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-93": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-95": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-112": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-113": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-116": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-117": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-119": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-124": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-125": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-127": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-193": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-197": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-199": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-209": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-213": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-215": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-221": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-223": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-241": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-245": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-247": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-253": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    },
+    "mask-255": {
+      "x": 416,
+      "y": 96,
+      "score": 0,
+      "colours": 4
+    }
+  },
+  "frames": {
+    "0": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-0"
+    },
+    "1": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-1"
+    },
+    "4": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-4"
+    },
+    "5": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-5"
+    },
+    "7": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-7"
+    },
+    "16": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-16"
+    },
+    "17": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-17"
+    },
+    "20": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-20"
+    },
+    "21": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-21"
+    },
+    "23": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-23"
+    },
+    "28": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-28"
+    },
+    "29": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-29"
+    },
+    "31": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-31"
+    },
+    "64": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-64"
+    },
+    "65": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-65"
+    },
+    "68": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-68"
+    },
+    "69": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-69"
+    },
+    "71": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-71"
+    },
+    "80": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-80"
+    },
+    "81": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-81"
+    },
+    "84": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-84"
+    },
+    "85": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-85"
+    },
+    "87": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-87"
+    },
+    "92": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-92"
+    },
+    "93": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-93"
+    },
+    "95": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-95"
+    },
+    "112": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-112"
+    },
+    "113": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-113"
+    },
+    "116": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-116"
+    },
+    "117": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-117"
+    },
+    "119": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-119"
+    },
+    "124": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-124"
+    },
+    "125": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-125"
+    },
+    "127": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-127"
+    },
+    "193": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-193"
+    },
+    "197": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-197"
+    },
+    "199": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-199"
+    },
+    "209": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-209"
+    },
+    "213": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-213"
+    },
+    "215": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-215"
+    },
+    "221": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-221"
+    },
+    "223": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-223"
+    },
+    "241": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-241"
+    },
+    "245": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-245"
+    },
+    "247": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-247"
+    },
+    "253": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-253"
+    },
+    "255": {
+      "kind": "atlas",
+      "assetId": "tile.bone.atlas",
+      "frame": "mask-255"
+    }
+  },
+  "warnings": [
+    "single 32×32 window reused for every frame; the texture repeats every 32 px"
+  ]
+}

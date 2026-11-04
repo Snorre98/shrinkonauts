@@ -118,7 +118,9 @@ test("03 Nerve Forest and 04 Muscle Effector", async ({ page }) => {
   await teleport(page, "scan-pathway");
   await page.keyboard.press("q");
   await expect(
-    page.locator(".feedback-surface", { hasText: "Sensory and motor pathways" }),
+    page.locator(".feedback-surface", {
+      hasText: "All-or-none and one-way conduction",
+    }),
   ).toBeVisible();
   await captureShot(page, "03-scan-feedback");
 
@@ -131,18 +133,20 @@ test("03 Nerve Forest and 04 Muscle Effector", async ({ page }) => {
   await closeOverlay(page, "overlay--concept-log");
 
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("dialog", { name: "System map" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Blueprint" })).toBeVisible();
   await captureShot(page, "03-map");
   await closeOverlay(page, "overlay--map");
 
   // The scan cue is still on screen for a few seconds. Let it expire so the
   // Node Run shots show the puzzle feedback, not the previous scan.
   await expect(
-    page.locator(".feedback-surface", { hasText: "Sensory and motor pathways" }),
+    page.locator(".feedback-surface", {
+      hasText: "All-or-none and one-way conduction",
+    }),
   ).toHaveCount(0, { timeout: 6_000 });
 
   // Physical threshold gate, then the two Node Run threshold states.
-  await teleport(page, { x: 13.5 * 32, y: 20 * 32 });
+  await teleport(page, { x: 15.5 * 32, y: 14 * 32 });
   await expect(
     page.locator('[data-surface-id="fb:barrier:threshold-gate"]'),
   ).toHaveAttribute("data-state", "idle");
@@ -160,7 +164,7 @@ test("03 Nerve Forest and 04 Muscle Effector", async ({ page }) => {
   ).toHaveAttribute("data-state", "active");
   await captureShot(page, "03-node-run-threshold");
 
-  await teleport(page, "pad-terminal");
+  await teleport(page, "pad-terminal", "pad-input-b");
   await expect(
     page.locator('[data-surface-id="fb:barrier:gate-exit"]'),
   ).toHaveAttribute("data-state", "active");
@@ -170,8 +174,10 @@ test("03 Nerve Forest and 04 Muscle Effector", async ({ page }) => {
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
-    runtime.placePlayer("p1", 1200, 640);
-    runtime.placePlayer("p2", 1180, 640);
+    const exit = runtime.entityPixel("exit-nerve");
+    if (!exit) throw new Error("exit-nerve is missing");
+    runtime.placePlayer("p1", exit.x, exit.y + 48);
+    runtime.placePlayer("p2", exit.x - 32, exit.y + 48);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
   await captureShot(page, "03-debrief-prompt");
@@ -230,7 +236,9 @@ test("03 Nerve Forest and 04 Muscle Effector", async ({ page }) => {
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
-    runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+    const exit = runtime.entityPixel("exit-muscle");
+    if (!exit) throw new Error("exit-muscle is missing");
+    runtime.placePlayer("p1", exit.x, exit.y + 48);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
   await captureShot(page, "04-debrief-prompt");
@@ -263,13 +271,17 @@ test("Silicon Interrupt Loop", async ({ page }) => {
   await captureShot(page, "silicon-cpu-dialogue");
 
   await page.keyboard.press("e");
+  await expect(bubble).toContainText("A sensor does not shout directly at the CPU");
   await page.keyboard.press("e");
+  await expect(bubble).toContainText("Find the controller socket");
   await page.keyboard.press("e");
+  await expect(bubble).toContainText("Which part is the integration point?");
   await page
     .getByRole("button", { name: "The interrupt controller" })
     .click();
   await expect(bubble).toContainText("Exactly.");
   await page.keyboard.press("e");
+  await expect(bubble).toContainText("Start the loop at the sensor console");
   await page.keyboard.press("e");
   await expect(bubble).toHaveCount(0);
 

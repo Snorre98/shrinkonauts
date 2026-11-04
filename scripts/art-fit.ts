@@ -49,7 +49,8 @@ type AssetStatus =
   | "alternate"
   | "reserve"
   | "fit-preview"
-  | "hand-cleaned";
+  | "hand-cleaned"
+  | "accepted";
 
 type Treatment =
   | "hero-npc"
@@ -273,6 +274,7 @@ const ASSET_STATUSES: readonly AssetStatus[] = [
   "reserve",
   "fit-preview",
   "hand-cleaned",
+  "accepted",
 ];
 
 const TREATMENTS: readonly Treatment[] = [

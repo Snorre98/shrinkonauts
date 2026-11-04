@@ -623,7 +623,7 @@ Manual — M4.0b:
 - [`../m1.8/README.md`](../m1.8/README.md) — material and pattern layer.
 - [`../m2/nervous-puzzles/README.md`](../m2/nervous-puzzles/README.md) — six room
   puzzles and Silicon.
-- [`../m3/asset-requirements.md`](../m3/asset-requirements.md) — M3 art/audio
+- [`../m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) — M3 art/audio
   scope.
 - [`../puzzle-engine/architecture.md`](../puzzle-engine/architecture.md) —
   local-only deployment statement that M4 amends for the optional controller

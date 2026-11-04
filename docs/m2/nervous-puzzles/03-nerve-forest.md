@@ -59,28 +59,29 @@ nodes, and the terminal gate. The room is one screen.
 +--------------------------------------------------------------+
 |  Neuron interior                                             |
 |                                                              |
-|  [input a]  [input b]                                        |
-|       \        /                                             |
-|        \      /                                              |
-|      [stimulus counter] --threshold--> [trigger gate]        |
-|                                              |               |
-|                                     [axon entry zone]       |
-|                                              |               |
-|                                   [behind gate / one-way]    |
-|                                              |               |
-|                                   [myelin-node platforms]   |
-|                                              |               |
-|                                     [terminal zone]         |
-|                                              |               |
-|                                        [exit gate]           |
+|  [terminal zone] -- [exit gate]                              |
+|        ^                                                     |
+|  [myelin node] [myelin node] [myelin node] [myelin node]      |
+|        ^                                                     |
+|  [axon entry zone / behind gate]                             |
+|        ^                                                     |
+|  [trigger gate] --- [stimulus counter]                       |
+|        ^                                                     |
+|    [soma]                                                    |
+|     /    \                                                   |
+| [input a] [input b]                                          |
+|     ^                                                        |
+| [Keeper perch] -- [route step]                               |
 +--------------------------------------------------------------+
 ```
 
-The two input plates are near the dendrite. The trigger gate is the threshold
-checkpoint. The axon is a forward path; the behind gate closes after entry so the
-player cannot backtrack through the trigger zone. Myelin nodes are visible
-platforms/labels; they are optional scan/debrief content, not a required timing
-contest.
+The two input plates sit on separate dendrite branches. The left branch has an
+optional Neuron Keeper perch and a route step up from the input-A platform. The
+branches converge on the soma/trigger zone where the threshold is checked. The
+hillock is the axon start; entering it drops the player five tiles onto the axon
+catwalk, which makes the one-way cue physical as well as cosmetic. The myelin
+nodes are the axon platforms the player jumps between; they are also optional
+scan/debrief content, not a required timing contest.
 
 ## 5. Puzzle rules
 

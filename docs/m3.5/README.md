@@ -1,6 +1,6 @@
 # M3.5 — Bathroom Hub Art Pass
 
-- **Status:** Prompt pack drafted · 1 November 2026
+- **Status:** Prompt pack drafted; hub art integrated · 3 November 2026
 - **Scope:** Final raster art and audio for the M1.9 bathroom hub / main menu
 - **Depends on:** M1.9 hub, M3 art direction, ADR-0047–0049, ADR-0060–0065
 - **Feeds:** Hub final manifest, GDD/video capture, playtest build
@@ -30,10 +30,10 @@ boundary.
 - Nano Banana first, with reference images; Ludo.ai fallback.
 - Locked game ramps plus a hub-only cool appliance-grey ramp.
 - Keep the current launch path; add a six-frame civilian walk cycle.
-- Separate poster, cartridges, toy astronaut, neuron plush, detergent bottles,
-  laundry basket, and towel.
-- Full AI wordmark, with a Silkscreen CSS fallback.
-- Six Ludo Audio cues; no music.
+- Separate poster, cartridges, neuron plush, detergent bottles, laundry basket,
+  and towel. The toy astronaut is cut.
+- Silkscreen CSS wordmark fallback approved; the AI plate is rejected.
+- Six hub audio cues; the menu theme is proposed in ADR-0076 but has no file.
 
 ## Scope boundary
 
@@ -59,9 +59,11 @@ cycle-card icons, basket, plush, and P1 tiny astronaut are wired. The logo
 remains a Silkscreen fallback because the delivered plate has a washer baked
 behind the wordmark.
 
-Deferred or manifest-only: civilian walk sheet (not delivered), toy astronaut
-(not delivered), audio (not delivered), detergent bottles (baked shelf bottles
+Deferred or manifest-only: civilian walk sheet (not delivered), audio files
+(not delivered; playback is implemented), detergent bottles (baked shelf bottles
 already exist), and the towel (the cleaned 11×32 source does not read at 2×).
+The toy astronaut is cut; the logo uses the approved CSS fallback. The canonical completion status is the
+[prompt-library matrix](../assets/prompt-library-v01.md#40-completion-matrix).
 See [`../../art-source/nanobanan/README.md`](../../art-source/nanobanan/README.md)
 for the processing commands, composition deviations, and licence note, and
 [`../../screenshots/m3.5-hub-final.png`](../../screenshots/m3.5-hub-final.png)

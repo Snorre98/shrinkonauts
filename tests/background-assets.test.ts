@@ -47,6 +47,13 @@ const room = JSON.parse(
   ),
 ) as RoomDocument;
 
+const muscleRoom = JSON.parse(
+  readFileSync(
+    join(PACK_DIR, "levels/04-muscle-effector/room.json"),
+    "utf8",
+  ),
+) as RoomDocument;
+
 function webpInfo(buffer: Buffer): {
   chunk: string;
   width: number;
@@ -133,6 +140,67 @@ describe("03 background", () => {
 
   it("does not reference raw source JPEGs", () => {
     const runtime = JSON.stringify({ manifest, room });
+    expect(runtime).not.toContain(".jpeg");
+    expect(runtime).not.toContain("art-source/");
+  });
+});
+
+describe("04 background", () => {
+  it("wires the final 04 sky and keeps far/mid/near declared placeholders", () => {
+    expect(muscleRoom.background.layers.map((layer) => layer.assetId)).toEqual([
+      "bg.muscle_endplate.sky",
+      "bg.muscle_endplate.far",
+      "bg.muscle_endplate.mid",
+      "bg.muscle_endplate.near",
+    ]);
+
+    const [sky] = muscleRoom.background.layers;
+    expect(sky?.fit).toBe("cover");
+    expect(sky?.depth).toBe(-40);
+    expect(sky?.parallaxX).toBe(0.05);
+    expect(sky?.parallaxY).toBe(0.02);
+
+    for (const id of [
+      "bg.muscle_endplate.far",
+      "bg.muscle_endplate.mid",
+      "bg.muscle_endplate.near",
+    ] as const) {
+      const entry = manifest.assets[id];
+      expect(entry?.type).toBe("background");
+      expect(entry?.placeholder).toBe(true);
+      expect(entry?.src).toBeUndefined();
+    }
+  });
+
+  it("ships the final 04 sky as a 1280x720 lossless WebP with a matching licence", () => {
+    const entry = manifest.assets["bg.muscle_endplate.sky"];
+    expect(entry).toBeDefined();
+    if (!entry) return;
+    expect(entry.type).toBe("background");
+    expect(entry.src).toBe("shared/backgrounds/muscle-endplate-sky.webp");
+    expect(entry.license).toBe("Nano Banana / Google Gemini (plan TBD)");
+    expect(entry.placeholder).toBeUndefined();
+
+    const path = join(PACK_DIR, entry.src as string);
+    expect(existsSync(path)).toBe(true);
+
+    const info = webpInfo(readFileSync(path));
+    expect(info.chunk).toBe("VP8L");
+    expect({ width: info.width, height: info.height }).toEqual({
+      width: 1280,
+      height: 720,
+    });
+
+    expect(
+      licences.assets.some(
+        (licence) =>
+          licence.file === entry.src && licence.license === entry.license,
+      ),
+    ).toBe(true);
+  });
+
+  it("does not reference raw source JPEGs", () => {
+    const runtime = JSON.stringify({ manifest, muscleRoom });
     expect(runtime).not.toContain(".jpeg");
     expect(runtime).not.toContain("art-source/");
   });

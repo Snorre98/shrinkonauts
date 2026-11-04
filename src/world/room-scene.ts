@@ -175,7 +175,7 @@ export class RoomScene
     );
 
     for (const asset of this.config.plan.descriptors) {
-      if (!asset.src) {
+      if (!asset.src || asset.type === "audio") {
         continue;
       }
 
@@ -185,8 +185,6 @@ export class RoomScene
           frameWidth: asset.frameWidth ?? 32,
           frameHeight: asset.frameHeight ?? 32,
         });
-      } else if (asset.type === "audio") {
-        this.load.audio(key, asset.src);
       } else if (asset.type === "font") {
         this.load.font(key, asset.src);
       } else if (isSvgSource(asset.src)) {

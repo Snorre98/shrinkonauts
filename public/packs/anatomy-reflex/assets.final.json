@@ -15,7 +15,10 @@
       "frames": 49,
       "fps": 38,
       "loop": true,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p1.jump": {
@@ -26,7 +29,10 @@
       "frames": 12,
       "fps": 30,
       "loop": false,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p1.fall": {
@@ -37,7 +43,10 @@
       "frames": 10,
       "fps": 15,
       "loop": true,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p1.land": {
@@ -48,7 +57,10 @@
       "frames": 8,
       "fps": 30,
       "loop": false,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p2": {
@@ -64,7 +76,10 @@
       "frames": 36,
       "fps": 28,
       "loop": true,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p2.jump": {
@@ -75,7 +90,10 @@
       "frames": 12,
       "fps": 30,
       "loop": false,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p2.fall": {
@@ -86,7 +104,10 @@
       "frames": 10,
       "fps": 15,
       "loop": true,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.player.p2.land": {
@@ -97,7 +118,10 @@
       "frames": 8,
       "fps": 30,
       "loop": false,
-      "anchor": [0.5, 1],
+      "anchor": [
+        0.5,
+        1
+      ],
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "tileset.anatomy": {
@@ -105,34 +129,610 @@
       "placeholder": true,
       "license": "Placeholder until final art"
     },
-    "tile.anatomy.atlas": {
+    "tile.bone.atlas": {
       "type": "atlas",
-      "src": "shared/tiles/anatomy-atlas.svg",
-      "placeholder": true,
-      "width": 192,
-      "height": 128,
-      "license": "Placeholder in-repo (CC0-1.0)",
+      "src": "shared/tiles/bone-atlas.png",
+      "width": 256,
+      "height": 192,
+      "license": "Nano Banana / Google Gemini (plan TBD)",
       "regions": {
-        "mask-0": { "x": 0, "y": 0, "width": 32, "height": 32 },
-        "mask-1": { "x": 32, "y": 0, "width": 32, "height": 32 },
-        "mask-2": { "x": 64, "y": 0, "width": 32, "height": 32 },
-        "mask-3": { "x": 96, "y": 0, "width": 32, "height": 32 },
-        "mask-4": { "x": 128, "y": 0, "width": 32, "height": 32 },
-        "mask-5": { "x": 160, "y": 0, "width": 32, "height": 32 },
-        "mask-6": { "x": 0, "y": 32, "width": 32, "height": 32 },
-        "mask-7": { "x": 32, "y": 32, "width": 32, "height": 32 },
-        "mask-8": { "x": 64, "y": 32, "width": 32, "height": 32 },
-        "mask-9": { "x": 96, "y": 32, "width": 32, "height": 32 },
-        "mask-10": { "x": 128, "y": 32, "width": 32, "height": 32 },
-        "mask-11": { "x": 160, "y": 32, "width": 32, "height": 32 },
-        "mask-12": { "x": 0, "y": 64, "width": 32, "height": 32 },
-        "mask-13": { "x": 32, "y": 64, "width": 32, "height": 32 },
-        "mask-14": { "x": 64, "y": 64, "width": 32, "height": 32 },
-        "mask-15": { "x": 96, "y": 64, "width": 32, "height": 32 },
-        "mask-69": { "x": 128, "y": 64, "width": 32, "height": 32 },
-        "mask-84": { "x": 160, "y": 64, "width": 32, "height": 32 },
-        "mask-85": { "x": 0, "y": 96, "width": 32, "height": 32 },
-        "mask-255": { "x": 32, "y": 96, "width": 32, "height": 32 }
+        "mask-0": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-1": {
+          "x": 32,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-4": {
+          "x": 64,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-5": {
+          "x": 96,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-7": {
+          "x": 128,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-16": {
+          "x": 160,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-17": {
+          "x": 192,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-20": {
+          "x": 224,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-21": {
+          "x": 0,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-23": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-28": {
+          "x": 64,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-29": {
+          "x": 96,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-31": {
+          "x": 128,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-64": {
+          "x": 160,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-65": {
+          "x": 192,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-68": {
+          "x": 224,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-69": {
+          "x": 0,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-71": {
+          "x": 32,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-80": {
+          "x": 64,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-81": {
+          "x": 96,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-84": {
+          "x": 128,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-85": {
+          "x": 160,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-87": {
+          "x": 192,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-92": {
+          "x": 224,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-93": {
+          "x": 0,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-95": {
+          "x": 32,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-112": {
+          "x": 64,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-113": {
+          "x": 96,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-116": {
+          "x": 128,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-117": {
+          "x": 160,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-119": {
+          "x": 192,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-124": {
+          "x": 224,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-125": {
+          "x": 0,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-127": {
+          "x": 32,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-193": {
+          "x": 64,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-197": {
+          "x": 96,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-199": {
+          "x": 128,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-209": {
+          "x": 160,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-213": {
+          "x": 192,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-215": {
+          "x": 224,
+          "y": 128,
+          "width": 32,
+          "height": 32
+        },
+        "mask-221": {
+          "x": 0,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-223": {
+          "x": 32,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-241": {
+          "x": 64,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-245": {
+          "x": 96,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-247": {
+          "x": 128,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-253": {
+          "x": 160,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        },
+        "mask-255": {
+          "x": 192,
+          "y": 160,
+          "width": 32,
+          "height": 32
+        }
+      }
+    },
+    "tile.nerve.atlas": {
+      "type": "atlas",
+      "src": "shared/tiles/nerve-atlas.png",
+      "width": 128,
+      "height": 128,
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "regions": {
+        "mask-0": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-1": {
+          "x": 32,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-2": {
+          "x": 64,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-3": {
+          "x": 96,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-4": {
+          "x": 0,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-5": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-6": {
+          "x": 64,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-7": {
+          "x": 96,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-8": {
+          "x": 0,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-9": {
+          "x": 32,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-10": {
+          "x": 64,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-11": {
+          "x": 96,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-12": {
+          "x": 0,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-13": {
+          "x": 32,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-14": {
+          "x": 64,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-15": {
+          "x": 96,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
+      }
+    },
+    "tile.muscle.atlas": {
+      "type": "atlas",
+      "src": "shared/tiles/muscle-atlas.png",
+      "width": 128,
+      "height": 128,
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "regions": {
+        "mask-0": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-1": {
+          "x": 32,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-2": {
+          "x": 64,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-3": {
+          "x": 96,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-4": {
+          "x": 0,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-5": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-6": {
+          "x": 64,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-7": {
+          "x": 96,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-8": {
+          "x": 0,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-9": {
+          "x": 32,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-10": {
+          "x": 64,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-11": {
+          "x": 96,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-12": {
+          "x": 0,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-13": {
+          "x": 32,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-14": {
+          "x": 64,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-15": {
+          "x": 96,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
+      }
+    },
+    "tile.membrane.atlas": {
+      "type": "atlas",
+      "src": "shared/tiles/membrane-atlas.png",
+      "width": 128,
+      "height": 128,
+      "license": "Nano Banana / Google Gemini (plan TBD)",
+      "regions": {
+        "mask-0": {
+          "x": 0,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-1": {
+          "x": 32,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-2": {
+          "x": 64,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-3": {
+          "x": 96,
+          "y": 0,
+          "width": 32,
+          "height": 32
+        },
+        "mask-4": {
+          "x": 0,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-5": {
+          "x": 32,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-6": {
+          "x": 64,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-7": {
+          "x": 96,
+          "y": 32,
+          "width": 32,
+          "height": 32
+        },
+        "mask-8": {
+          "x": 0,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-9": {
+          "x": 32,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-10": {
+          "x": 64,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-11": {
+          "x": 96,
+          "y": 64,
+          "width": 32,
+          "height": 32
+        },
+        "mask-12": {
+          "x": 0,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-13": {
+          "x": 32,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-14": {
+          "x": 64,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        },
+        "mask-15": {
+          "x": 96,
+          "y": 96,
+          "width": 32,
+          "height": 32
+        }
       }
     },
     "bg.nerve_forest.sky": {
@@ -154,7 +754,8 @@
     },
     "bg.muscle_endplate.sky": {
       "type": "background",
-      "placeholder": true
+      "src": "shared/backgrounds/muscle-endplate-sky.webp",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "bg.muscle_endplate.far": {
       "type": "background",
@@ -171,7 +772,10 @@
     "sprite.agent.neuron": {
       "type": "sprite",
       "src": "shared/sprites/agent-neuron.png",
-      "display": { "width": 96, "height": 96 },
+      "display": {
+        "width": 96,
+        "height": 96
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
@@ -183,60 +787,100 @@
       "frames": 36,
       "fps": 12.5,
       "loop": true,
-      "anchor": [0.5, 1],
-      "display": { "width": 96, "height": 96 },
+      "anchor": [
+        0.5,
+        1
+      ],
+      "display": {
+        "width": 96,
+        "height": 96
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.nerve": {
       "type": "sprite",
-      "placeholder": true,
-      "display": { "width": 64, "height": 64 },
-      "fidelity": "hero-1x"
+      "src": "shared/sprites/gate-nerve.png",
+      "display": {
+        "width": 64,
+        "height": 64
+      },
+      "fidelity": "hero-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "sprite.scan.neuron": {
       "type": "sprite",
       "placeholder": true,
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
+      "fidelity": "ui-1x"
+    },
+    "sprite.scan.myelin": {
+      "type": "sprite",
+      "placeholder": true,
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x"
     },
     "sprite.scan.synapse": {
       "type": "sprite",
       "src": "shared/sprites/scan-synapse.png",
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.pathway": {
       "type": "sprite",
       "placeholder": true,
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x"
     },
     "sprite.scan.muscle": {
       "type": "sprite",
       "src": "shared/sprites/scan-muscle.png",
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.scan.reflex": {
       "type": "sprite",
       "placeholder": true,
-      "display": { "width": 36, "height": 36 },
+      "display": {
+        "width": 36,
+        "height": 36
+      },
       "fidelity": "ui-1x"
     },
     "sprite.pad.dendrite": {
       "type": "sprite",
       "src": "shared/sprites/pad-dendrite.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.pad.terminal": {
       "type": "sprite",
       "src": "shared/sprites/pad-terminal.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
@@ -246,9 +890,13 @@
     },
     "sprite.exit": {
       "type": "sprite",
-      "placeholder": true,
-      "display": { "width": 64, "height": 64 },
-      "fidelity": "hero-1x"
+      "src": "shared/sprites/exit.png",
+      "display": {
+        "width": 64,
+        "height": 64
+      },
+      "fidelity": "hero-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     },
     "ui.icon.badge": {
       "type": "image",
@@ -288,86 +936,203 @@
     },
     "audio.cue.boot": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/boot.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.dialogue": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/dialogue.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.scan": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/scan.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.dash": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/dash.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.gate": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/gate.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.map": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/map.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.debrief": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/debrief.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.checkpoint": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/checkpoint.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.unlock": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/unlock.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.wrong": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/wrong.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.jump": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/jump.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.land": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/land.mp3",
+      "license": "Stability AI Community License"
+    },
+    "audio.music.nerve_forest": {
+      "type": "audio",
+      "src": "shared/audio/theme-nerve-forest.mp3",
+      "license": "Stability AI Community License"
+    },
+    "audio.music.muscle_effector": {
+      "type": "audio",
+      "src": "shared/audio/theme-muscle-effector.mp3",
+      "license": "Stability AI Community License"
     },
     "sprite.prop.tracer": {
       "type": "sprite",
       "src": "shared/sprites/prop-tracer.png",
-      "display": { "width": 48, "height": 48 },
+      "display": {
+        "width": 48,
+        "height": 48
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.pulse.terminal": {
       "type": "sprite",
       "src": "shared/sprites/pulse-terminal.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.triangle": {
       "type": "sprite",
       "src": "shared/sprites/receptor-triangle.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.receptor.circle": {
       "type": "sprite",
       "src": "shared/sprites/receptor-circle.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
     },
     "sprite.gate.ferry": {
       "type": "sprite",
       "src": "shared/sprites/gate-ferry.png",
-      "display": { "width": 64, "height": 64 },
+      "display": {
+        "width": 64,
+        "height": 64
+      },
       "fidelity": "hero-1x",
       "license": "Ludo.ai source (POC; plan TBD)"
+    },
+    "ui.blueprint.symbol.input-pair": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/input-pair.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.threshold-gauge": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/threshold-gauge.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.axon-flow": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/axon-flow.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.exit-gate": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/exit-gate.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.ca-window": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/ca-window.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.ach-carry": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/ach-carry.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.receptor-bind": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/receptor-bind.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
+    },
+    "ui.blueprint.symbol.response-clear": {
+      "type": "image",
+      "src": "shared/ui/blueprint-symbols/response-clear.png",
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x",
+      "license": "Nano Banana / Google Gemini (plan TBD)"
     }
   }
 }

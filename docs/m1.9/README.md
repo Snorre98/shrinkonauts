@@ -204,5 +204,5 @@ Manual checks still recommended:
 - [`../m1.75/README.md`](../m1.75/README.md)
 - [`../m1.8/README.md`](../m1.8/README.md)
 - [`../m2/nervous-puzzles/README.md`](../m2/nervous-puzzles/README.md)
-- [`../m3/asset-requirements.md`](../m3/asset-requirements.md)
+- [`../m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md)
 - [`../m4/README.md`](../m4/README.md)

@@ -10,6 +10,7 @@ export const LEARNING_EVENT_TYPES = [
   "dialogue_started",
   "dialogue_completed",
   "concept_revealed",
+  "fact_revealed",
   "gate_attempted",
   "gate_solved",
   "gate_failed",

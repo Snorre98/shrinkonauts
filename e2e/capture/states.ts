@@ -196,7 +196,7 @@ export const CAPTURE_STATES: readonly CaptureState[] = [
       "sprite.agent.neuron",
     ],
     whatToNotice:
-      "Two players start at the entry checkpoint with the Node Run beats and full HUD visible. The final sky is the only wired background layer in this slice.",
+      "Two players start at the entry checkpoint with the Node Run beats and full HUD visible. The final sky is the only wired background layer in this slice. The dendrite branches, soma, hillock and myelin-node catwalk are floating platforms, so the whole puzzle is played above the ground.",
     art: "final",
     order: 7,
     alt: "Two players at the Nerve Forest entry checkpoint with the final sky",
@@ -289,7 +289,7 @@ export const CAPTURE_STATES: readonly CaptureState[] = [
   },
   {
     id: "03-map",
-    title: "03 — system map",
+    title: "03 — blueprint",
     flow: "03-nerve-forest",
     pack: "anatomy",
     level: "03-nerve-forest",
@@ -300,10 +300,10 @@ export const CAPTURE_STATES: readonly CaptureState[] = [
     conceptIds: ["CON-3", "CON-5"],
     relatedAssets: ["bg.nerve_forest.sky", "sprite.scan.pathway"],
     whatToNotice:
-      "The map exposes the current node and revealed connections. It is a navigation aid, not a minimap; unknown paths stay unlabeled.",
+      "The expanded blueprint shows the puzzle components and their states. The system chain keeps room-to-room context secondary; unknown paths stay unlabeled.",
     art: "final",
     order: 12,
-    alt: "System map overlay showing the Nerve Forest node",
+    alt: "Blueprint overlay showing the Nerve Forest puzzle components and system chain",
     docs: ["GDD-MAP", "learning-design-brief"],
   },
   {
@@ -319,7 +319,7 @@ export const CAPTURE_STATES: readonly CaptureState[] = [
     conceptIds: ["CON-3", "CON-5"],
     relatedAssets: ["sprite.gate.ferry", "sprite.pad.dendrite"],
     whatToNotice:
-      "The threshold gate is the physical Node Run barrier. It opens only after the stimulus counter reaches two inputs; the separate concept-gate overlay is shown in the Silicon flow.",
+      "The threshold gate is the Node Run progression marker on the soma platform. It opens after the stimulus counter reaches two inputs; the platform route, not gate collision, is what forces the player to climb.",
     art: "final",
     order: 13,
     alt: "Threshold gate and dendrite pads in Nerve Forest",
@@ -442,7 +442,7 @@ export const CAPTURE_STATES: readonly CaptureState[] = [
       "sprite.player.p2",
     ],
     whatToNotice:
-      "The ferry starts inactive. The motor terminal, ACh packet, receptors and muscle gate are visible in final sprite art; the muscle background layer is still a procedural gradient in this build.",
+      "The ferry starts inactive. The presynaptic tower, elevated cleft bridge and postsynaptic receptor platform are all off the ground; the motor terminal, ACh packet, receptors and muscle gate are visible in final sprite art.",
     art: "final",
     order: 19,
     alt: "Muscle Effector room with the Endplate Ferry objects",
@@ -615,7 +615,7 @@ export const CAPTURE_STATES: readonly CaptureState[] = [
       "sprite.player.p1",
     ],
     whatToNotice:
-      "The Silicon fixture uses the same two-player shell and HUD on the circuit-board plate. The sensor console, route plug and controller socket are the puzzle spine.",
+      "The Silicon fixture uses the same two-player shell and HUD on the circuit-board plate. The sensor console, rising interrupt-line platforms, route plug and controller/CPU catwalk form the puzzle spine above the ground.",
     art: "final",
     order: 27,
     alt: "Interrupt Loop room on the Silicon circuit board",

@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "rule": "edge",
+  "frameWidth": 32,
+  "columns": 4,
+  "rows": 4,
+  "seed": 1,
+  "source": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/art-source/nanobanan/working/tile-muscle-swatch-nano-clean-512.png",
+  "output": "/Volumes/Ex-SSD/Documents/Studies/game-it3021-gamified-learning/shrinkonauts/public/packs/anatomy-reflex/shared/tiles/muscle-atlas.png",
+  "edgeColor": "#05090b",
+  "fillColor": "#101a20",
+  "assetId": "tile.muscle.atlas",
+  "weldEdges": true,
+  "selection": "single",
+  "regions": {
+    "mask-0": {
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-1": {
+      "x": 32,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-2": {
+      "x": 64,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-3": {
+      "x": 96,
+      "y": 0,
+      "width": 32,
+      "height": 32
+    },
+    "mask-4": {
+      "x": 0,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-5": {
+      "x": 32,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-6": {
+      "x": 64,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-7": {
+      "x": 96,
+      "y": 32,
+      "width": 32,
+      "height": 32
+    },
+    "mask-8": {
+      "x": 0,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-9": {
+      "x": 32,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-10": {
+      "x": 64,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-11": {
+      "x": 96,
+      "y": 64,
+      "width": 32,
+      "height": 32
+    },
+    "mask-12": {
+      "x": 0,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-13": {
+      "x": 32,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-14": {
+      "x": 64,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    },
+    "mask-15": {
+      "x": 96,
+      "y": 96,
+      "width": 32,
+      "height": 32
+    }
+  },
+  "windows": {
+    "mask-0": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-1": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-2": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-3": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-4": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-5": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-6": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-7": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-8": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-9": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-10": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-11": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-12": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-13": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-14": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    },
+    "mask-15": {
+      "x": 0,
+      "y": 384,
+      "score": 23.520833333333332,
+      "colours": 4
+    }
+  },
+  "frames": {
+    "0": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-0"
+    },
+    "1": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-1"
+    },
+    "2": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-2"
+    },
+    "3": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-3"
+    },
+    "4": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-4"
+    },
+    "5": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-5"
+    },
+    "6": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-6"
+    },
+    "7": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-7"
+    },
+    "8": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-8"
+    },
+    "9": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-9"
+    },
+    "10": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-10"
+    },
+    "11": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-11"
+    },
+    "12": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-12"
+    },
+    "13": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-13"
+    },
+    "14": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-14"
+    },
+    "15": {
+      "kind": "atlas",
+      "assetId": "tile.muscle.atlas",
+      "frame": "mask-15"
+    }
+  },
+  "warnings": [
+    "single 32×32 window reused for every frame; the texture repeats every 32 px"
+  ]
+}

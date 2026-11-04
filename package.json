@@ -24,6 +24,7 @@
     "pack:smoke": "tsx scripts/pack-smoke.ts",
     "art:slice": "tsx scripts/art-slice.ts",
     "art:key": "tsx scripts/art-key.ts",
+    "art:atlas": "tsx scripts/art-atlas.ts",
     "art:fit": "tsx scripts/art-fit.ts",
     "art:hub": "tsx scripts/art-hub.ts",
     "art:build-player": "tsx scripts/art-build-player.ts",
@@ -31,7 +32,8 @@
     "art:normalize": "tsx scripts/art-normalize.ts",
     "art:tile-clean": "node scripts/art-tile-clean.mjs",
     "art:variant": "tsx scripts/art-variant.ts",
-    "art:remaster": "tsx scripts/art-remaster.ts"
+    "art:remaster": "tsx scripts/art-remaster.ts",
+    "audio:adopt": "tsx scripts/cueforge-adopt.ts"
   },
   "dependencies": {
     "matter-js": "^0.20.0",

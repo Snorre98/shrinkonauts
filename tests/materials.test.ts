@@ -31,7 +31,22 @@ describe("materials catalog", () => {
       "nerve",
     ]);
     expect(parsed.patterns?.["nerve-fibers"]?.source.kind).toBe("procedural");
+    expect(parsed.variantSets?.["bone-blob47"]?.rule).toBe("blob47");
     expect(parsed.variantSets?.["nerve-edge"]?.rule).toBe("edge");
+    expect(parsed.variantSets?.["muscle-edge"]?.rule).toBe("edge");
+    expect(parsed.variantSets?.["membrane-edge"]?.rule).toBe("edge");
+    expect(parsed.variantSets?.["bone-blob47"]?.atlas).toBe("tile.bone.atlas");
+    expect(parsed.variantSets?.["nerve-edge"]?.atlas).toBe("tile.nerve.atlas");
+    expect(parsed.variantSets?.["muscle-edge"]?.atlas).toBe(
+      "tile.muscle.atlas",
+    );
+    expect(parsed.variantSets?.["membrane-edge"]?.atlas).toBe(
+      "tile.membrane.atlas",
+    );
+    expect(parsed.materials.bone.variantSet).toBe("bone-blob47");
+    expect(parsed.materials.muscle.variantSet).toBe("muscle-edge");
+    expect(parsed.materials.membrane.variantSet).toBe("membrane-edge");
+    expect(parsed.materials.membrane.autotile).toBe("edge");
   });
 
   it("resolves material and pattern lookups", () => {
@@ -45,6 +60,7 @@ describe("materials catalog", () => {
     const resolved = resolveMaterialBinding(catalog, {
       materialId: "nerve",
       patternId: "bone-cortex",
+      tint: "joint",
       pattern: {
         space: "local",
         scale: 1.25,
@@ -64,12 +80,33 @@ describe("materials catalog", () => {
     expect(resolved.value.pattern?.seed).toBe(99);
     expect(resolved.value.pattern?.opacity).toBe(0.25);
     expect(resolved.value.pattern?.blend).toBe("multiply");
-    expect(resolved.value.tint).toBe("nerve");
+    expect(resolved.value.tint).toBe("joint");
   });
 
-  it("uses material direction when no binding rotation is given", () => {
+  it("has no default material tint after the coloured atlases land", () => {
     const catalog = createMaterialCatalog(document());
-    const resolved = resolveMaterialBinding(catalog, { materialId: "nerve" });
+    for (const materialId of ["bone", "nerve", "muscle", "membrane"]) {
+      const resolved = resolveMaterialBinding(catalog, { materialId });
+      expect(resolved.ok).toBe(true);
+      if (resolved.ok) expect(resolved.value.tint).toBeUndefined();
+    }
+  });
+
+  it("does not apply a default pattern overlay", () => {
+    const catalog = createMaterialCatalog(document());
+    for (const materialId of ["bone", "nerve", "muscle", "membrane"]) {
+      const resolved = resolveMaterialBinding(catalog, { materialId });
+      expect(resolved.ok).toBe(true);
+      if (resolved.ok) expect(resolved.value.pattern).toBeUndefined();
+    }
+  });
+
+  it("uses material direction when an explicit pattern has no rotation", () => {
+    const catalog = createMaterialCatalog(document());
+    const resolved = resolveMaterialBinding(catalog, {
+      materialId: "nerve",
+      patternId: "nerve-fibers",
+    });
     expect(resolved.ok).toBe(true);
     if (resolved.ok) {
       expect(resolved.value.pattern?.rotation).toBeCloseTo(0.35);

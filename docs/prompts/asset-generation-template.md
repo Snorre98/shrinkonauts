@@ -1,6 +1,6 @@
 # Asset generation prompt — template
 
-**Status:** Draft v0.1 · 1 November 2026  
+**Status:** Draft v0.2 · 3 November 2026
 **Use:** Copy the prompt blocks into the asset-generation workflow (Ludo.ai
 Image Generator for concepts, Aseprite/Piskel/LibreSprite for the final pixel
 pass, and the local pipeline for keying, fitting, normalisation, and previews).
@@ -24,6 +24,25 @@ For the Silicon instance, use
 
 It does not generate a runtime spritesheet or a named atlas directly. The atlas
 is assembled offline from an approved swatch.
+
+### 1.1 Completion handoff
+
+Every generated plate must be recorded in the
+[completion matrix](../assets/prompt-library-v01.md#40-completion-matrix) at the
+stage it actually reached:
+
+`prompt-ready → source-generated → source-accepted → processed → wired → accepted`
+
+- Raw generator output is `source-generated`, even when it looks good.
+- `source-accepted` requires the composition, background, silhouette and
+  readability checks.
+- `processed` requires the key/fit/crop/palette/atlas report or preview.
+- `wired` requires a runtime file, manifest `src`, licence and tests.
+- `accepted` requires removing `placeholder`, completing the prompt log and
+  passing the asset acceptance checks.
+
+Do not write “final” in a prompt document until the matrix row reaches
+`accepted`.
 
 ---
 
@@ -240,9 +259,12 @@ licence, notes.
 8. For atlases: pixel-clean to a 512×512 working swatch; assemble 32×32 frames
    in Aseprite; keep every cell opaque.
 9. Record the prompt, source, frame range, palette, cleanup, and chosen file in
-   the prompt log.
-10. Integrate the file into `assets.final.json` and `licenses.json`.
-11. Run `pack:validate` and `pack:smoke`; inspect the runtime still.
+   the prompt log. Update the completion matrix to `source-generated` when the
+   raw plate lands, then to `processed` only after the reports exist.
+10. Integrate the file into `assets.final.json` and `licenses.json`; update the
+    matrix to `wired`.
+11. Run `pack:validate` and `pack:smoke`; inspect the runtime still. Update the
+    matrix to `accepted` only after the acceptance checks pass.
 
 ---
 

@@ -23,7 +23,7 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 45 files, 423 unit/integration tests
+npm test               # 56 files, 588 unit/integration tests
 npm run smoke          # room boot + module boundary tests
 npm run build          # type check and production build
 npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
@@ -158,12 +158,21 @@ ephemeral and are rebuilt from puzzle/world state after restore.
 - Online co-op is a disabled M4 placeholder; no Worker/DO client is wired yet.
 - Two authored levels; `05-reflex-core` and later map nodes are forward
   references reported as warnings.
-- Audio is limited to short cues (no music or ambience loops).
+- Audio supports short cues plus per-room/menu theme playback. The menu and
+  the three authored room themes are installed as MP3s; there is no separate
+  ambience loop.
 - Full key rebinding is deferred.
-- Final art/audio, the bathroom hub art pass (M3.5), and human M1.8 visual
-  review are deferred. M1.8 `wang` transitions, pattern animation,
-  image/atlas-sourced UI patterns, final material atlases, and editor tooling are
-  deferred within the accepted architecture.
+- Remaining final art/audio, the bathroom hub art pass (M3.5), and human M1.8
+  visual review are deferred. The seven-plate 04 Nano Banana batch and the 12
+  M3.75 blueprint symbols are processed, wired and accepted (`2026-11-03/04`);
+  see the
+  [completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix).
+  M1.8 `wang` transitions, pattern animation, image/atlas-sourced UI patterns,
+  final material atlases, and editor tooling are deferred within the accepted
+  architecture.
+- M3.75 blueprint symbols ship as final 32×32 PNGs in both pack manifests and
+  are rendered image-backed in the 03/04/01 headers. The CSS code glyph remains
+  the unresolved-ID fallback; the v02 placeholder entries were removed.
 - Physical puzzle-gate bodies, `locked`/`unlock` props, conditional links,
   per-level debrief overrides, and side-level travel are accepted ADR targets but
   are **not implemented** in this branch. See
@@ -191,15 +200,45 @@ room/boot tests, but the app does not boot it.
 | `/?skipMenu=1&pack=anatomy-reflex` | Direct boot into the selected pack |
 | `/?pack=silicon-reflex` | Preselects the gated Silicon cycle in the hub; Start is disabled |
 | `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
-| `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, and the 03 pretty sky are final, while deferred entries remain placeholders |
+| `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, the 03 pretty sky, the 04 batch, and the 12 M3.75 blueprint symbols are final, while deferred entries remain placeholders |
 
-The bathroom hub resolves 15 IDs as placeholders. Anatomy resolves 31/51
-placeholders; the POC player sheets, Neuron Keeper static/idle, readable
-scan/entity sprites, and the pretty 03 sky are final. `bg.nerve_forest.far`,
-`.mid` and `.near` are declared placeholders/future layered work; the room
-wires only the sky. The dev fixture still resolves 10/10 placeholders, or 7/10
-with its fixture manifest selected by the scripts. Unknown `?assets=` values
-fall back to placeholder mode.
+The bathroom hub resolves 1 of 21 IDs as a placeholder. Anatomy resolves 16 of
+59 IDs as placeholders; the POC player sheets, Neuron Keeper static/idle, readable
+scan/entity sprites, the pretty 03 sky, the final 04 sky, the four coloured
+material atlases, the final 04 gate/exit sprites, and the eight anatomy
+blueprint symbols have sources. Silicon resolves 16 of 48 runtime IDs as
+placeholders, while its four blueprint symbols are final.
+`bg.nerve_forest.far`, `.mid`, `.near`, `bg.muscle_endplate.far`, `.mid`,
+`.near`, the 03 scans, the Silicon interrupt/exit and the HUD badge remain
+declared placeholders/future work; both rooms wire only their sky. The 04
+additive prompt pack is [`docs/m3/muscle-endplate-asset-requirements-v01.md`](docs/m3/muscle-endplate-asset-requirements-v01.md).
+The dev fixture still resolves 10/10 placeholders, or 7/10 with its fixture
+manifest selected by the scripts. Unknown `?assets=` values fall back to
+placeholder mode.
+
+### Placeholder legend
+
+Colored 48×48 squares with four-letter labels are procedural placeholder
+sprites, not tiles. `src/assets/placeholder-provider.ts` fills them
+deterministically: yellow is `palette.nerve`, cyan is `palette.accent`, and the
+label is the first four characters of the last asset-ID segment. In authored
+rooms the remaining placeholder-only sprites are:
+
+- `sprite.scan.neuron` — yellow **NEUR** for `scan-neuron` in
+  `03-nerve-forest`;
+- `sprite.scan.myelin` — cyan **MYEL** for `scan-myelin` in `03-nerve-forest`;
+- `sprite.scan.pathway` — cyan **PATH** for `scan-pathway` in
+  `03-nerve-forest`;
+- `sprite.scan.interrupt` — cyan **INTE** in `01-interrupt-loop`;
+- `sprite.exit.silicon` — yellow **SILI** in `01-interrupt-loop`.
+
+The 04 batch no longer has `src`-with-`placeholder` entries: the sky, four
+atlases, gate and exit are final. The hub logo is the only `src`-less CSS
+fallback that is formally approved; the toy astronaut was cut. See
+[`docs/assets/remaining-work.md`](docs/assets/remaining-work.md) for the single
+consolidated checklist, or the
+[completion matrix](docs/assets/prompt-library-v01.md#40-completion-matrix) for
+the detailed evidence and per-asset status.
 
 ## Project layout
 
@@ -219,7 +258,7 @@ src/
   audio/         Cue playback, Web Audio, mute/volume, providers
   hub/           Bathroom hub document, loader, validation
   world/         Phaser scenes, fixed-step simulation, effects, tile visuals
-  ui/            HUD, bathroom menu, anchored feedback surfaces, overlays
+  ui/            HUD, blueprint, bathroom menu, anchored feedback surfaces, overlays
   game/          App shell, pack runtime orchestrator, surface router, boot
   platform/      Browser entry point
 scripts/
@@ -258,6 +297,25 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
   of done, and remaining playtest checks.
 - [`docs/m1.9/README.md`](docs/m1.9/README.md) — bathroom hub, pack catalog,
   per-pack saves, and launch transition.
+- [`docs/m2.75/README.md`](docs/m2.75/README.md) — Nerve Forest concept rescope:
+  ontology, learning load, literalism, and the option space for redesigning 03.
+- [`docs/m3.75/README.md`](docs/m3.75/README.md) — in-room HUD milestone:
+  compact 2–4-component blueprint, header checklist, hint strip, player cards,
+  and player colour tokens.
+- [`docs/m3.75/blueprint-symbol-asset-brief-v01.md`](docs/m3.75/blueprint-symbol-asset-brief-v01.md)
+  — blueprint symbol register, nanobanana prompt pack, atlas workflow, and
+  acceptance gates.
+- [`docs/m3/muscle-endplate-asset-requirements-v01.md`](docs/m3/muscle-endplate-asset-requirements-v01.md)
+  — additive 04 sky, shared tile-atlas prompts, and the `art:atlas` workflow.
+- [`docs/assets/prompt-library-v01.md`](docs/assets/prompt-library-v01.md) —
+  cross-discipline inventory of graphics/audio placeholders, prompt routing,
+  and completion order.
+- [`docs/adr-assets/README.md`](docs/adr-assets/README.md) — ADR-0078–0079 for
+  asset prompt-library governance, placeholder completion, and the scan fact
+  model.
+- [`docs/adr-presentation/0080-hud-blueprint-and-player-colors.md`](docs/adr-presentation/0080-hud-blueprint-and-player-colors.md)
+  — ADR for the compact component blueprint, player colour tokens, and the
+  M3.75 HUD layout.
 - [`docs/m1.9/remaining-work.md`](docs/m1.9/remaining-work.md) — what is
   deliberately missing and which milestone owns it.
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
@@ -274,8 +332,8 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (45 files / 423 tests), pack validation/smoke pass, and the browser
-smoke passes 7/7. The hub starts Anatomy in Solo or Local co-op, returns to the
+suite passes (56 files / 588 tests), pack validation/smoke pass, and the browser
+smoke passes 17/17. The hub starts Anatomy in Solo or Local co-op, returns to the
 bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
 M2 and M4.0b. Phone-controller same-screen co-op is planned as M4.0a; see
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
@@ -286,10 +344,21 @@ source sheets (ADR-0065), and `npm run art:key` removes magenta backgrounds from
 the nanobanan concept plates. Entity/background animation, final art approval,
 and the full ADR-0062 descriptor remain future work.
 
+M3.75 is **implemented** with automated verification: the in-room HUD uses the
+three-zone header with the compact 2–4-component puzzle blueprint, header
+checklist, hint strip, and bottom player cards. The room-to-room context lives in
+the `Tab` blueprint popup. The 12 authored puzzle symbols are final 32×32 PNGs,
+wired in both pack manifests with licences, and render image-backed in the
+03/04/01 headers; the CSS code glyph is only the unresolved-ID fallback. Human
+visual/playtest review is pending. See
+[`docs/m3.75/README.md`](docs/m3.75/README.md).
+
 M1.75 remains **implementation complete; manual solo/co-op playtest pending**.
 `authoring.playtestedSolo` and `authoring.playtestedCoop` remain `false` until a
 human performs the checks in the M1.75 milestone document.
 
-Final art and audio, the Silicon fixture, levels 5+, capture mode, music/ambience
-loops, the M3.5 hub art pass, full key rebinding, and the deferred puzzle-engine
-ADR features remain out of scope for this branch.
+Final audio files, the Silicon fixture, levels 5+, capture mode, a separate
+ambience loop, the M3.5 hub art pass, full key rebinding, and the deferred
+puzzle-engine ADR features remain out of scope for this branch. The 2026-11-03
+04 batch is processed and wired; the four room/menu themes are installed and
+wired.

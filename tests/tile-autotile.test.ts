@@ -97,9 +97,7 @@ describe("proof tile plans", () => {
       expect(plan.usesLegacyTileset).toBe(false);
       expect(plan.cells.length).toBeGreaterThan(100);
       expect(plan.cells.some((cell) => cell.decorative)).toBe(false);
-      expect(plan.cells.some((cell) => cell.variant)).toBe(
-        levelId === "03-nerve-forest",
-      );
+      expect(plan.cells.some((cell) => cell.variant)).toBe(true);
     });
   }
 
@@ -126,7 +124,7 @@ describe("proof tile plans", () => {
     });
     const frame = assets.resolveFrame({
       kind: "atlas",
-      assetId: "tile.anatomy.atlas",
+      assetId: "tile.muscle.atlas",
       frame: "mask-5",
     });
     expect(frame?.frame).toBe("mask-5");
@@ -134,7 +132,7 @@ describe("proof tile plans", () => {
     expect(
       assets.resolveFrame({
         kind: "atlas",
-        assetId: "tile.anatomy.atlas",
+        assetId: "tile.muscle.atlas",
         frame: "missing",
       }),
     ).toBeNull();

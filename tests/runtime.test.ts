@@ -11,13 +11,34 @@ import {
 import { loadContent, packDirectory } from "../scripts/content-loader";
 
 const content = loadContent(packDirectory("anatomy-reflex"));
+const siliconContent = loadContent(packDirectory("silicon-reflex"));
 
 class FakeAudio implements AudioPort {
   muted = false;
   readonly played: string[] = [];
+  readonly themes: string[] = [];
+  readonly stoppedThemes: Array<{ fadeOutMs?: number }> = [];
+  pauses = 0;
+  resumes = 0;
 
   play(assetId: string): void {
     this.played.push(assetId);
+  }
+
+  playTheme(assetId: string): void {
+    this.themes.push(assetId);
+  }
+
+  stopTheme(options: { fadeOutMs?: number } = {}): void {
+    this.stoppedThemes.push(options);
+  }
+
+  pauseTheme(): void {
+    this.pauses += 1;
+  }
+
+  resumeTheme(): void {
+    this.resumes += 1;
   }
 
   setMuted(muted: boolean): void {
@@ -98,7 +119,7 @@ function contentWithHazard() {
     {
       id: "hazard-runtime-test",
       type: "hazard",
-      x: 6,
+      x: 10,
       y: 20,
       components: { body: { width: 32, height: 32 } },
     },
@@ -215,10 +236,54 @@ function sensorCenter(nodeId: string): { x: number; y: number } {
   };
 }
 
-function pressSensor(runtime: GameRuntime, nodeId: string, actor: "p1" | "p2" = "p1"): void {
+const SENSOR_PAD: Record<string, string> = {
+  "input-a": "pad-input-a",
+  "input-b": "pad-input-b",
+  "terminal-zone": "pad-terminal",
+};
+
+function sensorFeetY(nodeId: string): number {
+  const room = content.rooms["room-nerve-forest"];
+  const entityId = SENSOR_PAD[nodeId];
+  const entity = room?.entities?.find((entry) => entry.id === entityId);
+  if (!room || !entity) {
+    throw new Error(`missing sensor pad ${entityId ?? nodeId}`);
+  }
+  return entity.y * room.tileSize;
+}
+
+function placeAtSensor(
+  runtime: GameRuntime,
+  nodeId: string,
+  actor: "p1" | "p2" = "p1",
+): void {
   const point = sensorCenter(nodeId);
-  runtime.placePlayer(actor, point.x, 20 * 32);
+  runtime.placePlayer(actor, point.x, sensorFeetY(nodeId));
+}
+
+function pressSensor(runtime: GameRuntime, nodeId: string, actor: "p1" | "p2" = "p1"): void {
+  placeAtSensor(runtime, nodeId, actor);
   stepWith(runtime);
+}
+
+function exitFeet(roomId: string, exitId: string): { x: number; y: number } {
+  const room = content.rooms[roomId];
+  const exit = room?.exits?.find((entry) => entry.id === exitId);
+  if (!room || !exit) throw new Error(`missing exit ${exitId}`);
+  return {
+    x: (exit.x + 0.5) * room.tileSize,
+    y: (exit.y + 1) * room.tileSize,
+  };
+}
+
+function placeAtExit(
+  runtime: GameRuntime,
+  roomId: string,
+  exitId: string,
+  actor: "p1" | "p2" = "p1",
+): void {
+  const point = exitFeet(roomId, exitId);
+  runtime.placePlayer(actor, point.x, point.y);
 }
 
 function solveNodeRun(runtime: GameRuntime): void {
@@ -241,7 +306,7 @@ function walkPlayerTo(
 
 function finishNodeRun(runtime: GameRuntime): void {
   solveNodeRun(runtime);
-  runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
+  placeAtExit(runtime, "room-nerve-forest", "exit-to-muscle");
   stepWith(runtime);
   expect(runtime.state).toBe("debrief");
   runtime.submitDebrief(
@@ -320,7 +385,7 @@ function solveEndplateSolo(runtime: GameRuntime): void {
 }
 
 function exitEndplate(runtime: GameRuntime): void {
-  runtime.placePlayer("p1", 36.5 * 32, 20 * 32);
+  placeAtExit(runtime, "room-muscle-effector", "exit-to-reflex-core");
   stepWith(runtime);
   expect(runtime.state).toBe("debrief");
 }
@@ -359,6 +424,43 @@ describe("game runtime", () => {
     expect(storage.getItem(runStorageKey("anatomy-reflex"))).toContain(
       "03-nerve-forest",
     );
+  });
+
+  it("plays the room theme on boot and pauses/resumes it with the game", () => {
+    const { runtime, audio } = makeRuntime();
+
+    expect(audio.themes).toEqual(["audio.music.nerve_forest"]);
+
+    runtime.togglePause();
+    expect(runtime.state).toBe("pause");
+    expect(audio.pauses).toBe(1);
+
+    runtime.togglePause();
+    expect(runtime.state).toBe("level");
+    expect(audio.resumes).toBe(1);
+  });
+
+  it("falls back to the pack theme when a room has no music", () => {
+    const copy = structuredClone(content);
+    delete copy.rooms["room-nerve-forest"]?.music;
+    copy.theme.audio = {
+      ...copy.theme.audio,
+      music: "audio.music.anatomy_fallback",
+    };
+
+    const { audio } = makeRuntimeWithContent(copy);
+    expect(audio.themes).toEqual(["audio.music.anatomy_fallback"]);
+  });
+
+  it("stops the theme when neither the room nor the pack supplies music", () => {
+    const copy = structuredClone(content);
+    const room = copy.rooms["room-nerve-forest"];
+    if (room) delete room.music;
+    if (copy.theme.audio) delete copy.theme.audio.music;
+
+    const { audio } = makeRuntimeWithContent(copy);
+    expect(audio.themes).toEqual([]);
+    expect(audio.stoppedThemes).toEqual([{ fadeOutMs: 600 }]);
   });
 
   it("starts solo runs with P2 inactive and can discard a saved run", () => {
@@ -410,7 +512,7 @@ describe("game runtime", () => {
 
     const agent = runtime.entityPixel("agent-neuron");
     if (!agent) throw new Error("agent-neuron missing");
-    runtime.placePlayer("p1", agent.x, 20 * 32);
+    runtime.placePlayer("p1", agent.x, agent.y);
     expect(runtime.snapshot().interaction).toMatchObject({
       kind: "puzzle",
       label: "Start Node Run",
@@ -421,15 +523,22 @@ describe("game runtime", () => {
     expect(runtime.simulation.tetherPolicy).toBe("off");
   });
 
-  it("shows authored hints without a pulse cooldown", () => {
+  it("shows and cycles authored hints without a pulse cooldown", () => {
     const { runtime } = makeRuntime();
     expect(runtime.snapshot().puzzle?.canHint).toBe(true);
     expect(runtime.snapshot().puzzle?.pulse).toBeNull();
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(0);
+    expect(runtime.snapshot().puzzle?.hintsTotal).toBe(3);
+    expect(runtime.snapshot().puzzle?.revealedHints).toEqual([]);
 
     runtime.puzzleHint();
     expect(runtime.snapshot().puzzle?.hint).toBe(
       "One input is below threshold. The trigger gate needs a second dendrite input.",
     );
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(1);
+    expect(runtime.snapshot().puzzle?.revealedHints).toEqual([
+      "One input is below threshold. The trigger gate needs a second dendrite input.",
+    ]);
     stepWith(runtime);
     runtime.requestFeedback("p1");
     expect(
@@ -449,12 +558,32 @@ describe("game runtime", () => {
     expect(runtime.snapshot().puzzle?.hint).toBe(
       "The axon is one-way: dendrite → trigger zone → axon → terminal.",
     );
-    expect(runtime.snapshot().puzzle?.canHint).toBe(false);
+    expect(runtime.snapshot().puzzle?.canHint).toBe(true);
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(3);
+    expect(runtime.snapshot().puzzle?.revealedHints).toHaveLength(3);
+
+    runtime.puzzleHint();
+    expect(runtime.snapshot().puzzle?.hint).toBe(
+      "One input is below threshold. The trigger gate needs a second dendrite input.",
+    );
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(1);
+    expect(runtime.snapshot().puzzle?.revealedHints).toHaveLength(3);
     expect(
       runtime
         .exportEvidence()
         .events.filter((event) => event.type === "hint_used"),
     ).toHaveLength(3);
+  });
+
+  it("allows the Blueprint popup to reveal the next hint", () => {
+    const { runtime } = makeRuntime();
+    runtime.step(1 / 60, input({ map: true }));
+    expect(runtime.state).toBe("map");
+
+    runtime.puzzleHint();
+    expect(runtime.state).toBe("map");
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(1);
+    expect(runtime.snapshot().puzzle?.revealedHints).toHaveLength(1);
   });
 
   it("does not solve on one input and resets the counter", () => {
@@ -475,7 +604,7 @@ describe("game runtime", () => {
       x: runtime.simulation.players.p1.spawnX,
       y: runtime.simulation.players.p1.spawnY,
     };
-    runtime.placePlayer("p1", 6.5 * 32, 20 * 32);
+    runtime.placePlayer("p1", 10.5 * 32, 20 * 32);
     stepWith(runtime);
     expect(runtime.snapshot().toast).toBe("Back to the checkpoint");
     expect(runtime.simulation.players.p1.x).toBeCloseTo(spawn.x, 0);
@@ -610,6 +739,42 @@ describe("game runtime", () => {
     expect(runtime.snapshot().toast).toContain("Save format updated");
   });
 
+  it("reveals one unique fact per scan target", () => {
+    expect(content.facts?.map((fact) => fact.id)).toEqual([
+      "NERV-01#1",
+      "NERV-01#3",
+      "NERV-01#5",
+      "NERV-01#6",
+    ]);
+    const { runtime } = makeRuntime();
+
+    walkTo(runtime, "scan-neuron");
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).toContain("NERV-01#1");
+    expect(runtime.snapshot().knownConceptIds).toContain("CON-3");
+    expect(
+      runtime
+        .snapshot()
+        .conceptLog.find((concept) => concept.id === "CON-3")
+        ?.facts.find((fact) => fact.id === "NERV-01#1")?.discovered,
+    ).toBe(true);
+
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).toEqual(["NERV-01#1"]);
+
+    walkTo(runtime, "scan-myelin");
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).toContain("NERV-01#3");
+
+    walkTo(runtime, "scan-pathway");
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).toContain("NERV-01#6");
+
+    walkTo(runtime, "pad-input-a");
+    runtime.scan();
+    expect(runtime.snapshot().knownFactIds).not.toContain("NERV-01#5");
+  });
+
   it("runs conversation, scan, Node Run, exit, debrief, and transitions to Endplate Ferry", () => {
     const { runtime, audio, levelChanges } = makeRuntime();
 
@@ -646,7 +811,10 @@ describe("game runtime", () => {
       choiceId: "right",
     });
     expect(runtime.snapshot().knownConceptIds).toEqual(
-      expect.arrayContaining(["CON-3"]),
+      expect.arrayContaining(["CON-3", "CON-5"]),
+    );
+    expect(runtime.snapshot().knownFactIds).toEqual(
+      expect.arrayContaining(["NERV-01#5"]),
     );
     runtime.surfaceAction(neuronConversation!.surfaceId, { type: "confirm" });
     expect(runtime.conversations.size).toBe(0);
@@ -654,6 +822,7 @@ describe("game runtime", () => {
     walkTo(runtime, "scan-pathway");
     runtime.scan();
     expect(runtime.snapshot().knownConceptIds).toContain("CON-5");
+    expect(runtime.snapshot().knownFactIds).toContain("NERV-01#6");
     expect(audio.played.length).toBeGreaterThan(0);
 
     solveNodeRun(runtime);
@@ -662,7 +831,7 @@ describe("game runtime", () => {
         ?.visited,
     ).toBe(true);
 
-    runtime.placePlayer("p1", 37.5 * 32, 20 * 32);
+    placeAtExit(runtime, "room-nerve-forest", "exit-to-muscle");
     stepWith(runtime);
     expect(runtime.state).toBe("debrief");
 
@@ -937,16 +1106,12 @@ describe("game runtime", () => {
 
   it("splits the two dendrite inputs across co-op players", () => {
     const { runtime } = makeRuntime();
-    const inputA = sensorCenter("input-a");
-    const inputB = sensorCenter("input-b");
-    const terminal = sensorCenter("terminal-zone");
-
-    runtime.placePlayer("p1", inputA.x, 20 * 32);
-    runtime.placePlayer("p2", inputB.x, 20 * 32);
+    placeAtSensor(runtime, "input-a", "p1");
+    placeAtSensor(runtime, "input-b", "p2");
     stepWith(runtime);
     expect(runtime.snapshot().puzzle?.solved).toBe(false);
 
-    runtime.placePlayer("p1", terminal.x, 20 * 32);
+    placeAtSensor(runtime, "terminal-zone", "p1");
     stepWith(runtime);
     expect(runtime.snapshot().puzzle?.solved).toBe(true);
     expect(runtime.snapshot().abilities).toContain("signal-dash");
@@ -1116,6 +1281,26 @@ describe("game runtime", () => {
       x: 48,
       y: 48,
     });
+    expect(snapshot.blueprint?.puzzleId).toBe("puzzle-node-run");
+    expect(snapshot.blueprint?.components.map((component) => component.id)).toEqual([
+      "inputs",
+      "threshold",
+      "axon",
+      "exit",
+    ]);
+    expect(snapshot.blueprint?.components.map((component) => component.actor)).toEqual([
+      "both",
+      "both",
+      "p1",
+      "shared",
+    ]);
+    expect(snapshot.blueprint?.components.map((component) => component.state)).toEqual([
+      "active",
+      "pending",
+      "pending",
+      "pending",
+    ]);
+    expect(snapshot.blueprint?.edges).toHaveLength(3);
     expect(runtime.drainEffects()).toEqual([]);
   });
 
@@ -1142,6 +1327,49 @@ describe("game runtime", () => {
         (surface) => surface.id === "fb:meter:ca-timer",
       )?.content.text,
     ).toBe("Ca²⁺ window is idle.");
+    expect(snapshot.blueprint?.puzzleId).toBe("puzzle-endplate-ferry");
+    expect(snapshot.blueprint?.components.map((component) => component.id)).toEqual([
+      "trigger",
+      "carry",
+      "bind",
+      "response",
+    ]);
+    expect(snapshot.blueprint?.components.map((component) => component.actor)).toEqual([
+      "p1",
+      "p2",
+      "p2",
+      "p1",
+    ]);
+    expect(snapshot.blueprint?.components[0]?.state).toBe("active");
+  });
+
+  it("projects the authored Silicon interrupt-loop blueprint after activation", () => {
+    const { runtime } = makeRuntimeWithContent(siliconContent);
+    const consolePoint = runtime.entityPixel("sensor-console");
+    if (!consolePoint) throw new Error("sensor-console missing");
+    runtime.placePlayer("p1", consolePoint.x, consolePoint.y);
+    expect(runtime.snapshot().interaction).toMatchObject({
+      kind: "puzzle",
+      label: "Start Interrupt Loop",
+    });
+
+    stepWith(runtime, playerActions({ interact: true }));
+    const blueprint = runtime.snapshot().blueprint;
+    expect(blueprint?.puzzleId).toBe("puzzle-interrupt-loop");
+    expect(blueprint?.title).toBe("Interrupt route");
+    expect(blueprint?.components.map((component) => component.id)).toEqual([
+      "detect",
+      "route",
+      "wake",
+      "actuate",
+    ]);
+    expect(blueprint?.components.map((component) => component.actor)).toEqual([
+      "p1",
+      "p1",
+      "p1",
+      "p1",
+    ]);
+    expect(blueprint?.components[0]?.state).toBe("active");
   });
 
   it("delivers effect plans idempotently with attribution", () => {
@@ -1278,9 +1506,9 @@ describe("game runtime", () => {
         kind: "tileRegion",
         layer: "tiles",
         x1: 19,
-        y1: 20,
-        x2: 33,
-        y2: 20,
+        y1: 16,
+        x2: 38,
+        y2: 16,
       },
     });
     expect(tile?.stages[0]?.timing.stagger).toEqual({
@@ -1497,9 +1725,9 @@ describe("game runtime", () => {
         .feedback.surfaces.some((item) => item.id.startsWith("fb:help:")),
     ).toBe(false);
 
-    const pad = runtime.entityPixel("pad-input-a");
-    if (!pad) throw new Error("pad-input-a missing");
-    runtime.placePlayer("p1", pad.x, pad.y);
+    const scan = runtime.entityPixel("scan-neuron");
+    if (!scan) throw new Error("scan-neuron missing");
+    runtime.placePlayer("p1", scan.x, scan.y);
     stepWith(runtime, playerActions({ scan: true }));
     expect(
       runtime

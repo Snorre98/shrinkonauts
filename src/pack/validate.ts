@@ -91,6 +91,8 @@ export type PackIssueCode =
   | "PUZZLE_INVALID"
   | "PUZZLE_REFERENCE_MISSING"
   | "SYLLABUS_REFERENCE_MISSING"
+  | "FACT_REFERENCE_MISSING"
+  | "FACT_DUPLICATE"
   | "COVERAGE_OBJECTIVE_UNMAPPED"
   | "COVERAGE_CONCEPT_UNMAPPED"
   | "COVERAGE_GATE_ORPHAN"
@@ -105,6 +107,7 @@ export type PackIssueCode =
   | "FEEDBACK_TILE_INVALID"
   | "FEEDBACK_LAYOUT_INVALID"
   | "FEEDBACK_VOCABULARY_MISSING"
+  | "BLUEPRINT_INVALID"
   | "INFO_AREA_INVALID"
   | "MATERIALS_SCHEMA_INVALID"
   | "MATERIAL_REFERENCE_MISSING"
@@ -792,6 +795,93 @@ function checkAudioAssets(
   }
 }
 
+function checkFacts(
+  content: PackContent,
+  addIssue: AddIssue,
+  addWarning: (message: string) => void,
+): void {
+  const facts = content.facts ?? [];
+  if (facts.length === 0) return;
+
+  const factIds = new Set<string>();
+  const factById = new Map(facts.map((fact) => [fact.id, fact]));
+  for (const fact of facts) {
+    if (factIds.has(fact.id)) {
+      addIssue(
+        "FACT_DUPLICATE",
+        `facts.json contains duplicate fact id "${fact.id}"`,
+      );
+    }
+    factIds.add(fact.id);
+    if (!content.syllabus.concepts.some((concept) => concept.id === fact.conceptId)) {
+      addIssue(
+        "FACT_REFERENCE_MISSING",
+        `fact "${fact.id}" references unknown concept "${fact.conceptId}"`,
+      );
+    }
+  }
+
+  const scanFactIds = new Set<string>();
+  for (const [roomId, room] of Object.entries(content.rooms)) {
+    for (const entity of room.entities ?? []) {
+      if (entity.type !== "scanTarget" || !entity.factId) continue;
+      const fact = factById.get(entity.factId);
+      if (!fact) {
+        addIssue(
+          "FACT_REFERENCE_MISSING",
+          `room "${roomId}" entity "${entity.id}" references missing fact "${entity.factId}"`,
+        );
+        continue;
+      }
+      if (entity.conceptId && entity.conceptId !== fact.conceptId) {
+        addIssue(
+          "FACT_REFERENCE_MISSING",
+          `room "${roomId}" entity "${entity.id}" concept "${entity.conceptId}" does not match fact "${fact.id}" concept "${fact.conceptId}"`,
+        );
+      }
+      if (scanFactIds.has(fact.id)) {
+        addWarning(
+          `FACT_SCAN_DUPLICATE: fact "${fact.id}" is assigned to more than one scan target`,
+        );
+      }
+      scanFactIds.add(fact.id);
+    }
+  }
+
+  const dialogueFactIds = new Set<string>();
+  for (const dialogue of Object.values(content.dialogues)) {
+    for (const node of Object.values(dialogue.nodes)) {
+      for (const effect of node.effects ?? []) {
+        if (effect.type !== "revealFact") continue;
+        if (!factById.has(effect.factId)) {
+          addIssue(
+            "FACT_REFERENCE_MISSING",
+            `dialogue "${dialogue.id}" reveals missing fact "${effect.factId}"`,
+          );
+        } else {
+          dialogueFactIds.add(effect.factId);
+        }
+      }
+    }
+  }
+
+  for (const factId of dialogueFactIds) {
+    if (scanFactIds.has(factId)) {
+      addWarning(
+        `FACT_SCAN_REDUNDANT: fact "${factId}" is revealed by dialogue and assigned to a scan target`,
+      );
+    }
+  }
+
+  for (const fact of facts) {
+    if (!scanFactIds.has(fact.id) && !dialogueFactIds.has(fact.id)) {
+      addWarning(
+        `FACT_UNREACHABLE: fact "${fact.id}" is not revealed by a scan or dialogue`,
+      );
+    }
+  }
+}
+
 function checkLicences(
   content: PackContent,
   finalManifest: AssetManifest | null | undefined,
@@ -945,6 +1035,85 @@ function checkLevelFeedback(input: {
     }
 
     const nodeIds = new Set(puzzle.nodes.map((node) => node.id));
+    const authoredBeatIds = new Set((config.beats ?? []).map((beat) => beat.id));
+
+    const blueprint = config.blueprint;
+    if (blueprint) {
+      const blueprintLabel = `${label}.blueprint`;
+      if (
+        blueprint.components.length < 2 ||
+        blueprint.components.length > 10
+      ) {
+        addIssue(
+          "BLUEPRINT_INVALID",
+          `${blueprintLabel} must have 2–10 components, got ${blueprint.components.length}`,
+        );
+      } else if (blueprint.components.length > 4) {
+        addWarning(
+          `${blueprintLabel} has ${blueprint.components.length} components; 2–4 is the target`,
+        );
+      }
+
+      const componentIds = new Set<string>();
+      for (const [index, component] of blueprint.components.entries()) {
+        const componentLabel = `${blueprintLabel}.components[${index}]`;
+        if (componentIds.has(component.id)) {
+          addIssue(
+            "BLUEPRINT_INVALID",
+            `${componentLabel}.id "${component.id}" is duplicated`,
+          );
+        }
+        componentIds.add(component.id);
+        if (component.symbol.trim() === "") {
+          addIssue(
+            "BLUEPRINT_INVALID",
+            `${componentLabel}.symbol must be non-empty`,
+          );
+        }
+        for (const beatId of component.beatIds) {
+          if (!authoredBeatIds.has(beatId)) {
+            addIssue(
+              "FEEDBACK_REFERENCE_MISSING",
+              `${componentLabel}.beatIds references missing beat "${beatId}"`,
+            );
+          }
+        }
+      }
+
+      for (const [index, edge] of (blueprint.edges ?? []).entries()) {
+        for (const [role, componentId] of [
+          ["from", edge.from],
+          ["to", edge.to],
+        ] as const) {
+          if (!componentIds.has(componentId)) {
+            addIssue(
+              "FEEDBACK_REFERENCE_MISSING",
+              `${blueprintLabel}.edges[${index}].${role} references missing component "${componentId}"`,
+            );
+          }
+        }
+      }
+
+      for (const [index, step] of (blueprint.steps ?? []).entries()) {
+        if (!componentIds.has(step.componentId)) {
+          addIssue(
+            "FEEDBACK_REFERENCE_MISSING",
+            `${blueprintLabel}.steps[${index}].componentId references missing component "${step.componentId}"`,
+          );
+        }
+      }
+
+      const covered = new Set(
+        blueprint.components.flatMap((component) => component.beatIds),
+      );
+      for (const beat of config.beats ?? []) {
+        if (!covered.has(beat.id)) {
+          addWarning(
+            `${blueprintLabel} does not cover beat "${beat.id}"`,
+          );
+        }
+      }
+    }
 
     for (const [index, beat] of (config.beats ?? []).entries()) {
       for (const nodeId of beat.nodes) {
@@ -1993,10 +2162,14 @@ function checkContent(
       .filter((entity) => entity.type === "scanTarget" && entity.conceptId)
       .map((entity) => entity.conceptId as string),
   );
+  const factConcepts = new Set(
+    (content.facts ?? []).map((fact) => fact.conceptId),
+  );
   for (const concept of syllabus.concepts) {
     const authored =
       mappedConcepts.has(concept.id) ||
       scanConcepts.has(concept.id) ||
+      factConcepts.has(concept.id) ||
       Object.values(gates).some((gate) => gate.conceptIds.includes(concept.id)) ||
       Object.values(puzzles).some((puzzle) =>
         puzzle.conceptIds.includes(concept.id),
@@ -2071,6 +2244,7 @@ function checkContent(
   }
 
   checkLicences(content, finalManifest, addIssue);
+  checkFacts(content, addIssue, addWarning);
 }
 
 /**

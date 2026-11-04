@@ -9,6 +9,7 @@ records are in `source/notes/`:
 - `source/notes/art-source-README.md` — source/working/runtime layers.
 - `source/notes/nanobanan-README.md` — plate list, keying, fit and background commands.
 - `source/notes/m3-asset-requirements-v01.md` — full M3 prompt pack and acceptance criteria.
+- `source/notes/m3-muscle-endplate-asset-requirements-v01.md` — 04 sky, atlas and sprite prompt pack.
 - `source/notes/m3.5-hub-asset-prompts-v01.md` — bathroom hub prompt pack.
 - `source/notes/adr/` — ADR-0060, 0061, 0062, 0063 and 0075.
 
@@ -296,17 +297,24 @@ across the play band, so it is not ready to wire.
 
 ## 5. Atlases, UI and fonts
 
-- `tile.anatomy.atlas` and `tile.circuit.atlas` are **placeholder SVG** atlases
-  authored in-repo (CC0-1.0). The final target is a 256×192 bone `blob47` atlas
-  and a 128×128 nerve `edge` atlas, assembled from 32×32 frames in Aseprite.
-  The bone/nerve JPEGs in `concepts/` are material swatches, not frame atlases.
+- Anatomy uses four **final coloured PNG atlases**: 256×192 bone `blob47`,
+  128×128 nerve `edge`, 128×128 muscle `edge`, and 128×128 membrane `edge`.
+  They are assembled from processed 512×512 swatches and 32×32 frames by
+  `npm run art:atlas -- --selection single --weld-edges`; the single-window
+  mode keeps one source tile across all masks and accepts a 32 px repeat. The
+  material tints are removed.
+  `tile.anatomy.atlas` is no longer wired and is retained only as a test
+  fixture. `tile.circuit.atlas` remains a placeholder SVG. The 2026-11-03 Nano
+  Banana 2048×2048 swatches are nearest-downscaled, palette-quantised,
+  2×2-snapped and edge-welded before assembly.
 - The UI is CSS/DOM, not raster art. The only UI image assets are the two hub
   cycle icons (final) and the badge (placeholder).
 - Fonts are Silkscreen and Pixelify Sans, both SIL OFL 1.1. The runtime loads
   the WOFF2 files from `public/fonts/`; the OFL texts and `NOTICES.md` are
   copied into `final/shared/fonts/`.
-- Audio is not implemented: every cue is a placeholder in the manifests and
-  theme files. No audio files are included in this pack.
+- Audio playback is implemented for cues and themes. Three pilot SFX (`scan`,
+  `jump`, `land`) are included; the other 15 cues and all four themes remain
+  placeholders.
 
 ---
 

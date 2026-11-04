@@ -123,9 +123,13 @@ describe("bathroom hub final art", () => {
     }
   });
 
-  it("keeps the missing logo, toy astronaut, walk sheet, and audio as explicit placeholders", () => {
+  it("approves the logo CSS fallback, cuts the toy astronaut, and ships hub audio", () => {
     expect(manifest.assets["ui.logo.shrinkonauts"]?.placeholder).toBe(true);
-    expect(manifest.assets["sprite.prop.toy.astronaut"]?.placeholder).toBe(true);
+    expect(manifest.assets["ui.logo.shrinkonauts"]?.src).toBeUndefined();
+    expect(manifest.assets["ui.logo.shrinkonauts"]?.license).toContain(
+      "Approved CSS fallback",
+    );
+    expect(manifest.assets["sprite.prop.toy.astronaut"]).toBeUndefined();
     expect(manifest.assets["sprite.player.civilian.walk"]).toBeUndefined();
     for (const id of [
       "audio.cue.hub.click",
@@ -134,8 +138,13 @@ describe("bathroom hub final art", () => {
       "audio.cue.hub.shrink",
       "audio.cue.hub.arrive",
       "audio.cue.hub.hum",
+      "audio.music.menu",
     ]) {
-      expect(manifest.assets[id]?.placeholder).toBe(true);
+      const entry = manifest.assets[id];
+      expect(entry?.src).toMatch(/^shared\/audio\/[a-z-]+\.mp3$/);
+      expect(entry?.license).toBeTruthy();
+      expect(entry?.placeholder).toBeUndefined();
+      expect(existsSync(join(HUB_DIR, entry?.src as string))).toBe(true);
     }
   });
 });

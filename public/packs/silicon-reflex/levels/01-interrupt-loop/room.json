@@ -8,7 +8,6 @@
   "tileset": "tileset.silicon",
   "layers": {
     "tiles": [
-      "########################################",
       "#                                      #",
       "#                                      #",
       "#                                      #",
@@ -17,16 +16,17 @@
       "#                                      #",
       "#                                      #",
       "#                                      #",
+      "#                      ##########      #",
+      "#                    ##                #",
+      "#                 ##                   #",
       "#                                      #",
+      "#              ###                     #",
+      "#                              #####   #",
+      "#           ###                        #",
       "#                                      #",
+      "#        ###                           #",
       "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
-      "#                                      #",
+      "#     ###                              #",
       "#                                      #",
       "########################################",
       "########################################",
@@ -34,7 +34,6 @@
     ]
   },
   "tileMaterials": [
-    "ssssssssssssssssssssssssssssssssssssssss",
     "s                                      s",
     "s                                      s",
     "s                                      s",
@@ -43,24 +42,31 @@
     "s                                      s",
     "s                                      s",
     "s                                      s",
+    "c                      cccccccccc      c",
+    "c                    cc                c",
+    "c                 cc                   c",
     "s                                      s",
+    "c              ccc                     c",
+    "c                              ccccc   c",
+    "c           ccc                        c",
     "s                                      s",
+    "c        ccc                           c",
     "s                                      s",
-    "s                                      s",
-    "s                                      s",
-    "s                                      s",
-    "s                                      s",
-    "s                                      s",
-    "s                                      s",
-    "s                                      s",
+    "c     ccc                              c",
     "s                                      s",
     "cccccccccccccccccccccccccccccccccccccccc",
     "cccccccccccccccccccccccccccccccccccccccc",
     "cccccccccccccccccccccccccccccccccccccccc"
   ],
   "tileMaterialLegend": {
-    "c": { "materialId": "circuit", "autotile": "edge" },
-    "s": { "materialId": "substrate", "autotile": "edge" }
+    "c": {
+      "materialId": "circuit",
+      "autotile": "edge"
+    },
+    "s": {
+      "materialId": "substrate",
+      "autotile": "edge"
+    }
   },
   "defaultMaterialId": "substrate",
   "materialSeed": 3,
@@ -119,36 +125,42 @@
     {
       "id": "agent-cpu",
       "type": "agent",
-      "x": 6,
+      "x": 12,
       "y": 20,
       "sprite": "sprite.agent.cpu",
       "dialogueId": "dlg-cpu-01",
       "label": "CPU Core",
-      "presentation": { "role": "npc" }
+      "presentation": {
+        "role": "npc"
+      }
     },
     {
       "id": "sensor-console",
       "type": "decor",
-      "x": 11,
-      "y": 20,
+      "x": 7,
+      "y": 18,
       "sprite": "sprite.console.sensor",
       "label": "Sensor console",
-      "presentation": { "role": "interactable" }
+      "presentation": {
+        "role": "interactable"
+      }
     },
     {
       "id": "pad-sensor",
       "type": "decor",
-      "x": 14,
-      "y": 20,
+      "x": 10,
+      "y": 16,
       "sprite": "sprite.pad.sensor",
       "label": "Sensor pad",
-      "presentation": { "role": "interactable" }
+      "presentation": {
+        "role": "interactable"
+      }
     },
     {
       "id": "body-route-plug",
       "type": "body",
       "x": 16,
-      "y": 20,
+      "y": 12,
       "components": {
         "body": {
           "width": 20,
@@ -164,13 +176,15 @@
       "id": "route-plug",
       "type": "prop",
       "x": 16,
-      "y": 20,
+      "y": 12,
       "sprite": "sprite.prop.route_plug",
       "label": "Route plug",
       "components": {
         "prop": {
           "bodyId": "body-route-plug",
-          "tags": ["route"],
+          "tags": [
+            "route"
+          ],
           "shape": "plug",
           "carryable": true,
           "placeable": true,
@@ -182,17 +196,19 @@
     {
       "id": "controller-socket",
       "type": "decor",
-      "x": 22,
-      "y": 20,
+      "x": 23,
+      "y": 8,
       "sprite": "sprite.socket.controller",
       "label": "Controller socket",
-      "presentation": { "role": "interactable" }
+      "presentation": {
+        "role": "interactable"
+      }
     },
     {
       "id": "scan-controller",
       "type": "scanTarget",
-      "x": 22,
-      "y": 17,
+      "x": 23,
+      "y": 7,
       "sprite": "sprite.scan.controller",
       "conceptId": "CON-8",
       "label": "Interrupt controller"
@@ -200,8 +216,8 @@
     {
       "id": "scan-interrupt",
       "type": "scanTarget",
-      "x": 18,
-      "y": 18,
+      "x": 19,
+      "y": 10,
       "sprite": "sprite.scan.interrupt",
       "conceptId": "CON-8",
       "label": "Interrupt line"
@@ -210,16 +226,18 @@
       "id": "cpu-socket",
       "type": "decor",
       "x": 27,
-      "y": 20,
+      "y": 8,
       "sprite": "sprite.socket.cpu",
       "label": "CPU socket (decoy)",
-      "presentation": { "role": "interactable" }
+      "presentation": {
+        "role": "interactable"
+      }
     },
     {
       "id": "scan-cpu",
       "type": "scanTarget",
-      "x": 30,
-      "y": 18,
+      "x": 27,
+      "y": 7,
       "sprite": "sprite.scan.cpu",
       "conceptId": "CON-8",
       "label": "CPU"
@@ -227,8 +245,8 @@
     {
       "id": "scan-sensor",
       "type": "scanTarget",
-      "x": 12,
-      "y": 18,
+      "x": 13,
+      "y": 14,
       "sprite": "sprite.scan.sensor",
       "conceptId": "CON-8",
       "label": "Sensor"
@@ -236,8 +254,8 @@
     {
       "id": "scan-actuator",
       "type": "scanTarget",
-      "x": 35,
-      "y": 18,
+      "x": 30,
+      "y": 7,
       "sprite": "sprite.scan.actuator",
       "conceptId": "CON-8",
       "label": "Actuator"
@@ -245,8 +263,8 @@
     {
       "id": "gate-actuator",
       "type": "puzzleGate",
-      "x": 35,
-      "y": 20,
+      "x": 31,
+      "y": 8,
       "sprite": "sprite.gate.actuator",
       "label": "Actuator gate",
       "components": {
@@ -254,24 +272,29 @@
           "gateId": "gate-actuator"
         },
         "anchors": {
-          "center": { "x": 32, "y": 32 }
+          "center": {
+            "x": 32,
+            "y": 32
+          }
         }
       }
     },
     {
       "id": "exit-silicon",
       "type": "decor",
-      "x": 37,
-      "y": 19,
+      "x": 34,
+      "y": 12,
       "sprite": "sprite.exit.silicon",
       "label": "Actuator exit",
-      "presentation": { "role": "interactable" }
+      "presentation": {
+        "role": "interactable"
+      }
     },
     {
       "id": "transfer-console",
       "type": "gate",
-      "x": 38,
-      "y": 19,
+      "x": 35,
+      "y": 12,
       "gateId": "gate-transfer",
       "sprite": "sprite.console.transfer",
       "label": "Transfer console"
@@ -280,8 +303,8 @@
   "exits": [
     {
       "id": "exit-to-actuator",
-      "x": 37,
-      "y": 19,
+      "x": 34,
+      "y": 12,
       "width": 1,
       "height": 1,
       "toLevelId": "01-interrupt-loop",
@@ -292,11 +315,12 @@
   "infoAreas": [
     {
       "id": "info-interrupt-loop",
-      "x": 14,
-      "y": 17,
-      "width": 15,
-      "height": 4,
+      "x": 4,
+      "y": 7,
+      "width": 34,
+      "height": 13,
       "puzzleId": "puzzle-interrupt-loop"
     }
-  ]
+  ],
+  "music": "audio.music.interrupt_loop"
 }

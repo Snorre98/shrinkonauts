@@ -15,5 +15,7 @@ export type {
   AudioProvider,
   AudioSettings,
   AudioStorage,
+  AudioThemeOptions,
+  AudioThemeStopOptions,
   CreateAudioOptions,
 } from "./types";

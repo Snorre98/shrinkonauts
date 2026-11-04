@@ -32,6 +32,7 @@
     }
   },
   "audio": {
+    "music": "audio.music.menu",
     "cues": {
       "click": "audio.cue.hub.click",
       "door": "audio.cue.hub.door",

@@ -1,5 +1,159 @@
 {
   "schemaVersion": "1.1",
   "id": "anatomy-reflex.placeholder",
-  "assets": {}
+  "assets": {
+    "ui.blueprint.symbol.inputs": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.threshold": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.flow": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.terminal": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.gate": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.relay": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.timer": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.carry": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.receptor": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.pulse": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.clear": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.goal": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.marker.p1": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.marker.p2": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.check": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.lock": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.unknown": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    }
+  }
 }

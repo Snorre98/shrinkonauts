@@ -35,14 +35,15 @@ spawn (checkpoint-entry)
   → agent-cpu             dlg-cpu-01
       └─ correct choice reveals CON-7 and CON-8, records concept_revealed,
          and reveals map-interrupt-loop
-  → sensor-console        interact activation (puzzle starts)
-  → sensor-pad            player press latches sensor-trigger
-  → route-plug            carry or push the plug to a socket
+  → sensor-console        jump onto the first platform, interact (puzzle starts)
+  → sensor-pad            climb to the sensor platform; press latches sensor-trigger
+  → route-plug            pick up the plug on the interrupt line
+  → climb the line        carry the plug up to the controller/CPU catwalk
   → controller-socket     correct route
   → controller-relay      allOf(sensor-trigger, controller-socket)
   → cpu-timer             60-tick CPU wake delay
   → gate-actuator         latched open; puzzle_solved
-  → exit-to-actuator      debrief for OBJ-5
+  → exit-to-actuator      drop to the exit platform and debrief for OBJ-5
   → transfer-console      optional gate-transfer prompt
 ```
 
@@ -107,20 +108,22 @@ move 720,620; drop route-plug; wait 80
 | Background | `bg.silicon_board`; sky integrated 2026-11-02; far, mid, near are placeholder layers |
 | Spawns | P1 `(3, 20)`, P2 `(5, 20)` |
 | Checkpoint | `checkpoint-entry` at `(4, 20)` |
-| Agent | `agent-cpu` at `(6, 20)`; dialogue `dlg-cpu-01` |
-| Sensor console | `sensor-console` at `(11, 20)`; interact activation |
-| Sensor pad | Visible `pad-sensor` at `(14, 20)`; plate rect x 448–512, y 600–648 |
-| Route plug | `route-plug` / `body-route-plug` at `(16, 20)` |
-| Controller socket | `controller-socket` at `(22, 20)`; plate rect x 704–768 |
-| CPU socket | `cpu-socket` at `(27, 20)`; plate rect x 864–928; decoy |
-| Actuator gate | `gate-actuator` at `(35, 20)`; `anchors.center` 18,18 |
-| Exit | `exit-to-actuator` at `(37, 19)`, locked by `puzzle-interrupt-loop` |
-| Transfer console | `transfer-console` at `(38, 19)`; `gate-transfer` |
-| Tether | `off`; puzzle geometry spans about 688 × 48 px, inside 1280 × 720 |
+| Agent | `agent-cpu` at `(12, 20)`; dialogue `dlg-cpu-01` |
+| Sensor console | `sensor-console` at `(7, 18)`; interact activation on the first platform |
+| Sensor pad | Visible `pad-sensor` at `(10, 16)`; plate rect x 320–384, y 472–520 |
+| Route plug | `route-plug` / `body-route-plug` at `(16, 12)` on the interrupt line |
+| Controller socket | `controller-socket` at `(23, 8)`; plate rect x 736–800, y 216–264 |
+| CPU socket | `cpu-socket` at `(27, 8)`; plate rect x 864–928, y 216–264; decoy |
+| Actuator gate | `gate-actuator` at `(31, 8)`; `anchors.center` 18,18 |
+| Exit | `exit-to-actuator` at `(34, 12)`, locked by `puzzle-interrupt-loop` |
+| Transfer console | `transfer-console` at `(35, 12)`; `gate-transfer` |
+| Tether | `off`; puzzle geometry spans about 800 × 320 px, inside 1280 × 720 |
 
-The room floor is rows 20–22 with `c` circuit material. The ceiling and side
-walls use `s` substrate material. The visible LED/trace path is art/pattern
-language, not a separate collision tile.
+The floor is rows 20–22 with `c` circuit material. The play space is a climbing
+route: sensor console → sensor pad → interrupt-line platforms → controller/CPU
+catwalk, with the exit platform below the actuator. The ground remains a safe
+fallback, but every puzzle socket and the exit are elevated. The visible
+LED/trace path is art/pattern language, not a separate collision tile.
 
 ## Evidence and debrief
 
@@ -138,13 +141,14 @@ dialogue and layout state the intended order; this is a recorded gap.
 
 ## Co-op and solo
 
-- **Co-op:** P1 can trigger the sensor and watch the controller; P2 can carry
-  and drop the route plug. Either player can interact with the console and scan.
-- **Solo:** P1 uses the solo union. Step on the sensor (the trigger latches),
-  pick up the plug, drop it on the controller socket, wait for the CPU timer,
-  and enter the actuator exit.
+- **Co-op:** P1 can climb to the sensor pad and watch the controller; P2 can
+  carry the route plug up the interrupt-line platforms and drop it on the
+  controller socket. Either player can interact with the console and scan.
+- **Solo:** P1 uses the solo union. Climb to the sensor (the trigger latches),
+  pick up the plug, carry it up to the controller socket, wait for the CPU
+  timer, drop to the exit platform, and enter the actuator exit.
 - **No co-op-only route:** the same sequence works with one body.
-- **Tether:** `off`; the room is one screen and the puzzle geometry fits the
+- **Tether:** `off`; the room is one screen and the platform geometry fits the
   one-viewport guard.
 
 ## Controls

@@ -1,6 +1,6 @@
-# M3.5 — Bathroom Hub Asset Prompts v0.1
+# M3.5 — Bathroom Hub Asset Prompts v0.2
 
-- **Status:** Draft prompt pack · 1 November 2026
+- **Status:** Draft prompt pack · 3 November 2026
 - **Owner:** Snorre
 - **Scope:** Final raster art and audio prompts for the M1.9 bathroom hub / main menu
 - **Target milestone:** M3.5 — bathroom hub art pass
@@ -10,6 +10,15 @@
 > **The rule:** AI generates raster art only. The DOM panel, cards, buttons, focus states, text, settings, confirmation dialog, and layout chrome stay in CSS/DOM. The only AI-generated text asset is the SHRINKONAUTS wordmark; the poster text is overlaid at runtime.
 
 > **Scope boundary:** This is a separate M3.5 pass. It does not change the M3 21-image gameplay register, the M3 `03-nerve-forest` environment scope, or the 04 placeholder boundary.
+
+> **Completion status (2026-11-03):** the wired hub scene, machine, civilian,
+> poster, cartridge, cycle icons and main props are integrated. The AI wordmark
+> is **not** shipped: the delivered plate has a washing machine baked behind the
+> letters, so the Silkscreen CSS fallback is formally approved. The toy
+> astronaut is **cut** (no source, not referenced by `hub.json`). Optional props
+> and audio cues remain deferred. Use the
+> [completion matrix](../assets/prompt-library-v01.md#40-completion-matrix) for
+> cross-discipline status and the checklist in §13 for this pass.
 
 ---
 
@@ -27,9 +36,9 @@
 | Civilian | Tired adult sci-fi fan in hoodie + pajama pants |
 | Generator | Nano Banana first, Ludo.ai fallback |
 | Motion | Keep the current launch beats; add a six-frame civilian walk cycle; use a hard alpha/flash instead of fractional scaling |
-| Logo | Full AI wordmark, with a CSS wordmark fallback |
-| Separate props | Poster, cartridges, toy astronaut, neuron plush, detergent bottles, basket, towel |
-| Audio | Six Ludo Audio cues; no music |
+| Logo | **Silkscreen CSS wordmark fallback approved** (AI plate rejected: washer baked behind letters) |
+| Separate props | Poster, cartridges, neuron plush, detergent bottles, basket, towel. **Toy astronaut cut.** |
+| Audio | Six hub cues; menu theme proposed in ADR-0076, no file yet |
 
 **Why one background plate instead of four parallax layers:** the hub camera does not scroll. Four far/mid/near layers would cost four generations and add no visible depth. One 640×360 scene plate is the right scope. If the hub later gains camera drift, split the approved plate into layers.
 
@@ -47,18 +56,18 @@
 - [x] Nano Banana first, with reference images and 16:9 where supported.
 - [x] Hub-only cool appliance-grey ramp.
 - [x] Keep the current launch beats and add a civilian walk cycle; replace the fractional civilian scale with a hard alpha/flash so the pixel art stays sharp.
-- [x] Poster, cartridges, toy astronaut, neuron plush, detergent bottles, basket, and towel are separate assets.
-- [x] Full AI wordmark, with a fallback plan.
+- [x] Poster, cartridges, neuron plush, detergent bottles, basket, and towel are separate assets. The toy astronaut is cut.
+- [x] Full AI wordmark attempted; Silkscreen CSS fallback approved.
 - [x] Six hub audio cues.
 
 ### Open decisions
 
 - [ ] Civilian skin tone: keep the stylized bone/sage/muscle face, or add a hub-only skin ramp?
-- [ ] Logo fallback: is a Silkscreen CSS wordmark + small AI emblem acceptable if the AI wordmark fails?
-- [ ] P1 prop scope: keep all five small props, or cut them if time is tight?
+- [x] Logo fallback: **Silkscreen CSS wordmark approved**; the delivered plate is not usable as alpha art.
+- [x] P1 prop scope: **toy astronaut cut**; the remaining props stay.
 - [ ] Panel information architecture: keep the current sections and restyle, or simplify the panel?
 - [ ] Tiny astronaut: reuse the existing P1 sprite at 1×, or generate a dedicated menu pose?
-- [ ] `audio.cue.hub.hum`: ambient loop, or one-shot cue?
+- [x] `audio.cue.hub.hum`: **one-shot accent** (decided v0.5); the menu theme owns the ambience bed.
 
 ---
 
@@ -112,23 +121,23 @@ Paths are relative to `public/hub/bathroom/assets.final.json`, so `src` values r
 | `sprite.prop.washer.drum` | sprite | 80×80 | 160×160 | `shared/sprites/washer-drum.png` | P0 |
 | `sprite.player.civilian` | sprite | 32×64 | 64×128 | `shared/sprites/civilian.png` | P0 |
 | `sprite.player.civilian.walk` | sheet | 6 × 32×64 | 6 × 64×128 | `shared/sprites/civilian-walk.png` | P0 |
-| `ui.logo.shrinkonauts` | image | 200×48 | 400×96 | `shared/ui/logo-shrinkonauts.png` | P0 |
+| `ui.logo.shrinkonauts` | image | — | — | **CSS fallback approved**; no runtime file | P0 |
 | `sprite.prop.poster` | sprite | 48×64 | 96×128 | `shared/sprites/poster.png` | P0 |
 | `sprite.prop.cartridge.anatomy` | sprite | 24×32 | 48×64 | `shared/sprites/cartridge-anatomy.png` | P0 |
 | `sprite.prop.cartridge.silicon` | sprite | 24×32 | 48×64 | `shared/sprites/cartridge-silicon.png` | P0 |
 | `ui.icon.cycle.anatomy` | image | 16×16 | 32×32 | `shared/ui/icon-cycle-anatomy.png` | P0 |
 | `ui.icon.cycle.silicon` | image | 16×16 | 32×32 | `shared/ui/icon-cycle-silicon.png` | P0 |
-| `sprite.prop.toy.astronaut` | sprite | 16×24 | 32×48 | `shared/sprites/toy-astronaut.png` | P1 |
+| ~~`sprite.prop.toy.astronaut`~~ | ~~sprite~~ | — | — | **Cut** | — |
 | `sprite.prop.plush.neuron` | sprite | 24×24 | 48×48 | `shared/sprites/plush-neuron.png` | P1 |
 | `sprite.prop.detergent.bottles` | sprite | 32×32 | 64×64 | `shared/sprites/detergent-bottles.png` | P1 |
 | `sprite.prop.laundry.basket` | sprite | 32×24 | 64×48 | `shared/sprites/laundry-basket.png` | P1 |
 | `sprite.prop.towel` | sprite | 16×32 | 32×64 | `shared/sprites/towel.png` | P1 |
-| `audio.cue.hub.click` | audio | 48 kHz | — | `shared/audio/hub-click.ogg` | P1 |
-| `audio.cue.hub.door` | audio | 48 kHz | — | `shared/audio/hub-door.ogg` | P1 |
-| `audio.cue.hub.spin` | audio | 48 kHz | — | `shared/audio/hub-spin.ogg` | P1 |
-| `audio.cue.hub.shrink` | audio | 48 kHz | — | `shared/audio/hub-shrink.ogg` | P1 |
-| `audio.cue.hub.arrive` | audio | 48 kHz | — | `shared/audio/hub-arrive.ogg` | P1 |
-| `audio.cue.hub.hum` | audio | 48 kHz | — | `shared/audio/hub-hum.ogg` | P1 |
+| `audio.cue.hub.click` | audio | 48 kHz | — | `shared/audio/hub-click.mp3` | P1 |
+| `audio.cue.hub.door` | audio | 48 kHz | — | `shared/audio/hub-door.mp3` | P1 |
+| `audio.cue.hub.spin` | audio | 48 kHz | — | `shared/audio/hub-spin.mp3` | P1 |
+| `audio.cue.hub.shrink` | audio | 48 kHz | — | `shared/audio/hub-shrink.mp3` | P1 |
+| `audio.cue.hub.arrive` | audio | 48 kHz | — | `shared/audio/hub-arrive.mp3` | P1 |
+| `audio.cue.hub.hum` | audio | 48 kHz | — | `shared/audio/hub-hum.mp3` | P1 |
 
 ### File naming
 
@@ -147,20 +156,18 @@ public/hub/bathroom/
     sprites/poster.png
     sprites/cartridge-anatomy.png
     sprites/cartridge-silicon.png
-    sprites/toy-astronaut.png
     sprites/plush-neuron.png
     sprites/detergent-bottles.png
     sprites/laundry-basket.png
     sprites/towel.png
-    ui/logo-shrinkonauts.png
     ui/icon-cycle-anatomy.png
     ui/icon-cycle-silicon.png
-    audio/hub-click.ogg
-    audio/hub-door.ogg
-    audio/hub-spin.ogg
-    audio/hub-shrink.ogg
-    audio/hub-arrive.ogg
-    audio/hub-hum.ogg
+    audio/hub-click.mp3
+    audio/hub-door.mp3
+    audio/hub-spin.mp3
+    audio/hub-shrink.mp3
+    audio/hub-arrive.mp3
+    audio/hub-hum.mp3
 ```
 
 ---
@@ -474,6 +481,12 @@ NEGATIVE: misspelling, wrong letters, missing letters, extra letters, lowercase,
 
 **Logo risk:** this is the highest-risk asset. Generate four variations, check spelling letter by letter, and keep the best. If more than two letters are wrong, fall back to a Silkscreen CSS wordmark plus a **text-free** helmet/porthole emblem generated separately. Do not spend more than two paid attempts repairing a broken wordmark.
 
+**Decision (2026-11-03):** the delivered plate has a washing machine baked
+behind the letters and cannot be keyed to clean alpha without destroying the
+cream letterforms. The Silkscreen CSS wordmark fallback is approved; the
+manifest keeps the asset ID as a placeholder/fallback marker and the hub scene
+draws the CSS wordmark.
+
 ---
 
 ## 9. Remaining asset prompts
@@ -543,7 +556,11 @@ SUBJECT: A single retro-futuristic game cartridge for the Silicon cycle, isolate
 - **Frame:** `FRAME_HUB_PROP`
 - **Negative:** `NEGATIVE_HUB_PROP` + `text, letters, numbers, labels, logo, scene, ground, shadow, frame, weapon, bullet, ammunition, gore, extra cartridges.`
 
-### 9.6 Toy astronaut — `sprite.prop.toy.astronaut`
+### 9.6 Toy astronaut — `sprite.prop.toy.astronaut` — **CUT**
+
+**Decision (2026-11-03):** cut. No source was delivered, the prop is not
+referenced by `hub.json`, and the hub scene reads as complete without it. The
+prompt is retained as future reference only.
 
 **Reference:** P1 style anchor for suit and palette only. Do not copy the exact character proportions.
 
@@ -633,16 +650,16 @@ Short diegetic game sound effect, 48 kHz, dry, tactile, retro-futuristic laundry
 
 | Asset ID | Prompt | Duration | File |
 |---|---|---|---|
-| `audio.cue.hub.click` | `A single chunky plastic control-panel button press: dry tactile click, tiny relay tick, very short.` | 0.05–0.15 s | `shared/audio/hub-click.ogg` |
-| `audio.cue.hub.door` | `A heavy washing-machine porthole door unlatches and swings open: metal latch clunk, soft pneumatic hiss, bone-cream enamel resonance, no gore.` | 0.4–0.8 s | `shared/audio/hub-door.ogg` |
-| `audio.cue.hub.spin` | `A retro washing machine drum spins up: low electric motor hum rising, water slosh, faint metal rattle, one-shot, no music.` | 1.0–2.0 s | `shared/audio/hub-spin.ogg` |
-| `audio.cue.hub.shrink` | `A sci-fi shrink beam fires: descending electric zap, suit power surge, soft flash whoosh, not painful, no voice, no gore.` | 0.5–0.9 s | `shared/audio/hub-shrink.ogg` |
-| `audio.cue.hub.arrive` | `A tiny astronaut arrives on a wet bathroom floor: soft high chime, tiny boot squelch, microscopic room tone.` | 0.3–0.8 s | `shared/audio/hub-arrive.ogg` |
-| `audio.cue.hub.hum` | `A warm laundry-lab room tone: low appliance hum, faint pipe tick, distant water drip, loopable, no music, no voice.` | 1.0–2.0 s | `shared/audio/hub-hum.ogg` |
+| `audio.cue.hub.click` | `A single chunky plastic control-panel button press: dry tactile click, tiny relay tick, very short.` | 0.05–0.15 s | `shared/audio/hub-click.mp3` |
+| `audio.cue.hub.door` | `A heavy washing-machine porthole door unlatches and swings open: metal latch clunk, soft pneumatic hiss, bone-cream enamel resonance, no gore.` | 0.4–0.8 s | `shared/audio/hub-door.mp3` |
+| `audio.cue.hub.spin` | `A retro washing machine drum spins up: low electric motor hum rising, water slosh, faint metal rattle, one-shot, no music.` | 1.0–2.0 s | `shared/audio/hub-spin.mp3` |
+| `audio.cue.hub.shrink` | `A sci-fi shrink beam fires: descending electric zap, suit power surge, soft flash whoosh, not painful, no voice, no gore.` | 0.5–0.9 s | `shared/audio/hub-shrink.mp3` |
+| `audio.cue.hub.arrive` | `A tiny astronaut arrives on a wet bathroom floor: soft high chime, tiny boot squelch, microscopic room tone.` | 0.3–0.8 s | `shared/audio/hub-arrive.mp3` |
+| `audio.cue.hub.hum` | `A warm laundry-lab room tone: low appliance hum, faint pipe tick, distant water drip, loopable, no music, no voice.` | 1.0–2.0 s | `shared/audio/hub-hum.mp3` |
 
 **Acceptance:** duration inside the cue window; dry; no music/voice; no gore; ≤120 KB; OGG or MP3; filename matches the table.
 
-**Note:** `audio.cue.hub.hum` is declared in the hub but is not currently played as an ambient loop. If it should be background ambience, that is a small audio/runtime change, not just an asset drop.
+**Note:** `audio.cue.hub.hum` is delivered as a one-shot room-tone accent (decided v0.5). It is not played as an ambient loop; the proposed menu theme owns the ambience bed.
 
 ---
 
@@ -655,7 +672,7 @@ Short diegetic game sound effect, 48 kHz, dry, tactile, retro-futuristic laundry
 | 2 | Door + drum | Circular, fit the porthole, no background; test rotation. |
 | 3 | Civilian idle | Reads at 64×128; side view facing left; no cell features. |
 | 4 | Civilian walk sheet | Six frames, consistent baseline, loops at 8–10 fps. |
-| 5 | Logo wordmark | Exact spelling; reads at 400×96 and 200×48. |
+| 5 | Logo wordmark | **Fallback approved**; CSS Silkscreen wordmark. AI plate rejected (washer baked behind letters). |
 | 6 | Poster + cartridges | Read at 96×128 and 48×64; distinct cycle identity. |
 | 7 | Small props | Read at 32–64 px; no magenta fringe; consistent palette. |
 | 8 | Card icons | Derived from cartridges; read at 32×32. |
@@ -727,7 +744,7 @@ Do not generate props before the scene and machine are approved. The scene is th
 - [ ] Door and drum fit the porthole; drum rotates cleanly.
 - [ ] Civilian idle reads at 64×128 and has no cell features.
 - [ ] Walk sheet has six usable frames and a consistent baseline.
-- [ ] Logo spells SHRINKONAUTS exactly; reads at 400×96 and 200×48.
+- [x] Logo fallback approved: the Silkscreen CSS wordmark spells SHRINKONAUTS and reads in the 720p capture; the AI plate is rejected.
 - [ ] Poster reads at 96×128; blank label area for the runtime text.
 - [ ] Cartridges are distinct, readable, and not weapon-like.
 - [ ] Card icons are derived from the cartridges and read at 32×32.
@@ -770,6 +787,13 @@ Keep a separate spreadsheet or Markdown table. Keep failed rows; add a new row f
 | Verdict | approved / retry / placeholder / cut |
 | Licence | Nano Banana / Google Gemini plan; Ludo Audio plan |
 | Notes | one variable changed; reason for retry |
+
+**Decision log (2026-11-03):**
+
+| Asset ID | Verdict | Evidence |
+|---|---|---|
+| `ui.logo.shrinkonauts` | fallback approved | Delivered plate has a washer baked behind the letters; CSS Silkscreen fallback is the runtime wordmark. |
+| `sprite.prop.toy.astronaut` | cut | No source; not referenced by `hub.json`; scene is complete without it. |
 
 Copy-paste row template:
 
@@ -896,17 +920,17 @@ The panel should read as a wall-mounted terminal: square chrome, 2px border, har
 | Small props feel like a different game | Use the approved scene and machine as references; keep the palette and outline weight. |
 | P1 prop scope grows | Cut line: drop the five small props first; keep scene, machine, civilian, walk, logo, poster, cartridges. |
 | Panel IA changes expand scope | Keep the existing sections and restyle only. |
-| Hum loop is not wired | Treat `audio.cue.hub.hum` as a loopable asset; add the ambient loop as a separate small task. |
+| Hum loop is not wired | **Decided v0.5:** `audio.cue.hub.hum` is a one-shot accent; no ambient loop is needed. |
 | Licence unclear | Do not ship final assets until the Nano Banana and Ludo plans/terms are recorded. |
 
 ### Decisions still open
 
 1. **Civilian skin tone:** keep the stylized bone/sage/muscle face, or add a hub-only skin ramp?
-2. **Logo fallback:** if the AI wordmark fails, is a Silkscreen CSS wordmark + small AI emblem acceptable?
-3. **P1 props:** keep all five small props, or cut them if time is tight?
+2. **Logo fallback:** **resolved** — Silkscreen CSS wordmark approved.
+3. **P1 props:** **resolved** — toy astronaut cut; the remaining props stay.
 4. **Panel IA:** keep the current sections and restyle, or simplify the panel for the full redesign?
 5. **Tiny astronaut:** reuse the existing P1 sprite at 1×, or generate a dedicated menu pose?
-6. **Hum loop:** is `audio.cue.hub.hum` meant to be ambient background, or just a one-shot cue?
+6. **Hum loop:** **decided v0.5** — `audio.cue.hub.hum` is a one-shot accent, not ambient background.
 
 ---
 
@@ -915,3 +939,5 @@ The panel should read as a wall-mounted terminal: square chrome, 2px border, har
 | Date | Change |
 |---|---|
 | 2026-11-01 | Initial M3.5 hub prompt pack. Locks the existing bathroom hub, full layout redesign, 640×360/2× scale, retro-futuristic laundry lab, hoodie/pajama civilian, Nano Banana first, appliance-grey ramp, walk cycle, separate props, full AI wordmark, and six audio cues. |
+| 2026-11-03 | Added the completion-status banner and linked the cross-discipline matrix. Corrected the audio summary to say the menu theme is proposed, not shipped. |
+| 2026-11-03 | Approved the Silkscreen CSS logo fallback after the delivered plate was found to have a washing machine baked behind the wordmark. Cut the toy astronaut (no source, not referenced by `hub.json`). |

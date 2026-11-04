@@ -26,6 +26,7 @@ import type {
   EntityPropComponent,
   EntityPulseSourceComponent,
   EntityReceptorComponent,
+  LevelDocument,
   RoomBackgroundLayer,
   RoomCheckpoint,
   RoomDocument,
@@ -726,7 +727,7 @@ function parseEntity(
   if (!idleAnimation.ok) return err(idleAnimation.error);
   if (idleAnimation.value) entity.idleAnimation = idleAnimation.value;
 
-  for (const key of ["dialogueId", "gateId", "conceptId", "label"] as const) {
+  for (const key of ["dialogueId", "gateId", "conceptId", "factId", "label"] as const) {
     if (value[key] === undefined) continue;
     const field = readNonEmptyString(
       value,
@@ -764,8 +765,8 @@ function parseEntity(
   if (entity.type === "gate" && !entity.gateId) {
     return err(`${code}: entities[${index}] gate needs a gateId`);
   }
-  if (entity.type === "scanTarget" && !entity.conceptId) {
-    return err(`${code}: entities[${index}] scanTarget needs a conceptId`);
+  if (entity.type === "scanTarget" && !entity.conceptId && !entity.factId) {
+    return err(`${code}: entities[${index}] scanTarget needs a conceptId or factId`);
   }
   if ((entity.type === "agent" || entity.type === "gate") && !entity.sprite) {
     return err(`${code}: entities[${index}] ${entity.type} needs a sprite asset ID`);
@@ -1287,6 +1288,20 @@ export function collectThemeAssetIds(theme: ThemeDocument): AssetId[] {
   }
   for (const cue of Object.values(theme.audio?.cues ?? {})) {
     ids.add(cue);
+  }
+  return [...ids];
+}
+
+export function collectLevelBlueprintAssetIds(
+  levels: readonly LevelDocument[],
+): AssetId[] {
+  const ids = new Set<AssetId>();
+  for (const level of levels) {
+    for (const puzzle of Object.values(level.feedback?.puzzles ?? {})) {
+      for (const component of puzzle.blueprint?.components ?? []) {
+        if (isAssetId(component.symbol)) ids.add(component.symbol);
+      }
+    }
   }
   return [...ids];
 }

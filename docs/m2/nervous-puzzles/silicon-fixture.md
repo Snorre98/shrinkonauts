@@ -75,21 +75,21 @@ controller, a CPU, and an actuator arm. The controller is the integration point.
 +--------------------------------------------------------------+
 |  Circuit board                                               |
 |                                                              |
+|  [sensor console]                                             |
+|        ^                                                     |
 |  [sensor pad] ---> [interrupt line] ---> [controller socket] |
-|                                              |               |
-|                                        [interrupt controller]|
-|                                              |               |
-|                                         [CPU timer]          |
-|                                              |               |
-|  [CPU socket] (decoy)                  [actuator gate]       |
-|                                              |               |
-|                                        [actuator / exit]    |
+|                         ^                    [CPU socket]     |
+|                   [route plug]               [actuator gate] |
+|                                                    |         |
+|                                              [actuator/exit] |
 +--------------------------------------------------------------+
 ```
 
-The sensor pad and route plug are reachable without a second body. The CPU socket
-is a visible decoy; it does not open the actuator. The controller socket is the
-correct route. The actuator gate is the win.
+The sensor pad and route plug are reachable without a second body, but they now
+sit on the rising interrupt-line platforms. The player must carry the plug up to
+the controller/CPU catwalk. The CPU socket is a visible decoy on the output side;
+it does not open the actuator. The controller socket is the correct integration
+route. The actuator gate is the win, and the exit platform is below it.
 
 ## 6. Puzzle rules
 

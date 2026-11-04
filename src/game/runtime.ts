@@ -1,3 +1,7 @@
+import type {
+  AudioThemeOptions,
+  AudioThemeStopOptions,
+} from "../audio";
 import type { LearningEvent } from "../curriculum";
 import {
   createCurriculum,
@@ -20,6 +24,7 @@ import {
   type SurfaceId,
 } from "../feedback";
 import { toWorldEffectPlan } from "./effect-mapper";
+import { buildBlueprint } from "./blueprint";
 import type {
   DialogueDocument,
   DialogueEffect,
@@ -33,6 +38,7 @@ import type {
   RoomEntity,
   RoomExit,
   RoomInfoArea,
+  ScanFact,
 } from "../pack";
 import {
   advanceDialogue as advanceNarrative,
@@ -114,6 +120,7 @@ import {
 import { TETHER_LENGTHS } from "../world/physics";
 import {
   initialMachine,
+  machineIsPaused,
   transition,
   type GameState,
   type GameEventType,
@@ -153,6 +160,10 @@ function maxTetherLengthForLevel(
 
 export interface AudioPort {
   play(assetId: string): void;
+  playTheme(assetId: string, options?: AudioThemeOptions): void;
+  stopTheme(options?: AudioThemeStopOptions): void;
+  pauseTheme(): void;
+  resumeTheme(): void;
   setMuted(muted: boolean): void;
   readonly muted: boolean;
 }
@@ -346,6 +357,7 @@ export class GameRuntime implements WorldRuntime {
   private puzzles = new Map<string, PuzzleRuntime>();
   private activatedPuzzles = new Set<string>();
   private puzzleHintIndex = 0;
+  private revealedPuzzleHintCount = 0;
   private gateFeedback: { correct: boolean; message: string } | null = null;
   private gateHintIndex = 0;
   private debriefAnswers: Record<string, string> = {};
@@ -515,6 +527,7 @@ export class GameRuntime implements WorldRuntime {
 
     this.level = level;
     this.room = room;
+    this.playThemeForRoom();
     this.world = createRoomSimulation(
       room,
       undefined,
@@ -523,6 +536,7 @@ export class GameRuntime implements WorldRuntime {
     this.puzzles = new Map();
     this.activatedPuzzles = new Set();
     this.puzzleHintIndex = 0;
+    this.revealedPuzzleHintCount = 0;
     for (const puzzleId of level.puzzleIds ?? []) {
       const document = this.content.puzzles[puzzleId];
       if (document) this.puzzles.set(puzzleId, new PuzzleRuntime(document));
@@ -785,7 +799,15 @@ export class GameRuntime implements WorldRuntime {
       this.closeGate();
       return;
     }
-    this.transition(this.machine.state === "pause" ? "resume" : "pause");
+    if (this.machine.state === "pause") {
+      this.transition("resume");
+      this.audio.resumeTheme();
+      return;
+    }
+    this.transition("pause");
+    if (machineIsPaused(this.machine)) {
+      this.audio.pauseTheme();
+    }
   }
 
   toggleMap(): void {
@@ -1428,7 +1450,7 @@ export class GameRuntime implements WorldRuntime {
     }
 
     const target = this.nearestEntity(["scanTarget"], SCAN_RANGE, id);
-    if (!target || !target.entity.conceptId) {
+    if (!target || (!target.entity.conceptId && !target.entity.factId)) {
       if (this.requestSharedHelp(id)) {
         this.playCue("scan");
         this.emit();
@@ -1443,8 +1465,31 @@ export class GameRuntime implements WorldRuntime {
       this.emit();
       return;
     }
-    const conceptId = target.entity.conceptId;
-    if (this.knownConceptIds().includes(conceptId)) {
+
+    const fact = target.entity.factId
+      ? this.factById(target.entity.factId)
+      : undefined;
+    if (target.entity.factId && !fact) {
+      this.setToast(`Fact missing: ${target.entity.factId}`);
+      this.emit();
+      return;
+    }
+    const conceptId = fact?.conceptId ?? target.entity.conceptId;
+    if (!conceptId) {
+      this.emitAction(id, "scan", "rejected", {
+        reason: "out-of-range",
+        text: "Nothing to scan here",
+      });
+      this.requestFeedback(id);
+      this.playCue("scan");
+      this.emit();
+      return;
+    }
+
+    const alreadyKnown = fact
+      ? this.knownFactIds().includes(fact.id)
+      : this.knownConceptIds().includes(conceptId);
+    if (alreadyKnown) {
       if (this.requestSharedHelp(id)) {
         this.playCue("scan");
         this.emit();
@@ -1453,26 +1498,44 @@ export class GameRuntime implements WorldRuntime {
       this.emitAction(id, "scan", "blocked", {
         reason: "condition-unmet",
         target: { kind: "entity", id: target.entity.id },
-        text: "Already in your concept log",
+        text: fact
+          ? "Already scanned"
+          : "Already in your concept log",
       });
       this.requestFeedback(id);
       this.playCue("scan");
       this.emit();
       return;
     }
-    this.record({
-      type: "concept_revealed",
-      conceptId,
-      source: "scan",
-    });
+
+    if (fact) {
+      this.record({
+        type: "fact_revealed",
+        factId: fact.id,
+        conceptId: fact.conceptId,
+        source: "scan",
+      });
+    }
+    if (!this.knownConceptIds().includes(conceptId)) {
+      this.record({
+        type: "concept_revealed",
+        conceptId,
+        source: "scan",
+      });
+    }
+
     const concept = this.content.syllabus.concepts.find(
       (item) => item.id === conceptId,
     );
+    const text = fact
+      ? `${fact.title}: ${fact.claim}`
+      : concept
+        ? `${concept.term}: ${concept.definition}`
+        : conceptId;
     this.emitAction(id, "scan", "completed", {
       target: { kind: "entity", id: target.entity.id },
-      text: concept
-        ? `${concept.term}: ${concept.definition}`
-        : conceptId,
+      ...(fact ? { factId: fact.id } : {}),
+      text,
     });
     this.dismissHelpSurface();
     this.requestFeedback(id);
@@ -2195,6 +2258,19 @@ export class GameRuntime implements WorldRuntime {
     );
   }
 
+  knownFactIds(): string[] {
+    return unique(
+      this.curriculum.events
+        .filter((event) => event.type === "fact_revealed")
+        .map((event) => String(event.factId ?? ""))
+        .filter((id) => id !== ""),
+    );
+  }
+
+  factById(factId: string): ScanFact | undefined {
+    return (this.content.facts ?? []).find((fact) => fact.id === factId);
+  }
+
   subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -2239,6 +2315,27 @@ export class GameRuntime implements WorldRuntime {
             source: "dialogue",
           });
           break;
+        case "revealFact": {
+          const fact = this.factById(effect.factId);
+          if (!fact) {
+            this.setToast(`Fact missing: ${effect.factId}`);
+            break;
+          }
+          this.record({
+            type: "fact_revealed",
+            factId: fact.id,
+            conceptId: fact.conceptId,
+            source: "dialogue",
+          });
+          if (!this.knownConceptIds().includes(fact.conceptId)) {
+            this.record({
+              type: "concept_revealed",
+              conceptId: fact.conceptId,
+              source: "dialogue",
+            });
+          }
+          break;
+        }
         case "unlockAbility":
           if (unlockAbility(this.progression, effect.id)) {
             this.record({
@@ -2287,6 +2384,19 @@ export class GameRuntime implements WorldRuntime {
       this.audio.play(assetId);
     }
     this.onCue?.(name);
+  }
+
+  /**
+   * Theme resolution order from ADR-0076: room → pack theme → silence. The
+   * audio module crossfades when the previous room theme is still playing.
+   */
+  private playThemeForRoom(): void {
+    const themeId = this.room.music ?? this.content.theme.audio?.music;
+    if (themeId) {
+      this.audio.playTheme(themeId);
+    } else {
+      this.audio.stopTheme({ fadeOutMs: 600 });
+    }
   }
 
   private entityLabel(id: string): string {
@@ -2522,7 +2632,7 @@ export class GameRuntime implements WorldRuntime {
     if (puzzle.isSolved()) return false;
 
     const choices: Array<{ id: string; label: string }> = [];
-    if (this.puzzleHintIndex < puzzle.document.hints.length) {
+    if (puzzle.document.hints.length > 0) {
       choices.push({ id: "hint", label: "Show hint" });
     }
     if (puzzle.canReset()) {
@@ -2774,6 +2884,7 @@ export class GameRuntime implements WorldRuntime {
       (node) => node.type === "pulseSource",
     );
     const pulseState = pulseNode ? puzzle.nodeState(pulseNode.id) : undefined;
+    const hints = puzzle.document.hints;
     return {
       id,
       title: puzzle.document.title,
@@ -2783,11 +2894,12 @@ export class GameRuntime implements WorldRuntime {
       counters: puzzle.evidenceCounters(),
       hint:
         this.puzzleHintIndex > 0
-          ? (puzzle.document.hints[this.puzzleHintIndex - 1] ?? null)
+          ? (hints[this.puzzleHintIndex - 1] ?? null)
           : null,
-      canHint:
-        !puzzle.isSolved() &&
-        this.puzzleHintIndex < puzzle.document.hints.length,
+      canHint: !puzzle.isSolved() && hints.length > 0,
+      hintIndex: this.puzzleHintIndex,
+      hintsTotal: hints.length,
+      revealedHints: hints.slice(0, this.revealedPuzzleHintCount),
       pulse:
         pulseNode && pulseState
           ? {
@@ -2800,22 +2912,32 @@ export class GameRuntime implements WorldRuntime {
   }
 
   puzzleHint(): void {
-    if (this.machine.state !== "level" && this.machine.state !== "pause") {
+    if (
+      this.machine.state !== "level" &&
+      this.machine.state !== "pause" &&
+      this.machine.state !== "map"
+    ) {
       return;
     }
     const entry = [...this.puzzles.entries()].find(
       ([id, puzzle]) =>
         this.activatedPuzzles.has(id) &&
         !puzzle.isSolved() &&
-        this.puzzleHintIndex < puzzle.document.hints.length,
+        puzzle.document.hints.length > 0,
     );
     if (!entry) return;
 
     const [id, puzzle] = entry;
-    const hint = puzzle.document.hints[this.puzzleHintIndex];
+    const hints = puzzle.document.hints;
+    const hintIndex =
+      this.puzzleHintIndex >= hints.length ? 0 : this.puzzleHintIndex;
+    const hint = hints[hintIndex];
     if (!hint) return;
-    const hintIndex = this.puzzleHintIndex;
-    this.puzzleHintIndex += 1;
+    this.puzzleHintIndex = hintIndex + 1;
+    this.revealedPuzzleHintCount = Math.max(
+      this.revealedPuzzleHintCount,
+      this.puzzleHintIndex,
+    );
     this.record({
       type: "hint_used",
       puzzleId: id,
@@ -2928,6 +3050,8 @@ export class GameRuntime implements WorldRuntime {
 
   private conceptLogView(): ConceptView[] {
     const known = new Set(this.knownConceptIds());
+    const knownFacts = new Set(this.knownFactIds());
+    const allFacts = this.content.facts ?? [];
     return this.content.syllabus.concepts.map((concept) => ({
       id: concept.id,
       term: concept.term,
@@ -2941,6 +3065,14 @@ export class GameRuntime implements WorldRuntime {
           )?.term ?? relationship.target,
       })),
       misconceptions: concept.misconceptions,
+      facts: allFacts
+        .filter((fact) => fact.conceptId === concept.id)
+        .map((fact) => ({
+          id: fact.id,
+          title: fact.title,
+          claim: fact.claim,
+          discovered: knownFacts.has(fact.id),
+        })),
       discovered: known.has(concept.id),
     }));
   }
@@ -3020,6 +3152,7 @@ export class GameRuntime implements WorldRuntime {
 
   snapshot(): RuntimeSnapshot {
     const known = this.knownConceptIds();
+    const knownFacts = this.knownFactIds();
     const playerView = (id: PlayerId): PlayerView => {
       const player = this.world.players[id];
       return {
@@ -3039,6 +3172,18 @@ export class GameRuntime implements WorldRuntime {
       };
     };
 
+    const feedback = this.feedbackFrame();
+    const activePuzzle = this.activePuzzleEntry();
+    const blueprint = activePuzzle
+      ? buildBlueprint({
+          level: this.level,
+          puzzle: activePuzzle[1].document,
+          state: activePuzzle[1].snapshot(),
+          beats: feedback.beats,
+          mode: this.activeP2 ? "co-op" : "solo",
+        })
+      : null;
+
     return {
       state: this.machine.state,
       paused: this.machine.state === "pause",
@@ -3051,9 +3196,11 @@ export class GameRuntime implements WorldRuntime {
       players: { p1: playerView("p1"), p2: playerView("p2") },
       camera: { ...this.world.camera },
       world: this.worldView(),
-      feedback: this.feedbackFrame(),
+      feedback,
+      blueprint,
       abilities: [...this.progression.abilities],
       knownConceptIds: known,
+      knownFactIds: knownFacts,
       interaction: this.interactionView(),
       checkpointId: this.checkpointId,
       activeP2: this.activeP2,

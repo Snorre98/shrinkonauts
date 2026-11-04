@@ -4,6 +4,7 @@ import { parseRoom, parseTheme } from "./load";
 import { parseJsonUrl } from "./parse-common";
 import {
   parseDialogue,
+  parseFacts,
   parseGate,
   parseLevel,
   parseLicences,
@@ -102,6 +103,17 @@ export async function loadPackContent(
       return err(`${pack.materials}: ${materialsResult.error}`);
     }
     materials = materialsResult.value;
+  }
+
+  let facts: PackContent["facts"];
+  if (pack.facts) {
+    const factsJson = await json(new URL(pack.facts, packUrl), fetchImpl);
+    if (!factsJson.ok) return err(factsJson.error);
+    const factsResult = parseFacts(factsJson.value);
+    if (!factsResult.ok) {
+      return err(`${pack.facts}: ${factsResult.error}`);
+    }
+    facts = factsResult.value.facts;
   }
 
   const syllabusJson = await json(
@@ -212,6 +224,7 @@ export async function loadPackContent(
     dialogues,
     gates,
     puzzles,
+    ...(facts ? { facts } : {}),
     ...(materials ? { materials } : {}),
     warnings,
   });

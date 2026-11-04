@@ -1,6 +1,6 @@
 # M3 Background Asset Requirements — Shrinkonauts: The Reflex Arc
 
-**Status:** Draft v0.3 · 1 November 2026 (pretty sky-only runtime; layered stack retained as the future target)
+**Status:** Draft v0.5 · 3 November 2026 (pretty sky-only runtime; layered stack retained as the future target; 04 sky accepted)
 **Owner:** Snorre  
 **Scope:** The `03-nerve-forest` background: the pretty sky plate in the current runtime, plus the future sky/far/mid/near layered target<br>
 **Supersedes:** The background prompts and background pipeline notes in [`asset-requirements-v01.md`](asset-requirements-v01.md): §5.4 background status note, §6.2/§6.4 background notes, §7.3 background setting, §7.7–§7.8 background checks, §8.7/§8.13/§8.20 and the background rows in §9. The current M3 build wires only the pretty sky; far/mid/near remain the future layered target and are not shipped as runtime layers.<br>
@@ -11,6 +11,16 @@
 
 > **Current M3 status (2026-11-01).** The 03 room wires **only** the pretty `bg.nerve_forest.sky` plate: the tracked 2752×1536 source cropped to 2672×1536, Lanczos-downscaled to **1280×736** and displayed at **1×** cover. The plate is exported as lossless WebP at 978,732 bytes (~956 KiB), is **not palette-quantised**, and intentionally keeps the muscle-pink drapes and bone highlights. It is a recorded exception to the pixel-art palette guard, the half-res 2× sky rule and the ≤300 KB pixel-asset budget. The room has no `nerve-fibers` overlay. `bg.nerve_forest.far`, `.mid` and `.near` are declared placeholders/future work; their runtime WebPs are not shipped. Near's play-band repeat remains unresolved.
 
+> **Additive 04 sky (2026-11-03).** The separate
+> [`muscle-endplate-asset-requirements-v01.md`](muscle-endplate-asset-requirements-v01.md)
+> adds the final 1280×720 pretty sky for `04-muscle-effector`. The 2752×1536
+> Nano Banana source at
+> `art-source/nanobanan/new/muscle-endplate-2026-11-03/bg.muscle_endplate.sky.jpeg`
+> was cropped to 2720×1530 at (16,3), Lanczos-scaled to 1280×720, and exported
+> as a 669,798-byte lossless VP8L WebP. It is accepted and wired. This is not
+> part of this document's 03 layer contract; the 04 far/mid/near layers remain
+> declared placeholders.
+>
 > **Presentation follow-up (2026-11-02).** Proposed ADR-0070–0073 add stage
 > bands and a play-band camera, a `screen`/`world` background space with
 > focus/scale/anchor/sampling, asset fidelity tiers, and HUD density presets.
@@ -32,6 +42,7 @@
 | Key tool | **`npm run art:key`**, full frame, **no `--trim`** — future layers only |
 | Near layer | **Sparse overhead clumps**; lower half clear; no continuous frame; future target; play-band repeat unresolved |
 | 03 palette | Deep teal, sage, bone-shadow, nerve yellow, joint cyan; **recorded exception:** the pretty sky retains muscle pink |
+| 04 sky source | **Accepted** (`2026-11-03`, 2752×1536 → 1280×720 lossless WebP); wired and no longer `placeholder` |
 | Prompt version | **`m3-2026-11-01.1`** (future layered prompts) |
 | Style version | **`style-pixel-v2`** |
 | Doc version | **v0.3** |
@@ -57,7 +68,7 @@ Runtime files live under `public/packs/anatomy-reflex/shared/backgrounds/`. The 
 
 ### 1.2 Out of scope
 
-- `bg.muscle_endplate.*` and all `04-muscle-effector` backgrounds — placeholder art in M3.
+- `bg.muscle_endplate.far`, `.mid` and `.near` — declared placeholders. The 04 sky is covered by the additive muscle-endplate prompt pack; this document remains the 03 layer contract.
 - Levels `01-bone-gate`, `02-joint-chamber`, `05-reflex-core` and the Silicon fixture.
 - Music, ambience and background animation.
 - Any engine change beyond the recorded pixel-render settings in ADR-0048.
@@ -67,7 +78,7 @@ Runtime files live under `public/packs/anatomy-reflex/shared/backgrounds/`. The 
 
 This document is the **source of truth for the background prompts and key workflow**. The shared sprite, atlas, badge and audio requirements remain in [`asset-requirements-v01.md`](asset-requirements-v01.md). Where the two documents disagree about how a background plate is generated, this document wins.
 
-The main document remains the source of truth for **current M3 scope and status**: the pretty sky is the only wired 03 background, and far/mid/near are placeholders/future work. If the layered stack is revisited, update the main document's summary, §2.2 and §5.4 in the same change. Do not silently expand the M3 capture scope from this document alone.
+The main document remains the source of truth for **current M3 scope and status**: the pretty sky is the only wired 03 background, and far/mid/near are placeholders/future work. If the layered stack is revisited, update the main document's summary, §2.2 and §5.4 in the same change. Do not silently expand the M3 capture scope from this document alone. Cross-discipline completion status is in the [prompt-library matrix](../assets/prompt-library-v01.md#40-completion-matrix).
 
 ---
 
@@ -602,7 +613,7 @@ The 2026-11-01 layered pass used `#FF00FF`, tolerance 0.18, softness 0.08, no tr
 | Layers generated as one composite | One prompt per layer; no contact sheet; reject any plate that contains another layer's signature content |
 | Key report shows 80–100% coverage | The plate is opaque; reject it before pixel cleanup |
 | Raw JPEG shipped | Keep `art-source/` out of `public/`; validate that manifests never reference raw sources |
-| 04 backgrounds accidentally included | 04 backgrounds are out of scope; keep `bg.muscle_endplate.*` placeholder |
+| 04 far/mid/near accidentally included | Those layers are out of scope for this 03 contract; keep them as declared placeholders. The 04 sky is covered by the additive muscle-endplate prompt pack. |
 
 ### 10.2 Stop rules
 
@@ -624,6 +635,7 @@ The 2026-11-01 layered pass used `#FF00FF`, tolerance 0.18, softness 0.08, no tr
 | 2026-11-01 | Initial dedicated background requirements. Supersedes the background prompts in `asset-requirements-v01.md`. Sky is opaque; far/mid/near are `#FF00FF` cut-outs keyed with `art:key`; adds the layer contract, coverage/value budgets, `NEGATIVE_PARALLAX`, key workflow, acceptance checks and prompt log. Prompt version `m3-2026-11-01.1`; style version `style-pixel-v2`; doc v0.1. Does **not** re-baseline the current M3 scope: the sky remains the only wired 03 background, and far/mid/near remain source-only/deferred until regenerated and accepted. |
 | 2026-11-01 | Updated cut-out pass and wiring. Updated sky replaced the POC plate (2720×1568 → 2720×1564 crop → 640×368, no-muscle palette). Far (46.0%) and mid (50.7%) were exact-2× cropped, keyed, palette-quantised, 2×2-snapped and 2 px edge-welded, then wired with the specified parallax/depth/material setup. Near (23.9%) passes the technical checks but is deferred because its 1024×512 vertical repeat puts the hanging canopy across the play band. Doc v0.2. |
 | 2026-11-01 | **Pretty sky-only runtime.** Replaced the 640×368 quantised sky with the tracked 2752×1536 pretty source: 2672×1536 crop at x=40 → Lanczos 1280×736 → lossless WebP at 978,732 bytes (~956 KiB), 1× cover. Removed palette quantisation and the `nerve-fibers` overlay. Reverted far/mid/near to placeholders, removed them from `room.json`, and deleted their runtime WebPs and far/mid licence entries; sources, key reports and previews remain in `art-source/`. The layered stack is retained as a future target. Doc v0.3. |
+| 2026-11-03 | **Additive 04 sky accepted.** The separate muscle-endplate prompt pack adds the final 1280×720 `bg.muscle_endplate.sky` (2720×1530 crop → Lanczos → 669,798-byte lossless VP8L) and keeps 04 far/mid/near as declared placeholders. This document remains the 03 layer contract. |
 
 ---
 

@@ -47,7 +47,7 @@
     "ui.logo.shrinkonauts": {
       "type": "image",
       "placeholder": true,
-      "license": "Placeholder: Silkscreen wordmark fallback; the delivered plate has a washer baked behind the letters"
+      "license": "Approved CSS fallback: Silkscreen wordmark; delivered plate rejected because a washing machine is baked behind the letters"
     },
     "sprite.prop.poster": {
       "type": "sprite",
@@ -84,11 +84,6 @@
       "height": 16,
       "license": "Nano Banana / Google Gemini (plan TBD)"
     },
-    "sprite.prop.toy.astronaut": {
-      "type": "sprite",
-      "placeholder": true,
-      "license": "Placeholder until a toy astronaut plate is delivered"
-    },
     "sprite.prop.plush.neuron": {
       "type": "sprite",
       "src": "shared/sprites/plush-neuron.png",
@@ -119,27 +114,38 @@
     },
     "audio.cue.hub.click": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-click.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.door": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-door.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.spin": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-spin.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.shrink": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-shrink.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.arrive": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-arrive.mp3",
+      "license": "Stability AI Community License"
     },
     "audio.cue.hub.hum": {
       "type": "audio",
-      "placeholder": true
+      "src": "shared/audio/hub-hum.mp3",
+      "license": "Stability AI Community License"
+    },
+    "audio.music.menu": {
+      "type": "audio",
+      "src": "shared/audio/theme-menu.mp3",
+      "license": "Stability AI Community License"
     }
   }
 }

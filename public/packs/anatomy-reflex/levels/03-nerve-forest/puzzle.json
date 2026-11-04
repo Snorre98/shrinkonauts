@@ -2,16 +2,30 @@
   "schemaVersion": "1.0",
   "id": "puzzle-node-run",
   "title": "Node Run",
-  "objectiveIds": ["OBJ-2"],
-  "conceptIds": ["CON-3", "CON-5"],
-  "activation": { "mode": "roomStart" },
+  "objectiveIds": [
+    "OBJ-2"
+  ],
+  "conceptIds": [
+    "CON-3",
+    "CON-5"
+  ],
+  "activation": {
+    "mode": "roomStart"
+  },
   "tether": "off",
   "nodes": [
     {
       "id": "input-a",
       "type": "plate",
-      "rect": { "x": 224, "y": 600, "width": 64, "height": 48 },
-      "detects": ["player"],
+      "rect": {
+        "x": 160,
+        "y": 504,
+        "width": 64,
+        "height": 48
+      },
+      "detects": [
+        "player"
+      ],
       "minimum": 1,
       "countCarried": false
     },
@@ -23,8 +37,15 @@
     {
       "id": "input-b",
       "type": "plate",
-      "rect": { "x": 320, "y": 600, "width": 64, "height": 48 },
-      "detects": ["player"],
+      "rect": {
+        "x": 320,
+        "y": 472,
+        "width": 64,
+        "height": 48
+      },
+      "detects": [
+        "player"
+      ],
       "minimum": 1,
       "countCarried": false
     },
@@ -49,8 +70,15 @@
     {
       "id": "axon-entry",
       "type": "zone",
-      "rect": { "x": 544, "y": 552, "width": 128, "height": 104 },
-      "detects": ["player"],
+      "rect": {
+        "x": 512,
+        "y": 264,
+        "width": 96,
+        "height": 104
+      },
+      "detects": [
+        "player"
+      ],
       "minimum": 1,
       "countCarried": false
     },
@@ -64,8 +92,15 @@
     {
       "id": "terminal-zone",
       "type": "zone",
-      "rect": { "x": 1088, "y": 600, "width": 96, "height": 48 },
-      "detects": ["player"],
+      "rect": {
+        "x": 1120,
+        "y": 472,
+        "width": 64,
+        "height": 48
+      },
+      "detects": [
+        "player"
+      ],
       "minimum": 1,
       "countCarried": false
     },
@@ -83,17 +118,56 @@
     }
   ],
   "links": [
-    { "from": "input-a", "to": "input-a-trigger", "type": "press" },
-    { "from": "input-a-trigger", "to": "stimulus-counter", "type": "increment" },
-    { "from": "input-b", "to": "input-b-trigger", "type": "press" },
-    { "from": "input-b-trigger", "to": "stimulus-counter", "type": "increment" },
-    { "from": "stimulus-counter", "to": "threshold-gate", "type": "reached" },
-    { "from": "axon-entry", "to": "behind-gate", "type": "close" },
-    { "from": "stimulus-counter", "to": "spike-relay", "type": "activate" },
-    { "from": "terminal-zone", "to": "spike-relay", "type": "activate" },
-    { "from": "spike-relay", "to": "gate-exit", "type": "open" }
+    {
+      "from": "input-a",
+      "to": "input-a-trigger",
+      "type": "press"
+    },
+    {
+      "from": "input-a-trigger",
+      "to": "stimulus-counter",
+      "type": "increment"
+    },
+    {
+      "from": "input-b",
+      "to": "input-b-trigger",
+      "type": "press"
+    },
+    {
+      "from": "input-b-trigger",
+      "to": "stimulus-counter",
+      "type": "increment"
+    },
+    {
+      "from": "stimulus-counter",
+      "to": "threshold-gate",
+      "type": "reached"
+    },
+    {
+      "from": "axon-entry",
+      "to": "behind-gate",
+      "type": "close"
+    },
+    {
+      "from": "stimulus-counter",
+      "to": "spike-relay",
+      "type": "activate"
+    },
+    {
+      "from": "terminal-zone",
+      "to": "spike-relay",
+      "type": "activate"
+    },
+    {
+      "from": "spike-relay",
+      "to": "gate-exit",
+      "type": "open"
+    }
   ],
-  "win": { "type": "gateOpen", "gateId": "gate-exit" },
+  "win": {
+    "type": "gateOpen",
+    "gateId": "gate-exit"
+  },
   "reset": {
     "props": [],
     "nodes": [
@@ -106,23 +180,54 @@
     ]
   },
   "evidence": {
-    "onSolve": ["puzzle_solved"],
-    "counters": ["resets"]
+    "onSolve": [
+      "puzzle_solved"
+    ],
+    "counters": [
+      "resets"
+    ]
   },
   "rewards": {
-    "abilities": ["signal-dash"],
-    "mapNodes": ["map-muscle-effector"]
+    "abilities": [
+      "signal-dash"
+    ],
+    "mapNodes": [
+      "map-muscle-effector"
+    ]
   },
   "solution": [
-    { "action": "move", "actor": "p1", "x": 256, "y": 620 },
-    { "action": "move", "actor": "p1", "x": 352, "y": 620 },
-    { "action": "move", "actor": "p1", "x": 608, "y": 576 },
-    { "action": "move", "actor": "p1", "x": 1136, "y": 620 },
-    { "action": "wait", "ticks": 2 }
+    {
+      "action": "move",
+      "actor": "p1",
+      "x": 192,
+      "y": 528
+    },
+    {
+      "action": "move",
+      "actor": "p1",
+      "x": 352,
+      "y": 496
+    },
+    {
+      "action": "move",
+      "actor": "p1",
+      "x": 560,
+      "y": 316
+    },
+    {
+      "action": "move",
+      "actor": "p1",
+      "x": 1168,
+      "y": 496
+    },
+    {
+      "action": "wait",
+      "ticks": 2
+    }
   ],
   "hints": [
     "One input is below threshold. The trigger gate needs a second dendrite input.",
     "Once threshold is crossed, the spike is all-or-none. Extra presses do not increase it.",
-    "The axon is one-way: dendrite → trigger zone → axon → terminal."
+    "The axon is one-way: dendrite \u2192 trigger zone \u2192 axon \u2192 terminal."
   ]
 }
