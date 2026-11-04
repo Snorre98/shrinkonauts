@@ -23,7 +23,7 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 56 files, 584 unit/integration tests
+npm test               # 56 files, 587 unit/integration tests
 npm run smoke          # room boot + module boundary tests
 npm run build          # type check and production build
 npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
@@ -329,7 +329,7 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (56 files / 584 tests), pack validation/smoke pass, and the browser
+suite passes (56 files / 587 tests), pack validation/smoke pass, and the browser
 smoke passes 16/16. The hub starts Anatomy in Solo or Local co-op, returns to the
 bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
 M2 and M4.0b. Phone-controller same-screen co-op is planned as M4.0a; see

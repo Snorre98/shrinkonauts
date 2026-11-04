@@ -97,12 +97,12 @@ an ID is unresolved.
 | `ui.blueprint.symbol.threshold` | Threshold / accumulator | A vertical gauge with a fill line and a notch; reads as "enough" | 03 "Threshold" |
 | `ui.blueprint.symbol.flow` | One-way flow | A short conduit with a bead and a forward arrow; no cell body | 03 "One-way flow", generic flow |
 | `ui.blueprint.symbol.terminal` | Terminal / destination | A forked end or socket receiving a line | Optional 03 terminal |
-| `ui.blueprint.symbol.gate` | Gate / exit | A barrier that has opened into an arch; not a door illustration | 03 "Terminal / exit", generic gates |
-| `ui.blueprint.symbol.relay` | Relay / junction | Two lines merging into one, with a small switch node | 04 "Response + clearance" |
-| `ui.blueprint.symbol.timer` | Timer / window | A partial arc with a tick mark; suggests a window, not a clock face | 04 "Trigger + Ca²⁺ window" |
+| `ui.blueprint.symbol.gate` | Gate / exit | A barrier that has opened into an arch; not a door illustration | 03 "Terminal / exit", 01 "Actuate response" |
+| `ui.blueprint.symbol.relay` | Relay / junction | Two lines merging into one, with a small switch node | 04 "Response + clearance", 01 "Route + integrate" |
+| `ui.blueprint.symbol.timer` | Timer / window | A partial arc with a tick mark; suggests a window, not a clock face | 04 "Trigger + Ca²⁺ window", 01 "Wake CPU" |
 | `ui.blueprint.symbol.carry` | Carry / packet | A capsule or packet with a motion trail | 04 "Carry ACh" |
 | `ui.blueprint.symbol.receptor` | Receptor / bind | A socket with a matching key/capsule shape | 04 "Bind receptor" |
-| `ui.blueprint.symbol.pulse` | Pulse / wave | A compact spark or wave emitted from a point | Optional 04 terminal pulse |
+| `ui.blueprint.symbol.pulse` | Pulse / wave | A compact spark or wave emitted from a point | 01 "Detect change" |
 | `ui.blueprint.symbol.clear` | Clearance / decay | A fading particle or broken line returning to neutral | Optional 04 clearance |
 | `ui.blueprint.symbol.goal` | Goal / beacon | A small beacon or flag with radiating ticks | Optional final component |
 
@@ -147,12 +147,28 @@ visual components.
 | Bind receptor | `bind` | `ui.blueprint.symbol.receptor` |
 | Response + clearance | `respond`, `clear` | `ui.blueprint.symbol.relay` |
 
-The `goal`, `pulse`, `clear`, and `terminal` glyphs are optional alternatives for
+### 4.3 01 Interrupt Loop — 4 components
+
+| Component | Groups beats | Symbol |
+|---|---|---|
+| Detect change | `detect` | `ui.blueprint.symbol.pulse` |
+| Route + integrate | `route`, `integrate` | `ui.blueprint.symbol.relay` |
+| Wake CPU | `wake` | `ui.blueprint.symbol.timer` |
+| Actuate response | `actuate` | `ui.blueprint.symbol.gate` |
+
+The `goal`, `clear`, and `terminal` glyphs remain optional alternatives for
 future puzzles or for a final component that needs a stronger destination read.
 
 ---
 
 ## 5. Prompt pack
+
+The standalone copy/paste prompts for the nine symbols used by the three current
+puzzles are in
+[`blueprint-symbol-prompts-v01.md`](blueprint-symbol-prompts-v01.md). That file
+contains the full positive and negative prompt for each symbol plus the
+puzzle-to-component coverage matrix. The template and register below remain the
+design contract for future symbols.
 
 ### 5.1 Base prompt template
 

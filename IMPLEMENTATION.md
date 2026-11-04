@@ -81,7 +81,7 @@ Run from `shrinkonauts/`:
 ```bash
 npm install
 npm run dev             # http://127.0.0.1:5173/
-npm test                # 56 files, 584 unit/integration tests
+npm test                # 56 files, 587 unit/integration tests
 npm run smoke           # room boot + module boundary tests
 npm run build           # tsc --noEmit + Vite production build
 npm run pack:validate   # dev fixture + anatomy + catalog/hub validation
@@ -679,10 +679,10 @@ using system Chrome.
 On 2026-11-04, after the M3.75 HUD pass:
 
 ```text
-npm test             56 files, 584 tests passed
+npm test             56 files, 587 tests passed
 npm run build        tsc clean + Vite production build
 npm run pack:validate  dev placeholder/fixture PASS; anatomy PASS with expected warnings; catalog + bathroom hub PASS
-npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (59 IDs, 24 placeholders)
+npm run pack:smoke     dev modes PASS; anatomy runtime loop PASS (59 IDs, 24 placeholders); Silicon PASS (48 IDs, 20 placeholders)
 npm run smoke:e2e      16/16 passed
 git diff --check      clean
 ```

@@ -324,6 +324,15 @@ Rules:
 | Bind receptor | `bind` | `ui.blueprint.symbol.receptor` |
 | Response + clearance | `respond`, `clear` | `ui.blueprint.symbol.relay` |
 
+#### 01 Interrupt Loop — 4 components
+
+| Component | Groups beats | Symbol |
+|---|---|---|
+| Detect change | `detect` | `ui.blueprint.symbol.pulse` |
+| Route + integrate | `route`, `integrate` | `ui.blueprint.symbol.relay` |
+| Wake CPU | `wake` | `ui.blueprint.symbol.timer` |
+| Actuate response | `actuate` | `ui.blueprint.symbol.gate` |
+
 These groupings keep the learning-critical concepts while reducing 5–6 beats to
 four visual components.
 
@@ -496,8 +505,11 @@ Each phase must leave the game playable and the test suite green.
   `.feedback-beats__item` and `aria-current="step"`.
 - `src/ui/game-ui.ts` owns the three-zone header, hint strip, player cards,
   density state, and measured safe-area plumbing.
-- The 03/04 blueprints are authored in their `level.json` feedback blocks and
-  validated by `src/pack/validate.ts`.
+- The 03/04/01 blueprints are authored in their `level.json` feedback blocks
+  and validated by `src/pack/validate.ts`.
+- The nine standalone symbol prompts used by the three current puzzles are in
+  [`blueprint-symbol-prompts-v01.md`](blueprint-symbol-prompts-v01.md), with a
+  puzzle-to-component coverage matrix.
 - Blueprint symbols resolve through the asset provider; unresolved IDs render
   the CSS code glyph. `assets.placeholder.json` carries the placeholder entries.
   Final nanobanana art is not fabricated in this milestone.
@@ -519,7 +531,7 @@ Each phase must leave the game playable and the test suite green.
 8. Feedback surfaces and prompts respect the new HUD safe area.
 9. Text scales 1/1.25/1.5/2 and 720 px width have no clipping or unreachable
    content.
-10. Authored blueprints for 03/04 validate; fallback works for a puzzle without
+10. Authored blueprints for 03/04/01 validate; fallback works for a puzzle without
     authored data.
 11. The nanobanana symbol kit meets readability, palette, and transparency gates.
 12. `npm test`, `npm run pack:validate`, `npm run pack:smoke`,
