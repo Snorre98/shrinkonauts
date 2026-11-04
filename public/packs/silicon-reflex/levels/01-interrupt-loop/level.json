@@ -95,6 +95,83 @@
           "gate-actuator": {
             "label": "Actuator gate"
           }
+        },
+        "blueprint": {
+          "title": "Interrupt route",
+          "components": [
+            {
+              "id": "detect",
+              "label": "Detect change",
+              "symbol": "ui.blueprint.symbol.pulse",
+              "beatIds": [
+                "detect"
+              ],
+              "x": 0
+            },
+            {
+              "id": "route",
+              "label": "Route + integrate",
+              "symbol": "ui.blueprint.symbol.relay",
+              "beatIds": [
+                "route",
+                "integrate"
+              ],
+              "x": 1
+            },
+            {
+              "id": "wake",
+              "label": "Wake CPU",
+              "symbol": "ui.blueprint.symbol.timer",
+              "beatIds": [
+                "wake"
+              ],
+              "x": 2
+            },
+            {
+              "id": "actuate",
+              "label": "Actuate response",
+              "symbol": "ui.blueprint.symbol.gate",
+              "beatIds": [
+                "actuate"
+              ],
+              "x": 3
+            }
+          ],
+          "edges": [
+            {
+              "from": "detect",
+              "to": "route",
+              "type": "flow"
+            },
+            {
+              "from": "route",
+              "to": "wake",
+              "type": "oneWay"
+            },
+            {
+              "from": "wake",
+              "to": "actuate",
+              "type": "oneWay"
+            }
+          ],
+          "steps": [
+            {
+              "componentId": "detect",
+              "actor": "p1"
+            },
+            {
+              "componentId": "route",
+              "actor": "p1"
+            },
+            {
+              "componentId": "wake",
+              "actor": "p1"
+            },
+            {
+              "componentId": "actuate",
+              "actor": "p1"
+            }
+          ]
         }
       }
     }

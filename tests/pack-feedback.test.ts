@@ -7,10 +7,20 @@ const LEVEL_DIR = new URL(
   "../public/packs/anatomy-reflex/levels/",
   import.meta.url,
 );
+const SILICON_LEVEL_DIR = new URL(
+  "../public/packs/silicon-reflex/levels/",
+  import.meta.url,
+);
 
 function readLevel(levelId: string): Record<string, unknown> {
   return JSON.parse(
     readFileSync(new URL(`${levelId}/level.json`, LEVEL_DIR), "utf8"),
+  ) as Record<string, unknown>;
+}
+
+function readSiliconLevel(levelId: string): Record<string, unknown> {
+  return JSON.parse(
+    readFileSync(new URL(`${levelId}/level.json`, SILICON_LEVEL_DIR), "utf8"),
   ) as Record<string, unknown>;
 }
 
@@ -113,6 +123,40 @@ describe("level feedback content", () => {
       "p1",
       "p2",
       "p2",
+      "p1",
+    ]);
+  });
+
+  it("parses the authored Silicon interrupt-loop blueprint", () => {
+    const blueprint = feedback(
+      readSiliconLevel("01-interrupt-loop"),
+    )?.puzzles?.["puzzle-interrupt-loop"]?.blueprint;
+    expect(blueprint?.title).toBe("Interrupt route");
+    expect(blueprint?.components.map((component) => component.id)).toEqual([
+      "detect",
+      "route",
+      "wake",
+      "actuate",
+    ]);
+    expect(blueprint?.components.map((component) => component.symbol)).toEqual([
+      "ui.blueprint.symbol.pulse",
+      "ui.blueprint.symbol.relay",
+      "ui.blueprint.symbol.timer",
+      "ui.blueprint.symbol.gate",
+    ]);
+    expect(blueprint?.components[1]?.beatIds).toEqual([
+      "route",
+      "integrate",
+    ]);
+    expect(blueprint?.edges?.map((edge) => edge.type)).toEqual([
+      "flow",
+      "oneWay",
+      "oneWay",
+    ]);
+    expect(blueprint?.steps?.map((step) => step.actor)).toEqual([
+      "p1",
+      "p1",
+      "p1",
       "p1",
     ]);
   });

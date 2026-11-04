@@ -6,6 +6,7 @@ import { PuzzleRuntime, type PuzzleDocument } from "../src/puzzle";
 import { loadContent, packDirectory } from "../scripts/content-loader";
 
 const content = loadContent(packDirectory("anatomy-reflex"));
+const siliconContent = loadContent(packDirectory("silicon-reflex"));
 
 function level(id: string): LevelDocument {
   const found = content.levels.find((entry) => entry.id === id);
@@ -391,6 +392,50 @@ describe("blueprint builder", () => {
       "p1",
       "shared",
     ]);
+  });
+
+  it("builds the authored Silicon interrupt-loop blueprint", () => {
+    const interruptLevel = siliconContent.levels.find(
+      (entry) => entry.id === "01-interrupt-loop",
+    );
+    const interruptPuzzle = siliconContent.puzzles["puzzle-interrupt-loop"];
+    if (!interruptLevel || !interruptPuzzle) {
+      throw new Error("silicon interrupt-loop content missing");
+    }
+
+    const blueprint = buildBlueprint({
+      level: interruptLevel,
+      puzzle: interruptPuzzle,
+      state: new PuzzleRuntime(interruptPuzzle).snapshot(),
+      beats: [],
+    });
+
+    expect(blueprint?.title).toBe("Interrupt route");
+    expect(blueprint?.components.map((component) => component.id)).toEqual([
+      "detect",
+      "route",
+      "wake",
+      "actuate",
+    ]);
+    expect(blueprint?.components.map((component) => component.beatIds)).toEqual([
+      ["detect"],
+      ["route", "integrate"],
+      ["wake"],
+      ["actuate"],
+    ]);
+    expect(blueprint?.components.map((component) => component.actor)).toEqual([
+      "p1",
+      "p1",
+      "p1",
+      "p1",
+    ]);
+    expect(blueprint?.components.map((component) => component.state)).toEqual([
+      "active",
+      "pending",
+      "pending",
+      "pending",
+    ]);
+    expect(blueprint?.edges).toHaveLength(3);
   });
 
   it("keeps a component with an unknown beat reference pending", () => {

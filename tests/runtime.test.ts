@@ -11,6 +11,7 @@ import {
 import { loadContent, packDirectory } from "../scripts/content-loader";
 
 const content = loadContent(packDirectory("anatomy-reflex"));
+const siliconContent = loadContent(packDirectory("silicon-reflex"));
 
 class FakeAudio implements AudioPort {
   muted = false;
@@ -1333,6 +1334,35 @@ describe("game runtime", () => {
       "p1",
     ]);
     expect(snapshot.blueprint?.components[0]?.state).toBe("active");
+  });
+
+  it("projects the authored Silicon interrupt-loop blueprint after activation", () => {
+    const { runtime } = makeRuntimeWithContent(siliconContent);
+    const consolePoint = runtime.entityPixel("sensor-console");
+    if (!consolePoint) throw new Error("sensor-console missing");
+    runtime.placePlayer("p1", consolePoint.x, consolePoint.y);
+    expect(runtime.snapshot().interaction).toMatchObject({
+      kind: "puzzle",
+      label: "Start Interrupt Loop",
+    });
+
+    stepWith(runtime, playerActions({ interact: true }));
+    const blueprint = runtime.snapshot().blueprint;
+    expect(blueprint?.puzzleId).toBe("puzzle-interrupt-loop");
+    expect(blueprint?.title).toBe("Interrupt route");
+    expect(blueprint?.components.map((component) => component.id)).toEqual([
+      "detect",
+      "route",
+      "wake",
+      "actuate",
+    ]);
+    expect(blueprint?.components.map((component) => component.actor)).toEqual([
+      "p1",
+      "p1",
+      "p1",
+      "p1",
+    ]);
+    expect(blueprint?.components[0]?.state).toBe("active");
   });
 
   it("delivers effect plans idempotently with attribution", () => {

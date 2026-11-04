@@ -1,5 +1,42 @@
 {
   "schemaVersion": "1.1",
   "id": "silicon-reflex.placeholder",
-  "assets": {}
+  "assets": {
+    "ui.blueprint.symbol.pulse": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.relay": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.timer": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.gate": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    }
+  }
 }
