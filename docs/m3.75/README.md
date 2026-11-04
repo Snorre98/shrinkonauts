@@ -1,6 +1,6 @@
 # M3.75 — In-Room HUD: Compact Blueprint, Progress, and Player Cards
 
-**Status:** proposed — specification and implementation plan
+**Status:** implemented — automated validation complete; CSS placeholder symbols; human playtest pending
 **Date:** 2026-11-04
 **Owner:** Snorre
 **Depends on:** M1.75 feedback beats, M3 art direction, ADR-0049, ADR-0072, ADR-0073
@@ -463,8 +463,9 @@ export interface BlueprintView {
 It is not part of the compact header blueprint.
 
 The pure builder lives in `src/game/blueprint.ts`. It takes the level, puzzle
-document, puzzle run state, feedback beats, map view, and active mode. It does
-not touch the DOM, Phaser, or storage.
+document, puzzle run state, feedback beats, and active mode. The pack-level
+`MapView` remains popup-only room context and is not passed to the compact
+builder. It does not touch the DOM, Phaser, or storage.
 
 The UI component lives in `src/ui/blueprint.ts`. It renders the compact and
 expanded variants, resolves symbol assets through a callback, and exposes an
@@ -485,6 +486,21 @@ expanded variants, resolves symbol assets through a callback, and exposes an
 | 6 | Automated tests, text-scale/responsive captures, human playtest, docs update |
 
 Each phase must leave the game playable and the test suite green.
+
+### 8.1 Implementation notes
+
+- `src/game/blueprint.ts` is the pure authored/fallback builder used by
+  `GameRuntime.snapshot()`.
+- `src/ui/blueprint.ts` renders the compact icon strip and the expanded popup;
+  `src/ui/hud-progress.ts` owns the header checklist and keeps
+  `.feedback-beats__item` and `aria-current="step"`.
+- `src/ui/game-ui.ts` owns the three-zone header, hint strip, player cards,
+  density state, and measured safe-area plumbing.
+- The 03/04 blueprints are authored in their `level.json` feedback blocks and
+  validated by `src/pack/validate.ts`.
+- Blueprint symbols resolve through the asset provider; unresolved IDs render
+  the CSS code glyph. `assets.placeholder.json` carries the placeholder entries.
+  Final nanobanana art is not fabricated in this milestone.
 
 ---
 

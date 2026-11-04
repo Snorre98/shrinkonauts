@@ -23,7 +23,7 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 45 files, 423 unit/integration tests
+npm test               # 56 files, 584 unit/integration tests
 npm run smoke          # room boot + module boundary tests
 npm run build          # type check and production build
 npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
@@ -169,6 +169,9 @@ ephemeral and are rebuilt from puzzle/world state after restore.
   M1.8 `wang` transitions, pattern animation, image/atlas-sourced UI patterns,
   final material atlases, and editor tooling are deferred within the accepted
   architecture.
+- M3.75 blueprint symbols ship as CSS code glyphs with placeholder manifest
+  entries. Final 32×32 nanobanana glyphs remain pending the brief's readability
+  and palette gates; the blueprint data and layout do not change when they land.
 - Physical puzzle-gate bodies, `locked`/`unlock` props, conditional links,
   per-level debrief overrides, and side-level travel are accepted ADR targets but
   are **not implemented** in this branch. See
@@ -252,7 +255,7 @@ src/
   audio/         Cue playback, Web Audio, mute/volume, providers
   hub/           Bathroom hub document, loader, validation
   world/         Phaser scenes, fixed-step simulation, effects, tile visuals
-  ui/            HUD, bathroom menu, anchored feedback surfaces, overlays
+  ui/            HUD, blueprint, bathroom menu, anchored feedback surfaces, overlays
   game/          App shell, pack runtime orchestrator, surface router, boot
   platform/      Browser entry point
 scripts/
@@ -326,8 +329,8 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (53 files / 540 tests), pack validation/smoke pass, and the browser
-smoke passes 11/11. The hub starts Anatomy in Solo or Local co-op, returns to the
+suite passes (56 files / 584 tests), pack validation/smoke pass, and the browser
+smoke passes 16/16. The hub starts Anatomy in Solo or Local co-op, returns to the
 bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
 M2 and M4.0b. Phone-controller same-screen co-op is planned as M4.0a; see
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
@@ -338,11 +341,12 @@ source sheets (ADR-0065), and `npm run art:key` removes magenta backgrounds from
 the nanobanan concept plates. Entity/background animation, final art approval,
 and the full ADR-0062 descriptor remain future work.
 
-M3.75 is **specified, not implemented**: the in-room HUD moves to a three-zone
-header with a compact 2–4-component puzzle blueprint, header checklist, header
-hint strip, and bottom player cards. The room-to-room context moves into the
-`Tab` blueprint popup. The blueprint symbol kit has a prompt pack and
-placeholder-first integration plan; see
+M3.75 is **implemented** with automated verification: the in-room HUD uses the
+three-zone header with the compact 2–4-component puzzle blueprint, header
+checklist, hint strip, and bottom player cards. The room-to-room context lives in
+the `Tab` blueprint popup. Blueprint symbols currently use the CSS code-glyph
+fallback and placeholder manifest entries; final nanobanana art remains a tracked
+follow-up. Human visual/playtest review is pending. See
 [`docs/m3.75/README.md`](docs/m3.75/README.md).
 
 M1.75 remains **implementation complete; manual solo/co-op playtest pending**.
