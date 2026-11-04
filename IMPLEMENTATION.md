@@ -8,8 +8,9 @@ starts at **03 — Nerve Forest**, plays Node Run, transitions to **04 — Endpl
 Ferry**, and finishes with teach-back evidence export. Silicon is available as a
 separate cycle. Multiplayer is same-room, shared-screen co-op only (ADR-0081):
 M4.0a phone controllers use an input-only Cloudflare relay. The standalone
-controller page, touch input, host session, and room relay are implemented; hub
-pairing and the explicit Start gate remain Phase 6. The obsolete Online co-op
+controller page, touch input, host session, room relay, hub pairing, QR/code
+setup, and explicit Start gate are implemented. Phase 7 latency/game-feel
+measurement and the playtest record remain. The obsolete Online co-op
 placeholder and `online` catalog flag were removed.
 
 M1.8 adds `materials.json`, material grids and autotiling, deterministic tile
@@ -37,7 +38,7 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Anatomy cycle start, launch, and return | Working |
 | Silicon cycle | Available |
 | Online co-op lobby | Removed; same-room multiplayer only (ADR-0081) |
-| Phone controller co-op | Input-only relay, controller page, and host session working; hub pairing/start gate pending (M4.0a Phase 6) |
+| Phone controller co-op | Input-only relay, controller page, host session, hub pairing/QR setup, and explicit Start gate working; Phase 7 latency/game-feel pending (M4.0a) |
 | Direct boot into `03-nerve-forest` | Working via `?skipMenu=1` |
 | 03 → 04 transition through debrief | Working |
 | Pack + syllabus loading from `public/` | Working |
@@ -761,9 +762,9 @@ procedural placeholder:
 - Final bathroom hub art (M3.5); procedural hub placeholders ship now.
 - Remote online co-op, remote guest rendering, snapshots, interpolation, and
   prediction (M4.0b/M4.1); not planned per ADR-0081.
-- Phone-controller co-op (M4.0a); the controller page, input-only relay, and host
-  session are wired, but hub pairing/start gating and the latency/game-feel
-  close-out remain (Phases 6–7).
+- Phone-controller co-op (M4.0a); the controller page, input-only relay, host
+  session, and hub pairing/start gate are wired, but the Phase 7
+  latency/game-feel close-out and playtest record remain.
 - Physical puzzle-gate bodies (ADR-0002 target).
 - `locked`/`unlock`/`propReleased` (ADR-0004 target).
 - `requires`/`message`/`linkBlocked` (ADR-0005 target).

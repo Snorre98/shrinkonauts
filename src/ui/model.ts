@@ -189,6 +189,20 @@ export type SurfaceAction =
   | { type: "cancel" }
   | { type: "choose"; choiceId: string };
 
+/**
+ * Presentation contract for a phone-controller session that is not active.
+ * The game layer owns the session; `ui` only renders this plain state.
+ */
+export interface HostRunOverlayView {
+  state: string;
+  pausedReason: string | null;
+  missingSlots: PlayerId[];
+  canStart: boolean;
+  canResume: boolean;
+  ended: boolean;
+  error: string | null;
+}
+
 export interface RuntimeSnapshot {
   state:
     | "boot"

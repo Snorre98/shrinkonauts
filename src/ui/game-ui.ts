@@ -3,6 +3,8 @@ import type { GateAnswer } from "../pack";
 import type {
   ConceptView,
   GateView,
+  HostRunOverlayView,
+  PlayerId,
   RuntimeSnapshot,
   SettingsView,
   SurfaceAction,
@@ -48,6 +50,10 @@ export interface GameUiCallbacks {
   onExport(): void;
   onNewRun(): void;
   onExitToHub(): void;
+  onHostResume(): void;
+  onHostFallback(slot: PlayerId): void;
+  onHostKeyboard(): void;
+  onHostEnd(): void;
 }
 
 export interface GameUiOptions {
@@ -61,6 +67,7 @@ export interface GameUi {
   update(snapshot: RuntimeSnapshot): void;
   applySettings(settings: SettingsView): void;
   setDiagnostics(diagnostics: GameUiDiagnostics): void;
+  setHostRun(view: HostRunOverlayView | null): void;
   warn(message: string): void;
   fatal(error: Error): void;
 }
@@ -248,6 +255,7 @@ export function mountGameUi(
   const callbacks = options.callbacks;
   let diagnostics = options.diagnostics;
   let snapshot: RuntimeSnapshot | null = null;
+  let hostRunView: HostRunOverlayView | null = null;
   let overlay: Overlay | null = null;
   let previousFocus: HTMLElement | null = null;
   let fatalError: Error | null = null;
@@ -479,6 +487,16 @@ export function mountGameUi(
     next.update?.(snapshot as RuntimeSnapshot);
   }
 
+  function syncOverlay(): void {
+    if (!snapshot) return;
+    const wanted = desiredOverlay(snapshot);
+    if (wanted && overlay?.key === wanted.key) {
+      overlay.update?.(snapshot);
+      return;
+    }
+    setOverlay(wanted);
+  }
+
   function trapTab(event: KeyboardEvent): void {
     if (!overlay) return;
     const focusables = [
@@ -511,6 +529,10 @@ export function mountGameUi(
 
     if (event.key === "Escape") {
       event.preventDefault();
+      // A missing-controller dialog must be resolved explicitly. The room
+      // scene discards gameplay input while the host run is paused, so Escape
+      // cannot be used as an escape hatch here.
+      if (overlay?.key.startsWith("host-run:")) return;
       callbacks.onEscape();
       return;
     }
@@ -1093,6 +1115,116 @@ export function mountGameUi(
     return { key: "pause", element: node, update };
   }
 
+  function hostRunSlotNames(slots: readonly PlayerId[]): string {
+    return slots.map((slot) => slot.toUpperCase()).join(" and ");
+  }
+
+  function shouldShowHostRun(next: RuntimeSnapshot): boolean {
+    if (!hostRunView) return false;
+    // Host-only screens remain usable while a phone is missing. The dialog
+    // returns as soon as the runtime is back on the level or pause screen.
+    if (next.state !== "level" && next.state !== "pause") return false;
+    const missing = hostRunView.missingSlots.length > 0;
+    const hostPause =
+      hostRunView.pausedReason === "host-paused" ||
+      hostRunView.pausedReason === "host-hidden";
+    if (hostPause && !missing) return false;
+    return (
+      hostRunView.ended ||
+      hostRunView.canStart ||
+      hostRunView.canResume ||
+      missing ||
+      hostRunView.state !== "active"
+    );
+  }
+
+  function renderHostRun(view: HostRunOverlayView): Overlay {
+    const missing = [...view.missingSlots];
+    const names = hostRunSlotNames(missing);
+    const heading = view.error
+      ? "Phone controller error"
+      : view.ended
+        ? "Phone session ended"
+        : view.canStart
+          ? "Controllers ready"
+          : missing.length > 0
+            ? `${names} disconnected`
+            : "Waiting for controllers";
+    const { root: node, body } = panel(
+      "overlay--host-run",
+      "Phone controller connection",
+      heading,
+    );
+
+    const status = el("p", "host-run__status");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    if (view.error) {
+      status.textContent = view.error;
+    } else if (view.ended) {
+      status.textContent =
+        "The phone room ended. The game stays frozen until you continue with the keyboard or end the session.";
+    } else if (view.canStart) {
+      status.textContent =
+        "All phone slots are ready. Start the cycle when you are ready.";
+    } else if (missing.length > 0) {
+      status.textContent = `Waiting for ${names} to reconnect. The game is paused.`;
+    } else {
+      status.textContent = "Waiting for the phone controllers.";
+    }
+
+    const hint = el(
+      "p",
+      "overlay__hint",
+      view.ended
+        ? "Continue this run on the keyboard, or end the session and return to the bathroom."
+        : "Wait for the phone to reconnect, continue that slot on the keyboard, or end the session.",
+    );
+    body.append(status, hint);
+
+    const actions = el("div", "overlay__actions");
+    if (view.canStart || view.canResume) {
+      const advance = button(
+        view.canStart ? "Start cycle" : "Resume",
+        "button button--primary",
+        () => callbacks.onHostResume(),
+      );
+      advance.dataset.autofocus = "true";
+      actions.append(advance);
+    } else if (!view.ended) {
+      const wait = button("Wait for reconnect", "button", () => {});
+      wait.disabled = true;
+      actions.append(wait);
+    }
+
+    for (const slot of missing) {
+      actions.append(
+        button(
+          `Continue ${slot.toUpperCase()} with keyboard`,
+          "button",
+          () => callbacks.onHostFallback(slot),
+        ),
+      );
+    }
+    if (view.ended || view.error) {
+      actions.append(
+        button("Continue with keyboard", "button", () =>
+          callbacks.onHostKeyboard(),
+        ),
+      );
+    }
+    actions.append(
+      button("End session", "button", () => callbacks.onHostEnd()),
+    );
+    body.append(actions);
+
+    if (!view.canStart && !view.canResume) node.dataset.autofocus = "true";
+    return {
+      key: `host-run:${view.state}:${missing.join(",")}:${view.canStart}:${view.canResume}:${view.ended}:${view.error ?? ""}`,
+      element: node,
+    };
+  }
+
   function renderError(error: Error): Overlay {
     const { root: node, body } = panel("overlay--error", "Error", "Boot failed");
     body.append(el("pre", "hud__fatal-message", error.message));
@@ -1109,6 +1241,9 @@ export function mountGameUi(
 
   function desiredOverlay(next: RuntimeSnapshot): Overlay | null {
     if (fatalError) return renderError(fatalError);
+    if (hostRunView && shouldShowHostRun(next)) {
+      return renderHostRun(hostRunView);
+    }
     if (next.state === "gate" && next.gate) return renderGate(next.gate);
     if (next.state === "map") return renderBlueprint(next);
     if (next.state === "conceptLog") return renderConceptLog(next);
@@ -1224,12 +1359,7 @@ export function mountGameUi(
         canvasRect(),
         safeArea,
       );
-      const wanted = desiredOverlay(next);
-      if (wanted && overlay?.key === wanted.key) {
-        overlay.update?.(next);
-        return;
-      }
-      setOverlay(wanted);
+      syncOverlay();
     },
 
     applySettings,
@@ -1237,6 +1367,11 @@ export function mountGameUi(
     setDiagnostics(next) {
       diagnostics = next;
       modeBadge.textContent = next.modeLabel;
+    },
+
+    setHostRun(next) {
+      hostRunView = next;
+      syncOverlay();
     },
 
     warn(message) {

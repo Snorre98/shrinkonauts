@@ -340,10 +340,10 @@ suite passes (68 files / 706 tests), pack validation/smoke pass, the browser
 smoke passes 17/17, and the controller browser smoke passes 1/1. The hub starts
 Anatomy in Solo or Local co-op, returns to the bathroom, and preserves per-pack
 saves. Silicon is available. Multiplayer is same-room, shared-screen co-op:
-phone-controller M4.0a has its host session, input-only Cloudflare relay, and
-standalone controller page working with touch input. Hub pairing and the
-explicit Start gate remain Phase 6. Remote online co-op, M4.0b, and M4.1 are not
-planned (ADR-0081). See
+phone-controller M4.0a has its host session, input-only Cloudflare relay,
+standalone controller page, hub pairing, QR/code setup, and explicit Start gate
+working. Phase 7 latency/game-feel measurement and the playtest record remain.
+Remote online co-op, M4.0b, and M4.1 are not planned (ADR-0081). See
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
 
 M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, and land

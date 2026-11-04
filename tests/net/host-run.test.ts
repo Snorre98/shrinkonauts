@@ -125,7 +125,6 @@ async function activate(
     plan: inputPlan,
     room: "ABC234",
     buildId: "build-test",
-    autoStart: true,
     now: () => 1_000,
     onStateChange: (view) => views.push(view),
   });
@@ -134,6 +133,8 @@ async function activate(
   for (const slot of phoneSlotsForPlan(inputPlan)) {
     transport.emit({ v: PROTOCOL_VERSION, t: "ready", slot });
   }
+  expect(run.view.state).toBe("controllers-ready");
+  expect(run.start()).toBe(true);
   expect(run.view.state).toBe("active");
   return { transport, local, arbiter, run, views };
 }
@@ -305,6 +306,49 @@ describe("HostRunAdapter", () => {
     expect(arbiter.activeSource("p2")).toBe("keyboard");
   });
 
+  it("never starts the run when controllers merely become ready", async () => {
+    const transport = new FakeTransport<HostClientMessage, HostServerMessage>();
+    const views: HostRunView[] = [];
+    const run = new HostRunAdapter({
+      transport,
+      plan: plan("keyboard", "controller"),
+      room: "ABC234",
+      buildId: "build-test",
+      now: () => 1_000,
+      onStateChange: (view) => views.push(view),
+    });
+    await run.connect();
+    transport.takeSent();
+    transport.emit({ v: PROTOCOL_VERSION, t: "ready", slot: "p2" });
+
+    expect(run.view.state).toBe("controllers-ready");
+    expect(transport.takeSent().some((message) => message.t === "resume")).toBe(
+      false,
+    );
+    expect(run.start()).toBe(true);
+    expect(transport.takeSent().map((message) => message.t)).toEqual([
+      "resume",
+    ]);
+  });
+
+  it("forwards host pause and resume to the controllers", async () => {
+    const { transport, run } = await activate(plan("keyboard", "controller"));
+    transport.takeSent();
+
+    expect(run.pause("host-paused")).toBe(true);
+    expect(run.view.state).toBe("paused");
+    expect(run.view.pausedReason).toBe("host-paused");
+    expect(transport.takeSent().map((message) => message.t)).toEqual([
+      "pause",
+    ]);
+
+    expect(run.resume()).toBe(true);
+    expect(run.view.state).toBe("active");
+    expect(transport.takeSent().map((message) => message.t)).toEqual([
+      "resume",
+    ]);
+  });
+
   it("requires at least one phone slot", () => {
     const transport = new FakeTransport<HostClientMessage, HostServerMessage>();
     expect(
@@ -332,7 +376,6 @@ describe("HostRunAdapter", () => {
       plan: plan("keyboard", "controller"),
       room: "abc234",
       buildId: "build-test",
-      autoStart: true,
     });
 
     expect(run.room).toBe("ABC234");

@@ -1,6 +1,7 @@
 import type {
   HostRunFactory,
   HostRunFactoryOptions,
+  HostRunPauseReason,
   HostRunPort,
   HostRunView,
 } from "../game/host-run-port";
@@ -55,13 +56,13 @@ export class HostRunAdapter implements HostRunPort {
   readonly plan: InputPlan;
   readonly phoneSlots: readonly PlayerSlot[];
   readonly session: HostSession;
-  private readonly autoStart: boolean;
   private readonly onStateChange?: HostRunFactoryOptions["onStateChange"];
   private readonly onError?: HostRunFactoryOptions["onError"];
   private readonly handles = new Map<PlayerSlot, SessionRemoteHandle>();
   private readonly bound = new Set<PlayerSlot>();
   private arbiter: InputArbiter | null = null;
   private viewValue: HostRunView;
+  private viewSignatureValue = "";
   private lastError: string | null = null;
 
   constructor(options: HostRunAdapterOptions) {
@@ -72,7 +73,6 @@ export class HostRunAdapter implements HostRunPort {
 
     this.plan = { ...options.plan };
     this.phoneSlots = phoneSlots;
-    this.autoStart = options.autoStart === true;
     this.onStateChange = options.onStateChange;
     this.onError = options.onError;
     this.session = new HostSession({
@@ -114,6 +114,10 @@ export class HostRunAdapter implements HostRunPort {
     return this.session.start();
   }
 
+  pause(reason: HostRunPauseReason = "host-paused"): boolean {
+    return this.session.pause(reason);
+  }
+
   resume(): boolean {
     return this.session.resume();
   }
@@ -142,7 +146,17 @@ export class HostRunAdapter implements HostRunPort {
     this.syncRemotes();
     const view = this.buildView(snapshot);
     this.viewValue = view;
-    this.onStateChange?.(view);
+    const signature = JSON.stringify({
+      state: view.state,
+      pausedReason: view.pausedReason,
+      missingSlots: view.missingSlots,
+      slots: view.slots,
+      error: view.error,
+    });
+    if (signature !== this.viewSignatureValue) {
+      this.viewSignatureValue = signature;
+      this.onStateChange?.(view);
+    }
 
     if (snapshot.lastError) {
       const key = `${snapshot.lastError.code}:${snapshot.lastError.message}`;
@@ -153,10 +167,6 @@ export class HostRunAdapter implements HostRunPort {
           message: snapshot.lastError.message,
         });
       }
-    }
-
-    if (this.autoStart && snapshot.state === "controllers-ready") {
-      this.session.start();
     }
   }
 

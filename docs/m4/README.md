@@ -1,7 +1,7 @@
 # M4 — Same-room co-op (phone controllers)
 
-- **Status:** M4.0a active, 2026-11-04; Phase 5.5 complete; M4.0b/M4.1 not
-  planned (ADR-0081)
+- **Status:** M4.0a active, 2026-11-04; Phases 1–6 complete; Phase 7 pending;
+  M4.0b/M4.1 not planned (ADR-0081)
 - **Owner:** Snorre
 - **Scope:** phone-controller, same-room, shared-screen co-op; host-authoritative
   input relay; keyboard remains the default and fallback

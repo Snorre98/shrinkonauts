@@ -203,6 +203,17 @@ describe("module boundaries", () => {
     }
   });
 
+  it("keeps the network seam out of the UI", () => {
+    for (const file of sourceFiles(
+      fileURLToPath(new URL("../src/ui/", import.meta.url)),
+    )) {
+      expect(
+        read(file),
+        `${relativeToSrc(file)} must not import net`,
+      ).not.toMatch(/from\s+["']\.\.\/net(?:\/[^"']*)?["']/);
+    }
+  });
+
   it("lets UI consume feedback but not puzzle internals", () => {
     const uiFiles = sourceFiles(
       fileURLToPath(new URL("../src/ui/", import.meta.url)),

@@ -7,6 +7,8 @@ import {
 
 test("selects and starts the Silicon cycle from a deep link", async ({ page }) => {
   const consoleErrors = collectConsoleErrors(page);
+  const roomSockets: string[] = [];
+  page.on("websocket", (socket) => roomSockets.push(socket.url()));
 
   await page.goto("/?pack=silicon-reflex");
   await page.waitForFunction(() => {
@@ -28,6 +30,36 @@ test("selects and starts the Silicon cycle from a deep link", async ({ page }) =
     return Boolean(app?.runtime) && app?.game?.scene.isActive("room") === true;
   });
   await expect(page.locator(".hud__title")).toHaveText("Interrupt Loop");
+  expect(roomSockets.filter((url) => url.includes("room="))).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("gates phone setup and returns to the keyboard default", async ({ page }) => {
+  const consoleErrors = await bootHub(page);
+
+  const p1 = page.locator('.hub__input-slot[data-slot="p1"]');
+  await expect(p1.locator('input[value="keyboard"]')).toBeChecked();
+  await expect(page.locator(".hub__controller")).toBeHidden();
+  await expect(page.locator(".hub__mode")).toHaveCount(2);
+  await expect(page.locator(".hub__online")).toHaveCount(0);
+
+  await p1.getByText("Phone", { exact: true }).click();
+
+  const setup = page.locator(".hub__controller");
+  await expect(setup).toBeVisible();
+  await expect(setup).toHaveAttribute("data-status", "error");
+  await expect(
+    page.getByRole("button", { name: /Start cycle|Continue/ }),
+  ).toBeDisabled();
+  await expect(page.locator("#hub-start-reason")).toContainText("VITE_NET_URL");
+  await expect(page.locator(".hub__controller-slot")).toHaveCount(1);
+  await expect(page.locator(".hub__controller-code")).toHaveText("—");
+
+  await p1.getByText("Keyboard", { exact: true }).click();
+  await expect(setup).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: /Start cycle|Continue/ }),
+  ).toBeEnabled();
   expect(consoleErrors).toEqual([]);
 });
 

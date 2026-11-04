@@ -22,6 +22,8 @@ export type HostRunSlotStatus =
 
 export type HostRunSource = "keyboard" | "controller";
 
+export type HostRunPauseReason = "host-paused" | "host-hidden";
+
 export interface HostRunSlotView {
   status: HostRunSlotStatus;
   source: HostRunSource;
@@ -44,7 +46,6 @@ export interface HostRunFactoryOptions {
   plan: InputPlan;
   room?: string;
   buildId: string;
-  autoStart?: boolean;
   onStateChange?: (view: HostRunView) => void;
   onError?: (error: HostRunError) => void;
 }
@@ -52,10 +53,12 @@ export interface HostRunFactoryOptions {
 /** Game-owned seam; the net adapter implements this without game importing net. */
 export interface HostRunPort {
   readonly room: string;
+  readonly phoneSlots: readonly PlayerSlot[];
   readonly view: HostRunView;
   connect(): Promise<void>;
   attachInput(arbiter: InputArbiter): void;
   start(): boolean;
+  pause(reason?: HostRunPauseReason): boolean;
   resume(): boolean;
   fallbackToKeyboard(slot: PlayerSlot): boolean;
   end(reason?: string): void;

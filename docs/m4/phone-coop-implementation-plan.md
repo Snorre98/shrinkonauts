@@ -734,6 +734,7 @@ Exit criteria:
 
 ### Phase 6 — Hub setup and pairing
 
+**Status:** implemented 2026-11-04.
 **Estimate:** 1–1.5 focused days.
 
 Goal: make the four input plans selectable and startable from the bathroom hub.
@@ -1070,14 +1071,14 @@ M4.1 (ADR-0081).
 
 ## 16. Next action
 
-Phases 1–5 are implemented, Phase 5.5 is complete, and the Cloudflare deployment
-spike passed. The next action is Phase 6:
+Phases 1–6 are implemented, Phase 5.5 is complete, and the Cloudflare deployment
+spike passed. The next action is Phase 7:
 
-1. Create or reuse the host session while still in the hub, before Start.
-2. Add the per-slot keyboard/phone selectors, QR/code setup, readiness status,
-   and explicit Start gate.
-3. Remove the temporary `autoStart: true` bridge.
-4. Add the disconnect/fallback/reconnect overlay.
+1. Add controller/host latency instrumentation for the playtest HUD.
+2. Add coyote time and jump buffering without changing keyboard/solo behavior.
+3. Run the latency and manual input matrix.
+4. Record the playtest note and close out the active documentation.
 
-Keyboard/K keyboard co-op must remain unchanged throughout. If a change cannot
-keep the K/K regression clean, stop and fix the seam before adding hub UI.
+Phase 6 is the explicit-Start boundary: the hub creates/reuses the host session
+before Start, K/K remains network-free, and controller readiness only enables
+Start. Keyboard/K keyboard co-op must remain unchanged throughout.
