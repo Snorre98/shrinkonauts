@@ -1,6 +1,6 @@
 # M3.75 — Blueprint Symbol Prompts v02
 
-**Status:** canonical prompt-ready set — magenta-key output, no final art generated yet
+**Status:** canonical set — 7 DONE / 5 TODO; magenta-key output, no final art generated yet
 **Date:** 2026-11-04
 **Scope:** the 12 puzzle-specific blueprint symbols used by 03, 04, and 01
 **Contract:** [`blueprint-symbol-asset-brief-v01.md`](blueprint-symbol-asset-brief-v01.md)
@@ -11,6 +11,38 @@ ADR-0049, ADR-0072, ADR-0080
 
 This is the canonical prompt set for the three current puzzles. Every component
 gets its own symbol; no glyph is reused across puzzles.
+
+## Asset status
+
+**DONE** means a usable source plate exists in `art-source/blueprint-bio-puzzles/`.
+It still needs keying, 32×32 fitting, and hand-cleanup. **TODO** means no usable
+source exists yet and the prompt still needs to be generated.
+
+| Prompt | Status | Source |
+|---|---|---|
+| BPV2-01 `input-pair` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-inputs.jpeg` |
+| BPV2-02 `threshold-gauge` | **TODO** | No source |
+| BPV2-03 `axon-flow` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-flow.jpeg` |
+| BPV2-04 `exit-gate` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-gate.jpeg` |
+| BPV2-05 `ca-window` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-timer.jpeg` |
+| BPV2-06 `ach-carry` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-carry.jpeg` |
+| BPV2-07 `receptor-bind` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-receptor.jpeg` |
+| BPV2-08 `response-clear` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-relay.jpeg` |
+| BPV2-09 `sensor-detect` | **TODO** | No Silicon source; `pulse.jpeg` is an anatomy-palette spare |
+| BPV2-10 `route-integrate` | **TODO** | No source |
+| BPV2-11 `cpu-wake` | **TODO** | No source |
+| BPV2-12 `actuator-gate` | **TODO** | No source |
+
+`ui-blueprint-symbol-pulse.jpeg` is unassigned. It matches the shape family for
+`sensor-detect`, but it is bone/teal anatomy art, not Silicon graphite/ceramic/
+signal-cyan art, so it is not DONE for BPV2-09.
+
+The `flow.jpeg` mapping to `axon-flow` is provisional: the plate reads as a
+vertical flow channel rather than the horizontal conduit + bead + arrow in the
+prompt. It is usable as the current flow glyph, but it is the weakest DONE
+source. The `relay.jpeg` mapping to `response-clear` shows the response merge but
+not a separate fading clearance tail; the label and state styling carry that
+distinction.
 
 All 12 prompts share the same output contract:
 
@@ -36,6 +68,9 @@ Suggested source paths:
 ---
 
 ## BPV2-01 — `ui.blueprint.symbol.input-pair`
+
+**Status:** DONE
+**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-inputs.jpeg`
 
 **Used by:** 03 Nerve Forest — Two inputs (`input`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
@@ -81,6 +116,8 @@ one combined signal; no third input or decorative circuitry.
 
 ## BPV2-02 — `ui.blueprint.symbol.threshold-gauge`
 
+**Status:** TODO
+
 **Used by:** 03 Nerve Forest — Threshold (`threshold`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
 **Variations:** 4.
@@ -124,6 +161,9 @@ labels; the glyph reads as a condition being met.
 ---
 
 ## BPV2-03 — `ui.blueprint.symbol.axon-flow`
+
+**Status:** DONE
+**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-flow.jpeg`
 
 **Used by:** 03 Nerve Forest — One-way flow (`axon`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
@@ -169,6 +209,9 @@ no branch or second path.
 
 ## BPV2-04 — `ui.blueprint.symbol.exit-gate`
 
+**Status:** DONE
+**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-gate.jpeg`
+
 **Used by:** 03 Nerve Forest — Terminal / exit (`terminal`, `exit`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
 **Variations:** 4.
@@ -213,6 +256,9 @@ barrier that has moved aside; no architectural door detail.
 
 ## BPV2-05 — `ui.blueprint.symbol.ca-window`
 
+**Status:** DONE
+**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-timer.jpeg`
+
 **Used by:** 04 Muscle Effector — Trigger + Ca²⁺ window (`trigger`, `release`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
 **Variations:** 4.
@@ -256,6 +302,9 @@ face, numerals, or literal channel.
 ---
 
 ## BPV2-06 — `ui.blueprint.symbol.ach-carry`
+
+**Status:** DONE
+**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-carry.jpeg`
 
 **Used by:** 04 Muscle Effector — Carry ACh (`carry`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
@@ -302,6 +351,9 @@ letters, molecular bonds, or package markings.
 
 ## BPV2-07 — `ui.blueprint.symbol.receptor-bind`
 
+**Status:** DONE
+**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-receptor.jpeg`
+
 **Used by:** 04 Muscle Effector — Bind receptor (`bind`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
 **Variations:** 4.
@@ -345,6 +397,9 @@ gap that reads as unbound; no lock iconography.
 ---
 
 ## BPV2-08 — `ui.blueprint.symbol.response-clear`
+
+**Status:** DONE
+**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-relay.jpeg`
 
 **Used by:** 04 Muscle Effector — Response + clearance (`respond`, `clear`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
@@ -391,6 +446,8 @@ at 1×; the glyph shows response and clearance without a second icon.
 ---
 
 ## BPV2-09 — `ui.blueprint.symbol.sensor-detect`
+
+**Status:** TODO
 
 **Used by:** 01 Interrupt Loop — Detect change (`detect`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
@@ -441,6 +498,8 @@ lightning-bolt silhouette.
 
 ## BPV2-10 — `ui.blueprint.symbol.route-integrate`
 
+**Status:** TODO
+
 **Used by:** 01 Interrupt Loop — Route + integrate (`route`, `integrate`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
 **Variations:** 4.
@@ -490,6 +549,8 @@ literal chip or socket.
 
 ## BPV2-11 — `ui.blueprint.symbol.cpu-wake`
 
+**Status:** TODO
+
 **Used by:** 01 Interrupt Loop — Wake CPU (`wake`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
 **Variations:** 4.
@@ -536,6 +597,8 @@ orange, muscle pink
 ---
 
 ## BPV2-12 — `ui.blueprint.symbol.actuator-gate`
+
+**Status:** TODO
 
 **Used by:** 01 Interrupt Loop — Actuate response (`actuate`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
