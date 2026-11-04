@@ -12,6 +12,10 @@ import {
   type FeedbackSurfaceRenderer,
 } from "./feedback-renderer";
 import { mountHudProgress } from "./hud-progress";
+import {
+  mountCompactBlueprint,
+  renderExpandedBlueprint,
+} from "./blueprint";
 import type { CanvasRect } from "./anchors";
 import { DEFAULT_SAFE_AREA, type SafeArea } from "./layout";
 import { snapTextScale, TEXT_SCALES } from "./text-scale";
@@ -94,13 +98,70 @@ function button(
   return node;
 }
 
-function percent(value: number): string {
-  return `${Math.max(4, Math.min(92, (value + 1) * 12))}%`;
-}
-
 function sentenceList(items: readonly string[]): string {
   if (items.length === 0) return "All required evidence recorded.";
   return items.join(" ");
+}
+
+type SystemChainState = "current" | "visited" | "next" | "unknown";
+
+interface SystemChainEntry {
+  id: string;
+  label: string;
+  state: SystemChainState;
+}
+
+function systemChain(snapshot: RuntimeSnapshot): SystemChainEntry[] {
+  const nodes = [...snapshot.map.nodes].sort(
+    (left, right) =>
+      left.x - right.x ||
+      left.y - right.y ||
+      left.id.localeCompare(right.id),
+  );
+  const currentIndex = Math.max(
+    0,
+    nodes.findIndex((node) => node.current),
+  );
+  const numberMatch = /^(\d+)/.exec(snapshot.level.id);
+  const baseNumber = numberMatch ? Number(numberMatch[1]) : 1;
+  const entries: SystemChainEntry[] = nodes.map((node, index) => {
+    const number = String(baseNumber + index - currentIndex).padStart(2, "0");
+    const state: SystemChainState = node.current
+      ? "current"
+      : node.visited
+        ? "visited"
+        : index === currentIndex + 1
+          ? "next"
+          : "unknown";
+    return {
+      id: node.id,
+      label: `${number} ${node.label.toUpperCase()}`,
+      state,
+    };
+  });
+
+  const known = new Set(nodes.map((node) => node.id));
+  const last = nodes[nodes.length - 1];
+  if (!last) return entries;
+  const tail =
+    snapshot.map.edges.find(
+      (edge) =>
+        edge.from === last.id && !known.has(edge.to) && edge.type === "gate",
+    ) ??
+    snapshot.map.edges.find(
+      (edge) => edge.from === last.id && !known.has(edge.to),
+    );
+  if (tail) {
+    const number = String(
+      baseNumber + nodes.length - currentIndex,
+    ).padStart(2, "0");
+    entries.push({
+      id: `unknown:${tail.to}`,
+      label: `${number} ?`,
+      state: "unknown",
+    });
+  }
+  return entries;
 }
 
 interface HudControl {
@@ -207,6 +268,9 @@ export function mountGameUi(
   blueprintSlot.setAttribute("aria-label", "Blueprint");
 
   const progress = mountHudProgress();
+  const blueprintUi = mountCompactBlueprint(blueprintSlot, {
+    onOpen: () => callbacks.onToggleMap(),
+  });
 
   const hintButton = button("Hint", "hud__hint-button", () =>
     callbacks.onPuzzleHint(),
@@ -639,50 +703,88 @@ export function mountGameUi(
     return { key: `gate:${gate.id}`, element: node, update };
   }
 
-  function renderMap(snapshot: RuntimeSnapshot): Overlay {
-    const { root: node, body } = panel("overlay--map", "System map", "System map");
-    const map = el("div", "map");
-    for (const mapNode of snapshot.map.nodes) {
-      const card = el("article", "map__node");
-      card.style.left = percent(mapNode.x);
-      card.style.top = percent(mapNode.y);
-      card.dataset.current = String(mapNode.current);
-      card.dataset.visited = String(mapNode.visited);
-      card.append(
-        el("h3", "map__label", mapNode.label),
-        el(
-          "p",
-          "map__state",
-          mapNode.current
-            ? "You are here"
-            : mapNode.visited
-              ? "Visited"
-              : "Unknown path",
-        ),
-      );
-      map.append(card);
-    }
-    body.append(map);
+  function renderBlueprint(snapshot: RuntimeSnapshot): Overlay {
+    const { root: node, body } = panel("overlay--map", "Blueprint", "Blueprint");
+    const blueprintHost = el("div", "overlay__blueprint");
 
-    const edges = el("ul", "map__edges");
-    for (const edge of snapshot.map.edges) {
-      const item = el(
-        "li",
-        undefined,
-        edge.revealed
-          ? `${edge.from} → ${edge.to} (${edge.type})`
-          : "Connection not yet revealed",
-      );
-      item.dataset.revealed = String(edge.revealed);
-      edges.append(item);
+    const systemSection = el("section", "blueprint-system-block");
+    systemSection.append(el("h3", "overlay__subheading", "System"));
+    const chain = el("ol", "blueprint-system");
+    for (const entry of systemChain(snapshot)) {
+      const item = el("li", "blueprint-system__item", entry.label);
+      item.dataset.state = entry.state;
+      chain.append(item);
     }
-    body.append(el("h3", "overlay__subheading", "Connections"), edges);
+    systemSection.append(chain);
+
+    const legendSection = el("section", "blueprint-legend-block");
+    legendSection.append(el("h3", "overlay__subheading", "Legend"));
+    const legend = el("ul", "blueprint-legend");
+    const legendEntries: ReadonlyArray<{
+      label: string;
+      state?: string;
+      actor?: string;
+    }> = [
+      { label: "Done", state: "done" },
+      { label: "Active", state: "active" },
+      { label: "Pending", state: "pending" },
+      { label: "P1", actor: "p1" },
+      { label: "P2", actor: "p2" },
+      { label: "Shared", actor: "shared" },
+    ];
+    for (const entry of legendEntries) {
+      const item = el("li", "blueprint-legend__item");
+      const swatch = el("span", "blueprint-legend__swatch");
+      if (entry.state) swatch.dataset.state = entry.state;
+      if (entry.actor) swatch.dataset.actor = entry.actor;
+      swatch.setAttribute("aria-hidden", "true");
+      item.append(swatch, document.createTextNode(entry.label));
+      legend.append(item);
+    }
+    legendSection.append(legend);
+
+    const hintSection = el("section", "blueprint-hints");
+    hintSection.append(el("h3", "overlay__subheading", "Hints"));
+    const hintList = el("ol", "blueprint-hints__list");
+    const hintEmpty = el("p", "overlay__hint", "No hint requested yet.");
+    const nextHint = button("Next hint", "button button--small", () =>
+      callbacks.onPuzzleHint(),
+    );
+    hintSection.append(hintList, hintEmpty, nextHint);
+
+    body.append(blueprintHost, systemSection, legendSection, hintSection);
 
     const actions = el("div", "overlay__actions");
-    actions.append(closeButton("Close map", () => callbacks.onToggleMap()));
+    actions.append(
+      closeButton("Close blueprint", () => callbacks.onToggleMap()),
+    );
     body.append(actions);
     node.dataset.autofocus = "true";
-    return { key: "map", element: node };
+
+    const update = (next: RuntimeSnapshot): void => {
+      blueprintHost.replaceChildren(
+        renderExpandedBlueprint(next.blueprint),
+      );
+      const hints = next.puzzle?.revealedHints ?? [];
+      hintList.replaceChildren(
+        ...hints.map((hint, index) =>
+          el("li", "blueprint-hints__item", `${index + 1}. ${hint}`),
+        ),
+      );
+      hintList.hidden = hints.length === 0;
+      hintEmpty.hidden = hints.length > 0;
+      hintEmpty.textContent = next.puzzle
+        ? "No hint requested yet."
+        : "No active puzzle.";
+      nextHint.disabled = !next.puzzle?.canHint;
+      nextHint.textContent =
+        next.puzzle && next.puzzle.hintsTotal > 0
+          ? `Next hint (${next.puzzle.hintIndex}/${next.puzzle.hintsTotal})`
+          : "Next hint";
+    };
+    update(snapshot);
+
+    return { key: "map", element: node, update };
   }
 
   function conceptCard(concept: ConceptView): HTMLElement {
@@ -1003,7 +1105,7 @@ export function mountGameUi(
   function desiredOverlay(next: RuntimeSnapshot): Overlay | null {
     if (fatalError) return renderError(fatalError);
     if (next.state === "gate" && next.gate) return renderGate(next.gate);
-    if (next.state === "map") return renderMap(next);
+    if (next.state === "map") return renderBlueprint(next);
     if (next.state === "conceptLog") return renderConceptLog(next);
     if (next.state === "debrief") return renderDebrief(next);
     if (next.state === "complete") return renderComplete(next);
@@ -1046,6 +1148,7 @@ export function mountGameUi(
     }
     abilityRow.textContent = abilityLines.join("  |  ");
     progress.update(next.feedback.beats);
+    blueprintUi.update(next.blueprint);
     const hintsTotal = next.puzzle?.hintsTotal ?? 0;
     const hintIndex = next.puzzle?.hintIndex ?? 0;
     hintCount.textContent = `Hint ${hintIndex}/${hintsTotal}`;

@@ -2912,7 +2912,11 @@ export class GameRuntime implements WorldRuntime {
   }
 
   puzzleHint(): void {
-    if (this.machine.state !== "level" && this.machine.state !== "pause") {
+    if (
+      this.machine.state !== "level" &&
+      this.machine.state !== "pause" &&
+      this.machine.state !== "map"
+    ) {
       return;
     }
     const entry = [...this.puzzles.entries()].find(
