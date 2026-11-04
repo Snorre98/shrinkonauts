@@ -280,7 +280,7 @@ longer an optional future asset.
 | Asset family | Prompt source | Notes |
 |---|---|---|
 | Shared sprites, scans, gates, props, receptors, badge | [`docs/m3/asset-requirements-v01.md`](../m3/asset-requirements-v01.md) | M3 style blocks, per-asset prompts, atlas maps, prompt log |
-| M3.75 blueprint symbols | [`blueprint-symbol-prompts-v02.md`](../m3.75/blueprint-symbol-prompts-v02.md) | 12 puzzle-specific standalone prompts, four per puzzle; no cross-puzzle glyph reuse; 7 DONE / 5 TODO |
+| M3.75 blueprint symbols | [`blueprint-symbol-prompts-v02.md`](../m3.75/blueprint-symbol-prompts-v02.md) | 12 puzzle-specific standalone prompts, four per puzzle; no cross-puzzle glyph reuse; 12/12 have source plates |
 | 03 background layers | [`docs/m3/background-asset-requirements-v01.md`](../m3/background-asset-requirements-v01.md) | Current 03 sky wired; far/mid/near future |
 | 04 sky, four atlases, gate, exit | [`docs/m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md) | Accepted 2026-11-03; evidence in §12 |
 | Hub scene/props/UI | [`docs/m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md) | Nano Banana first, Ludo fallback |

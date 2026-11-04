@@ -512,9 +512,8 @@ Each phase must leave the game playable and the test suite green.
   and validated by `src/pack/validate.ts`.
 - The 12 puzzle-specific symbol prompts are in
   [`blueprint-symbol-prompts-v02.md`](blueprint-symbol-prompts-v02.md), with a
-  puzzle-to-component coverage matrix. The v01 prompt files are superseded. The
-  current status is 7 DONE / 5 TODO; the DONE sources are the existing
-  `art-source/blueprint-bio-puzzles/` plates and still need key/fit/cleanup.
+  puzzle-to-component coverage matrix. The v01 prompt files are superseded. All
+  12 prompts now have source plates; the sources still need key/fit/cleanup.
 - Silicon uses its own four IDs (`sensor-detect`, `route-integrate`, `cpu-wake`,
   `actuator-gate`) and graphite/ceramic/signal-cyan art; it does not reuse
   anatomy glyphs.

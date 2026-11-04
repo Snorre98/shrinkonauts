@@ -1,6 +1,6 @@
 # M3.75 — Blueprint Symbol Prompts v02
 
-**Status:** canonical set — 7 DONE / 5 TODO; magenta-key output, no final art generated yet
+**Status:** canonical set — 12 DONE; source plates still need key/fit/cleanup
 **Date:** 2026-11-04
 **Scope:** the 12 puzzle-specific blueprint symbols used by 03, 04, and 01
 **Contract:** [`blueprint-symbol-asset-brief-v01.md`](blueprint-symbol-asset-brief-v01.md)
@@ -21,21 +21,21 @@ source exists yet and the prompt still needs to be generated.
 | Prompt | Status | Source |
 |---|---|---|
 | BPV2-01 `input-pair` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-inputs.jpeg` |
-| BPV2-02 `threshold-gauge` | **TODO** | No source |
+| BPV2-02 `threshold-gauge` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbo-threshold_gauge.jpeg` |
 | BPV2-03 `axon-flow` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-flow.jpeg` |
 | BPV2-04 `exit-gate` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-gate.jpeg` |
 | BPV2-05 `ca-window` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-timer.jpeg` |
 | BPV2-06 `ach-carry` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-carry.jpeg` |
 | BPV2-07 `receptor-bind` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-receptor.jpeg` |
 | BPV2-08 `response-clear` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-relay.jpeg` |
-| BPV2-09 `sensor-detect` | **TODO** | No Silicon source; `pulse.jpeg` is an anatomy-palette spare |
-| BPV2-10 `route-integrate` | **TODO** | No source |
-| BPV2-11 `cpu-wake` | **TODO** | No source |
-| BPV2-12 `actuator-gate` | **TODO** | No source |
+| BPV2-09 `sensor-detect` | **DONE** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-sensor_detect.jpeg` |
+| BPV2-10 `route-integrate` | **DONE** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-route_integrate.jpeg` |
+| BPV2-11 `cpu-wake` | **DONE** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-cpu_wake.jpeg` |
+| BPV2-12 `actuator-gate` | **DONE** | `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-actuator_gate.jpeg` |
 
-`ui-blueprint-symbol-pulse.jpeg` is unassigned. It matches the shape family for
-`sensor-detect`, but it is bone/teal anatomy art, not Silicon graphite/ceramic/
-signal-cyan art, so it is not DONE for BPV2-09.
+`art-source/blueprint-bio-puzzles/ui-blueprint-symbol-pulse.jpeg` remains an
+unused spare; no v02 prompt references it. The Silicon `sensor-detect` source is
+now the separate graphite/ceramic/signal-cyan plate.
 
 The `flow.jpeg` mapping to `axon-flow` is provisional: the plate reads as a
 vertical flow channel rather than the horizontal conduit + bead + arrow in the
@@ -116,7 +116,8 @@ one combined signal; no third input or decorative circuitry.
 
 ## BPV2-02 — `ui.blueprint.symbol.threshold-gauge`
 
-**Status:** TODO
+**Status:** DONE
+**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbo-threshold_gauge.jpeg`
 
 **Used by:** 03 Nerve Forest — Threshold (`threshold`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
@@ -447,7 +448,8 @@ at 1×; the glyph shows response and clearance without a second icon.
 
 ## BPV2-09 — `ui.blueprint.symbol.sensor-detect`
 
-**Status:** TODO
+**Status:** DONE
+**Source:** `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-sensor_detect.jpeg`
 
 **Used by:** 01 Interrupt Loop — Detect change (`detect`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
@@ -498,7 +500,8 @@ lightning-bolt silhouette.
 
 ## BPV2-10 — `ui.blueprint.symbol.route-integrate`
 
-**Status:** TODO
+**Status:** DONE
+**Source:** `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-route_integrate.jpeg`
 
 **Used by:** 01 Interrupt Loop — Route + integrate (`route`, `integrate`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
@@ -549,7 +552,8 @@ literal chip or socket.
 
 ## BPV2-11 — `ui.blueprint.symbol.cpu-wake`
 
-**Status:** TODO
+**Status:** DONE
+**Source:** `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-cpu_wake.jpeg`
 
 **Used by:** 01 Interrupt Loop — Wake CPU (`wake`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
@@ -598,7 +602,8 @@ orange, muscle pink
 
 ## BPV2-12 — `ui.blueprint.symbol.actuator-gate`
 
-**Status:** TODO
+**Status:** DONE
+**Source:** `art-source/blueprint-silicon-puzzle-icon/ui-blueprint-symbol-actuator_gate.jpeg`
 
 **Used by:** 01 Interrupt Loop — Actuate response (`actuate`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
