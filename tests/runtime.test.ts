@@ -567,6 +567,17 @@ describe("game runtime", () => {
     ).toHaveLength(3);
   });
 
+  it("allows the Blueprint popup to reveal the next hint", () => {
+    const { runtime } = makeRuntime();
+    runtime.step(1 / 60, input({ map: true }));
+    expect(runtime.state).toBe("map");
+
+    runtime.puzzleHint();
+    expect(runtime.state).toBe("map");
+    expect(runtime.snapshot().puzzle?.hintIndex).toBe(1);
+    expect(runtime.snapshot().puzzle?.revealedHints).toHaveLength(1);
+  });
+
   it("does not solve on one input and resets the counter", () => {
     const { runtime } = makeRuntime();
     pressSensor(runtime, "input-a");

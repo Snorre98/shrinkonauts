@@ -324,7 +324,7 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await expect(page.locator(".overlay--pause")).toHaveCount(0);
 
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("dialog", { name: "System map" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Blueprint" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.locator(".overlay--map")).toHaveCount(0);
 

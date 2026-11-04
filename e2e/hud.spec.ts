@@ -66,6 +66,43 @@ test("header carries the checklist, hint strip, and player-coloured cards", asyn
   expect(consoleErrors).toEqual([]);
 });
 
+test("compact blueprint opens the expanded popup with chain, legend, and hint history", async ({
+  page,
+}) => {
+  const consoleErrors = await boot(page);
+
+  await page.locator(".blueprint__component").first().click();
+  const dialog = page.getByRole("dialog", { name: "Blueprint" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator(".blueprint-system__item")).toHaveText([
+    "03 NERVE FOREST",
+    "04 MUSCLE EFFECTOR",
+    "05 ?",
+  ]);
+  await expect(dialog.locator(".blueprint-legend__item")).toHaveText([
+    "Done",
+    "Active",
+    "Pending",
+    "P1",
+    "P2",
+    "Shared",
+  ]);
+  await expect(dialog.locator(".blueprint__expanded-component")).toHaveCount(4);
+
+  await dialog.getByRole("button", { name: /Next hint/ }).click();
+  await expect(dialog.locator(".blueprint-hints__item")).toContainText(
+    "One input is below threshold",
+  );
+  await expect(dialog.getByRole("button", { name: /Next hint/ })).toContainText(
+    "1/3",
+  );
+
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".overlay--map")).toHaveCount(0);
+
+  expect(consoleErrors).toEqual([]);
+});
+
 test("solo hides the P2 card and pause keeps the shared controls only", async ({
   page,
 }) => {
