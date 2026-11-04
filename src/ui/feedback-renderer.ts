@@ -6,14 +6,24 @@ import type {
 } from "../feedback";
 import type { SurfaceAction, WorldView } from "./model";
 import { worldToScreen, type CanvasRect } from "./anchors";
-import { layoutSurfaces, DEFAULT_SAFE_AREA, type LayoutItem } from "./layout";
+import {
+  layoutSurfaces,
+  DEFAULT_SAFE_AREA,
+  type LayoutItem,
+  type SafeArea,
+} from "./layout";
 
 export interface FeedbackSurfaceCallbacks {
   onSurfaceAction(surfaceId: string, action: SurfaceAction): void;
 }
 
 export interface FeedbackSurfaceRenderer {
-  update(frame: FeedbackFrame, world: WorldView, canvasRect: CanvasRect): void;
+  update(
+    frame: FeedbackFrame,
+    world: WorldView,
+    canvasRect: CanvasRect,
+    safeArea?: SafeArea,
+  ): void;
   clear(): void;
 }
 
@@ -92,11 +102,6 @@ export function mountFeedbackSurfaces(
   live.setAttribute("aria-live", "polite");
   live.setAttribute("aria-atomic", "true");
   hudLayer.append(live);
-
-  const beatTracker = el("section", "feedback-beats");
-  beatTracker.id = "feedback-beats";
-  beatTracker.setAttribute("aria-label", "Puzzle progress");
-  hudLayer.append(beatTracker);
 
   function createNode(
     id: string,
@@ -222,24 +227,6 @@ export function mountFeedbackSurfaces(
     }
   }
 
-  function updateBeats(frame: FeedbackFrame): void {
-    const items = frame.beats;
-    beatTracker.replaceChildren();
-    if (items.length === 0) {
-      beatTracker.hidden = true;
-      return;
-    }
-    beatTracker.hidden = false;
-    const title = el("h3", "feedback-beats__title", "Progress");
-    const list = el("ol", "feedback-beats__list");
-    for (const beat of items) {
-      const item = el("li", "feedback-beats__item", beat.label);
-      item.dataset.state = beat.state;
-      list.append(item);
-    }
-    beatTracker.append(title, list);
-  }
-
   function announce(frame: FeedbackFrame): void {
     for (const cue of frame.cues) {
       if (cue.seq <= lastCueSeq || !cue.a11y.announce) continue;
@@ -259,13 +246,13 @@ export function mountFeedbackSurfaces(
     frame: FeedbackFrame,
     world: WorldView,
     canvasRect: CanvasRect,
+    safeArea: SafeArea = DEFAULT_SAFE_AREA,
   ): void {
     if (frame.seq < lastFrameSeq) {
       lastCueSeq = 0;
       lastAnnounced.clear();
     }
     lastFrameSeq = frame.seq;
-    updateBeats(frame);
     announce(frame);
 
     const activeIds = new Set<string>();
@@ -304,7 +291,7 @@ export function mountFeedbackSurfaces(
         width: document.documentElement.clientWidth,
         height: document.documentElement.clientHeight,
       },
-      DEFAULT_SAFE_AREA,
+      safeArea,
     );
     const byId = new Map(layout.map((box) => [box.id, box]));
     for (const entry of entries) {
@@ -327,8 +314,6 @@ export function mountFeedbackSurfaces(
     signatures.clear();
     lastAnnounced.clear();
     lastCueSeq = 0;
-    beatTracker.replaceChildren();
-    beatTracker.hidden = true;
     live.textContent = "";
   }
 
