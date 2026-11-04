@@ -163,12 +163,16 @@ export function mountCompactBlueprint(
   options: BlueprintUiOptions,
 ): BlueprintUi {
   let signature = "";
+  const openButton = el("button", "blueprint__minimal-open", "Blueprint");
+  openButton.type = "button";
+  openButton.setAttribute("aria-label", "Open blueprint");
+  openButton.addEventListener("click", () => options.onOpen());
 
   function update(view: BlueprintView | null): void {
     root.hidden = !view || view.components.length === 0;
     if (!view || view.components.length === 0) {
       signature = "";
-      root.replaceChildren();
+      root.replaceChildren(openButton);
       return;
     }
     const nextSignature = JSON.stringify(view);
@@ -185,7 +189,7 @@ export function mountCompactBlueprint(
       ),
     );
     chain.append(strip);
-    root.replaceChildren(chain);
+    root.replaceChildren(openButton, chain);
   }
 
   return { update };

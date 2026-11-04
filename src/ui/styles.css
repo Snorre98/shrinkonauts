@@ -710,6 +710,23 @@ body {
   min-height: 3rem;
 }
 
+.blueprint__minimal-open {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.5rem;
+  border: var(--ui-border) solid var(--color-nerve);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--color-nerve) 12%, transparent);
+  color: var(--color-nerve);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .blueprint__chain {
   display: flex;
   align-items: center;
@@ -1144,16 +1161,24 @@ body {
 }
 
 .hud[data-hud-density="minimal"] .hud__bar {
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   grid-template-areas:
-    "identity progress"
-    "strip strip";
+    "identity blueprint progress"
+    "strip strip strip";
   gap: 0.35rem 0.6rem;
   padding: 0.5rem 0.65rem 0.4rem;
 }
 
 .hud[data-hud-density="minimal"] .hud__blueprint {
+  min-width: 0;
+}
+
+.hud[data-hud-density="minimal"] .blueprint--compact {
   display: none;
+}
+
+.hud[data-hud-density="minimal"] .blueprint__minimal-open {
+  display: inline-flex;
 }
 
 .hud[data-hud-density="minimal"] .hud__title {
