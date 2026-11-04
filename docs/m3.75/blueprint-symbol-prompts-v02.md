@@ -21,7 +21,7 @@ source exists yet and the prompt still needs to be generated.
 | Prompt | Status | Source |
 |---|---|---|
 | BPV2-01 `input-pair` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-inputs.jpeg` |
-| BPV2-02 `threshold-gauge` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbo-threshold_gauge.jpeg` |
+| BPV2-02 `threshold-gauge` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-threshold_gauge.jpeg` |
 | BPV2-03 `axon-flow` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-flow.jpeg` |
 | BPV2-04 `exit-gate` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-gate.jpeg` |
 | BPV2-05 `ca-window` | **DONE** | `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-timer.jpeg` |
@@ -117,7 +117,7 @@ one combined signal; no third input or decorative circuitry.
 ## BPV2-02 — `ui.blueprint.symbol.threshold-gauge`
 
 **Status:** DONE
-**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbo-threshold_gauge.jpeg`
+**Source:** `art-source/blueprint-bio-puzzles/ui-blueprint-symbol-threshold_gauge.jpeg`
 
 **Used by:** 03 Nerve Forest — Threshold (`threshold`).
 **Output:** 32×32 PNG on flat solid magenta `#FF00FF`.
