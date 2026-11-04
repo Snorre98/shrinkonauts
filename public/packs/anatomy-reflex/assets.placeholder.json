@@ -154,6 +154,78 @@
         "height": 32
       },
       "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.input-pair": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.threshold-gauge": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.axon-flow": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.exit-gate": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.ca-window": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.ach-carry": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.receptor-bind": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
+    },
+    "ui.blueprint.symbol.response-clear": {
+      "type": "image",
+      "placeholder": true,
+      "display": {
+        "width": 32,
+        "height": 32
+      },
+      "fidelity": "ui-1x"
     }
   }
 }

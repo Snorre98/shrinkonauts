@@ -30,6 +30,18 @@ const GLYPH_CODES: Record<string, string> = {
   check: "✓",
   lock: "LK",
   unknown: "?",
+  "input-pair": "IN",
+  "threshold-gauge": "TH",
+  "axon-flow": "FL",
+  "exit-gate": "EX",
+  "ca-window": "CA",
+  "ach-carry": "AC",
+  "receptor-bind": "RB",
+  "response-clear": "RC",
+  "sensor-detect": "SD",
+  "route-integrate": "RI",
+  "cpu-wake": "CW",
+  "actuator-gate": "AG",
 };
 
 function el<K extends keyof HTMLElementTagNameMap>(

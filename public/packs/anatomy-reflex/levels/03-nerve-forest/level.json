@@ -106,7 +106,7 @@
             {
               "id": "inputs",
               "label": "Two inputs",
-              "symbol": "ui.blueprint.symbol.inputs",
+              "symbol": "ui.blueprint.symbol.input-pair",
               "beatIds": [
                 "input"
               ],
@@ -115,7 +115,7 @@
             {
               "id": "threshold",
               "label": "Threshold",
-              "symbol": "ui.blueprint.symbol.threshold",
+              "symbol": "ui.blueprint.symbol.threshold-gauge",
               "beatIds": [
                 "threshold"
               ],
@@ -124,7 +124,7 @@
             {
               "id": "axon",
               "label": "One-way flow",
-              "symbol": "ui.blueprint.symbol.flow",
+              "symbol": "ui.blueprint.symbol.axon-flow",
               "beatIds": [
                 "axon"
               ],
@@ -133,7 +133,7 @@
             {
               "id": "exit",
               "label": "Terminal / exit",
-              "symbol": "ui.blueprint.symbol.gate",
+              "symbol": "ui.blueprint.symbol.exit-gate",
               "beatIds": [
                 "terminal",
                 "exit"

@@ -25,28 +25,28 @@ const AUTHORED_03: LevelBlueprint = {
   components: [
     {
       id: "threshold",
-      symbol: "ui.blueprint.symbol.threshold",
+      symbol: "ui.blueprint.symbol.threshold-gauge",
       label: "Threshold",
       beatIds: ["threshold"],
       x: 1,
     },
     {
       id: "inputs",
-      symbol: "ui.blueprint.symbol.inputs",
+      symbol: "ui.blueprint.symbol.input-pair",
       label: "Two inputs",
       beatIds: ["input"],
       x: 0,
     },
     {
       id: "exit",
-      symbol: "ui.blueprint.symbol.gate",
+      symbol: "ui.blueprint.symbol.exit-gate",
       label: "Terminal / exit",
       beatIds: ["terminal", "exit"],
       x: 3,
     },
     {
       id: "axon",
-      symbol: "ui.blueprint.symbol.flow",
+      symbol: "ui.blueprint.symbol.axon-flow",
       label: "One-way flow",
       beatIds: ["axon"],
       x: 2,
@@ -139,10 +139,10 @@ describe("blueprint builder", () => {
       "Terminal / exit",
     ]);
     expect(blueprint?.components.map((component) => component.symbol)).toEqual([
-      "ui.blueprint.symbol.inputs",
-      "ui.blueprint.symbol.threshold",
-      "ui.blueprint.symbol.flow",
-      "ui.blueprint.symbol.gate",
+      "ui.blueprint.symbol.input-pair",
+      "ui.blueprint.symbol.threshold-gauge",
+      "ui.blueprint.symbol.axon-flow",
+      "ui.blueprint.symbol.exit-gate",
     ]);
     expect(
       blueprint?.components.map((component) => component.state),
@@ -423,6 +423,12 @@ describe("blueprint builder", () => {
       ["wake"],
       ["actuate"],
     ]);
+    expect(blueprint?.components.map((component) => component.symbol)).toEqual([
+      "ui.blueprint.symbol.sensor-detect",
+      "ui.blueprint.symbol.route-integrate",
+      "ui.blueprint.symbol.cpu-wake",
+      "ui.blueprint.symbol.actuator-gate",
+    ]);
     expect(blueprint?.components.map((component) => component.actor)).toEqual([
       "p1",
       "p1",
@@ -436,6 +442,19 @@ describe("blueprint builder", () => {
       "pending",
     ]);
     expect(blueprint?.edges).toHaveLength(3);
+  });
+
+  it("uses a distinct symbol for every authored puzzle component", () => {
+    const symbols = [...content.levels, ...siliconContent.levels].flatMap(
+      (entry) =>
+        Object.values(entry.feedback?.puzzles ?? {}).flatMap((puzzle) =>
+          (puzzle.blueprint?.components ?? []).map(
+            (component) => component.symbol,
+          ),
+        ),
+    );
+    expect(symbols).toHaveLength(12);
+    expect(new Set(symbols).size).toBe(symbols.length);
   });
 
   it("keeps a component with an unknown beat reference pending", () => {

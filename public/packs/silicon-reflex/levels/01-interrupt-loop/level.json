@@ -102,7 +102,7 @@
             {
               "id": "detect",
               "label": "Detect change",
-              "symbol": "ui.blueprint.symbol.pulse",
+              "symbol": "ui.blueprint.symbol.sensor-detect",
               "beatIds": [
                 "detect"
               ],
@@ -111,7 +111,7 @@
             {
               "id": "route",
               "label": "Route + integrate",
-              "symbol": "ui.blueprint.symbol.relay",
+              "symbol": "ui.blueprint.symbol.route-integrate",
               "beatIds": [
                 "route",
                 "integrate"
@@ -121,7 +121,7 @@
             {
               "id": "wake",
               "label": "Wake CPU",
-              "symbol": "ui.blueprint.symbol.timer",
+              "symbol": "ui.blueprint.symbol.cpu-wake",
               "beatIds": [
                 "wake"
               ],
@@ -130,7 +130,7 @@
             {
               "id": "actuate",
               "label": "Actuate response",
-              "symbol": "ui.blueprint.symbol.gate",
+              "symbol": "ui.blueprint.symbol.actuator-gate",
               "beatIds": [
                 "actuate"
               ],

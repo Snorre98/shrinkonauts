@@ -2,7 +2,7 @@
   "schemaVersion": "1.1",
   "id": "silicon-reflex.placeholder",
   "assets": {
-    "ui.blueprint.symbol.pulse": {
+    "ui.blueprint.symbol.sensor-detect": {
       "type": "image",
       "placeholder": true,
       "display": {
@@ -11,7 +11,7 @@
       },
       "fidelity": "ui-1x"
     },
-    "ui.blueprint.symbol.relay": {
+    "ui.blueprint.symbol.route-integrate": {
       "type": "image",
       "placeholder": true,
       "display": {
@@ -20,7 +20,7 @@
       },
       "fidelity": "ui-1x"
     },
-    "ui.blueprint.symbol.timer": {
+    "ui.blueprint.symbol.cpu-wake": {
       "type": "image",
       "placeholder": true,
       "display": {
@@ -29,7 +29,7 @@
       },
       "fidelity": "ui-1x"
     },
-    "ui.blueprint.symbol.gate": {
+    "ui.blueprint.symbol.actuator-gate": {
       "type": "image",
       "placeholder": true,
       "display": {

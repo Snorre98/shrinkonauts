@@ -91,6 +91,12 @@ describe("level feedback content", () => {
     ]);
     expect(nodeRun?.components[0]?.beatIds).toEqual(["input"]);
     expect(nodeRun?.components[3]?.beatIds).toEqual(["terminal", "exit"]);
+    expect(nodeRun?.components.map((component) => component.symbol)).toEqual([
+      "ui.blueprint.symbol.input-pair",
+      "ui.blueprint.symbol.threshold-gauge",
+      "ui.blueprint.symbol.axon-flow",
+      "ui.blueprint.symbol.exit-gate",
+    ]);
     expect(nodeRun?.edges?.map((edge) => edge.type)).toEqual([
       "flow",
       "oneWay",
@@ -114,10 +120,10 @@ describe("level feedback content", () => {
       "response",
     ]);
     expect(ferry?.components.map((component) => component.symbol)).toEqual([
-      "ui.blueprint.symbol.timer",
-      "ui.blueprint.symbol.carry",
-      "ui.blueprint.symbol.receptor",
-      "ui.blueprint.symbol.relay",
+      "ui.blueprint.symbol.ca-window",
+      "ui.blueprint.symbol.ach-carry",
+      "ui.blueprint.symbol.receptor-bind",
+      "ui.blueprint.symbol.response-clear",
     ]);
     expect(ferry?.steps?.map((step) => step.actor)).toEqual([
       "p1",
@@ -139,10 +145,10 @@ describe("level feedback content", () => {
       "actuate",
     ]);
     expect(blueprint?.components.map((component) => component.symbol)).toEqual([
-      "ui.blueprint.symbol.pulse",
-      "ui.blueprint.symbol.relay",
-      "ui.blueprint.symbol.timer",
-      "ui.blueprint.symbol.gate",
+      "ui.blueprint.symbol.sensor-detect",
+      "ui.blueprint.symbol.route-integrate",
+      "ui.blueprint.symbol.cpu-wake",
+      "ui.blueprint.symbol.actuator-gate",
     ]);
     expect(blueprint?.components[1]?.beatIds).toEqual([
       "route",
