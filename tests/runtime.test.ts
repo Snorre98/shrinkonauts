@@ -1274,7 +1274,18 @@ describe("game runtime", () => {
       y: 48,
     });
     expect(snapshot.blueprint?.puzzleId).toBe("puzzle-node-run");
-    expect(snapshot.blueprint?.components).toHaveLength(4);
+    expect(snapshot.blueprint?.components.map((component) => component.id)).toEqual([
+      "inputs",
+      "threshold",
+      "axon",
+      "exit",
+    ]);
+    expect(snapshot.blueprint?.components.map((component) => component.actor)).toEqual([
+      "both",
+      "both",
+      "p1",
+      "shared",
+    ]);
     expect(snapshot.blueprint?.components.map((component) => component.state)).toEqual([
       "active",
       "pending",
@@ -1309,7 +1320,18 @@ describe("game runtime", () => {
       )?.content.text,
     ).toBe("Ca²⁺ window is idle.");
     expect(snapshot.blueprint?.puzzleId).toBe("puzzle-endplate-ferry");
-    expect(snapshot.blueprint?.components).toHaveLength(4);
+    expect(snapshot.blueprint?.components.map((component) => component.id)).toEqual([
+      "trigger",
+      "carry",
+      "bind",
+      "response",
+    ]);
+    expect(snapshot.blueprint?.components.map((component) => component.actor)).toEqual([
+      "p1",
+      "p2",
+      "p2",
+      "p1",
+    ]);
     expect(snapshot.blueprint?.components[0]?.state).toBe("active");
   });
 

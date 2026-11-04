@@ -86,6 +86,16 @@ function withAuthoredBlueprint(
   return copy;
 }
 
+function withoutAuthoredBlueprint(
+  source: LevelDocument,
+  puzzleId: string,
+): LevelDocument {
+  const copy = structuredClone(source);
+  const config = copy.feedback?.puzzles?.[puzzleId];
+  if (config) delete config.blueprint;
+  return copy;
+}
+
 function beats(
   entries: ReadonlyArray<[string, FeedbackBeatState]>,
 ): FeedbackBeat[] {
@@ -259,7 +269,10 @@ describe("blueprint builder", () => {
   it("derives four adjacent fallback components from the 03 authored beats", () => {
     const nodeRun = puzzle("puzzle-node-run");
     const blueprint = buildBlueprint({
-      level: level("03-nerve-forest"),
+      level: withoutAuthoredBlueprint(
+        level("03-nerve-forest"),
+        "puzzle-node-run",
+      ),
       puzzle: nodeRun,
       state: new PuzzleRuntime(nodeRun).snapshot(),
       beats: [],
@@ -323,7 +336,10 @@ describe("blueprint builder", () => {
 
   it("derives fallback actors from solution targets and normalises solo", () => {
     const ferry = puzzle("puzzle-endplate-ferry");
-    const ferryLevel = level("04-muscle-effector");
+    const ferryLevel = withoutAuthoredBlueprint(
+      level("04-muscle-effector"),
+      "puzzle-endplate-ferry",
+    );
     const state = new PuzzleRuntime(ferry).snapshot();
 
     const coop = buildBlueprint({

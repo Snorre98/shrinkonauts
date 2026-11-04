@@ -68,6 +68,55 @@ describe("level feedback content", () => {
     expect(config?.nodes?.["ach-packet"]?.label).toBe("ACh packet");
   });
 
+  it("parses the authored 03 and 04 blueprints", () => {
+    const nodeRun = feedback(readLevel("03-nerve-forest"))?.puzzles?.[
+      "puzzle-node-run"
+    ]?.blueprint;
+    expect(nodeRun?.title).toBe("Signal route");
+    expect(nodeRun?.components.map((component) => component.id)).toEqual([
+      "inputs",
+      "threshold",
+      "axon",
+      "exit",
+    ]);
+    expect(nodeRun?.components[0]?.beatIds).toEqual(["input"]);
+    expect(nodeRun?.components[3]?.beatIds).toEqual(["terminal", "exit"]);
+    expect(nodeRun?.edges?.map((edge) => edge.type)).toEqual([
+      "flow",
+      "oneWay",
+      "oneWay",
+    ]);
+    expect(nodeRun?.steps).toEqual([
+      { componentId: "inputs", actor: "both" },
+      { componentId: "threshold", actor: "both" },
+      { componentId: "axon", actor: "p1" },
+      { componentId: "exit", actor: "shared" },
+    ]);
+
+    const ferry = feedback(readLevel("04-muscle-effector"))?.puzzles?.[
+      "puzzle-endplate-ferry"
+    ]?.blueprint;
+    expect(ferry?.title).toBe("Transmission route");
+    expect(ferry?.components.map((component) => component.id)).toEqual([
+      "trigger",
+      "carry",
+      "bind",
+      "response",
+    ]);
+    expect(ferry?.components.map((component) => component.symbol)).toEqual([
+      "ui.blueprint.symbol.timer",
+      "ui.blueprint.symbol.carry",
+      "ui.blueprint.symbol.receptor",
+      "ui.blueprint.symbol.relay",
+    ]);
+    expect(ferry?.steps?.map((step) => step.actor)).toEqual([
+      "p1",
+      "p2",
+      "p2",
+      "p1",
+    ]);
+  });
+
   it("keeps old level documents without feedback valid", () => {
     const raw = readLevel("03-nerve-forest");
     delete raw.feedback;
@@ -131,6 +180,64 @@ describe("level feedback content", () => {
         label: "unknown top-level feedback key",
         mutate: (raw) => {
           (raw.feedback as Record<string, any>).audio = "audio.cue.scan";
+        },
+      },
+      {
+        label: "unknown blueprint key",
+        mutate: (raw) => {
+          (raw.feedback as Record<string, any>).puzzles["puzzle-node-run"].blueprint.goal =
+            "exit";
+        },
+      },
+      {
+        label: "missing blueprint components",
+        mutate: (raw) => {
+          delete (raw.feedback as Record<string, any>).puzzles["puzzle-node-run"]
+            .blueprint.components;
+        },
+      },
+      {
+        label: "empty blueprint beatIds",
+        mutate: (raw) => {
+          (raw.feedback as Record<string, any>).puzzles["puzzle-node-run"]
+            .blueprint.components[0].beatIds = [];
+        },
+      },
+      {
+        label: "duplicate blueprint component id",
+        mutate: (raw) => {
+          const components = (raw.feedback as Record<string, any>).puzzles[
+            "puzzle-node-run"
+          ].blueprint.components;
+          components[1].id = components[0].id;
+        },
+      },
+      {
+        label: "invalid blueprint actor",
+        mutate: (raw) => {
+          (raw.feedback as Record<string, any>).puzzles["puzzle-node-run"]
+            .blueprint.steps[0].actor = "p3";
+        },
+      },
+      {
+        label: "invalid blueprint edge type",
+        mutate: (raw) => {
+          (raw.feedback as Record<string, any>).puzzles["puzzle-node-run"]
+            .blueprint.edges[0].type = "bind";
+        },
+      },
+      {
+        label: "negative blueprint x",
+        mutate: (raw) => {
+          (raw.feedback as Record<string, any>).puzzles["puzzle-node-run"]
+            .blueprint.components[0].x = -1;
+        },
+      },
+      {
+        label: "empty blueprint symbol",
+        mutate: (raw) => {
+          (raw.feedback as Record<string, any>).puzzles["puzzle-node-run"]
+            .blueprint.components[0].symbol = " ";
         },
       },
     ];

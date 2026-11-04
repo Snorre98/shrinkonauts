@@ -351,6 +351,13 @@ describe("puzzle gate recovery warnings", () => {
     return nodes;
   }
 
+  function blueprintFor(copy: PackContent, levelId: string, puzzleId: string) {
+    const level = copy.levels.find((item) => item.id === levelId);
+    const blueprint = level?.feedback?.puzzles?.[puzzleId]?.blueprint;
+    if (!blueprint) throw new Error(`${levelId}/${puzzleId} blueprint missing`);
+    return blueprint;
+  }
+
   it("accepts the authored feedback with the injected vocabulary", () => {
     const result = validateAnatomy();
     expect(result.issues).toEqual([]);
@@ -404,6 +411,125 @@ describe("puzzle gate recovery warnings", () => {
     expect(nodes.issues.map((issue) => issue.code)).toContain(
       "FEEDBACK_REFERENCE_MISSING",
     );
+  });
+
+  it("accepts the authored 03 and 04 blueprints", () => {
+    const result = validateAnatomy();
+    expect(
+      result.issues.filter((issue) => issue.code === "BLUEPRINT_INVALID"),
+    ).toEqual([]);
+    expect(
+      result.warnings.filter((warning) => warning.includes("blueprint")),
+    ).toEqual([]);
+  });
+
+  it("rejects invalid blueprint component, beat, edge, and step references", () => {
+    const references = validateAnatomy((copy) => {
+      const blueprint = blueprintFor(
+        copy,
+        "03-nerve-forest",
+        "puzzle-node-run",
+      );
+      blueprint.components[0]?.beatIds.push("missing-beat");
+      blueprint.edges?.push({
+        from: "missing",
+        to: "exit",
+        type: "flow",
+      });
+      blueprint.steps?.push({ componentId: "missing", actor: "p1" });
+    });
+    expect(references.issues.map((issue) => issue.code)).toContain(
+      "FEEDBACK_REFERENCE_MISSING",
+    );
+    expect(
+      references.issues.some((issue) =>
+        issue.message.includes('missing beat "missing-beat"'),
+      ),
+    ).toBe(true);
+    expect(
+      references.issues.some((issue) =>
+        issue.message.includes('missing component "missing"'),
+      ),
+    ).toBe(true);
+
+    const duplicate = validateAnatomy((copy) => {
+      const blueprint = blueprintFor(
+        copy,
+        "03-nerve-forest",
+        "puzzle-node-run",
+      );
+      const first = blueprint.components[0];
+      const second = blueprint.components[1];
+      if (!first || !second) throw new Error("blueprint components missing");
+      second.id = first.id;
+    });
+    expect(duplicate.issues.map((issue) => issue.code)).toContain(
+      "BLUEPRINT_INVALID",
+    );
+
+    const count = validateAnatomy((copy) => {
+      const blueprint = blueprintFor(
+        copy,
+        "03-nerve-forest",
+        "puzzle-node-run",
+      );
+      blueprint.components = blueprint.components.slice(0, 1);
+    });
+    expect(count.issues.map((issue) => issue.code)).toContain(
+      "BLUEPRINT_INVALID",
+    );
+
+    const symbol = validateAnatomy((copy) => {
+      const blueprint = blueprintFor(
+        copy,
+        "03-nerve-forest",
+        "puzzle-node-run",
+      );
+      const first = blueprint.components[0];
+      if (!first) throw new Error("blueprint component missing");
+      first.symbol = "";
+    });
+    expect(symbol.issues.map((issue) => issue.code)).toContain(
+      "BLUEPRINT_INVALID",
+    );
+  });
+
+  it("warns on more than four components and uncovered beats", () => {
+    const wide = validateAnatomy((copy) => {
+      const blueprint = blueprintFor(
+        copy,
+        "03-nerve-forest",
+        "puzzle-node-run",
+      );
+      blueprint.components.push({
+        id: "extra",
+        label: "Extra",
+        symbol: "ui.blueprint.symbol.goal",
+        beatIds: [],
+        x: 4,
+      });
+    });
+    expect(
+      wide.warnings.some((warning) => warning.includes("2–4 is the target")),
+    ).toBe(true);
+
+    const uncovered = validateAnatomy((copy) => {
+      const blueprint = blueprintFor(
+        copy,
+        "03-nerve-forest",
+        "puzzle-node-run",
+      );
+      const exit = blueprint.components.find(
+        (component) => component.id === "exit",
+      );
+      if (!exit) throw new Error("exit component missing");
+      exit.beatIds = ["terminal"];
+    });
+    expect(
+      uncovered.warnings.some((warning) =>
+        warning.includes('does not cover beat "exit"'),
+      ),
+    ).toBe(true);
   });
 
   it("rejects an unknown effect preset", () => {
