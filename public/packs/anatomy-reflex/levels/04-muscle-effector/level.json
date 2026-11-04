@@ -102,6 +102,84 @@
             "label": "Muscle gate",
             "effectPreset": "fx.muscle.wave"
           }
+        },
+        "blueprint": {
+          "title": "Transmission route",
+          "components": [
+            {
+              "id": "trigger",
+              "label": "Trigger + Ca²⁺ window",
+              "symbol": "ui.blueprint.symbol.timer",
+              "beatIds": [
+                "trigger",
+                "release"
+              ],
+              "x": 0
+            },
+            {
+              "id": "carry",
+              "label": "Carry ACh",
+              "symbol": "ui.blueprint.symbol.carry",
+              "beatIds": [
+                "carry"
+              ],
+              "x": 1
+            },
+            {
+              "id": "bind",
+              "label": "Bind receptor",
+              "symbol": "ui.blueprint.symbol.receptor",
+              "beatIds": [
+                "bind"
+              ],
+              "x": 2
+            },
+            {
+              "id": "response",
+              "label": "Response + clearance",
+              "symbol": "ui.blueprint.symbol.relay",
+              "beatIds": [
+                "respond",
+                "clear"
+              ],
+              "x": 3
+            }
+          ],
+          "edges": [
+            {
+              "from": "trigger",
+              "to": "carry",
+              "type": "flow"
+            },
+            {
+              "from": "carry",
+              "to": "bind",
+              "type": "oneWay"
+            },
+            {
+              "from": "bind",
+              "to": "response",
+              "type": "oneWay"
+            }
+          ],
+          "steps": [
+            {
+              "componentId": "trigger",
+              "actor": "p1"
+            },
+            {
+              "componentId": "carry",
+              "actor": "p2"
+            },
+            {
+              "componentId": "bind",
+              "actor": "p2"
+            },
+            {
+              "componentId": "response",
+              "actor": "p1"
+            }
+          ]
         }
       }
     }

@@ -99,6 +99,83 @@
           "gate-exit": {
             "label": "Exit gate"
           }
+        },
+        "blueprint": {
+          "title": "Signal route",
+          "components": [
+            {
+              "id": "inputs",
+              "label": "Two inputs",
+              "symbol": "ui.blueprint.symbol.inputs",
+              "beatIds": [
+                "input"
+              ],
+              "x": 0
+            },
+            {
+              "id": "threshold",
+              "label": "Threshold",
+              "symbol": "ui.blueprint.symbol.threshold",
+              "beatIds": [
+                "threshold"
+              ],
+              "x": 1
+            },
+            {
+              "id": "axon",
+              "label": "One-way flow",
+              "symbol": "ui.blueprint.symbol.flow",
+              "beatIds": [
+                "axon"
+              ],
+              "x": 2
+            },
+            {
+              "id": "exit",
+              "label": "Terminal / exit",
+              "symbol": "ui.blueprint.symbol.gate",
+              "beatIds": [
+                "terminal",
+                "exit"
+              ],
+              "x": 3
+            }
+          ],
+          "edges": [
+            {
+              "from": "inputs",
+              "to": "threshold",
+              "type": "flow"
+            },
+            {
+              "from": "threshold",
+              "to": "axon",
+              "type": "oneWay"
+            },
+            {
+              "from": "axon",
+              "to": "exit",
+              "type": "oneWay"
+            }
+          ],
+          "steps": [
+            {
+              "componentId": "inputs",
+              "actor": "both"
+            },
+            {
+              "componentId": "threshold",
+              "actor": "both"
+            },
+            {
+              "componentId": "axon",
+              "actor": "p1"
+            },
+            {
+              "componentId": "exit",
+              "actor": "shared"
+            }
+          ]
         }
       }
     }

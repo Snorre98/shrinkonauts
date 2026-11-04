@@ -107,6 +107,7 @@ export type PackIssueCode =
   | "FEEDBACK_TILE_INVALID"
   | "FEEDBACK_LAYOUT_INVALID"
   | "FEEDBACK_VOCABULARY_MISSING"
+  | "BLUEPRINT_INVALID"
   | "INFO_AREA_INVALID"
   | "MATERIALS_SCHEMA_INVALID"
   | "MATERIAL_REFERENCE_MISSING"
@@ -1034,6 +1035,85 @@ function checkLevelFeedback(input: {
     }
 
     const nodeIds = new Set(puzzle.nodes.map((node) => node.id));
+    const authoredBeatIds = new Set((config.beats ?? []).map((beat) => beat.id));
+
+    const blueprint = config.blueprint;
+    if (blueprint) {
+      const blueprintLabel = `${label}.blueprint`;
+      if (
+        blueprint.components.length < 2 ||
+        blueprint.components.length > 10
+      ) {
+        addIssue(
+          "BLUEPRINT_INVALID",
+          `${blueprintLabel} must have 2–10 components, got ${blueprint.components.length}`,
+        );
+      } else if (blueprint.components.length > 4) {
+        addWarning(
+          `${blueprintLabel} has ${blueprint.components.length} components; 2–4 is the target`,
+        );
+      }
+
+      const componentIds = new Set<string>();
+      for (const [index, component] of blueprint.components.entries()) {
+        const componentLabel = `${blueprintLabel}.components[${index}]`;
+        if (componentIds.has(component.id)) {
+          addIssue(
+            "BLUEPRINT_INVALID",
+            `${componentLabel}.id "${component.id}" is duplicated`,
+          );
+        }
+        componentIds.add(component.id);
+        if (component.symbol.trim() === "") {
+          addIssue(
+            "BLUEPRINT_INVALID",
+            `${componentLabel}.symbol must be non-empty`,
+          );
+        }
+        for (const beatId of component.beatIds) {
+          if (!authoredBeatIds.has(beatId)) {
+            addIssue(
+              "FEEDBACK_REFERENCE_MISSING",
+              `${componentLabel}.beatIds references missing beat "${beatId}"`,
+            );
+          }
+        }
+      }
+
+      for (const [index, edge] of (blueprint.edges ?? []).entries()) {
+        for (const [role, componentId] of [
+          ["from", edge.from],
+          ["to", edge.to],
+        ] as const) {
+          if (!componentIds.has(componentId)) {
+            addIssue(
+              "FEEDBACK_REFERENCE_MISSING",
+              `${blueprintLabel}.edges[${index}].${role} references missing component "${componentId}"`,
+            );
+          }
+        }
+      }
+
+      for (const [index, step] of (blueprint.steps ?? []).entries()) {
+        if (!componentIds.has(step.componentId)) {
+          addIssue(
+            "FEEDBACK_REFERENCE_MISSING",
+            `${blueprintLabel}.steps[${index}].componentId references missing component "${step.componentId}"`,
+          );
+        }
+      }
+
+      const covered = new Set(
+        blueprint.components.flatMap((component) => component.beatIds),
+      );
+      for (const beat of config.beats ?? []) {
+        if (!covered.has(beat.id)) {
+          addWarning(
+            `${blueprintLabel} does not cover beat "${beat.id}"`,
+          );
+        }
+      }
+    }
 
     for (const [index, beat] of (config.beats ?? []).entries()) {
       for (const nodeId of beat.nodes) {
