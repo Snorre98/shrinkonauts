@@ -82,6 +82,30 @@ export interface MapView {
   edges: MapEdgeView[];
 }
 
+export interface BlueprintComponentView {
+  id: string;
+  symbol: string;
+  label?: string;
+  state: "done" | "active" | "pending";
+  actor: "p1" | "p2" | "both" | "shared" | null;
+  beatIds: string[];
+}
+
+export interface BlueprintEdgeView {
+  id: string;
+  from: string;
+  to: string;
+  type: "flow" | "oneWay";
+  state: "done" | "active" | "pending";
+}
+
+export interface BlueprintView {
+  puzzleId: string;
+  title: string;
+  components: BlueprintComponentView[];
+  edges: BlueprintEdgeView[];
+}
+
 export interface ConceptRelationshipView {
   type: string;
   target: string;
@@ -114,6 +138,9 @@ export interface PuzzleView {
   counters: Record<string, number>;
   hint: string | null;
   canHint: boolean;
+  hintIndex: number;
+  hintsTotal: number;
+  revealedHints: string[];
   pulse: {
     nodeId: string;
     remainingTicks: number;
@@ -180,6 +207,7 @@ export interface RuntimeSnapshot {
   camera: CameraView;
   world: WorldView;
   feedback: FeedbackFrame;
+  blueprint: BlueprintView | null;
   abilities: string[];
   knownConceptIds: string[];
   knownFactIds: string[];

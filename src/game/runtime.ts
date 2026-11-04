@@ -24,6 +24,7 @@ import {
   type SurfaceId,
 } from "../feedback";
 import { toWorldEffectPlan } from "./effect-mapper";
+import { buildBlueprint } from "./blueprint";
 import type {
   DialogueDocument,
   DialogueEffect,
@@ -2881,6 +2882,7 @@ export class GameRuntime implements WorldRuntime {
       (node) => node.type === "pulseSource",
     );
     const pulseState = pulseNode ? puzzle.nodeState(pulseNode.id) : undefined;
+    const hints = puzzle.document.hints;
     return {
       id,
       title: puzzle.document.title,
@@ -2890,11 +2892,14 @@ export class GameRuntime implements WorldRuntime {
       counters: puzzle.evidenceCounters(),
       hint:
         this.puzzleHintIndex > 0
-          ? (puzzle.document.hints[this.puzzleHintIndex - 1] ?? null)
+          ? (hints[this.puzzleHintIndex - 1] ?? null)
           : null,
       canHint:
         !puzzle.isSolved() &&
-        this.puzzleHintIndex < puzzle.document.hints.length,
+        this.puzzleHintIndex < hints.length,
+      hintIndex: this.puzzleHintIndex,
+      hintsTotal: hints.length,
+      revealedHints: hints.slice(0, this.puzzleHintIndex),
       pulse:
         pulseNode && pulseState
           ? {
@@ -3157,6 +3162,18 @@ export class GameRuntime implements WorldRuntime {
       };
     };
 
+    const feedback = this.feedbackFrame();
+    const activePuzzle = this.activePuzzleEntry();
+    const blueprint = activePuzzle
+      ? buildBlueprint({
+          level: this.level,
+          puzzle: activePuzzle[1].document,
+          state: activePuzzle[1].snapshot(),
+          beats: feedback.beats,
+          mode: this.activeP2 ? "co-op" : "solo",
+        })
+      : null;
+
     return {
       state: this.machine.state,
       paused: this.machine.state === "pause",
@@ -3169,7 +3186,8 @@ export class GameRuntime implements WorldRuntime {
       players: { p1: playerView("p1"), p2: playerView("p2") },
       camera: { ...this.world.camera },
       world: this.worldView(),
-      feedback: this.feedbackFrame(),
+      feedback,
+      blueprint,
       abilities: [...this.progression.abilities],
       knownConceptIds: known,
       knownFactIds: knownFacts,
