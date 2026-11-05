@@ -117,7 +117,7 @@ shared screen; they do not change the controller architecture.
 - [ ] The relay admits at most one host and two controllers before accepting a
   socket; a second host, third controller, reserved slot, or unready join is
   rejected without a `101` upgrade.
-- [ ] A demo session is capped at 5 minutes, 12,000 room messages, and 20
+- [ ] A demo session is capped at 20 minutes, 30,000 room messages, and 20
   controller messages per second; Workers Logs is disabled.
 - [ ] The host creates a room with the phone-enabled slots; controllers join by
   QR or six-character code.
@@ -188,7 +188,7 @@ M4.0a is done when:
 15. M4.0a is identified as the complete multiplayer scope; no active plan
     promises M4.0b or M4.1.
 16. The demo quota guard is enforced and configurable: signed room tickets,
-    server-issued device IDs, one host plus two controllers, 5-minute sessions,
+    server-issued device IDs, one host plus two controllers, 20-minute sessions,
     room message and controller rate caps, and Workers Logs disabled
     (ADR-0082).
 17. The controller layout, double-tap Dash gesture, dialogue modes, and ability
@@ -211,7 +211,7 @@ range.
 | 1 | Input contracts and pure arbiter | 1–1.5 d | K/K, K/P, P/K, P/P unit coverage |
 | 2 | Protocol, transport seam, remote source, fake transport | 1–1.5 d | Host runs all four plans without a Worker |
 | 3 | Worker, DO, room codes, slot reservation, limits | 1.5–2 d | Two controllers join; third/duplicate rejected |
-| 3.5 | Demo quota guard, signed tickets, device admission, 5-minute caps | 2–3 d | Random joins never create a room; one host + two devices enforced |
+| 3.5 | Demo quota guard, signed tickets, device admission, 20-minute caps | 2–3 d | Random joins never create a room; one host + two devices enforced |
 | 4 | Host session wiring, pause, keyboard fallback | 1 d | Real session drives the arbiter |
 | 5 | Controller web app, touch layout, reconnect | 1.5–2 d | Phone joins and controls one slot |
 | 5.5 | Remove obsolete online placeholder and catalog flag (done 2026-11-04) | 0.25–0.5 d | No online mode/panel/flag remains |
@@ -260,7 +260,7 @@ work is roughly **9.5–13 focused days**.
 | Controller page is stale after deploy | Build ID check; reload message; no degraded join. |
 | Controller spoofs another slot or host action | Slot-bound connection; host allowlist; ownership validation; no global actions from controllers. |
 | Controller session creeps into remote online | ADR-0081: no snapshots, no phone rendering, no remote guest, no prediction. |
-| Cloudflare free-tier limits | ADR-0082: daily session/attempt/device budgets, 5-minute sessions, 12k room message cap, 20/s controller rate, signed tickets and device admission, Workers Logs disabled. |
+| Cloudflare free-tier limits | ADR-0082: daily session/attempt/device budgets, 20-minute sessions, 30k room message cap, 20/s controller rate, signed tickets and device admission, Workers Logs disabled. |
 | Evidence trust is overstated | Host-only export; document that controller input is not graded assessment. |
 | Keyboard regression | Keyboard-only path stays default; dedicated regression suite at every phase. |
 
@@ -306,7 +306,7 @@ Manual — M4.0a:
 - host HUD: phone-slot prompts show action names, not keyboard keys;
 - latency measurement on 2.4 GHz, 5 GHz, TV/laptop, cloud in-region, with a
   keyboard baseline;
-- free-tier usage after several full 5-minute phone sessions;
+- free-tier usage after several full 20-minute phone sessions;
 - hub shows Solo and Local co-op only; no online mode or host/join panel.
 
 ### Deployment
@@ -335,7 +335,7 @@ Manual — M4.0a:
 - signed room tickets, server-issued device IDs, and the three-device admission
   cap;
 - QR and six-character code pairing;
-- the demo quota guard, 5-minute session cap, message/rate caps, and Workers
+- the demo quota guard, 20-minute session cap, message/rate caps, and Workers
   Logs disabled;
 - controller page with no game assets or game state;
 - validated, coalesced controller input applied at the fixed step;

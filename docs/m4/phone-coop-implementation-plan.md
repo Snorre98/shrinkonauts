@@ -340,7 +340,7 @@ Limits:
 
 - controller → host message: 8 KiB;
 - input rate: 20 messages/s per controller in the demo (protocol absolute cap
-  120/s); 12,000 messages per room; 5-minute session;
+  120/s); 30,000 messages per room; 20-minute session;
 - heartbeat: 20–30 s;
 - room sockets: host + at most two controllers;
 - invalid/oversize/rate-limited messages are dropped and counted; repeated abuse
@@ -628,7 +628,7 @@ Tasks:
 5. Move room admission before `acceptWebSocket()`. Bind the slot from the URL,
    reject a second host/third controller/duplicate or reserved slot, and add
    handshake, ready, and join caps.
-6. Add the 5-minute wall-clock session alarm, the 12,000-message room cap, the
+6. Add the 20-minute wall-clock session alarm, the 30,000-message room cap, the
    20/s all-controller-message rate limit, and the 60/s host rate limit.
 7. Disable Workers Logs in `wrangler.jsonc`; do not add `console.log` to the
    request or message paths.
@@ -646,7 +646,7 @@ Exit criteria:
 - One host plus two controllers is enforced before the socket is accepted; a
   fourth device, duplicate slot, reserved slot, host-device controller, and
   unready join are rejected.
-- A session ends at 5 minutes or 12,000 messages; controller messages are
+- A session ends at 20 minutes or 30,000 messages; controller messages are
   capped at 20/s; the gate enforces the daily budgets.
 - Workers Logs is disabled and `wrangler deploy --dry-run` passes.
 - Existing local, controller, Worker, and browser suites pass.
@@ -1080,7 +1080,7 @@ Tasks:
    - two phones, one phone, keyboard fallback;
    - disconnect/reconnect, host hidden, host leaves;
    - wake lock/screen lock, orientation, accessibility;
-   - free-tier usage over several full 5-minute sessions.
+   - free-tier usage over several full 20-minute sessions.
 5. Update docs:
    - ADR statuses, including ADR-0081;
    - M4 README same-room scope and DoD;
@@ -1189,7 +1189,7 @@ npm run smoke:controller
       cannot be a controller, and reconnect is same-device only.
 - [ ] At most one host and two controllers are admitted before the socket is
       accepted; a fourth device is rejected without a `101`.
-- [ ] Sessions are capped at 5 minutes and 12,000 messages; controller messages
+- [ ] Sessions are capped at 20 minutes and 30,000 messages; controller messages
       are capped at 20/s across all message types.
 - [ ] Workers Logs is disabled and no request/message path calls `console.log`.
 - [ ] Room code is a bearer token, not identity.
@@ -1240,7 +1240,7 @@ npm run smoke:controller
 | Controller can spoof actions | Slot-bound connection; host allowlist; ownership validation |
 | Controller page is stale after deploy | Build ID check; reload message; no degraded join |
 | Worker/DO deployment fails | `wrangler deploy --dry-run`; local Worker tests; no game loop in DO |
-| Free-tier limits | ADR-0082: daily session/attempt/device budgets, 5-minute sessions, 12k room message cap, 20/s controller rate, signed tickets and device admission, Workers Logs disabled |
+| Free-tier limits | ADR-0082: daily session/attempt/device budgets, 20-minute sessions, 30k room message cap, 20/s controller rate, signed tickets and device admission, Workers Logs disabled |
 | Evidence trust is overstated | Host-only export; document that controller input is not graded assessment |
 | Keyboard regression | Keyboard-only path stays default; dedicated regression suite at every phase |
 | Phase 1/2 code becomes framework-coupled | Pure TS contracts; no Phaser/DOM in arbiter/protocol; fake transport tests |
@@ -1282,7 +1282,7 @@ M4.0a is done when:
 15. The multiplayer scope is explicit: M4.0a is complete; M4.0b/M4.1 are not
     planned (ADR-0081).
 16. The demo quota guard is enforced and configurable: signed room tickets,
-    server-issued device IDs, one host plus two controllers, 5-minute sessions,
+    server-issued device IDs, one host plus two controllers, 20-minute sessions,
     room message and controller rate caps, and Workers Logs disabled
     (ADR-0082).
 17. The controller layout, double-tap Dash gesture, dialogue modes, and ability

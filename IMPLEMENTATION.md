@@ -11,7 +11,7 @@ M4.0a phone controllers use an input-only Cloudflare relay. The standalone
 controller page, touch input, host session, room relay, hub pairing, QR/code
 setup, and explicit Start gate are implemented. The relay now has the ADR-0082
 demo quota guard: signed room tickets, server-issued device IDs, a one-host/
-two-controller admission cap, a 5-minute session alarm, message/rate caps, and
+two-controller admission cap, a 20-minute session alarm, message/rate caps, and
 Workers Logs disabled. Phase 6.5 adds the controller thumb-zone layout,
 client-side double-tap Dash, ephemeral dialogue/ability control descriptors,
 auto dialogue controls, progressive ability disclosure, and action feedback.
@@ -821,7 +821,7 @@ procedural placeholder:
   is not planned (ADR-0081).
 - **Demo quota guard.** ADR-0082 adds a singleton `DemoGate`, signed room
   tickets, server-issued device IDs, admission before `acceptWebSocket`, a
-  5-minute session alarm, message/rate caps, and Workers Logs disabled. The
+  20-minute session alarm, message/rate caps, and Workers Logs disabled. The
   six-character code remains a gate-checked fallback; the QR ticket is the
   edge-verified path.
 - **Two-level slice.** `03-nerve-forest` starts and transitions through debrief

@@ -5,6 +5,11 @@
 - **Deciders:** Snorre
 - **Related:** ADR-0066–0069, ADR-0081, ADR-0054 (historical), ADR-0055
 
+> **Amended 2026-11-05:** the demo session cap is raised from 5 to 20
+> minutes and the room message cap from 12,000 to 30,000. The original
+> values below remain the 2026-11-04 baseline. Amended worst-case input
+> request estimate: 50 × 30,000 ÷ 20 = 75,000/day.
+
 ## Context
 
 The controller relay is a public-internet demo on the Cloudflare Workers Free

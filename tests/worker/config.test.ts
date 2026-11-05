@@ -18,8 +18,8 @@ describe("demo configuration", () => {
     expect(config.maxConcurrentRooms).toBe(2);
     expect(config.maxWsAttemptsPerDay).toBe(5_000);
     expect(config.maxDeviceIssuesPerDay).toBe(500);
-    expect(config.maxSessionMs).toBe(5 * 60_000);
-    expect(config.maxMessagesPerRoom).toBe(12_000);
+    expect(config.maxSessionMs).toBe(20 * 60_000);
+    expect(config.maxMessagesPerRoom).toBe(30_000);
     expect(config.maxControllerMessagesPerSecond).toBe(20);
     expect(config.maxHostMessagesPerSecond).toBe(60);
     expect(config.maxJoinsPerRoom).toBe(20);
@@ -70,7 +70,8 @@ describe("demo configuration", () => {
 
     const vars = config.vars as Record<string, string>;
     expect(vars.DEMO_MAX_SESSIONS_PER_DAY).toBe("50");
-    expect(vars.DEMO_MAX_SESSION_MINUTES).toBe("5");
+    expect(vars.DEMO_MAX_SESSION_MINUTES).toBe("20");
+    expect(vars.DEMO_MAX_MESSAGES_PER_ROOM).toBe("30000");
     expect(vars).not.toHaveProperty("DEMO_SIGNING_SECRET");
   });
 
