@@ -283,7 +283,7 @@ test("Silicon Interrupt Loop", async ({ page }) => {
     .click();
   await expect(bubble).toContainText("Exactly.");
   await page.keyboard.press("e");
-  await expect(bubble).toContainText("Start the loop at the sensor console");
+  await expect(bubble).toContainText("Start at the sensor console");
   await page.keyboard.press("e");
   await expect(bubble).toHaveCount(0);
 
