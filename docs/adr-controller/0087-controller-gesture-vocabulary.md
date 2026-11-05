@@ -124,6 +124,7 @@ Scan      Tap Scan
 Pulse     Tap Pulse (P1)
 Carry     Tap Carry (P2)
 Throw     Tap Throw while carrying
+Dance     Tap Dance
 Dialogue  Continue / Back / 1–N
 ```
 

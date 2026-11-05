@@ -20,6 +20,7 @@ interface PlayerKeys {
   pulse: Phaser.Input.Keyboard.Key | null;
   carry: Phaser.Input.Keyboard.Key | null;
   throw: Phaser.Input.Keyboard.Key | null;
+  dance: Phaser.Input.Keyboard.Key;
   uiConfirm: Phaser.Input.Keyboard.Key | null;
   uiCancel: Phaser.Input.Keyboard.Key;
   choose: Phaser.Input.Keyboard.Key[];
@@ -87,6 +88,7 @@ export class KeyboardIntentSource {
         pulse: latch(captured(Phaser.Input.Keyboard.KeyCodes.F)),
         carry: latch(captured(Phaser.Input.Keyboard.KeyCodes.G)),
         throw: latch(captured(Phaser.Input.Keyboard.KeyCodes.H)),
+        dance: latch(captured(Phaser.Input.Keyboard.KeyCodes.T)),
         uiConfirm: latch(plain(Phaser.Input.Keyboard.KeyCodes.ENTER)),
         uiCancel: latch(captured(Phaser.Input.Keyboard.KeyCodes.BACKSPACE)),
         choose: [
@@ -109,6 +111,7 @@ export class KeyboardIntentSource {
         pulse: null,
         carry: latch(captured(Phaser.Input.Keyboard.KeyCodes.QUOTES)),
         throw: latch(captured(Phaser.Input.Keyboard.KeyCodes.SEMICOLON)),
+        dance: latch(captured(Phaser.Input.Keyboard.KeyCodes.L)),
         uiConfirm: null,
         uiCancel: latch(captured(Phaser.Input.Keyboard.KeyCodes.DELETE)),
         choose: [],
@@ -188,6 +191,7 @@ export class KeyboardIntentSource {
       pulse: keys.pulse ? this.consume(keys.pulse) : false,
       carry: keys.carry ? this.consume(keys.carry) : false,
       throw: keys.throw ? this.consume(keys.throw) : false,
+      dance: this.consume(keys.dance),
       ui,
     };
   }

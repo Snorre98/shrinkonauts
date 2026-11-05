@@ -188,6 +188,7 @@ function controlsSheet(): HTMLElement {
     ["Pulse", "Tap Pulse (P1)"],
     ["Carry", "Tap Carry (P2)"],
     ["Throw", "Tap Throw while carrying"],
+    ["Dance", "Tap Dance"],
     ["Dialogue", "Continue / Back / 1–N"],
   ];
   for (const [label, keys] of rows) {
@@ -508,13 +509,14 @@ export class ControllerUiImpl implements ControllerUi {
     const pulse = controlButton("pulse", "Pulse", "Pulse");
     const carry = controlButton("carry", "Carry", "Carry");
     const throwButton = controlButton("throw", "Throw", "Throw");
+    const dance = controlButton("dance", "Dance", "Dance");
     const interact = controlButton(
       "interact",
       "Interact",
       "Interact",
       "controller__key--accent controller__key--wide",
     );
-    actions.append(scan, pulse, carry, throwButton, interact);
+    actions.append(scan, pulse, carry, throwButton, dance, interact);
 
     const dialogue = element("section", "controller__dialogue");
     dialogue.dataset.role = "dialogue";

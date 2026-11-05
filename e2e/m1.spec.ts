@@ -334,3 +334,37 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
 
   expect(consoleErrors).toEqual([]);
 });
+
+test("dance emotes play from keyboard and are interrupted by movement", async ({
+  page,
+}) => {
+  await boot(page);
+  await expect(page.locator(".hud__eyebrow")).toContainText("03-nerve-forest");
+
+  const clip = (id: "p1" | "p2") =>
+    page.evaluate((player) => {
+      const scene = (window as any).__shrinkonauts?.game?.scene?.getScene(
+        "room",
+      );
+      return {
+        clip: scene?.playerAnimators?.[player]?.clip ?? null,
+        playing: scene?.playerSprites?.[player]?.anims?.isPlaying ?? false,
+      };
+    }, id);
+
+  await page.keyboard.press("t");
+  await expect.poll(() => clip("p1")).toEqual({
+    clip: "dance",
+    playing: true,
+  });
+
+  await page.keyboard.press("l");
+  await expect.poll(() => clip("p2")).toEqual({
+    clip: "dance",
+    playing: true,
+  });
+
+  await page.keyboard.down("d");
+  await expect.poll(() => clip("p1")).toMatchObject({ clip: "walk" });
+  await page.keyboard.up("d");
+});

@@ -78,6 +78,8 @@ export interface NetInputActions {
   pulse: boolean;
   carry: boolean;
   throw: boolean;
+  /** Presentation-only emote; optional on the wire for older controllers. */
+  dance: boolean;
   ui: NetUiActions;
 }
 
@@ -385,6 +387,11 @@ export function parseNetInput(
       return bad(`input.actions.${key} must be boolean`);
     }
   }
+  // `dance` was added after the initial controller release. Treat an absent
+  // value as false so a host can still accept an older controller build.
+  if (actions.dance !== undefined && !booleanValue(actions.dance)) {
+    return bad("input.actions.dance must be boolean");
+  }
 
   const ui = actions.ui;
   if (!isRecord(ui)) return bad("input.actions.ui must be an object");
@@ -422,6 +429,7 @@ export function parseNetInput(
       pulse: actions.pulse === true,
       carry: actions.carry === true,
       throw: actions.throw === true,
+      dance: actions.dance === true,
       ui: {
         confirm: ui.confirm === true,
         cancel: ui.cancel === true,

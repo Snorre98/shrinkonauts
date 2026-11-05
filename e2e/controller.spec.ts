@@ -138,6 +138,17 @@ async function playerX(page: Page, slot: "p1" | "p2"): Promise<number> {
   return x;
 }
 
+async function playerClip(
+  page: Page,
+  slot: "p1" | "p2",
+): Promise<string | null> {
+  return page.evaluate((id) => {
+    const app = (window as any).__shrinkonauts;
+    const scene = app?.game?.scene?.getScene("room");
+    return scene?.playerAnimators?.[id]?.clip ?? null;
+  }, slot);
+}
+
 async function holdTouch(
   page: Page,
   control: string,
@@ -248,6 +259,9 @@ test("two phones join through the hub, start explicitly, reconnect, fall back, a
   await expect(
     p1.page.locator('[data-control="dash"]'),
   ).toHaveCount(0);
+  await expect(
+    p1.page.locator('[data-control="dance"]'),
+  ).toBeVisible();
   const jumpBox = await p1.page
     .locator('[data-control="jump"]')
     .boundingBox();
@@ -275,6 +289,11 @@ test("two phones join through the hub, start explicitly, reconnect, fall back, a
     timeout: 12_000,
   });
   await expect(p1.page.locator('[data-role="rtt"]')).toContainText("RTT");
+
+  await holdTouch(p1.page, "dance", 120);
+  await expect.poll(() => playerClip(page, "p1")).toBe("dance");
+  await holdTouch(p2.page, "dance", 120);
+  await expect.poll(() => playerClip(page, "p2")).toBe("dance");
 
   const p1Start = await playerX(page, "p1");
   await holdTouch(p1.page, "move-right", 450);

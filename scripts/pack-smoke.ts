@@ -408,7 +408,7 @@ function solveEndplateFerry(
   runtime.step(
     1 / 60,
     frameInput({
-      p1: { interact: true, scan: false, pulse: false, carry: false, throw: false },
+      p1: { interact: true, scan: false, pulse: false, carry: false, throw: false, dance: false },
     }),
   );
   assert(
@@ -431,14 +431,14 @@ function solveEndplateFerry(
   runtime.step(
     1 / 60,
     frameInput({
-      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false },
+      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false, dance: false },
     }),
   );
   walkPlayerTo(runtime, "p2", "nicotinic-receptor");
   runtime.step(
     1 / 60,
     frameInput({
-      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false },
+      p2: { interact: false, scan: false, pulse: false, carry: true, throw: false, dance: false },
     }),
   );
 
@@ -446,7 +446,7 @@ function solveEndplateFerry(
   runtime.step(
     1 / 60,
     frameInput({
-      p1: { interact: false, scan: false, pulse: true, carry: false, throw: false },
+      p1: { interact: false, scan: false, pulse: true, carry: false, throw: false, dance: false },
     }),
   );
   for (let frame = 0; frame < 12; frame += 1) {
@@ -639,7 +639,7 @@ function runAnatomyRuntime(): RuntimeResult {
   runtime.step(
     1 / 60,
     frameInput({
-      p1: { interact: true, scan: false, pulse: false, carry: false, throw: false },
+      p1: { interact: true, scan: false, pulse: false, carry: false, throw: false, dance: false },
     }),
   );
   const conversation = [...runtime.conversations.values()][0];
@@ -680,7 +680,7 @@ function runAnatomyRuntime(): RuntimeResult {
   runtime.step(
     1 / 60,
     frameInput({
-      p1: { interact: false, scan: true, pulse: false, carry: false, throw: false },
+      p1: { interact: false, scan: true, pulse: false, carry: false, throw: false, dance: false },
     }),
   );
   assert(

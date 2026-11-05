@@ -53,11 +53,11 @@ Current tests cover:
 
 ## Controls
 
-| Player | Move | Jump | Dash | Scan | Pulse | Carry | Throw | Interact |
-|---|---|---|---|---|---|---|---|---|
-| P1 | A/D | W or Space | Shift | Q | F | — | — | E |
-| P2 | Arrows | Up | / | . | — | ' | ; | , |
-| Solo | A/D | W or Space | Shift | Q | F | G | H | E |
+| Player | Move | Jump | Dash | Scan | Pulse | Carry | Throw | Interact | Dance |
+|---|---|---|---|---|---|---|---|---|---|
+| P1 | A/D | W or Space | Shift | Q | F | — | — | E | T |
+| P2 | Arrows | Up | / | . | — | ' | ; | , | L |
+| Solo | A/D | W or Space | Shift | Q | F | G | H | E | T |
 
 P2 is optional. In solo, P1 receives the union of `pulse` and `carry`.
 

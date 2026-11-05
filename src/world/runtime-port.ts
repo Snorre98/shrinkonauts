@@ -36,6 +36,8 @@ export interface PlayerActionInput {
   pulse: boolean;
   carry: boolean;
   throw: boolean;
+  /** Presentation-only emote. The runtime ignores it; the scene plays it. */
+  dance: boolean;
   ui?: PlayerUiActions;
 }
 
@@ -94,6 +96,7 @@ export function emptyRuntimeInput(): RuntimeInput {
         pulse: false,
         carry: false,
         throw: false,
+        dance: false,
         ui: emptyPlayerUiActions(),
       },
       p2: {
@@ -102,6 +105,7 @@ export function emptyRuntimeInput(): RuntimeInput {
         pulse: false,
         carry: false,
         throw: false,
+        dance: false,
         ui: emptyPlayerUiActions(),
       },
       map: false,

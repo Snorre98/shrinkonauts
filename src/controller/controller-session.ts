@@ -182,6 +182,7 @@ export class ControllerSession {
         pulse: input.actions.pulse,
         carry: input.actions.carry,
         throw: input.actions.throw,
+        dance: input.actions.dance,
         ui: { ...input.actions.ui },
       },
       clientTick: this.clientTick,

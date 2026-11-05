@@ -3,10 +3,10 @@
  *
  * The Phaser adapter owns the actual Sprite/animation objects; this module only
  * decides which clip should be active. Keeping the decision here makes the
- * landing and jump/fall transitions testable without a browser.
+ * landing, jump/fall, and dance transitions testable without a browser.
  */
 
-export type PlayerClip = "idle" | "walk" | "jump" | "fall" | "land";
+export type PlayerClip = "idle" | "walk" | "jump" | "fall" | "land" | "dance";
 
 export interface PlayerAnimationInput {
   active: boolean;
@@ -55,6 +55,12 @@ export function choosePlayerClip(
 
   if (Math.abs(input.vx) > PLAYER_WALK_SPEED_THRESHOLD) {
     return "walk";
+  }
+
+  // Dance is a one-shot emote. Staying on the clip while it plays lets Phaser
+  // finish the full cycle; walking or leaving the ground above interrupts it.
+  if (memory.clip === "dance" && memory.playing) {
+    return "dance";
   }
 
   return "idle";
