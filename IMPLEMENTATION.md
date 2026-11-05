@@ -524,7 +524,9 @@ were wired. The assets, key/fit reports and 1×/2×/4× previews are committed u
 
 The accessibility baseline is:
 
-- `Esc` pause from gameplay, with a visible pause overlay.
+- `Esc` pause from gameplay, with a visible pause overlay. The HUD also exposes
+  a touch-sized Pause button that opens the same settings overlay on tablets and
+  other touch-only screens.
 - Text scale presets (75–200%) applied through `--ui-font-scale`; 75% keeps the
   HUD and hub readable on small screens.
 - Reduced motion: sets `data-reduced-motion="true"`, disables CSS animation, and

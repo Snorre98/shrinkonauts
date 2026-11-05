@@ -563,6 +563,33 @@ body {
   cursor: default;
 }
 
+.hud__pause-button {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.55rem;
+  border: var(--ui-border) solid var(--color-joint);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--color-joint) 12%, transparent);
+  color: var(--color-joint);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: auto;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.hud__pause-button:hover {
+  background: color-mix(in srgb, var(--color-joint) 22%, transparent);
+}
+
+.hud__pause-button:focus-visible {
+  outline: 2px solid var(--color-joint);
+  outline-offset: 2px;
+}
+
 .hud__hint-count {
   flex: none;
   color: var(--color-muted);
