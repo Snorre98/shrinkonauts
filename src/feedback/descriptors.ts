@@ -15,6 +15,7 @@ import type {
   PuzzleNodeType,
 } from "../puzzle";
 import { feedbackLexicon } from "./lexicon";
+import { isWorldAnchor } from "./placement";
 import { anchorRefFromFeedbackAnchor, nodeEffectAnchor } from "./effects";
 import {
   resolveEffectPreset,
@@ -25,6 +26,7 @@ import type {
   EffectPlan,
   FeedbackAnchor,
   FeedbackCapability,
+  FeedbackPlacement,
   FeedbackPresentation,
   FeedbackProgress,
   FeedbackProjectionContext,
@@ -35,6 +37,7 @@ import type {
   LinkFeedbackDescriptor,
   NodeFeedbackDescriptor,
   TileTarget,
+  Vec2,
 } from "./types";
 
 export const FEEDBACK_CAPABILITIES: readonly FeedbackCapability[] = [
@@ -110,9 +113,19 @@ export function nodeLabel(nodeId: string): string {
 }
 
 export function nodeAnchor(node: PuzzleNode): FeedbackAnchor {
-  return node.entityId
-    ? { kind: "entity", entityId: node.entityId }
-    : { kind: "node", nodeId: node.id, fallback: "hud" };
+  if (node.entityId) {
+    return { kind: "entity", entityId: node.entityId };
+  }
+  if ("rect" in node && node.rect) {
+    return {
+      kind: "world",
+      point: {
+        x: node.rect.x + node.rect.width / 2,
+        y: node.rect.y,
+      },
+    };
+  }
+  return { kind: "node", nodeId: node.id, fallback: "hud" };
 }
 
 export function defaultSeverity(state: FeedbackState): FeedbackSeverity {
@@ -150,9 +163,41 @@ function capabilityAnchor(
   capability: FeedbackCapability,
   node: PuzzleNode,
 ): FeedbackAnchor {
-  return capability === "outcome"
-    ? { kind: "screen" }
-    : nodeAnchor(node);
+  if (capability === "outcome") return { kind: "screen" };
+  if (capability === "counter") return { kind: "hud", slot: "left" };
+  const anchor = nodeAnchor(node);
+  if (capability === "meter" && !isWorldAnchor(anchor)) {
+    return { kind: "hud", slot: "left" };
+  }
+  return anchor;
+}
+
+function placementAnchor(
+  capability: FeedbackCapability,
+  node: PuzzleNode,
+  placement: FeedbackPlacement | undefined,
+): FeedbackAnchor {
+  if (placement === "world") return nodeAnchor(node);
+  if (placement === "hud") return { kind: "hud", slot: "left" };
+  return capabilityAnchor(capability, node);
+}
+
+function applyAnchorOverrides(
+  anchor: FeedbackAnchor,
+  socket: string | undefined,
+  offset: Vec2 | undefined,
+): FeedbackAnchor {
+  if (anchor.kind === "entity") {
+    return {
+      ...anchor,
+      ...(socket ? { socket } : {}),
+      ...(offset ? { offset } : {}),
+    };
+  }
+  if (anchor.kind === "world" && offset) {
+    return { ...anchor, offset };
+  }
+  return anchor;
 }
 
 /**
@@ -269,6 +314,10 @@ export function nodeSurface(input: {
   text?: string;
   progress?: FeedbackProgress;
   presentation?: FeedbackPresentation;
+  placement?: FeedbackPlacement;
+  icon?: string;
+  socket?: string;
+  offset?: Vec2;
   severity?: FeedbackSeverity;
   effects?: readonly EffectPlan[];
   effectPreset?: string;
@@ -282,7 +331,11 @@ export function nodeSurface(input: {
   const text = input.text ?? lexicon.text;
   const presentation =
     input.presentation ?? CAPABILITY_DEFAULTS[input.capability].presentation;
-  const anchor = capabilityAnchor(input.capability, input.node);
+  const anchor = applyAnchorOverrides(
+    placementAnchor(input.capability, input.node, input.placement),
+    input.socket,
+    input.offset,
+  );
   const effects =
     input.effects ??
     defaultNodeEffects(
@@ -301,7 +354,10 @@ export function nodeSurface(input: {
     audience: "both",
     anchor,
     presentation,
+    ...(input.placement ? { placement: input.placement } : {}),
+    icon: input.icon ?? lexicon.icon,
     content: {
+      title: input.label,
       text,
       ...(input.progress ? { progress: input.progress } : {}),
     },
@@ -317,13 +373,12 @@ export function nodeSurface(input: {
 
 export function projectSignal(signal: FeedbackSignal): FeedbackSurfaceSpec {
   const defaults = CAPABILITY_DEFAULTS[signal.capability];
-  const text =
-    signal.content.text ??
-    feedbackLexicon({
-      capability: signal.capability,
-      state: signal.state,
-      ...(signal.reason ? { reason: signal.reason } : {}),
-    }).text;
+  const lexicon = feedbackLexicon({
+    capability: signal.capability,
+    state: signal.state,
+    ...(signal.reason ? { reason: signal.reason } : {}),
+  });
+  const text = signal.content.text ?? lexicon.text;
   const actor = signal.actor ?? null;
   const owner = signal.owner ?? actor ?? "shared";
   const effects =
@@ -348,6 +403,8 @@ export function projectSignal(signal: FeedbackSignal): FeedbackSurfaceSpec {
     audience: "both",
     anchor: signal.anchor,
     presentation: signal.presentation ?? defaults.presentation,
+    ...(signal.placement ? { placement: signal.placement } : {}),
+    icon: signal.icon ?? lexicon.icon,
     content: { ...signal.content, text },
     state: signal.state,
     ...(signal.reason ? { reason: signal.reason } : {}),
@@ -381,6 +438,10 @@ function projectNode(
       state: feedbackState,
       label,
       ...(context?.text ? { text: context.text } : {}),
+      ...(context?.icon ? { icon: context.icon } : {}),
+      ...(context?.placement ? { placement: context.placement } : {}),
+      ...(context?.socket ? { socket: context.socket } : {}),
+      ...(context?.offset ? { offset: context.offset } : {}),
       ...(context?.effectPreset
         ? { effectPreset: context.effectPreset }
         : {}),
@@ -420,6 +481,10 @@ export const NODE_FEEDBACK = {
             label,
             text: context?.text ?? `${label} cleared`,
             severity: "neutral",
+            ...(context?.icon ? { icon: context.icon } : {}),
+            ...(context?.placement ? { placement: context.placement } : {}),
+            ...(context?.socket ? { socket: context.socket } : {}),
+            ...(context?.offset ? { offset: context.offset } : {}),
           }),
         ];
       }

@@ -36,6 +36,14 @@ jobs:
           name: dist
           path: dist
 
+      - name: Verify phone relay configuration
+        run: |
+          if ! grep -Rq "shrinkonauts-rooms.snosaet.workers.dev" dist/assets; then
+            echo "::error::Production build is missing VITE_NET_URL"
+            exit 1
+          fi
+          test -f dist/controller.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

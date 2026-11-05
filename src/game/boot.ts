@@ -41,15 +41,24 @@ import {
   snapTextScale,
   type GameUi,
   type GameUiDiagnostics,
+  type HubControllerSlotView,
+  type HubControllerView,
   type HubMode,
   type HubUi,
   type HubView,
+  type HostRunOverlayView,
+  type RuntimeSnapshot,
 } from "../ui";
 import {
   createGame,
   HubScene,
+  InputArbiter,
+  KeyboardIntentSource,
   RoomScene,
+  phoneSlotsForPlan,
   type GameplayCue,
+  type InputPlan,
+  type PlayerSlot,
 } from "../world";
 import {
   beginStart,
@@ -59,23 +68,48 @@ import {
   markHub,
   markLaunching,
   markPlaying,
+  phoneStartGate,
+  resetInputPlan,
   selectMode,
   selectPack,
   selectedPack,
+  setInputPlan,
   type AppState,
+  type ControllerGateInput,
 } from "./app-state";
 import {
   modeLabel,
   resolveAssetMode,
   type AssetMode,
 } from "./asset-mode";
+import type {
+  HostRunError,
+  HostRunFactory,
+  HostRunPort,
+  HostRunSlotStatus,
+  HostRunView,
+} from "./host-run-port";
 import { GameRuntime, type AudioPort } from "./runtime";
+
+export interface BootRoomSession {
+  room: string;
+  ticket: string;
+  expiresAt: number;
+  deviceToken: string;
+}
 
 export interface BootOptions {
   parent?: string;
   uiRoot?: HTMLElement | null;
   search?: string;
   fetchImpl?: typeof fetch;
+  inputPlan?: InputPlan;
+  roomCode?: string;
+  buildId?: string;
+  hostRunFactory?: HostRunFactory;
+  createSession?: (room?: string) => Promise<BootRoomSession>;
+  releaseSession?: (room: string, ticket: string) => Promise<void>;
+  controllerUrlFor?: (room: string, slot: PlayerSlot, ticket?: string) => string;
 }
 
 export interface PackBundle {
@@ -105,6 +139,42 @@ function toError(value: unknown): Error {
 function overrideLabel(source: string, mode: AssetMode): string {
   if (source === "pack" && mode === "fixture") return "fixture";
   return source;
+}
+
+function hubSlotStatus(
+  status: HostRunSlotStatus | undefined,
+  error: boolean,
+): HubControllerSlotView["status"] {
+  if (error) return "error";
+  switch (status) {
+    case "connected":
+      return "connected";
+    case "ready":
+      return "ready";
+    case "closed":
+      return "closed";
+    case "keyboard":
+      return "waiting";
+    default:
+      return "waiting";
+  }
+}
+
+function hubSlotStatusLabel(
+  status: HubControllerSlotView["status"],
+): string {
+  switch (status) {
+    case "connected":
+      return "Connected";
+    case "ready":
+      return "Ready";
+    case "closed":
+      return "Keyboard";
+    case "error":
+      return "Error";
+    default:
+      return "Waiting";
+  }
 }
 
 async function loadOptionalManifest(
@@ -174,6 +244,22 @@ export class AppController {
   private readonly search: string;
   private readonly fetchImpl: typeof fetch;
   private readonly transition: HTMLElement;
+  private readonly inputPlanOption: InputPlan | null;
+  private readonly roomCodeOption: string | null;
+  private readonly buildId: string;
+  private readonly hostRunFactory?: HostRunFactory;
+  private readonly createSession?: (
+    room?: string,
+  ) => Promise<BootRoomSession>;
+  private readonly releaseSession?: (
+    room: string,
+    ticket: string,
+  ) => Promise<void>;
+  private readonly controllerUrlFor?: (
+    room: string,
+    slot: PlayerSlot,
+    ticket?: string,
+  ) => string;
 
   private saveData!: SaveModule;
   private catalogData!: PackCatalog;
@@ -201,6 +287,18 @@ export class AppController {
   private packAssets: AssetsModule | null = null;
   private packPlan: PreloadPlan | null = null;
   private packAudio: AudioModule | null = null;
+  private hostRun: HostRunPort | null = null;
+  private hostRunView: HostRunView | null = null;
+  private hostRoomCode: string | null = null;
+  private hostTicket: string | null = null;
+  private hostPlan: InputPlan | null = null;
+  private hostRunError: HostRunError | null = null;
+  private hostRunStartAttempted = false;
+  private readonly hostControlSignatures: Record<PlayerSlot, string> = {
+    p1: "",
+    p2: "",
+  };
+  private hostGeneration = 0;
 
   constructor(options: BootOptions = {}) {
     this.parentId = options.parent ?? "game-root";
@@ -211,6 +309,13 @@ export class AppController {
     this.uiRoot = uiRoot;
     this.search = options.search ?? window.location.search;
     this.fetchImpl = options.fetchImpl ?? fetch;
+    this.inputPlanOption = options.inputPlan ?? null;
+    this.roomCodeOption = options.roomCode ?? null;
+    this.buildId = options.buildId?.trim() || "dev";
+    this.hostRunFactory = options.hostRunFactory;
+    this.createSession = options.createSession;
+    this.releaseSession = options.releaseSession;
+    this.controllerUrlFor = options.controllerUrlFor;
 
     this.transition = document.createElement("div");
     this.transition.className = "hub-transition";
@@ -254,6 +359,46 @@ export class AppController {
     return this.packContent;
   }
 
+  get controllerSession(): HostRunPort | null {
+    return this.hostRun;
+  }
+
+  get controllerView(): HostRunView | null {
+    return this.hostRunView;
+  }
+
+  get controllerRoomCode(): string | null {
+    return this.hostRoomCode;
+  }
+
+  setInputPlan(plan: InputPlan): void {
+    if (!this.state || this.state.phase !== "hub") return;
+    this.applyInputPlan(plan);
+  }
+
+  fallbackHostSlot(slot: PlayerSlot): boolean {
+    return this.hostRun?.fallbackToKeyboard(slot) ?? false;
+  }
+
+  resumeHostRun(): boolean {
+    const run = this.hostRun;
+    if (!run) return false;
+    if (run.view.state === "controllers-ready") return run.start();
+    return run.resume();
+  }
+
+  endHostRun(): void {
+    const room = this.hostRoomCode;
+    const ticket = this.hostTicket;
+    this.hostRun?.end();
+    if (room && ticket && this.releaseSession) {
+      void this.releaseSession(room, ticket).catch(() => {
+        // The room object also releases the lease when it closes.
+      });
+    }
+    this.syncHostRunUi();
+  }
+
   async boot(): Promise<void> {
     this.mode = resolveAssetMode(this.search);
     this.saveData = createSave();
@@ -265,6 +410,9 @@ export class AppController {
     if (!catalog.ok) throw new Error(catalog.error);
     this.catalogData = catalog.value;
     this.state = createAppState(this.catalogData);
+    if (this.inputPlanOption) {
+      this.state = setInputPlan(this.state, this.inputPlanOption);
+    }
 
     const hubUrl = new URL("hub/bathroom/", assetBase()).toString();
     const loaded = await loadHubContent({ hubUrl, fetchImpl: this.fetchImpl });
@@ -311,11 +459,15 @@ export class AppController {
     this.activeAudio = this.hubAudio;
     this.installAudioUnlock();
     this.installHubShortcuts();
+    this.installHostVisibility();
     this.applySettings();
 
     await this.mountHub();
     this.state = markHub(this.state);
     this.refreshHub();
+    if (phoneSlotsForPlan(this.state.inputPlan).length > 0) {
+      void this.ensureHostRun(this.state.inputPlan);
+    }
 
     const params = new URLSearchParams(this.search);
     const packParam = params.get("pack");
@@ -383,6 +535,22 @@ export class AppController {
     });
   }
 
+  private installHostVisibility(): void {
+    document.addEventListener("visibilitychange", () => {
+      const run = this.hostRun;
+      if (!run || this.phase !== "playing") return;
+      if (document.visibilityState === "hidden") {
+        run.pause("host-hidden");
+      } else if (
+        run.view.state === "paused" &&
+        run.view.pausedReason === "host-hidden"
+      ) {
+        run.resume();
+      }
+      this.syncHostRunUi();
+    });
+  }
+
   private applySettings(): void {
     const settings = this.saveData.settings;
     const scale = snapTextScale(settings.accessibility.textScale);
@@ -404,7 +572,11 @@ export class AppController {
     if (!this.state || !this.hubUi) return;
     const entry = selectedPack(this.state);
     const hasSave = entry ? this.saveData.hasRun(entry.id) : false;
-    const start = canStart(this.state, hasSave);
+    const gate = phoneStartGate(
+      this.state.inputPlan,
+      this.controllerGateInput(),
+    );
+    const start = canStart(this.state, hasSave, gate);
     const packs = this.catalogData.packs.map((pack) => {
       const iconId = this.hubContent.theme.ui.assets[pack.id];
       const icon = iconId ? this.hubAssets.image(iconId) : undefined;
@@ -414,7 +586,6 @@ export class AppController {
         subtitle: pack.subtitle ?? null,
         description: pack.description ?? null,
         status: pack.status,
-        online: pack.online,
         selected: pack.id === this.state?.selectedPackId,
         hasSave: this.saveData.hasRun(pack.id),
         ...(icon && icon.source !== "placeholder" && icon.src
@@ -435,16 +606,19 @@ export class AppController {
       packs,
       selectedPackId: this.state.selectedPackId,
       mode: this.state.mode,
-      online: {
-        available: false,
-        reason:
-          "Local co-op is ready. Online co-op arrives with the Cloudflare milestone (M4).",
+      inputPlan: {
+        p1: this.state.inputPlan.p1,
+        p2: this.state.inputPlan.p2,
       },
+      controller: this.hubControllerView(),
       startLabel: start.label,
       startDisabled: !start.allowed,
       startReason: start.reason,
       canStartNew: Boolean(
-        hasSave && entry?.status === "available" && !this.state.busy,
+        hasSave &&
+          entry?.status === "available" &&
+          !this.state.busy &&
+          start.allowed,
       ),
       busy: this.state.busy,
       notice: this.state.notice,
@@ -459,6 +633,89 @@ export class AppController {
     });
   }
 
+  private controllerGateInput(): ControllerGateInput {
+    return {
+      state: this.hostRunView?.state ?? null,
+      missingSlots:
+        this.hostRunView?.missingSlots ??
+        phoneSlotsForPlan(
+          this.state?.inputPlan ?? { p1: "keyboard", p2: "keyboard" },
+        ),
+      error:
+        this.hostRunError?.message ??
+        this.hostRunView?.error?.message ??
+        null,
+    };
+  }
+
+  private hubControllerView(): HubControllerView | null {
+    if (!this.state) return null;
+    const phoneSlots = phoneSlotsForPlan(this.state.inputPlan);
+    if (phoneSlots.length === 0) return null;
+
+    const view = this.hostRunView;
+    const error = this.hostRunError ?? view?.error ?? null;
+    const roomCode = this.hostRoomCode ?? "";
+    const slots: HubControllerSlotView[] = phoneSlots.map((slot) => {
+      const status = hubSlotStatus(view?.slots[slot].status, Boolean(error));
+      let url = "";
+      if (roomCode && this.controllerUrlFor) {
+        try {
+          url = this.controllerUrlFor(
+            roomCode,
+            slot,
+            this.hostTicket ?? undefined,
+          );
+        } catch {
+          url = "";
+        }
+      }
+      return {
+        slot,
+        label: slot.toUpperCase(),
+        roomCode,
+        url,
+        status,
+        statusLabel: hubSlotStatusLabel(status),
+        message:
+          status === "waiting"
+            ? "Waiting for the phone to join."
+            : status === "connected"
+              ? "Connected. Finishing setup…"
+              : status === "ready"
+                ? "Ready to play."
+                : status === "closed"
+                  ? "Using the keyboard for this slot."
+                  : null,
+      };
+    });
+
+    let status: HubControllerView["status"];
+    if (error || view?.state === "ended") {
+      status = "error";
+    } else if (
+      !view ||
+      view.state === "idle" ||
+      view.state === "connecting"
+    ) {
+      status = "preparing";
+    } else if (
+      view.state === "controllers-ready" ||
+      view.state === "active"
+    ) {
+      status = "ready";
+    } else {
+      status = "waiting";
+    }
+
+    return {
+      roomCode,
+      status,
+      message: error?.message ?? null,
+      slots,
+    };
+  }
+
   selectPack(id: string): void {
     if (!this.state) return;
     const next = selectPack(this.state, id);
@@ -470,18 +727,13 @@ export class AppController {
 
   selectMode(mode: HubMode): void {
     if (!this.state) return;
-    const next = selectMode(this.state, mode, false);
-    if (next === this.state) {
-      if (mode === "online") {
-        this.state = {
-          ...this.state,
-          notice: "Online co-op arrives with the Cloudflare milestone (M4).",
-        };
-        this.refreshHub();
-      }
-      return;
-    }
+    const next = selectMode(this.state, mode);
+    if (next === this.state) return;
     this.state = next;
+    if (next.mode !== "local") {
+      this.disposeHostRun();
+      this.state = resetInputPlan(this.state);
+    }
     this.hubAudio?.play(this.hubContent.hub.audio.click);
     this.refreshHub();
   }
@@ -530,6 +782,8 @@ export class AppController {
       callbacks: {
         onSelectPack: (id) => this.selectPack(id),
         onModeChange: (mode) => this.selectMode(mode),
+        onInputSourceChange: (slot, source) =>
+          this.changeInputSource(slot, source),
         onStart: () => {
           void this.startSelected({ resume: true, fromGesture: true });
         },
@@ -599,10 +853,15 @@ export class AppController {
     if (!this.state || this.state.busy) return;
     const entry = selectedPack(this.state);
     if (!entry || entry.status !== "available") return;
-    if (this.state.mode === "online") {
+
+    const gate = phoneStartGate(
+      this.state.inputPlan,
+      this.controllerGateInput(),
+    );
+    if (gate && !gate.allowed) {
       this.state = {
         ...this.state,
-        notice: "Online co-op arrives with the Cloudflare milestone (M4).",
+        notice: gate.reason ?? "Waiting for the phone controllers.",
       };
       this.refreshHub();
       return;
@@ -658,7 +917,9 @@ export class AppController {
       this.state = markLaunching(this.state);
       this.refreshHub();
       await this.transitionToRoom(bundle, skipIntro);
+      this.startHostRunAfterScene();
     } catch (error) {
+      this.disposeHostRun();
       bundle?.audio.dispose();
       this.hubScene?.skipLaunch();
       this.recoverToHub(toError(error));
@@ -671,6 +932,339 @@ export class AppController {
         .querySelector<HTMLCanvasElement>(`#${this.parentId} canvas[data-room-id]`)
         ?.focus({ preventScroll: true });
     }
+  }
+
+  private applyInputPlan(plan: InputPlan): void {
+    if (!this.state) return;
+    const previous = this.state.inputPlan;
+    const nextState = setInputPlan(this.state, plan);
+    if (nextState === this.state) return;
+
+    const previousPhones = phoneSlotsForPlan(previous);
+    const added = (["p1", "p2"] as const).filter(
+      (slot) => previous[slot] === "keyboard" && plan[slot] === "controller",
+    );
+    const removed = (["p1", "p2"] as const).filter(
+      (slot) => previous[slot] === "controller" && plan[slot] === "keyboard",
+    );
+
+    this.state = nextState;
+
+    // Keyboard fallback closes only the changed slot. The other phone keeps
+    // its room, code, and connection.
+    for (const slot of removed) {
+      this.hostRun?.fallbackToKeyboard(slot);
+    }
+
+    if (added.length > 0) {
+      this.disposeHostRun();
+      if (previousPhones.length > 0) {
+        this.state = {
+          ...this.state,
+          notice: "New phone room — scan the updated controller code.",
+        };
+      }
+    }
+
+    const remaining = phoneSlotsForPlan(this.state.inputPlan);
+    if (remaining.length === 0) {
+      this.disposeHostRun();
+    } else if (added.length > 0 || !this.hostRun) {
+      void this.ensureHostRun(this.state.inputPlan);
+    }
+    this.refreshHub();
+  }
+
+  private changeInputSource(
+    slot: PlayerSlot,
+    source: "keyboard" | "controller",
+  ): void {
+    if (!this.state) return;
+    this.applyInputPlan({ ...this.state.inputPlan, [slot]: source });
+  }
+
+  private async ensureHostRun(plan: InputPlan): Promise<void> {
+    const requested = phoneSlotsForPlan(plan);
+    if (requested.length === 0) {
+      this.disposeHostRun();
+      return;
+    }
+    if (this.hostRun && this.hostPlan) {
+      const cached = phoneSlotsForPlan(this.hostPlan);
+      if (requested.join(",") === cached.join(",")) return;
+    }
+
+    this.disposeHostRun();
+    const generation = ++this.hostGeneration;
+    this.hostRunError = null;
+    this.hostRunStartAttempted = false;
+
+    if (!this.hostRunFactory) {
+      this.hostRunError = {
+        code: "HOST_RUN_UNAVAILABLE",
+        message:
+          "Phone controllers require a host session factory.",
+      };
+      this.refreshHub();
+      return;
+    }
+
+    let session: BootRoomSession | null = null;
+    if (this.createSession) {
+      try {
+        session = await this.createSession(this.roomCodeOption ?? undefined);
+      } catch (error) {
+        if (generation !== this.hostGeneration) return;
+        this.hostRunError = {
+          code: "HOST_SESSION_CREATE",
+          message: toError(error).message,
+        };
+        this.refreshHub();
+        return;
+      }
+      if (generation !== this.hostGeneration) return;
+    }
+
+    let run: HostRunPort | null = null;
+    try {
+      run = this.hostRunFactory({
+        plan: { ...plan },
+        ...(session
+          ? {
+              room: session.room,
+              ticket: session.ticket,
+              deviceToken: session.deviceToken,
+            }
+          : this.roomCodeOption
+            ? { room: this.roomCodeOption }
+            : {}),
+        buildId: this.buildId,
+        onStateChange: (view) => {
+          if (this.hostRun !== run) return;
+          this.hostRunView = view;
+          this.sendHostControls(this.runtimeInstance, true);
+          this.syncHostRunUi();
+        },
+        onError: (error) => {
+          if (this.hostRun !== run) return;
+          this.hostRunError = error;
+          this.warn(`[host session] ${error.code}: ${error.message}`);
+          this.syncHostRunUi();
+        },
+      });
+    } catch (error) {
+      if (generation !== this.hostGeneration) return;
+      this.hostRunError = {
+        code: "HOST_RUN_CREATE",
+        message: toError(error).message,
+      };
+      this.refreshHub();
+      return;
+    }
+
+    this.hostRun = run;
+    this.hostPlan = { ...plan };
+    this.hostRoomCode = run.room;
+    this.hostTicket = session?.ticket ?? null;
+    this.hostRunView = run.view;
+    this.refreshHub();
+    this.syncHostRunUi();
+
+    try {
+      await run.connect();
+    } catch (error) {
+      if (this.hostRun !== run || generation !== this.hostGeneration) return;
+      this.hostRunError = {
+        code: "HOST_RUN_CONNECT",
+        message: toError(error).message,
+      };
+      this.refreshHub();
+      this.syncHostRunUi();
+      return;
+    }
+
+    if (this.hostRun !== run || generation !== this.hostGeneration) return;
+    this.syncHostRunUi();
+  }
+
+  private disposeHostRun(): void {
+    const run = this.hostRun;
+    const room = this.hostRoomCode;
+    const ticket = this.hostTicket;
+    this.hostRun = null;
+    this.hostRunView = null;
+    this.hostRoomCode = null;
+    this.hostTicket = null;
+    this.hostPlan = null;
+    this.hostRunError = null;
+    this.hostRunStartAttempted = false;
+    this.hostControlSignatures.p1 = "";
+    this.hostControlSignatures.p2 = "";
+    this.hostGeneration += 1;
+
+    if (run) {
+      run.end("host-left");
+      run.destroy();
+    }
+    if (room && ticket && this.releaseSession) {
+      void this.releaseSession(room, ticket).catch(() => {
+        // The room object also releases the lease when it closes.
+      });
+    }
+    this.gameUi?.setHostRun(null);
+  }
+
+  private startHostRunAfterScene(): void {
+    const run = this.hostRun;
+    if (!run) return;
+    this.hostRunStartAttempted = true;
+    if (run.view.state !== "active" && !run.start()) {
+      this.warn(
+        "[host session] run start deferred because the controllers are not ready",
+      );
+    }
+    this.syncHostRunUi();
+  }
+
+  private syncHostRunUi(): void {
+    if (!this.state) return;
+    if (this.state.phase === "hub") {
+      this.refreshHub();
+      return;
+    }
+    if (this.state.phase === "playing") {
+      this.gameUi?.setHostRun(this.hostRunOverlay());
+    }
+  }
+
+  private hostRunOverlay(): HostRunOverlayView | null {
+    if (!this.hostRun || !this.hostRunView || !this.hostRunStartAttempted) {
+      return null;
+    }
+    const view = this.hostRunView;
+    if (view.state === "active") return null;
+    const missingSlots = [...view.missingSlots];
+    const error =
+      this.hostRunError?.message ?? view.error?.message ?? null;
+    return {
+      state: view.state,
+      pausedReason: view.pausedReason,
+      missingSlots,
+      canStart:
+        view.state === "controllers-ready" &&
+        missingSlots.length === 0 &&
+        !error,
+      canResume:
+        view.state === "paused" &&
+        missingSlots.length === 0 &&
+        !error,
+      ended: view.state === "ended",
+      error,
+    };
+  }
+
+  private advanceHostRun(): void {
+    const run = this.hostRun;
+    if (!run) {
+      this.syncHostRunUi();
+      return;
+    }
+    if (run.view.state === "controllers-ready") {
+      run.start();
+    } else if (run.view.state === "paused") {
+      run.resume();
+    }
+    this.syncHostRunUi();
+  }
+
+  private continueWithKeyboard(slot?: PlayerSlot): void {
+    const run = this.hostRun;
+    if (!run) {
+      this.syncHostRunUi();
+      return;
+    }
+    if (!slot) {
+      this.disposeHostRun();
+      return;
+    }
+
+    run.fallbackToKeyboard(slot);
+    this.gameUi?.setInputSources(this.uiInputSources());
+    const view = this.hostRunView;
+    const allClosed = run.phoneSlots.every(
+      (phoneSlot) => view?.slots[phoneSlot].status === "closed",
+    );
+    if (allClosed) {
+      this.disposeHostRun();
+      return;
+    }
+    if (
+      view?.state === "controllers-ready" &&
+      this.hostRunStartAttempted
+    ) {
+      run.start();
+    }
+    this.syncHostRunUi();
+  }
+
+  private endSessionToHub(): void {
+    this.hostRun?.end("host-left");
+    this.syncHostRunUi();
+    void this.returnToHub();
+  }
+
+  private handleHostRuntimeSnapshot(
+    snapshot: RuntimeSnapshot,
+    runtime: GameRuntime,
+  ): void {
+    this.flushControlActions(runtime);
+    const run = this.hostRun;
+    if (!run) return;
+    this.sendHostControls(runtime);
+    if (snapshot.state === "pause") {
+      if (run.view.state === "active") run.pause("host-paused");
+      return;
+    }
+    if (
+      run.view.state === "paused" &&
+      run.view.pausedReason === "host-paused"
+    ) {
+      run.resume();
+    }
+  }
+
+  private sendHostControls(
+    runtime: GameRuntime | null,
+    force = false,
+  ): void {
+    const run = this.hostRun;
+    if (!run || !runtime) return;
+    for (const slot of run.phoneSlots) {
+      if (run.view.slots[slot].status === "closed") continue;
+      const descriptor = runtime.controlDescriptor(slot);
+      const signature = JSON.stringify(descriptor);
+      if (!force && this.hostControlSignatures[slot] === signature) {
+        continue;
+      }
+      this.hostControlSignatures[slot] = signature;
+      run.sendControl(slot, descriptor);
+    }
+  }
+
+  private flushControlActions(runtime: GameRuntime): void {
+    const actions = runtime.drainControlActions();
+    const run = this.hostRun;
+    if (!run) return;
+    for (const action of actions) {
+      if (!run.phoneSlots.includes(action.slot)) continue;
+      if (run.view.slots[action.slot].status === "closed") continue;
+      run.sendAction(action.slot, action.feedback);
+    }
+  }
+
+  private isHostRunPaused(): boolean {
+    if (!this.hostRun) return false;
+    return this.hostRunView?.state !== "active";
   }
 
   private async preparePack(
@@ -855,6 +1449,7 @@ export class AppController {
         ? bundle.assets.image(bundle.content.theme.ui.assets.badge)
         : undefined,
       diagnostics,
+      inputSources: this.uiInputSources(),
       resolveBlueprintSymbol: (symbol) =>
         isAssetId(symbol)
           ? bundle.assets.resolveById(symbol)
@@ -886,15 +1481,20 @@ export class AppController {
         onExitToHub: () => {
           void this.returnToHub();
         },
+        onHostResume: () => this.advanceHostRun(),
+        onHostFallback: (slot) => this.continueWithKeyboard(slot),
+        onHostKeyboard: () => this.continueWithKeyboard(),
+        onHostEnd: () => this.endSessionToHub(),
       },
     });
     this.gameUi.applySettings(this.saveData.settings);
     this.gameUi.update(bundle.runtime.snapshot());
+    this.runtimeInstance = bundle.runtime;
+    this.handleHostRuntimeSnapshot(bundle.runtime.snapshot(), bundle.runtime);
     this.unsubscribe = bundle.runtime.subscribe((snapshot) => {
       this.gameUi?.update(snapshot);
+      this.handleHostRuntimeSnapshot(snapshot, bundle.runtime);
     });
-
-    this.runtimeInstance = bundle.runtime;
     await this.mountRoomScene(bundle);
     this.state = markPlaying(this.state!);
     this.refreshHub();
@@ -903,6 +1503,24 @@ export class AppController {
       `#${this.parentId} canvas`,
     );
     canvas?.focus();
+  }
+
+  private uiInputSources(): Record<
+    PlayerSlot,
+    "keyboard" | "controller"
+  > {
+    const view = this.hostRun?.view ?? this.hostRunView;
+    if (view) {
+      return {
+        p1: view.slots.p1.source,
+        p2: view.slots.p2.source,
+      };
+    }
+    const plan = this.state?.inputPlan;
+    return {
+      p1: plan?.p1 === "controller" ? "controller" : "keyboard",
+      p2: plan?.p2 === "controller" ? "controller" : "keyboard",
+    };
   }
 
   private diagnosticsFor(bundle: PackBundle): GameUiDiagnostics {
@@ -942,6 +1560,12 @@ export class AppController {
             active instanceof HTMLSelectElement ||
             (active instanceof HTMLElement && active.isContentEditable)
           );
+        },
+        isPaused: () => this.isHostRunPaused(),
+        input: (scene) => {
+          const arbiter = new InputArbiter(new KeyboardIntentSource(scene));
+          this.hostRun?.attachInput(arbiter);
+          return arbiter;
         },
         onCue: (cue) => {
           if (typeof cue !== "string" || !cue) return;
@@ -995,6 +1619,7 @@ export class AppController {
     this.gameInstance = null;
     this.roomScene = null;
     this.runtimeInstance = null;
+    this.disposeHostRun();
     this.packContent = null;
     this.packAssets = null;
     this.packPlan = null;
@@ -1023,7 +1648,9 @@ export class AppController {
     clearUiMaterialStyles();
     document.title = "Shrinkonauts — The Bathroom";
     this.applySettings();
-    this.state = markHub(this.state, "Back in the bathroom.");
+    this.state = resetInputPlan(
+      markHub(this.state, "Back in the bathroom."),
+    );
     await this.mountHub();
     this.refreshHub();
     await this.setTransition(false, false);
@@ -1039,7 +1666,12 @@ export class AppController {
     this.ensureHubAudio();
     this.activeAudio = this.hubAudio;
     this.applySettings();
-    this.state = markError(this.state ?? createAppState(this.catalogData), error.message);
+    this.state = resetInputPlan(
+      markError(
+        this.state ?? createAppState(this.catalogData),
+        error.message,
+      ),
+    );
     if (!this.hubUi || !this.hubGame) {
       void this.mountHub().then(() => {
         this.refreshHub();

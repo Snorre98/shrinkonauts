@@ -3,6 +3,22 @@ export { createGame, VIEWPORT } from "./create-game";
 export type { GameMountOptions } from "./create-game";
 export { KeyboardIntentSource } from "./input";
 export type { FrameInput } from "./input";
+export { InputArbiter } from "./input-arbiter";
+export {
+  DEFAULT_INPUT_PLAN,
+  defaultInputPlan,
+  phoneSlotsForPlan,
+} from "./intent-source";
+export type {
+  HostActions,
+  InputPlan,
+  InputSourceKind,
+  IntentSource,
+  LocalIntentSource,
+  PlayerFrameInput,
+  PlayerIntentSource,
+  PlayerSlot,
+} from "./intent-source";
 export { emptyRuntimeInput, emptyPlayerUiActions } from "./runtime-port";
 export type {
   EffectCancelPolicy,

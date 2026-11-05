@@ -96,8 +96,8 @@ shape.
   removing the puzzle hint section.
 - New puzzle mechanics, new levels, or a curriculum rewrite.
 - Final world art, final audio, or a general HUD skin.
-- Online co-op, phone controller, key rebinding, mobile touch controls, or
-  localization.
+- Remote online co-op (not planned), phone controller setup, key rebinding,
+  mobile touch controls, or localization.
 - A full replacement of the system-map data model. The existing `MapView`
   remains the source for the room-to-room context in the `Tab` popup.
 

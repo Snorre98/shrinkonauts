@@ -1,4 +1,13 @@
-import type { HubCallbacks, HubMode, HubView } from "./hub-model";
+import type {
+  HubCallbacks,
+  HubControllerSlotView,
+  HubControllerView,
+  HubInputSource,
+  HubMode,
+  HubView,
+} from "./hub-model";
+import type { PlayerId } from "./model";
+import { qrSvgDataUrl } from "./qr";
 import { snapTextScale, TEXT_SCALES } from "./text-scale";
 
 export interface HubUiOptions {
@@ -16,8 +25,22 @@ export interface HubUi {
 const MODE_LABELS: Record<HubMode, string> = {
   solo: "Solo",
   local: "Local co-op",
-  online: "Online co-op",
 };
+
+const INPUT_SOURCE_LABELS: Record<HubInputSource, string> = {
+  keyboard: "Keyboard",
+  controller: "Phone",
+};
+
+interface ControllerCard {
+  root: HTMLElement;
+  badge: HTMLElement;
+  qr: HTMLImageElement;
+  link: HTMLAnchorElement;
+  url: HTMLElement;
+  message: HTMLElement;
+  fallback: HTMLButtonElement;
+}
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -41,6 +64,10 @@ function button(
   return node;
 }
 
+function setText(node: HTMLElement, text: string): void {
+  if (node.textContent !== text) node.textContent = text;
+}
+
 function statusLabel(status: HubView["packs"][number]["status"]): string {
   switch (status) {
     case "available":
@@ -52,6 +79,22 @@ function statusLabel(status: HubView["packs"][number]["status"]): string {
   }
 }
 
+function controllerStatusText(view: HubControllerView): string {
+  if (view.status === "error") return "The phone room is unavailable.";
+  if (view.status === "ready") {
+    return "All phone slots are ready. Start when you are ready.";
+  }
+  if (view.status === "preparing") {
+    return "Preparing the phone room…";
+  }
+  const waiting = view.slots
+    .filter((slot) => slot.status !== "ready" && slot.status !== "closed")
+    .map((slot) => slot.label);
+  return waiting.length > 0
+    ? `Waiting for ${waiting.join(" and ")} to join.`
+    : "Waiting for the phone controllers.";
+}
+
 export function mountHubUi(
   root: HTMLElement,
   options: HubUiOptions,
@@ -60,6 +103,7 @@ export function mountHubUi(
   let view: HubView | null = null;
   let packsBuilt = false;
   let confirmingNewCycle = false;
+  let focusSlotAfterRender: PlayerId | null = null;
 
   const element = el("main", "hub");
   element.setAttribute("aria-labelledby", "hub-title");
@@ -87,7 +131,7 @@ export function mountHubUi(
   const modeRow = el("div", "hub__modes");
   modeGroup.append(modeLegend, modeRow);
   const modeInputs = new Map<HubMode, HTMLInputElement>();
-  for (const mode of ["solo", "local", "online"] as const) {
+  for (const mode of ["solo", "local"] as const) {
     const label = el("label", "hub__mode");
     const input = el("input");
     input.type = "radio";
@@ -102,16 +146,78 @@ export function mountHubUi(
     modeRow.append(label);
   }
 
-  const online = el("div", "hub__online");
-  const onlineTitle = el("p", "hub__online-title", "Multiplayer");
-  const onlineCopy = el("p", "hub__online-copy", "");
-  const onlineActions = el("div", "hub__online-actions");
-  const hostButton = button("Host online room", "button button--small", () => {});
-  const joinButton = button("Join with code", "button button--small", () => {});
-  hostButton.disabled = true;
-  joinButton.disabled = true;
-  onlineActions.append(hostButton, joinButton);
-  online.append(onlineTitle, onlineCopy, onlineActions);
+  const inputGroup = el("fieldset", "hub__group hub__input-plan");
+  const inputLegend = el("legend", "hub__legend", "Controller input");
+  const inputSlots = el("div", "hub__input-slots");
+  inputGroup.append(inputLegend, inputSlots);
+  const inputInputs = new Map<
+    PlayerId,
+    Map<HubInputSource, HTMLInputElement>
+  >();
+  for (const slot of ["p1", "p2"] as const) {
+    const slotGroup = el("fieldset", "hub__input-slot");
+    slotGroup.dataset.slot = slot;
+    const slotLegend = el("legend", "hub__input-slot-label", slot.toUpperCase());
+    const options = el("div", "hub__input-options");
+    const bySource = new Map<HubInputSource, HTMLInputElement>();
+    for (const source of ["keyboard", "controller"] as const) {
+      const label = el("label", "hub__input-option");
+      const input = el("input");
+      input.type = "radio";
+      input.name = `hub-input-${slot}`;
+      input.value = source;
+      input.addEventListener("change", () => {
+        if (input.checked) callbacks.onInputSourceChange(slot, source);
+      });
+      label.append(
+        input,
+        el("span", "hub__input-option-label", INPUT_SOURCE_LABELS[source]),
+      );
+      options.append(label);
+      bySource.set(source, input);
+    }
+    inputInputs.set(slot, bySource);
+    slotGroup.append(slotLegend, options);
+    inputSlots.append(slotGroup);
+  }
+
+  const controller = el("section", "hub__controller");
+  controller.hidden = true;
+  const controllerHead = el("div", "hub__controller-head");
+  const controllerInfo = el("div", "hub__controller-info");
+  controllerInfo.append(
+    el("h3", "hub__controller-title", "Phone controllers"),
+    el(
+      "p",
+      "hub__controller-hint",
+      "Scan with each phone. Keep this screen visible. Sessions end after 5 minutes.",
+    ),
+  );
+  const controllerRoom = el("div", "hub__controller-room");
+  const controllerCodeLabel = el(
+    "span",
+    "hub__controller-room-label",
+    "Room code",
+  );
+  const controllerCode = el("code", "hub__controller-code", "");
+  controllerCode.dataset.role = "room-code";
+  controllerRoom.append(controllerCodeLabel, controllerCode);
+  controllerHead.append(controllerInfo, controllerRoom);
+  const controllerStatus = el("p", "hub__controller-status", "");
+  controllerStatus.setAttribute("role", "status");
+  controllerStatus.setAttribute("aria-live", "polite");
+  const controllerError = el("p", "hub__controller-error", "");
+  controllerError.setAttribute("role", "alert");
+  controllerError.hidden = true;
+  const controllerSlots = el("div", "hub__controller-slots");
+  controller.append(
+    controllerHead,
+    controllerStatus,
+    controllerError,
+    controllerSlots,
+  );
+  const controllerCards = new Map<PlayerId, ControllerCard>();
+  let controllerSignature = "";
 
   const startSection = el("section", "hub__start");
   const startButton = button("Start cycle", "button button--primary hub__start-button", () =>
@@ -218,7 +324,8 @@ export function mountHubUi(
     header,
     packGroup,
     modeGroup,
-    online,
+    inputGroup,
+    controller,
     startSection,
     confirm,
     error,
@@ -302,6 +409,106 @@ export function mountHubUi(
     packsBuilt = true;
   }
 
+  function buildControllerCard(slot: HubControllerSlotView): ControllerCard {
+    const root = el("article", "hub__controller-slot");
+    root.dataset.slot = slot.slot;
+    const head = el("header", "hub__controller-slot-head");
+    const name = el("h4", "hub__controller-slot-name", slot.label);
+    const badge = el("span", "hub__controller-badge", slot.statusLabel);
+    head.append(name, badge);
+
+    const qr = el("img", "hub__controller-qr");
+    qr.alt = `QR code for the ${slot.label} phone controller`;
+    qr.width = 128;
+    qr.height = 128;
+    qr.decoding = "async";
+    if (slot.url) {
+      try {
+        qr.src = qrSvgDataUrl(slot.url);
+      } catch {
+        qr.hidden = true;
+      }
+    } else {
+      qr.hidden = true;
+    }
+
+    const code = el(
+      "p",
+      "hub__controller-code-line",
+      slot.roomCode ? `Code ${slot.roomCode}` : "",
+    );
+    const link = el("a", "hub__controller-link", "Open controller link");
+    link.href = slot.url || "#";
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.dataset.role = "controller-url";
+    link.hidden = !slot.url;
+    const url = el("code", "hub__controller-url", slot.url);
+    url.title = slot.url;
+    url.hidden = !slot.url;
+
+    const message = el("p", "hub__controller-slot-message", "");
+    message.hidden = !slot.message;
+    const fallback = button(
+      "Use keyboard instead",
+      "button button--small hub__controller-fallback",
+      () => {
+        focusSlotAfterRender = slot.slot;
+        callbacks.onInputSourceChange(slot.slot, "keyboard");
+      },
+    );
+    fallback.dataset.role = "use-keyboard";
+
+    root.append(head, qr, code, link, url, message, fallback);
+    return { root, badge, qr, link, url, message, fallback };
+  }
+
+  function renderController(next: HubView): void {
+    const data = next.mode === "local" ? next.controller : null;
+    if (!data || data.slots.length === 0) {
+      controller.hidden = true;
+      controllerSlots.replaceChildren();
+      controllerCards.clear();
+      controllerSignature = "";
+      return;
+    }
+
+    controller.hidden = false;
+    controller.dataset.status = data.status;
+    setText(controllerCode, data.roomCode || "—");
+    setText(controllerStatus, controllerStatusText(data));
+    const errorMessage = data.status === "error" ? data.message ?? "" : "";
+    setText(controllerError, errorMessage);
+    controllerError.hidden = !errorMessage;
+
+    const signature = `${data.roomCode}|${data.slots
+      .map((slot) => `${slot.slot}:${slot.url}`)
+      .join("|")}`;
+    if (signature !== controllerSignature) {
+      controllerSignature = signature;
+      controllerSlots.replaceChildren();
+      controllerCards.clear();
+      for (const slot of data.slots) {
+        const card = buildControllerCard(slot);
+        controllerCards.set(slot.slot, card);
+        controllerSlots.append(card.root);
+      }
+    }
+
+    const disabled = next.busy || next.phase === "starting";
+    for (const slot of data.slots) {
+      const card = controllerCards.get(slot.slot);
+      if (!card) continue;
+      card.root.dataset.status = slot.status;
+      setText(card.badge, slot.statusLabel);
+      card.message.textContent = slot.message ?? "";
+      card.message.hidden = !slot.message;
+      card.fallback.disabled = disabled || slot.status === "closed";
+      card.fallback.hidden = slot.status === "closed";
+    }
+
+  }
+
   function renderConfirm(): void {
     if (!view) return;
     const pack = view.packs.find((entry) => entry.id === view?.selectedPackId);
@@ -319,26 +526,39 @@ export function mountHubUi(
     element.dataset.phase = next.phase;
     element.dataset.mode = next.mode;
     subtitle.textContent = next.subtitle;
-    status.textContent = next.notice ?? "";
+    setText(status, next.notice ?? "");
     status.hidden = !next.notice;
     assetMode.textContent = next.assetMode;
 
     renderPacks(next);
+    const controlsDisabled = next.busy || next.phase === "starting";
     for (const [mode, input] of modeInputs) {
       input.checked = next.mode === mode;
-      input.disabled =
-        next.busy || (mode === "online" && !next.online.available);
+      input.disabled = controlsDisabled;
     }
 
-    onlineCopy.textContent = next.online.reason;
-    online.dataset.available = String(next.online.available);
-    hostButton.disabled = true;
-    joinButton.disabled = true;
+    inputGroup.hidden = next.mode !== "local";
+    for (const slot of ["p1", "p2"] as const) {
+      const bySource = inputInputs.get(slot);
+      if (!bySource) continue;
+      for (const [source, input] of bySource) {
+        input.checked = next.inputPlan[slot] === source;
+        input.disabled = controlsDisabled;
+      }
+    }
+    renderController(next);
+    if (focusSlotAfterRender) {
+      const target = inputInputs
+        .get(focusSlotAfterRender)
+        ?.get("keyboard");
+      focusSlotAfterRender = null;
+      if (target && !target.disabled) target.focus();
+    }
 
     startButton.textContent = next.startLabel;
     startButton.disabled = next.startDisabled || next.busy;
     startButton.setAttribute("aria-busy", String(next.phase === "starting"));
-    reason.textContent = next.startReason ?? "";
+    setText(reason, next.startReason ?? "");
     reason.hidden = !next.startReason;
     newCycleButton.hidden = !next.canStartNew || next.busy;
     renderConfirm();
@@ -366,6 +586,9 @@ export function mountHubUi(
       startButton.disabled = true;
       for (const input of packInputs.values()) input.disabled = true;
       for (const input of modeInputs.values()) input.disabled = true;
+      for (const bySource of inputInputs.values()) {
+        for (const input of bySource.values()) input.disabled = true;
+      }
     }
   }
 
@@ -398,6 +621,8 @@ export function mountHubUi(
       packInputs.clear();
       packCards.clear();
       modeInputs.clear();
+      inputInputs.clear();
+      controllerCards.clear();
     },
   };
 }

@@ -1,18 +1,22 @@
 # Phone Controller Co-op — ADR domain
 
-**Status:** Proposed, 2026-11-01
+**Status:** Accepted, 2026-11-01; same-room scope confirmed 2026-11-04;
+Phase 6.5 ergonomics records accepted 2026-11-04
 **Owner:** Snorre
 **Scope:** phone-as-controller for same-screen co-op (M4.0a), per-player
-input slots, pairing and trust, and controller latency policy
-**Milestone:** [`../m4/README.md`](../m4/README.md) — M4.0a
+input slots, pairing and trust, controller latency policy, and the same-room
+product boundary
+**Milestone:** [`../m4/README.md`](../m4/README.md) — M4.0a is the complete
+multiplayer scope
 **Format:** Nygard-style, matching `docs/adr-online/`, `docs/adr-hub/`,
 `docs/adr-m3/`, and `docs/puzzle-engine/adr/`.
 
-This domain records the first phase of the multiplayer ladder: a phone acts as
-a controller while the game remains host-authoritative on one shared screen. It
-does not duplicate the remote-guest decisions in
-[`../adr-online/`](../adr-online/README.md); it consumes the same transport and
-input protocol for a smaller client role.
+This domain records the complete multiplayer model: a phone acts as a
+controller while the game remains host-authoritative on one shared screen. The
+product is same-room and shared-screen only. It does not add a remote guest or a
+fourth device. The remote-guest records in
+[`../adr-online/`](../adr-online/README.md) remain for historical precedent and
+are not an active plan.
 
 ## Numbering
 
@@ -26,7 +30,7 @@ renumber these records before acceptance; accepted records are immutable.
 
 | In scope | Out of scope |
 |---|---|
-| Same-screen co-op with one or two phone controllers | Remote second-screen rendering (online domain, M4.0b) |
+| Same-screen co-op with one or two phone controllers | Remote second-screen rendering (not planned, ADR-0081) |
 | Per-player input slots: keyboard or phone for P1/P2 | Matchmaking, accounts, lobbies, spectators |
 | Host-authoritative input application | Server-side simulation or deterministic lockstep |
 | Controller role, slot reservation, QR/code pairing | A second `GameRuntime` or `PuzzleRuntime` |
@@ -34,33 +38,53 @@ renumber these records before acceptance; accepted records are immutable.
 | Reconnect, pause, keyboard fallback | Phone-side prediction or rollback |
 | Latency budget, measurement, and input-feel policy | Bluetooth or native mobile apps |
 | Controller page with no game assets | Chat, voice, profiles, PII |
+| Demo quota guard, signed room tickets, server-issued device IDs | Accounts, identity providers, anti-cheat |
 | Host-owned save, evidence, and P1/P2 attribution | Trusted public assessment |
+| Controller layout, dialogue mode, ability affordances | New gameplay verbs, abilities, or content |
+| Ephemeral control descriptors (mode, verbs, results) | Dialogue text, world state, snapshots, save/evidence |
+| Stable verb positions with contextual highlight | Contextual remapping or a single “do everything” button |
+| Closed gesture vocabulary with visual affordances and a documented fallback | Hidden, gesture-only, or timing-ladder controls |
 
 ## Index
 
 | # | Decision | Status |
 |---|---|---|
-| [0066](0066-phone-controller-first-multiplayer-phase.md) | Phone controller as the first multiplayer phase | Proposed |
-| [0067](0067-per-player-input-slots-and-device-arbitration.md) | Per-player input slots and device arbitration | Proposed |
-| [0068](0068-controller-session-pairing-and-trust.md) | Controller session, pairing, and trust boundary | Proposed |
-| [0069](0069-controller-latency-and-input-feel.md) | Controller latency budget and input-feel policy | Proposed |
+| [0066](0066-phone-controller-first-multiplayer-phase.md) | Phone controller as the first multiplayer phase | Accepted |
+| [0067](0067-per-player-input-slots-and-device-arbitration.md) | Per-player input slots and device arbitration | Accepted |
+| [0068](0068-controller-session-pairing-and-trust.md) | Controller session, pairing, and trust boundary | Accepted |
+| [0069](0069-controller-latency-and-input-feel.md) | Controller latency budget and input-feel policy | Accepted |
+| [0081](0081-same-room-shared-screen-multiplayer.md) | Same-room, shared-screen multiplayer; no remote guest | Accepted |
+| [0082](0082-demo-quota-guard-and-device-admission.md) | Demo quota guard and device admission | Accepted |
+| [0083](0083-controller-thumb-zone-layout.md) | Controller thumb-zone layout | Accepted |
+| [0084](0084-ephemeral-controller-control-state.md) | Ephemeral controller control-state channel | Accepted |
+| [0085](0085-dialogue-control-and-choice-presentation.md) | Dialogue control and choice presentation | Accepted |
+| [0086](0086-ability-disclosure-and-feedback.md) | Ability disclosure and feedback on the controller | Accepted |
+| [0087](0087-controller-gesture-vocabulary.md) | Controller gesture vocabulary and discoverability | Accepted |
 
 ## Relationship to other decisions
 
-- **ADR-0047–0057 (online domain):** define the host-authoritative session,
-  room lifecycle, input protocol, ownership, failure, security, deployment, and
-  test strategy. M4.0a reuses the transport, room code, heartbeat, and
-  `NetInput` subset; it does not adopt world/UI snapshots or guest rendering.
-- **ADR-0047 / ADR-0050 (online domain):** assume host = P1 and guest = P2. The
+- **ADR-0047–0057 (online domain):** historical design exploration for remote
+  guest co-op. ADR-0081 supersedes the guest-rendering/snapshot scope. The input
+  relay reuses the transport, room code, heartbeat, failure, security, and
+  deployment lessons; it does not adopt world/UI snapshots or guest rendering.
+- **ADR-0047 / ADR-0050 (online domain):** assumed host = P1 and guest = P2. The
   controller phase generalizes this: the host is authority/display, and P1/P2
-  are independent input slots. The remote guest remains host = P1 in M4.0b.
+  are independent input slots. There is no remote guest slot.
 - **ADR-0058–0059 (hub domain):** the bathroom hub is the pre-game surface. M4.0a
-  adds a local-co-op input setup panel; the disabled online block remains for
-  M4.0b.
+  adds a local-co-op input setup panel; the obsolete online block and `online`
+  catalog flag are removed rather than reserved for M4.0b.
+- **ADR-0082:** the demo quota guard and device admission boundary. It makes the
+  ADR-0081 three-device cap enforceable, adds signed room tickets and
+  server-issued device IDs, and disables Workers Logs for the free-tier demo.
 - **ADR-0010 (puzzle-engine):** per-player soft-surface input and ownership. The
   controller arbiter preserves the existing P1/P2 routing.
 - **ADR-0037, ADR-0043 (puzzle-engine):** per-player abilities, tether, and
   camera. These remain host-owned and unchanged.
+- **ADR-0083–0087:** extend the controller page from an input grid to a
+  thumb-zone surface with one clearly communicated movement gesture. ADR-0084
+  narrowly amends ADR-0068 for ephemeral control descriptors; no dialogue text
+  or world state crosses the wire. ADR-0087 keeps the gesture set closed and
+  requires a documented fallback for any future gesture.
 
 ## Acceptance
 
@@ -75,6 +99,16 @@ M4.0a Phase 0 accepts this domain when:
 5. The latency budget and the fallback path are explicit.
 6. No accepted online ADR is rewritten; the controller phase is an additive
    record set.
+7. The demo quota guard, signed room tickets, and device admission are explicit
+   and configurable (ADR-0082).
+
+Phase 6.5 accepts ADR-0083–0087 when:
+
+1. The phone layout, gesture, dialogue, and ability decisions are explicit.
+2. Control descriptors remain a closed, text-free vocabulary.
+3. Keyboard/keyboard and solo paths remain unchanged.
+4. The gesture set is closed and has a documented fallback.
+5. Every new decision has tests and a visual/accessibility fallback.
 
 ## Status vocabulary
 
@@ -83,4 +117,6 @@ M4.0a Phase 0 accepts this domain when:
 - **Superseded:** replaced by a later ADR; kept immutable.
 - **Rejected:** considered and not adopted.
 
-All records in this domain start as **Proposed**.
+All active records in this domain are **Accepted**. The historical online
+records outside this domain are marked **Historical** and are not an active
+plan.

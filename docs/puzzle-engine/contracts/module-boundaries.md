@@ -56,15 +56,17 @@ modules.
 | `curriculum` | `debriefPrompts(syllabus, objectiveIds)` | Build syllabus-derived prompts | 0006 | Implemented |
 | `curriculum` | `debriefPrompts(..., overrides)` | Level prompt overrides | 0006 | Deferred |
 | `ui` | `GameUiCallbacks.onMapTravel(levelId)` | Keyboard map travel action | 0007 | Deferred |
-| `ui` | `mountFeedbackSurfaces` / surface renderer | Anchored surfaces, beats, live region, surface actions | 0010, 0011 | Implemented |
+| `ui` | `mountFeedbackSurfaces` / surface renderer | Anchored surfaces, markers, rings, chips, beats, live region, surface actions | 0010, 0011, 0023 | Implemented |
 | `ecs` | `createEcsWorld` / `defineComponent` / `createEntityId` | Generic deterministic kernel | 0009 | Implemented |
 | `feedback` | `createFeedbackDirector` / `projectSignal` | Facts, projection, cues, effects | 0009, 0012, 0013 | Implemented |
 | `feedback` | `NODE_FEEDBACK` / `LINK_FEEDBACK` / `CAPABILITY_DEFAULTS` | Exhaustive descriptor coverage | 0012 | Implemented |
+| `feedback` | `defaultPlacement` / `visualKind` | Resolve marker/ring/chip/card form without DOM or game imports | 0023 | Implemented |
 | `feedback` | `EFFECT_PRESETS` / `effectPresetIds` / `NODE_EFFECT_SOCKETS` | Named cosmetic recipes and conventional sockets | 0013 | Implemented |
 | `game` | `routeSurfaceInput` / `SurfaceInputRouter` | Per-player soft-surface input routing | 0010 | Implemented |
+| `game` | `GameRuntime.toggleInspect` / `SurfaceAction.inspect` | One shared inspect panel for markers, rings, and chips | 0023 | Implemented |
 | `game` | `GameRuntime.conversations` / `startConversation` | Concurrent entity conversations | 0011 | Implemented |
 | `feedback` | `setSharedFeedbackEnabled` | Drop/clear/despawn shared transient cues without touching persistent surfaces or player cues | 0021 | Implemented |
-| `game` | `GameRuntime.toggleSharedFeedback` | Persist the global setting, clear shared cues/help, and filter shared state/beats from the snapshot | 0021, 0022 | Implemented |
+| `game` | `GameRuntime.toggleSharedFeedback` | Persist the global setting, clear shared cues/help/panel, and filter shared state/beats from the snapshot | 0021, 0022, 0023 | Implemented |
 | `save` | `updateFeedback(patch)` | Persist `feedback.showShared` in the settings slot | 0021 | Implemented |
 | `ui` | `GameUiCallbacks.onToggleSharedFeedback` | Accessible pause-settings toggle | 0021 | Implemented |
 | `world` | `WorldEffectPort` / `TileVisualPort` / `simplifyForReducedMotion` | Narrow cosmetic rendering ports | 0013 | Implemented |
@@ -76,28 +78,31 @@ modules.
 | `save` | `RunSnapshot.returnTo` | Persist the main level during a side excursion | 0007 | Deferred |
 | `save` | `PropSnapshot.state` | Persist `cleared`; `locked` is deferred | 0004 | Partial |
 
-### 1.2 Proposed online co-op modules (M4)
+### 1.2 Implemented controller input modules (M4.0a)
 
-M4 introduces two new modules. They are not implemented by the M1.75/M1.8
-milestones and are listed here so the boundary is decided before code.
+M4.0a adds two modules:
 
-| Module | Owns (concern) | Public API (proposed) | Hidden internals |
+| Module | Owns (concern) | Public API | Hidden internals |
 |---|---|---|---|
-| `net` | room transport, protocol, host/guest session | `RoomTransport`, `HostSession`, `GuestSession`, `NetWorld`, `NetInput`, `NetAction`, protocol codec | WebSocket timers, reconnect backoff, sequence tracking |
-| `worker` (outside `src/`) | Cloudflare Worker and Durable Object relay | `/ws` route, `GameRoom` DO, room membership | socket attachments, room code normalization, hibernation |
+| `net` | controller transport, protocol, host session, remote input source | `RoomTransport`, `HostSession`, `RemotePlayerSource`, `HostRunAdapter`, `NetInput`, protocol codec | WebSocket timers, reconnect backoff, sequence tracking |
+| `worker` (outside `src/`) | Cloudflare Worker and Durable Object input relay | `/ws` route, `GameRoom` DO, room membership, controller slots | socket attachments, room code normalization, hibernation |
 
 Rules:
 
 - `net` may import `game`, `world`, `save`, and `ui` **view types**; it must not
   become a second game runtime.
-- `game` and `world` must not import `net`. The online host/guest adapters are
-  injected by `platform`, preserving the existing acyclic graph.
+- `game` and `world` must not import `net`. The host-session adapter is injected
+  by `platform`, preserving the existing acyclic graph.
 - `worker` never imports `src/game`, `src/world`, or `src/puzzle`; it only
-  validates/relays envelopes.
+  validates/relays controller envelopes.
 - The host browser remains the single writer; `net` and `worker` do not own
   game state.
+- The controller page imports only the pure `net` seam and `controller` modules;
+  it imports no Phaser, pack loader, assets, or game runtime.
 - The `worker` directory is deployed separately and is not part of the Vite
   client bundle.
+- Guest rendering, `GuestSession`, `NetWorld`, snapshots, interpolation, and
+  prediction are not planned (ADR-0081).
 - Terraform, if introduced under `infra/terraform/`, owns account-level
   resources only; it is outside the module graph and does not own Worker code,
   bindings, or the DO class (ADR-0057).
@@ -172,18 +177,19 @@ flowchart TB
   `FeedbackValidationVocabulary` built by the caller.
 - `world` never imports `feedback`; effects enter through `WorldEffectPlan` and
   `TileVisualOp` ports.
-- Proposed M4: `platform` injects a `net` host/guest adapter into `game`/`world`
+- M4.0a: `platform` injects the `net` host-session adapter into `game`/`world`
   consumers. `net` may read public view types but adds no edge from `game` or
   `world` back to `net`; the Cloudflare `worker` is outside the client module
-  graph. See [ADR-0047–0057](../../adr-online/README.md).
+  graph. See ADR-0066–0069, ADR-0081, ADR-0082. Remote guest rendering and snapshots are
+  not planned.
 
 ## 3. Public API signatures
 
 Precise new signatures are in [`interface.md`](interface.md). The full
 existing signatures remain in the source modules and are not duplicated here.
 M1.75 adds the `ecs` and `feedback` modules; M1.8 adds `materials` and the atlas
-extensions to `assets`. The proposed M4 online co-op adds `net` and an
-out-of-tree `worker`; see §1.2.
+extensions to `assets`. M4.0a adds `net` and an out-of-tree `worker` for
+controller input only; see §1.2. Remote guest co-op is not planned.
 
 ## 4. Invariants
 

@@ -1,0 +1,68 @@
+name: Deploy Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker/**"
+      - "src/core/**"
+      - "src/net/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit and integration tests
+        run: npm test
+
+      - name: Worker type check
+        run: npm run worker:typecheck
+
+      - name: Worker dry run
+        run: npm run worker:dry-run
+
+      - name: Require demo signing secret
+        env:
+          DEMO_SIGNING_SECRET: ${{ secrets.DEMO_SIGNING_SECRET }}
+        run: |
+          if [ -z "$DEMO_SIGNING_SECRET" ]; then
+            echo "::error::DEMO_SIGNING_SECRET is not configured"
+            exit 1
+          fi
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.156.0"
+          command: deploy -c worker/wrangler.jsonc
+          secrets: |
+            DEMO_SIGNING_SECRET
+        env:
+          DEMO_SIGNING_SECRET: ${{ secrets.DEMO_SIGNING_SECRET }}

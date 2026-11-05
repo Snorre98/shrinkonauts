@@ -18,6 +18,7 @@ import {
   Effects,
   Lifetime,
   Ownership,
+  Placement,
   Presentation,
   Priority,
   Reason,
@@ -27,6 +28,7 @@ import {
   Visual,
 } from "./components";
 import { deriveBeats } from "./beats";
+import { defaultPlacement } from "./placement";
 import {
   defaultSeverity,
   defaultSurfacePriority,
@@ -530,6 +532,10 @@ class FeedbackDirectorImpl implements FeedbackDirector {
           anchor: nodeAnchor(node),
           label: override?.label ?? nodeLabel(node.id),
           ...(override?.text ? { text: override.text } : {}),
+          ...(input.icons?.[node.id] ? { icon: input.icons[node.id] } : {}),
+          ...(override?.placement ? { placement: override.placement } : {}),
+          ...(override?.socket ? { socket: override.socket } : {}),
+          ...(override?.offset ? { offset: override.offset } : {}),
           ...(override?.effectPreset
             ? { effectPreset: override.effectPreset }
             : {}),
@@ -600,6 +606,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     this.world.add(entity, ActorRef, surface.actor);
     this.world.add(entity, Anchor, surface.anchor);
     this.world.add(entity, Presentation, surface.presentation);
+    this.world.add(entity, Placement, surface.placement);
     this.world.add(entity, Content, surface.content);
     this.world.add(entity, Ownership, {
       owner: surface.owner,
@@ -608,7 +615,10 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     });
     this.world.add(entity, Lifetime, surface.lifetime);
     this.world.add(entity, Priority, surface.priority);
-    this.world.add(entity, Visual, { severity: surface.severity });
+    this.world.add(entity, Visual, {
+      severity: surface.severity,
+      ...(surface.icon ? { icon: surface.icon } : {}),
+    });
     this.world.add(entity, Accessibility, surface.a11y);
     this.world.add(entity, State, surface.state);
 
@@ -651,6 +661,13 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     const actor = spec.actor ?? null;
     const owner = spec.owner ?? actor ?? "shared";
     const text = spec.content.text;
+    const placement =
+      spec.placement ??
+      defaultPlacement({
+        presentation: spec.presentation,
+        anchor: spec.anchor,
+        state: spec.state,
+      });
 
     return {
       id,
@@ -660,6 +677,8 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       audience: spec.audience ?? "both",
       anchor: spec.anchor,
       presentation: spec.presentation,
+      placement,
+      ...(spec.icon ? { icon: spec.icon } : {}),
       content: spec.content,
       state: spec.state,
       ...(spec.reason ? { reason: spec.reason } : {}),
@@ -745,6 +764,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
     this.world.add(entity, ActorRef, cue.actor);
     this.world.add(entity, Anchor, cue.anchor);
     this.world.add(entity, Presentation, cue.presentation);
+    this.world.add(entity, Placement, "hud");
     this.world.add(entity, Content, cue.content);
     this.world.add(entity, Ownership, {
       owner: cue.owner,
@@ -991,6 +1011,7 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       SourceRef,
       Anchor,
       Presentation,
+      Placement,
       Content,
       Ownership,
       Lifetime,
@@ -1033,6 +1054,8 @@ class FeedbackDirectorImpl implements FeedbackDirector {
       audience: ownership.audience,
       anchor: this.required(entity, Anchor, "anchor"),
       presentation: this.required(entity, Presentation, "presentation"),
+      placement: this.required(entity, Placement, "placement"),
+      ...(visual.icon ? { icon: visual.icon } : {}),
       content,
       state: this.required(entity, State, "state"),
       ...(reason ? { reason } : {}),

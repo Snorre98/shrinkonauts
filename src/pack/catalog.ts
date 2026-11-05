@@ -12,8 +12,6 @@ export interface PackCatalogEntry {
   /** Directory relative to `public/packs/`, for example `anatomy-reflex/`. */
   path: string;
   status: PackAvailability;
-  /** Whether the online co-op milestone supports this cycle. */
-  online: boolean;
   order: number;
   title: string;
   subtitle?: string;
@@ -77,10 +75,6 @@ function parseEntry(
     );
   }
 
-  if (typeof value.online !== "boolean") {
-    return err(`${CATALOG_CODE}: packs[${index}].online must be boolean`);
-  }
-
   if (
     typeof value.order !== "number" ||
     !Number.isFinite(value.order) ||
@@ -113,7 +107,6 @@ function parseEntry(
     id,
     path,
     status,
-    online: value.online,
     order: value.order,
     title,
     subtitle: subtitle.value,

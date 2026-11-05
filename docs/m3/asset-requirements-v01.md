@@ -242,11 +242,12 @@ authored rooms do not use.
 > atlases; the material `tint` values are removed and the atlas entries no
 > longer carry `placeholder`. The runtime tint decision in §8.21.1 is historical.
 
-> **M4 online co-op dependency (proposed).** M4 adds no new M3 asset IDs. Both
-> host and guest load the same static manifest; audio remains local; capture
-> mode remains local-only. Do not add per-client art or streamed textures for
-> online play. See [`../m4/README.md`](../m4/README.md) and
-> [`../adr-online/0052-composition-with-planned-milestones.md`](../adr-online/0052-composition-with-planned-milestones.md).
+> **M4.0a same-room co-op dependency.** M4.0a adds no new M3 asset IDs. The host
+> screen loads the normal static manifest; phones are input-only and load no
+> game art. Audio remains local and capture mode remains local-only. There is no
+> remote guest or streamed texture path. See
+> [`../m4/README.md`](../m4/README.md) and
+> [`../adr-controller/0081-same-room-shared-screen-multiplayer.md`](../adr-controller/0081-same-room-shared-screen-multiplayer.md).
 
 > **M1.9 bathroom hub dependency.** The bathroom hub is a separate content root
 > with its own IDs and placeholder manifests (`public/hub/bathroom/`). Those
@@ -2261,6 +2262,7 @@ Do not invent new prefixes without updating the asset contract.
 |---|---|
 | 2026-10-27 | Initial M3 asset requirements, style bible, Ludo prompt pack, and scope contract. |
 | 2026-10-28 | Cross-link the proposed M4 online co-op boundary; M4 adds no M3 asset IDs. |
+| 2026-11-04 | Retarget the M4 note to same-room, input-only phone controllers; remote guest co-op is not planned (ADR-0081). |
 | 2026-10-29 | M1.8 re-baseline: 21 visible images / 32 total; two material atlases replace the single tile; materials, variants, backgrounds, and UI slots added; 04 remains placeholder. |
 | 2026-10-29 | Prompt-pack revision: §7–8 rewritten with category style/negative/frame blocks, per-asset prompts, reference workflow, atlas region maps, badge pill crop, audio durations, and prompt-log template. Scope reconciled to 20 referenced images + 1 reserve, 11 M3 cues, and 04 placeholder boundaries. |
 | 2026-10-29 | Pixel re-alignment: v0.3 M1.8 scope preserved (21 images, two atlases, 04 authored); half-res 2× rendering; 21 pixel prompts; atlas frames 32×32 at 1:1 with 2×2 clusters; pixel UI and material/pattern slots; ADR-0047–0049. |

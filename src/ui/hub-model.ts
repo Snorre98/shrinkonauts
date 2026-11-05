@@ -1,8 +1,9 @@
 import type { PackAvailability } from "../pack";
-import type { SettingsView } from "./model";
+import type { PlayerId, SettingsView } from "./model";
 
-export type HubMode = "solo" | "local" | "online";
+export type HubMode = "solo" | "local";
 export type HubPhase = "loading" | "hub" | "starting" | "playing" | "error";
+export type HubInputSource = "keyboard" | "controller";
 
 export interface HubPackView {
   id: string;
@@ -10,16 +11,27 @@ export interface HubPackView {
   subtitle: string | null;
   description: string | null;
   status: PackAvailability;
-  online: boolean;
   selected: boolean;
   hasSave: boolean;
   /** Optional decorative 16×16 cycle icon resolved from the theme. */
   iconSrc?: string;
 }
 
-export interface HubOnlineView {
-  available: boolean;
-  reason: string;
+export interface HubControllerSlotView {
+  slot: PlayerId;
+  label: string;
+  roomCode: string;
+  url: string;
+  status: "waiting" | "connected" | "ready" | "closed" | "error";
+  statusLabel: string;
+  message: string | null;
+}
+
+export interface HubControllerView {
+  roomCode: string;
+  status: "preparing" | "waiting" | "ready" | "error";
+  message: string | null;
+  slots: HubControllerSlotView[];
 }
 
 export interface HubView {
@@ -29,7 +41,8 @@ export interface HubView {
   packs: HubPackView[];
   selectedPackId: string | null;
   mode: HubMode;
-  online: HubOnlineView;
+  inputPlan: Record<PlayerId, HubInputSource>;
+  controller: HubControllerView | null;
   startLabel: string;
   startDisabled: boolean;
   startReason: string | null;
@@ -45,6 +58,7 @@ export interface HubView {
 export interface HubCallbacks {
   onSelectPack(packId: string): void;
   onModeChange(mode: HubMode): void;
+  onInputSourceChange(slot: PlayerId, source: HubInputSource): void;
   onStart(): void;
   onNewCycle(): void;
   onMute(): void;

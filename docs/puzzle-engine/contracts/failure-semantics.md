@@ -22,7 +22,10 @@ actions after feedback; there is no automatic background retry.
 | Player caption slot occupied | Newest player-anchored cue replaces the older one | None needed | Implemented |
 | Deferred cue not requested | No box is rendered or announced | Press scan; latest pending cue is revealed | Implemented |
 | Shared feedback off and shared cue produced | Cue is dropped; no pending copy, render, or announcement; effects still run | Re-enable shared feedback; only future cues appear | Implemented |
-| Shared feedback off and shared state projected | Shared persistent surfaces and beats are omitted from the snapshot; effects keep running | Re-enable shared feedback to restore current state | Implemented |
+| Shared feedback off and shared state projected | Shared markers, rings, chips, state surfaces, and beats are omitted from the snapshot; effects keep running | Re-enable shared feedback to restore current state | Implemented |
+| Hidden placement | Surface is omitted from the snapshot but stays in the director | None; it has no spatial anchor | Implemented |
+| Inspected surface disappears | Inspect panel closes | Inspect another marker/chip | Implemented |
+| No marker or chip in inspect range | A toast reports “Nothing to inspect here” | Move nearer or click a visible marker/chip | Implemented |
 | Shared help requested while shared feedback is off | Help surface is refused; scan falls through to a target or fallback | Use the pause-menu hint/reset fallback | Implemented |
 | Missing or malformed shared-feedback setting | Defaults to on | None needed | Implemented |
 | Pending cue replaced by a newer cue | Older message is discarded | None; only the latest is available | Implemented |

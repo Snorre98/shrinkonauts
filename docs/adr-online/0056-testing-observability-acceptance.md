@@ -1,6 +1,6 @@
 # ADR-0056: Testing, observability, and acceptance evidence
 
-- **Status:** Proposed
+- **Status:** Historical — not planned after ADR-0081
 - **Date:** 2026-10-28
 - **Deciders:** Snorre
 - **Related:** ADR-0047–0055

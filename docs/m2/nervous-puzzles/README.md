@@ -266,7 +266,7 @@ affected puzzle rules must be rechecked before implementation.
 - It does not claim full nervous-system, skeletal, muscular, or hardware
   coverage.
 
-## 11. Relationship to M4 online co-op (proposed)
+## 11. Relationship to M4.0a same-room co-op
 
 M1.9 already shows a **Silicon: Interrupt Loop** card in the bathroom menu.
 Implementing this package as the separate `silicon-reflex` pack and changing
@@ -274,12 +274,12 @@ its catalog status to `available` was the only menu-facing step; the card is
 `available` as of 2026-11-02, and the hub does not hardcode the cycle. See
 [`../../m1.9/README.md`](../../m1.9/README.md).
 
-M4 consumes the frozen M2 content; it does not change any puzzle rule, gate
-type, verb, entity behaviour, UI surface, or save field. The online session is
-host-authoritative and level-scoped. M4.0 runs the `03-nerve-forest` Node Run
-online; the full pack is M4.1. See [`../../m4/README.md`](../../m4/README.md)
-and
-[`../../adr-online/0052-composition-with-planned-milestones.md`](../../adr-online/0052-composition-with-planned-milestones.md).
+M4.0a consumes the frozen M2 content; it does not change any puzzle rule, gate
+type, verb, entity behaviour, UI surface, or save field. Phone controllers are
+input-only and the host remains authoritative. Multiplayer is same-room and
+shared-screen; remote guest co-op, M4.0b, and M4.1 are not planned (ADR-0081).
+See [`../../m4/README.md`](../../m4/README.md) and
+[`../../adr-controller/0081-same-room-shared-screen-multiplayer.md`](../../adr-controller/0081-same-room-shared-screen-multiplayer.md).
 
 ## 12. Change log
 
@@ -287,3 +287,4 @@ and
 |---|---|
 | 2026-10-27 | Initial M2 nervous-system puzzle design package. |
 | 2026-10-28 | Cross-link the proposed M4 online co-op boundary; no content change. |
+| 2026-11-04 | Retarget the M4 relationship to same-room phone-controller co-op; remote online is not planned. |

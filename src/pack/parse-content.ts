@@ -394,7 +394,15 @@ function parseFeedbackNodeOverride(
   }
   const keys = rejectUnknownKeys(
     value,
-    ["label", "text", "effectPreset", "tileTarget"],
+    [
+      "label",
+      "text",
+      "effectPreset",
+      "tileTarget",
+      "placement",
+      "socket",
+      "offset",
+    ],
     LEVEL_CODE,
     label,
   );
@@ -412,6 +420,47 @@ function parseFeedbackNodeOverride(
   );
   if (!effectPreset.ok) return err(effectPreset.error);
 
+  let placement: LevelFeedbackNodeOverride["placement"];
+  if (value.placement !== undefined) {
+    if (
+      value.placement !== "world" &&
+      value.placement !== "hud" &&
+      value.placement !== "hidden"
+    ) {
+      return err(
+        `${LEVEL_CODE}: ${label}.placement must be world, hud, or hidden`,
+      );
+    }
+    placement = value.placement;
+  }
+
+  const socket = readOptionalString(
+    value,
+    "socket",
+    LEVEL_CODE,
+    `${label}.socket`,
+  );
+  if (!socket.ok) return err(socket.error);
+
+  let offset: { x: number; y: number } | undefined;
+  if (value.offset !== undefined) {
+    if (!isRecord(value.offset)) {
+      return err(`${LEVEL_CODE}: ${label}.offset must be an object`);
+    }
+    const offsetKeys = rejectUnknownKeys(
+      value.offset,
+      ["x", "y"],
+      LEVEL_CODE,
+      `${label}.offset`,
+    );
+    if (!offsetKeys.ok) return err(offsetKeys.error);
+    const x = readNumber(value.offset, "x", LEVEL_CODE, `${label}.offset.x`);
+    if (!x.ok) return err(x.error);
+    const y = readNumber(value.offset, "y", LEVEL_CODE, `${label}.offset.y`);
+    if (!y.ok) return err(y.error);
+    offset = { x: x.value, y: y.value };
+  }
+
   let tileTarget: LevelFeedbackTileTarget | undefined;
   if (value.tileTarget !== undefined) {
     const parsed = parseFeedbackTileTarget(value.tileTarget, `${label}.tileTarget`);
@@ -424,6 +473,9 @@ function parseFeedbackNodeOverride(
     ...(text.value ? { text: text.value } : {}),
     ...(effectPreset.value ? { effectPreset: effectPreset.value } : {}),
     ...(tileTarget ? { tileTarget } : {}),
+    ...(placement ? { placement } : {}),
+    ...(socket.value ? { socket: socket.value } : {}),
+    ...(offset ? { offset } : {}),
   });
 }
 

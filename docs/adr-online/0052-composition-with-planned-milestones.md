@@ -1,6 +1,6 @@
 # ADR-0052: Composition with feedback, materials, multi-level content, and art
 
-- **Status:** Proposed
+- **Status:** Historical — not planned after ADR-0081
 - **Date:** 2026-10-28
 - **Deciders:** Snorre
 - **Related:** ADR-0009–0017, ADR-0034–0046, ADR-0047, ADR-0049, ADR-0050

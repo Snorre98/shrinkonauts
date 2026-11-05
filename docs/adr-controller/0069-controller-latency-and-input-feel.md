@@ -1,9 +1,17 @@
 # ADR-0069: Controller latency budget and input-feel policy
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-01
 - **Deciders:** Snorre
-- **Related:** ADR-0049, ADR-0053, ADR-0056, ADR-0066, ADR-0067, ADR-0068
+- **Related:** ADR-0049, ADR-0053, ADR-0056, ADR-0066, ADR-0067, ADR-0068,
+  ADR-0081
+- **Later decision (2026-11-04):** ADR-0081 makes M4.0a the complete multiplayer
+  scope; M4.0b/M4.1 are not planned. The latency and no-prediction policy remains
+  accepted.
+- **Later decision (2026-11-04):** Phase 6.5 adds controller-local feedback
+  (accepted/rejected/cooldown), ability affordances, and a client-side
+  double-tap Dash gesture that sends the existing dash edge. Input application,
+  latency policy, and the no-prediction rule are unchanged.
 
 ## Context
 

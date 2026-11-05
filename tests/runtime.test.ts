@@ -1244,12 +1244,25 @@ describe("game runtime", () => {
     expect(runtime.simulation.players.p1.x).toBe(startX);
 
     solveNodeRun(runtime);
+    expect(runtime.controlDescriptor("p1").verbs).toContain("dash");
+    expect(runtime.controlDescriptor("p1").dashReady).toBe(true);
+
     const before = runtime.simulation.players.p1.x;
     runtime.step(1 / 60, {
       ...input(),
       intents: { ...input().intents, p1: { moveX: 0, jump: false, dash: true } },
     });
     expect(runtime.simulation.players.p1.x).toBeGreaterThan(before);
+
+    runtime.simulation.players.p1.facing = 1;
+    runtime.simulation.players.p1.dashTime = 0;
+    runtime.simulation.players.p1.dashCooldown = 0;
+    const facingRight = runtime.simulation.players.p1.x;
+    runtime.step(1 / 60, {
+      ...input(),
+      intents: { ...input().intents, p1: { moveX: -1, jump: false, dash: true } },
+    });
+    expect(runtime.simulation.players.p1.x).toBeLessThan(facingRight);
   });
 
   it("projects persistent feedback and beat progress at boot", () => {
@@ -1324,9 +1337,15 @@ describe("game runtime", () => {
     ).toBe("ACh packet is free.");
     expect(
       snapshot.feedback.surfaces.find(
+        (surface) => surface.id === "fb:binary:terminal-plate",
+      )?.content.title,
+    ).toBe("Terminal plate");
+    // Idle meters are intentionally hidden; the ring appears when running.
+    expect(
+      snapshot.feedback.surfaces.some(
         (surface) => surface.id === "fb:meter:ca-timer",
-      )?.content.text,
-    ).toBe("Ca²⁺ window is idle.");
+      ),
+    ).toBe(false);
     expect(snapshot.blueprint?.puzzleId).toBe("puzzle-endplate-ferry");
     expect(snapshot.blueprint?.components.map((component) => component.id)).toEqual([
       "trigger",
@@ -1812,6 +1831,126 @@ describe("game runtime", () => {
     expect(after.beats.map((beat) => beat.label)).toEqual(beatLabels);
   });
 
+  it("hides unanchored logical state but keeps physical markers", () => {
+    const { runtime } = makeRuntime();
+    const surfaces = runtime.snapshot().feedback.surfaces;
+    expect(surfaces.some((surface) => surface.id === "fb:binary:input-a")).toBe(
+      true,
+    );
+    expect(
+      surfaces.some((surface) => surface.id === "fb:binary:input-a-trigger"),
+    ).toBe(false);
+    expect(
+      surfaces.some((surface) => surface.id === "fb:conductor:spike-relay"),
+    ).toBe(false);
+    expect(surfaces.every((surface) => surface.placement !== "hidden")).toBe(
+      true,
+    );
+  });
+
+  it("keeps effects for hidden logical surfaces", () => {
+    const { runtime } = makeRuntime();
+    solveNodeRun(runtime);
+    expect(
+      runtime
+        .drainEffects()
+        .some((effect) => effect.id.includes("fb:conductor:spike-relay")),
+    ).toBe(true);
+  });
+
+  it("opens one inspect panel and closes it with cancel", () => {
+    const { runtime } = makeRuntime();
+    const source = runtime
+      .snapshot()
+      .feedback.surfaces.find((surface) => surface.id === "fb:binary:input-a");
+    expect(source?.content.title).toBe("Dendrite input A");
+
+    runtime.surfaceAction("fb:binary:input-a", { type: "inspect" });
+    const panel = runtime
+      .snapshot()
+      .feedback.surfaces.find(
+        (surface) => surface.presentation === "anchoredPanel",
+      );
+    expect(panel).toMatchObject({
+      placement: "hud",
+      interaction: { mode: "none" },
+      content: { title: "Dendrite input A" },
+    });
+    expect(panel?.content.text).toContain("Dendrite input A is ready.");
+
+    runtime.surfaceAction(panel?.id ?? "", { type: "cancel" });
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(false);
+  });
+
+  it("toggles the nearest inspect panel with I", () => {
+    const { runtime } = makeRuntime();
+    runtime.step(1 / 60, input({ inspect: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(true);
+
+    runtime.step(1 / 60, input({ inspect: true }));
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(false);
+  });
+
+  it("closes the inspect panel when shared feedback is disabled", () => {
+    const { runtime } = makeRuntime();
+    runtime.surfaceAction("fb:binary:input-a", { type: "inspect" });
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(true);
+
+    runtime.toggleSharedFeedback();
+    expect(
+      runtime
+        .snapshot()
+        .feedback.surfaces.some(
+          (surface) => surface.presentation === "anchoredPanel",
+        ),
+    ).toBe(false);
+  });
+
+  it("shows a running timer as a world ring", () => {
+    const { runtime } = makeRuntime();
+    finishNodeRun(runtime);
+    activateEndplate(runtime);
+    walkPlayerTo(runtime, "p1", "pad-terminal");
+    stepWith(runtime);
+
+    const timer = runtime
+      .snapshot()
+      .feedback.surfaces.find(
+        (surface) => surface.id === "fb:meter:ca-timer",
+      );
+    expect(timer).toMatchObject({
+      placement: "world",
+      presentation: "hudMeter",
+      state: "progress",
+    });
+    expect(timer?.content.title).toBe("Ca²⁺ window");
+    expect(timer?.content.progress?.value).toBeGreaterThan(0);
+  });
+
   it("keeps player feedback and skips shared help while disabled", () => {
     const { runtime } = makeRuntime();
     runtime.toggleSharedFeedback();
@@ -1952,5 +2091,56 @@ describe("game runtime", () => {
         .snapshot()
         .feedback.cues.some((cue) => cue.content.text?.includes("no longer here")),
     ).toBe(true);
+  });
+});
+
+describe("controller control descriptors", () => {
+  it("exposes talk and choice modes, verbs, and action feedback without text", () => {
+    const { runtime } = makeRuntime();
+    walkTo(runtime, "agent-neuron");
+    runtime.interact();
+
+    const talk = runtime.controlDescriptor("p1");
+    expect(talk.mode).toBe("talk");
+    expect(talk.verbs).toEqual(
+      expect.arrayContaining(["jump", "interact", "scan", "pulse"]),
+    );
+    expect(talk.verbs).not.toContain("carry");
+    expect(talk).not.toHaveProperty("text");
+
+    const conversation = [...runtime.conversations.values()][0]!;
+    runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+    runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+    runtime.surfaceAction(conversation.surfaceId, { type: "confirm" });
+
+    const choice = runtime.controlDescriptor("p1");
+    expect(choice.mode).toBe("choice");
+    expect(choice.choices).toBe(2);
+    expect(choice.selected).toBe(1);
+    expect(choice.activeVerb).toBe("interact");
+
+    expect(JSON.stringify(runtime.controlDescriptor("p1"))).not.toContain(
+      "Neuron Keeper",
+    );
+  });
+});
+
+describe("controller action feedback", () => {
+  it("records a rejected interact with a closed reason code", () => {
+    const { runtime } = makeRuntime();
+    runtime.placePlayer("p1", 8, 8);
+    runtime.interact();
+    expect(runtime.drainControlActions()).toEqual(
+      expect.arrayContaining([
+        {
+          slot: "p1",
+          feedback: {
+            verb: "interact",
+            result: "rejected",
+            reason: "out-of-range",
+          },
+        },
+      ]),
+    );
   });
 });

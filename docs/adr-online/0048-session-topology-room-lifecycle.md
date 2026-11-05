@@ -1,6 +1,6 @@
 # ADR-0048: Two-player session topology and room lifecycle
 
-- **Status:** Proposed
+- **Status:** Historical — not planned after ADR-0081
 - **Date:** 2026-10-28
 - **Deciders:** Snorre
 - **Related:** ADR-0047, ADR-0049, ADR-0053, ADR-0054, ADR-0055

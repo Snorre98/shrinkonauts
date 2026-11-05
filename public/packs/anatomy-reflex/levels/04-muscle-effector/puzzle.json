@@ -18,9 +18,10 @@
     {
       "id": "terminal-plate",
       "type": "plate",
+      "entityId": "pad-terminal",
       "rect": {
-        "x": 448,
-        "y": 408,
+        "x": 320,
+        "y": 184,
         "width": 64,
         "height": 48
       },
@@ -33,6 +34,7 @@
     {
       "id": "ca-timer",
       "type": "timer",
+      "entityId": "ca-gate",
       "durationTicks": 72,
       "repeat": false
     },
@@ -52,8 +54,8 @@
       ],
       "shape": "triangle",
       "spawn": {
-        "x": 560,
-        "y": 374
+        "x": 432,
+        "y": 406
       }
     },
     {
@@ -65,14 +67,14 @@
         "shape": "triangle"
       },
       "rect": {
-        "x": 1088,
-        "y": 248,
+        "x": 1120,
+        "y": 216,
         "width": 64,
         "height": 48
       },
       "snap": {
-        "x": 1104,
-        "y": 268
+        "x": 1136,
+        "y": 236
       }
     },
     {
@@ -85,13 +87,13 @@
       },
       "rect": {
         "x": 992,
-        "y": 248,
+        "y": 216,
         "width": 64,
         "height": 48
       },
       "snap": {
         "x": 1008,
-        "y": 268
+        "y": 236
       }
     },
     {
@@ -106,6 +108,7 @@
     {
       "id": "ache-timer",
       "type": "timer",
+      "entityId": "nicotinic-receptor",
       "durationTicks": 150,
       "repeat": false
     },
@@ -223,8 +226,8 @@
     {
       "action": "move",
       "actor": "p1",
-      "x": 480,
-      "y": 432
+      "x": 336,
+      "y": 224
     },
     {
       "action": "wait",
@@ -233,8 +236,8 @@
     {
       "action": "move",
       "actor": "p2",
-      "x": 560,
-      "y": 374
+      "x": 432,
+      "y": 406
     },
     {
       "action": "pickup",
@@ -244,8 +247,8 @@
     {
       "action": "move",
       "actor": "p2",
-      "x": 1104,
-      "y": 268
+      "x": 1136,
+      "y": 236
     },
     {
       "action": "place",
@@ -255,8 +258,8 @@
     {
       "action": "move",
       "actor": "p1",
-      "x": 272,
-      "y": 560
+      "x": 336,
+      "y": 480
     },
     {
       "action": "pulse",
@@ -269,8 +272,9 @@
     }
   ],
   "hints": [
-    "Trigger the terminal first; the Ca\u00b2\u207a window opens the cleft bridge.",
-    "The ACh packet fits the nicotinic receptor, not the wrong socket.",
-    "ACh is cleared after the response. The muscle has already contracted."
+    "Start the ferry at the motor terminal on the middle shelf of the presynaptic tower.",
+    "The ACh packet waits on the shelf above the motor terminal; the Ca\u00b2\u207a plate is at the top of the tower.",
+    "Cross the cleft on the upper stones. If you fall, use the ground corridor and the muscle-chamber doorway to get back to the tower.",
+    "Place the ACh packet on the triangle receptor, then return to the terminal and pulse. ACh is cleared after the response; the muscle stays contracted."
   ]
 }

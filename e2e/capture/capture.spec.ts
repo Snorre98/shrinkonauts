@@ -238,7 +238,9 @@ test("03 Nerve Forest and 04 Muscle Effector", async ({ page }) => {
     if (!runtime) throw new Error("runtime bridge is missing");
     const exit = runtime.entityPixel("exit-muscle");
     if (!exit) throw new Error("exit-muscle is missing");
-    runtime.placePlayer("p1", exit.x, exit.y + 48);
+    // The exit lever stands on the chamber dais; place the player inside the
+    // exit trigger cell directly above it.
+    runtime.placePlayer("p1", exit.x, exit.y - 16);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
   await captureShot(page, "04-debrief-prompt");
@@ -281,7 +283,7 @@ test("Silicon Interrupt Loop", async ({ page }) => {
     .click();
   await expect(bubble).toContainText("Exactly.");
   await page.keyboard.press("e");
-  await expect(bubble).toContainText("Start the loop at the sensor console");
+  await expect(bubble).toContainText("Start at the sensor console");
   await page.keyboard.press("e");
   await expect(bubble).toHaveCount(0);
 

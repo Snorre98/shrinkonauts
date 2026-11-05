@@ -1,6 +1,6 @@
 # ADR-0053: Failure semantics, reconnect, and host lifecycle
 
-- **Status:** Proposed
+- **Status:** Historical — not planned after ADR-0081
 - **Date:** 2026-10-28
 - **Deciders:** Snorre
 - **Related:** ADR-0047, ADR-0048, ADR-0049, ADR-0051, ADR-0054

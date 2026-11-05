@@ -59,6 +59,12 @@ interface LevelFeedbackNodeOverride {
   text?: string;
   effectPreset?: string;
   tileTarget?: LevelTileTarget;
+  /** Override the default marker/chip/hidden choice. */
+  placement?: "world" | "hud" | "hidden";
+  /** Entity socket for a world marker. */
+  socket?: string;
+  /** Pixel offset for a world marker. */
+  offset?: { x: number; y: number };
 }
 
 type LevelTileTarget =
@@ -228,6 +234,8 @@ type FeedbackPresentation =
   | "tracker" | "socketFill" | "outline" | "pathGlow" | "screenCaption"
   | "speechBubble" | "playerCaption" | "modal" | "anchoredPanel";
 
+type FeedbackPlacement = "world" | "hud" | "hidden";
+
 type RejectionReason =
   | "empty" | "wrong-shape" | "wrong-tag" | "condition-unmet"
   | "cooldown" | "out-of-range" | "locked" | "cleared";
@@ -253,6 +261,8 @@ interface FeedbackSurface {
   audience: "owner" | "both";
   anchor: FeedbackAnchor;
   presentation: FeedbackPresentation;
+  placement: FeedbackPlacement;
+  icon?: string;
   content: FeedbackContent;
   state: FeedbackState;
   reason?: RejectionReason;
@@ -263,6 +273,16 @@ interface FeedbackSurface {
   a11y: { announce: boolean; textAlternative?: string };
   effects?: readonly EffectPlan[];
   conversation?: Conversation;
+}
+
+interface FeedbackContent {
+  /** Human label for state markers, chips, and the inspect panel. */
+  title?: string;
+  speaker?: string;
+  text?: string;
+  choices?: readonly FeedbackChoice[];
+  selectedChoiceId?: string;
+  progress?: FeedbackProgress;
 }
 ```
 
@@ -326,7 +346,34 @@ not replayed. The runtime also refuses the requested help surface while off.
 The runtime ticks the director once per fixed step and calls `frame()` to obtain
 the snapshot-safe view.
 
-### 3.4 Descriptors and coverage
+### 3.4 Placement, markers, and inspection
+
+```ts
+interface FeedbackProjection {
+  document: PuzzleDocument;
+  state: PuzzleRunState;
+  beats?: readonly BeatSpec[];
+  overrides?: Readonly<Record<string, FeedbackNodeOverride>>;
+  /** Node id to pack blueprint symbol, used for world marker glyphs. */
+  icons?: Readonly<Record<string, string>>;
+}
+```
+
+`placement` is resolved from the presentation, anchor, and state unless a level
+override supplies it. Physical presentations with a world anchor become small
+world markers; unanchored physical presentations are hidden; a running timer
+with a world anchor becomes a progress ring; a timer without an anchor and all
+counters become compact HUD chips. Idle timers are hidden until they run.
+
+The runtime omits `placement: "hidden"` surfaces from
+`RuntimeSnapshot.feedback` while keeping `frame.effects`. `GameRuntime` also
+holds at most one shared inspect panel, created as an `anchoredPanel` surface at
+the bottom HUD slot. A marker, ring, or chip click sends `SurfaceAction` of type
+`inspect`; `GameRuntime.toggleInspect()` implements the shared `I` key. The
+panel is not registered with `SurfaceInputRouter`, so it cannot consume
+gameplay input.
+
+### 3.5 Descriptors and coverage
 
 ```ts
 interface NodeFeedbackDescriptor<N extends PuzzleNode = PuzzleNode> {
@@ -436,10 +483,23 @@ class GameRuntime {
   readonly conversations: Map<SurfaceId, ConversationState>;
   startConversation(dialogueId: string, owner: PlayerId, entityId: string): void;
   surfaceAction(surfaceId: string, action: SurfaceAction): void;
+  toggleInspect(): boolean;
   toggleSharedFeedback(): GameSettings;
   drainEffects(): readonly WorldEffectPlan[];
   debriefPromptList(): DebriefPrompt[];
   // existing snapshot/step/save/evidence methods
+}
+
+type SurfaceAction =
+  | { type: "confirm" }
+  | { type: "cancel" }
+  | { type: "choose"; choiceId: string }
+  | { type: "inspect" };
+
+interface FrameActions {
+  // existing player actions and host actions
+  /** Shared nearest-marker/chip toggle. */
+  inspect: boolean;
 }
 
 function routeSurfaceInput(
@@ -451,11 +511,11 @@ function routeSurfaceInput(
 function toWorldEffectPlan(instance: EffectInstance): WorldEffectPlan;
 ```
 
-`RuntimeSnapshot` exposes `feedback: FeedbackFrame`; while shared feedback is
-off, the snapshot omits shared-owned surfaces and beats but keeps `effects`. The
-old `dialogue` view is not present. Soft conversations do not enter a blocking
-state. Hard overlays
-(gate, pause, map, concept log, debrief, complete) remain explicit.
+`RuntimeSnapshot` exposes `feedback: FeedbackFrame`; the snapshot always omits
+surfaces with `placement: "hidden"`, and while shared feedback is off it also
+omits shared-owned surfaces and beats. It keeps `effects`. The old `dialogue`
+view is not present. Soft conversations do not enter a blocking state. Hard
+overlays (gate, pause, map, concept log, debrief, complete) remain explicit.
 
 Deferred: `travelToSideLevel(levelId)` and the `returnTo` snapshot.
 
@@ -463,8 +523,18 @@ Deferred: `travelToSideLevel(levelId)` and the `returnTo` snapshot.
 
 ```ts
 interface FeedbackSurfaceRenderer {
-  update(frame: FeedbackFrame, world: WorldView, canvasRect: CanvasRect): void;
+  update(
+    frame: FeedbackFrame,
+    world: WorldView,
+    canvasRect: CanvasRect,
+    safeArea?: SafeArea,
+  ): void;
   clear(): void;
+}
+
+interface FeedbackSurfaceRendererOptions {
+  /** Resolve a pack blueprint symbol to an image for marker/ring glyphs. */
+  resolveIcon?: (symbol: string) => { src: string } | null;
 }
 
 interface GameUiCallbacks {

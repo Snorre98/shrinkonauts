@@ -229,6 +229,6 @@ accessibility set. These content gaps remain visible in the captures:
    [`../m3/muscle-endplate-asset-requirements-v01.md`](../m3/muscle-endplate-asset-requirements-v01.md)
    and the [completion matrix](../assets/prompt-library-v01.md#40-completion-matrix).
 
-Also still missing: online co-op (M4 placeholder), audio files, and final
-concept-gate art for 03 if the gate is wired later. The capture commands are in
-[`CAPTURES.md`](CAPTURES.md).
+Also still missing: audio files and final concept-gate art for 03 if the gate is
+wired later. Remote online co-op is not planned; M4.0a phone controllers are
+input-only (ADR-0081). The capture commands are in [`CAPTURES.md`](CAPTURES.md).

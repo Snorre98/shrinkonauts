@@ -23,7 +23,7 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 56 files, 588 unit/integration tests
+npm test               # 74 files, 788 unit/integration tests
 npm run smoke          # room boot + module boundary tests
 npm run build          # type check and production build
 npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
@@ -46,8 +46,12 @@ Playwright's `channel: "chrome"`. It never downloads a bundled browser.
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Gameplay capture, GDD gallery build, type check + build, unit tests, pack validation, committed-mapping drift check, Playwright smoke |
+| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Gameplay capture, GDD gallery build, type check + build with the Worker URL/build ID, unit tests, Worker checks, pack validation, committed-mapping drift check, Playwright smoke |
 | `.github/workflows/deploy-pages.yml` | push to `main`, manual dispatch | Runs CI, then publishes the tested `dist/` artifact to GitHub Pages |
+| `.github/workflows/deploy-worker.yml` | push to `main` for Worker/shared relay changes, manual dispatch | Runs tests, Worker type check/dry run, then deploys the Worker and Durable Objects with the demo signing secret |
+
+Deployments are GitHub Actions only. Do not run `wrangler deploy` or
+`wrangler pages deploy` locally.
 
 Live build: <https://snorre98.github.io/shrinkonauts/>
 
@@ -76,9 +80,10 @@ Recommended hardening: require the **Verify** and **E2E smoke** checks on
 
 ### Rollback
 
-Re-run the last known-good **Deploy to GitHub Pages** workflow run from the
-Actions tab (or `gh run rerun <run-id>`). Reverting a commit on `main` also
-triggers a fresh deploy.
+Re-run the last known-good **Deploy to GitHub Pages** or **Deploy Worker**
+workflow run from the Actions tab (or `gh run rerun <run-id>`). Reverting a
+commit on `main` also triggers a fresh deploy. A Worker rollback disconnects
+active controller sessions; clients reconnect or start a new room.
 
 CI runs on Node 24 (pinned by `.nvmrc`) and installs with `npm ci`, so
 `package-lock.json` must stay in sync with `package.json`.
@@ -89,6 +94,12 @@ CI runs on Node 24 (pinned by `.nvmrc`) and installs with `npm ci`, so
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P1 | `A` / `D` | `W` or `Space` | `E` | `Q` | `Shift` | `F` | `G` | `H` |
 | P2 | `←` / `→` | `↑` | `,` | `.` | `/` | — | `'` | `;` |
+
+Phone: hold the left `◀` / `▶` buttons to move, tap `Jump` with the right thumb,
+and double-tap `◀` or `▶` to dash. Dialogue switches the owning phone to
+`Continue` / `Back` or numbered choices automatically; the shared screen keeps
+the dialogue text. Only unlocked verbs are shown, and throw appears while
+carrying. The `?` button opens the full controls sheet.
 
 Hub: `Tab` / `Shift+Tab` move focus, `Enter` / `Space` activate, `M` mute,
 `Esc` / `Space` / `Enter` skip the launch cinematic.
@@ -107,10 +118,11 @@ never lost.
 
 1. **Bathroom.** The player stands in front of a washing machine. The machine's
    control panel is the DOM menu, anchored over the bathroom scene.
-2. **Cycle.** Anatomy is available. Silicon is visible but gated until its M2
-   pack exists. Each cycle has its own save slot.
+2. **Cycle.** Anatomy and Silicon are available. Each cycle has its own save
+   slot.
 3. **Players.** Solo starts with P2 inactive; Local co-op starts both players.
-   Online co-op is visible but disabled with the M4 Cloudflare explanation.
+   M4.0a adds per-slot keyboard/phone setup under Local co-op. There is no
+   remote online mode; multiplayer is same-room only.
 4. **Start.** Continue resumes the selected cycle; New cycle asks for
    confirmation. Start plays the climb-in, spin, shrink, and tiny-astronaut
    transition, which can be skipped or reduced.
@@ -154,8 +166,10 @@ ephemeral and are rebuilt from puzzle/world state after restore.
 
 - Default boot is the bathroom hub; direct boot remains available with
   `?skipMenu=1&pack=anatomy-reflex`.
-- Silicon is a visible `coming-soon` cycle until the M2 pack exists.
-- Online co-op is a disabled M4 placeholder; no Worker/DO client is wired yet.
+- Silicon is available as a separate cycle.
+- Multiplayer is same-room phone-controller co-op only. The obsolete Online
+  co-op placeholder and `online` catalog flag were removed; remote online co-op
+  is not planned (ADR-0081).
 - Two authored levels; `05-reflex-core` and later map nodes are forward
   references reported as warnings.
 - Audio supports short cues plus per-room/menu theme playback. The menu and
@@ -196,9 +210,9 @@ room/boot tests, but the app does not boot it.
 
 | URL | Behaviour |
 | --- | --- |
-| `/` | Bathroom hub; Anatomy available, Silicon gated, online placeholder |
+| `/` | Bathroom hub; Anatomy and Silicon available; Solo and Local co-op only |
 | `/?skipMenu=1&pack=anatomy-reflex` | Direct boot into the selected pack |
-| `/?pack=silicon-reflex` | Preselects the gated Silicon cycle in the hub; Start is disabled |
+| `/?pack=silicon-reflex` | Preselects the Silicon cycle in the hub |
 | `/?assets=fixture` | Loads an `assets.fixture.json` if present; otherwise warns and keeps placeholders |
 | `/?assets=final` | Selects the final manifests; the POC players, Neuron Keeper, readable entity sprites, the 03 pretty sky, the 04 batch, and the 12 M3.75 blueprint symbols are final, while deferred entries remain placeholders |
 
@@ -320,8 +334,10 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
   deliberately missing and which milestone owns it.
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
   pre-game shell and save/catalog model.
-- [`docs/adr-controller/README.md`](docs/adr-controller/README.md) — ADR-0066–0069
-  for phone-controller same-screen co-op (M4.0a).
+- [`docs/adr-controller/README.md`](docs/adr-controller/README.md) — ADR-0066–0069,
+  ADR-0081, ADR-0082, and ADR-0083–0087 for same-room phone-controller co-op
+  (M4.0a); the [`docs/adr-online/README.md`](docs/adr-online/README.md) domain is
+  historical.
 
 `docs/puzzle-engine/` and `docs/adr-m1.5/` are maintained in this repository.
 `docs/shrinkonauts` is a symlink into the read-only Obsidian vault and is not
@@ -332,10 +348,17 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (56 files / 588 tests), pack validation/smoke pass, and the browser
-smoke passes 17/17. The hub starts Anatomy in Solo or Local co-op, returns to the
-bathroom, and preserves per-pack saves. Silicon and online co-op remain gated by
-M2 and M4.0b. Phone-controller same-screen co-op is planned as M4.0a; see
+suite passes (74 files / 788 tests), pack validation/smoke pass, the browser
+smoke passes 18/18, and the controller browser smoke passes 2/2. The hub starts
+Anatomy in Solo or Local co-op, returns to the bathroom, and preserves per-pack
+saves. Silicon is available. Multiplayer is same-room, shared-screen co-op:
+phone-controller M4.0a has its host session, input-only Cloudflare relay,
+standalone controller page, hub pairing, QR/code setup, explicit Start gate,
+signed room tickets, server-issued device IDs, and the ADR-0082 demo quota guard
+working. Phase 6.5 adds the thumb-zone controller layout, double-tap Dash,
+dialogue control descriptors, progressive abilities, and action feedback.
+Phase 7 latency/game-feel measurement and the playtest record remain.
+Remote online co-op, M4.0b, and M4.1 are not planned (ADR-0081). See
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
 
 M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, and land

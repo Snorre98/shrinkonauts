@@ -14,6 +14,8 @@ import {
 } from "../curriculum";
 import {
   createFeedbackDirector,
+  isInspectableKind,
+  visualKind,
   type AnchorRef,
   type FeedbackAnchor,
   type FeedbackDirector,
@@ -26,11 +28,17 @@ import {
 import { toWorldEffectPlan } from "./effect-mapper";
 import { buildBlueprint } from "./blueprint";
 import type {
+  HostActionFeedback,
+  HostControlDescriptor,
+  HostControlVerb,
+} from "./host-run-port";
+import type {
   DialogueDocument,
   DialogueEffect,
   GateAnswer,
   GateDocument,
   GateEvaluation,
+  LevelBlueprint,
   LevelDocument,
   PackContent,
   RoomCheckpoint,
@@ -139,6 +147,31 @@ const PLACEHOLDER_ABILITY = "scan";
 const FEEDBACK_CUE_TTL_TICKS = 180;
 const HELP_SURFACE_TTL_TICKS = 300;
 const CONVERSATION_ACK_DISTANCE = 140;
+const INSPECT_RANGE_TILES = 7;
+
+/**
+ * Links level blueprint components to their nodes so world markers use the
+ * same pack symbol as the HUD blueprint. First component wins when a node is
+ * referenced by more than one beat.
+ */
+function blueprintIcons(
+  blueprint: LevelBlueprint | undefined,
+  beats: readonly { id: string; nodes: readonly string[] }[] | undefined,
+): Record<string, string> {
+  if (!blueprint || !beats || beats.length === 0) return {};
+  const beatsById = new Map(beats.map((beat) => [beat.id, beat]));
+  const icons: Record<string, string> = {};
+  for (const component of blueprint.components) {
+    for (const beatId of component.beatIds) {
+      const beat = beatsById.get(beatId);
+      if (!beat) continue;
+      for (const nodeId of beat.nodes) {
+        if (!(nodeId in icons)) icons[nodeId] = component.symbol;
+      }
+    }
+  }
+  return icons;
+}
 
 /**
  * The camera must keep the widest tether span in the room visible. A room with
@@ -370,6 +403,12 @@ export class GameRuntime implements WorldRuntime {
   private lastExitWarning = 0;
   private lastEmitSignature: string | null = null;
   private helpSurfaceId: SurfaceId | null = null;
+  private inspectSourceId: SurfaceId | null = null;
+  private inspectSurfaceId: SurfaceId | null = null;
+  private controlActions: Array<{
+    slot: PlayerId;
+    feedback: HostActionFeedback;
+  }> = [];
   private effectFrameSeq = -1;
   private effectPlans: readonly WorldEffectPlan[] = [];
 
@@ -557,6 +596,8 @@ export class GameRuntime implements WorldRuntime {
     this.conversations.clear();
     this.feedback.reset();
     this.dismissHelpSurface();
+    this.inspectSourceId = null;
+    this.inspectSurfaceId = null;
     this.effectFrameSeq = -1;
     this.effectPlans = [];
     this.activeGate = null;
@@ -678,6 +719,10 @@ export class GameRuntime implements WorldRuntime {
       return [];
     }
 
+    if (actions.inspect && this.conversations.size === 0) {
+      this.toggleInspect();
+    }
+
     const routed = new Set<PlayerId>();
     const surfaces = this.presentedFeedbackSurfaces(
       this.feedback.view().surfaces,
@@ -709,12 +754,32 @@ export class GameRuntime implements WorldRuntime {
       if (playerActions.scan) this.scan(id);
     }
 
+    const dashRequests = new Set<PlayerId>();
+    if (hasAbility(this.progression, "signal-dash")) {
+      for (const id of ["p1", "p2"] as const) {
+        if (!this.world.players[id].active || !input.intents[id].dash) {
+          continue;
+        }
+        const player = this.world.players[id];
+        if (player.dashTime > 0 || player.dashCooldown > 0) {
+          this.recordControlAction(id, "dash", "blocked", "cooldown");
+        } else {
+          dashRequests.add(id);
+        }
+      }
+    }
+
     const cues = stepRoomSimulationWithCues(
       this.world,
       this.frozenIntents(input.intents),
       dt,
       this.progression.abilities,
     );
+    for (const id of dashRequests) {
+      if (this.world.players[id].dashTime > 0) {
+        this.recordControlAction(id, "dash", "accepted");
+      }
+    }
     let hazardRespawned = false;
     for (const cue of cues) {
       if (cue === "hazard") {
@@ -745,6 +810,7 @@ export class GameRuntime implements WorldRuntime {
     this.checkTriggers();
     this.checkExit();
     this.feedback.tick(dt);
+    this.refreshInspectPanel();
     this.emit();
     return cues;
   }
@@ -1438,6 +1504,190 @@ export class GameRuntime implements WorldRuntime {
     return shown;
   }
 
+  /**
+   * Toggles the shared inspect panel. Pressing I with a panel open closes it;
+   * otherwise the nearest world marker/ring (or the first HUD chip) is shown.
+   */
+  toggleInspect(): boolean {
+    if (this.machine.state !== "level") return false;
+    if (this.inspectSurfaceId) {
+      this.closeInspect();
+      this.emit();
+      return true;
+    }
+    const surface = this.nearestInspectableSurface();
+    if (!surface) {
+      this.setToast("Nothing to inspect here");
+      this.emit();
+      return false;
+    }
+    const opened = this.openInspect(surface.id);
+    if (opened) this.emit();
+    return opened;
+  }
+
+  private openInspect(sourceId: SurfaceId): boolean {
+    if (this.machine.state !== "level") return false;
+    if (this.conversations.size > 0) return false;
+    const source = this.presentedFeedbackSurfaces(
+      this.feedback.view().surfaces,
+    ).find(
+      (surface) =>
+        surface.id === sourceId &&
+        isInspectableKind(visualKind(surface)),
+    );
+    if (!source) return false;
+
+    this.dismissHelpSurface();
+    if (this.inspectSurfaceId) {
+      this.feedback.removeSurface(this.inspectSurfaceId);
+    }
+    const panelId = `fb:inspect:${source.id}`;
+    this.inspectSourceId = source.id;
+    this.inspectSurfaceId = panelId;
+    this.putInspectPanel(source, panelId);
+    return true;
+  }
+
+  private putInspectPanel(source: FeedbackSurface, panelId: SurfaceId): void {
+    const title =
+      source.content.title ?? source.content.speaker ?? source.source.id;
+    const text = source.content.text ?? title;
+    this.feedback.putSurface({
+      id: panelId,
+      capability: "affordance",
+      source: source.source,
+      actor: null,
+      owner: "shared",
+      audience: "both",
+      anchor: { kind: "hud", slot: "bottom" },
+      presentation: "anchoredPanel",
+      placement: "hud",
+      ...(source.icon ? { icon: source.icon } : {}),
+      content: {
+        title,
+        text,
+        ...(source.content.progress
+          ? { progress: source.content.progress }
+          : {}),
+      },
+      state: source.state,
+      severity: source.severity,
+      lifetime: { sticky: true },
+      interaction: { mode: "none", focus: "soft", movement: "free" },
+      priority: 110,
+      a11y: { announce: true, textAlternative: `${title}. ${text}` },
+    });
+  }
+
+  private closeInspect(): void {
+    if (this.inspectSurfaceId) {
+      this.feedback.removeSurface(this.inspectSurfaceId);
+    }
+    this.inspectSurfaceId = null;
+    this.inspectSourceId = null;
+  }
+
+  private refreshInspectPanel(): void {
+    if (!this.inspectSourceId || !this.inspectSurfaceId) return;
+    if (!this.save.settings.feedback.showShared) {
+      this.closeInspect();
+      return;
+    }
+    const source = this.presentedFeedbackSurfaces(
+      this.feedback.view().surfaces,
+    ).find(
+      (surface) =>
+        surface.id === this.inspectSourceId &&
+        isInspectableKind(visualKind(surface)),
+    );
+    if (!source) {
+      this.closeInspect();
+      return;
+    }
+    this.putInspectPanel(source, this.inspectSurfaceId);
+  }
+
+  private nearestInspectableSurface(): FeedbackSurface | null {
+    const surfaces = this.presentedFeedbackSurfaces(
+      this.feedback.view().surfaces,
+    ).filter((surface) => isInspectableKind(visualKind(surface)));
+    if (surfaces.length === 0) return null;
+
+    const playerId: PlayerId = this.world.players.p1.active ? "p1" : "p2";
+    const player = this.world.players[playerId];
+    const range = INSPECT_RANGE_TILES * this.room.tileSize;
+    const playerY = player.y - PLAYER_HEIGHT / 2;
+    let best: { surface: FeedbackSurface; distance: number } | null = null;
+    let hudFallback: FeedbackSurface | null = null;
+
+    for (const surface of surfaces) {
+      const kind = visualKind(surface);
+      if (kind === "chip") {
+        hudFallback ??= surface;
+        continue;
+      }
+      if (kind !== "marker" && kind !== "ring") continue;
+      const point = this.anchorWorldPoint(surface.anchor);
+      if (!point) continue;
+      const distance = Math.hypot(point.x - player.x, point.y - playerY);
+      if (distance > range) continue;
+      if (!best || distance < best.distance) {
+        best = { surface, distance };
+      }
+    }
+
+    return best?.surface ?? hudFallback;
+  }
+
+  private anchorWorldPoint(
+    anchor: FeedbackAnchor,
+  ): { x: number; y: number } | null {
+    const tile = this.room.tileSize;
+    switch (anchor.kind) {
+      case "entity": {
+        const entity = this.room.entities?.find(
+          (entry) => entry.id === anchor.entityId,
+        );
+        if (entity) {
+          return {
+            x: (entity.x + 0.5) * tile,
+            y: entity.y * tile,
+          };
+        }
+        const prop = this.world.props[anchor.entityId];
+        return prop ? { x: prop.x, y: prop.y } : null;
+      }
+      case "player": {
+        const player = this.world.players[anchor.playerId];
+        return player.active ? { x: player.x, y: player.y } : null;
+      }
+      case "node": {
+        return anchor.entityId
+          ? this.anchorWorldPoint({
+              kind: "entity",
+              entityId: anchor.entityId,
+            })
+          : null;
+      }
+      case "world":
+        return { x: anchor.point.x, y: anchor.point.y };
+      case "tile":
+        return {
+          x: (anchor.x + 0.5) * tile,
+          y: (anchor.y + 0.5) * tile,
+        };
+      case "tileRegion":
+        return {
+          x: ((anchor.x1 + anchor.x2 + 1) / 2) * tile,
+          y: ((anchor.y1 + anchor.y2 + 1) / 2) * tile,
+        };
+      case "hud":
+      case "screen":
+        return null;
+    }
+  }
+
   scan(actor?: PlayerId): void {
     if (this.machine.state !== "level") return;
     const id = actor ?? (this.world.players.p1.active ? "p1" : "p2");
@@ -1555,6 +1805,7 @@ export class GameRuntime implements WorldRuntime {
     if (this.machine.state !== "level") return;
     const surfaceId = `conversation:${owner}:${entityId}`;
     if (this.conversations.has(surfaceId)) return;
+    this.closeInspect();
     const dialogue = this.content.dialogues[dialogueId];
     if (!dialogue) {
       this.setToast(`Dialogue missing: ${dialogueId}`);
@@ -1704,6 +1955,20 @@ export class GameRuntime implements WorldRuntime {
   }
 
   surfaceAction(surfaceId: SurfaceId, action: SurfaceAction): void {
+    if (action.type === "inspect") {
+      if (this.inspectSourceId === surfaceId) {
+        this.closeInspect();
+      } else {
+        this.openInspect(surfaceId);
+      }
+      this.emit();
+      return;
+    }
+    if (surfaceId === this.inspectSurfaceId) {
+      if (action.type === "cancel") this.closeInspect();
+      this.emit();
+      return;
+    }
     if (surfaceId === this.helpSurfaceId) {
       this.handleHelpAction(action);
       return;
@@ -2219,7 +2484,10 @@ export class GameRuntime implements WorldRuntime {
     const enabled = !this.save.settings.feedback.showShared;
     const settings = this.save.updateFeedback({ showShared: enabled });
     this.feedback.setSharedFeedbackEnabled(enabled);
-    if (!enabled) this.dismissHelpSurface();
+    if (!enabled) {
+      this.closeInspect();
+      this.dismissHelpSurface();
+    }
     this.onSettings?.(settings);
     this.emit();
     return settings;
@@ -2592,11 +2860,13 @@ export class GameRuntime implements WorldRuntime {
     for (const [id, puzzle] of this.puzzles) {
       if (!this.activatedPuzzles.has(id)) continue;
       const config = this.level.feedback?.puzzles?.[id];
+      const icons = blueprintIcons(config?.blueprint, config?.beats);
       this.feedback.projectSticky({
         document: puzzle.document,
         state: puzzle.snapshot(),
         ...(config?.beats ? { beats: config.beats } : {}),
         ...(config?.nodes ? { overrides: config.nodes } : {}),
+        ...(Object.keys(icons).length > 0 ? { icons } : {}),
       });
     }
   }
@@ -2641,6 +2911,7 @@ export class GameRuntime implements WorldRuntime {
     if (choices.length === 0) return false;
 
     puzzle.note("helpRequests");
+    this.closeInspect();
     this.helpSurfaceId = `fb:help:${puzzleId}`;
     this.feedback.putSurface({
       id: this.helpSurfaceId,
@@ -2731,6 +3002,35 @@ export class GameRuntime implements WorldRuntime {
       ...(options.target ? { target: options.target } : {}),
       ...(options.text ? { text: options.text } : {}),
     });
+    this.recordControlAction(actor, action, result, options.reason);
+  }
+
+  private recordControlAction(
+    slot: PlayerId,
+    action: string,
+    result: "accepted" | "rejected" | "blocked" | "completed" | "started",
+    reason?: string,
+  ): void {
+    const verb = controlVerbForAction(action);
+    if (!verb) return;
+    const feedback: HostActionFeedback = {
+      verb,
+      result:
+        reason === "cooldown"
+          ? "cooldown"
+          : result === "accepted" ||
+              result === "completed" ||
+              result === "started"
+            ? "accepted"
+            : "rejected",
+      ...(reason === "out-of-range" ||
+      reason === "locked" ||
+      reason === "empty" ||
+      reason === "cooldown"
+        ? { reason }
+        : {}),
+    };
+    this.controlActions.push({ slot, feedback });
   }
 
   /**
@@ -2741,17 +3041,20 @@ export class GameRuntime implements WorldRuntime {
   private presentedFeedbackSurfaces(
     surfaces: readonly FeedbackSurface[],
   ): readonly FeedbackSurface[] {
-    if (this.save.settings.feedback.showShared) return surfaces;
-    return surfaces.filter((surface) => surface.owner !== "shared");
+    const visible = surfaces.filter(
+      (surface) => surface.placement !== "hidden",
+    );
+    if (this.save.settings.feedback.showShared) return visible;
+    return visible.filter((surface) => surface.owner !== "shared");
   }
 
   private feedbackFrame(): FeedbackFrame {
     const frame = this.feedback.frame();
-    if (this.save.settings.feedback.showShared) return frame;
+    const showShared = this.save.settings.feedback.showShared;
     return {
       ...frame,
       surfaces: this.presentedFeedbackSurfaces(frame.surfaces),
-      beats: [],
+      ...(showShared ? {} : { beats: [] }),
     };
   }
 
@@ -2981,6 +3284,7 @@ export class GameRuntime implements WorldRuntime {
       this.dismissHelpSurface();
       this.projectFeedback();
       this.feedback.tick(0);
+      this.refreshInspectPanel();
       this.autosave();
       this.saveNotice = "Puzzle reset";
     }
@@ -3078,9 +3382,14 @@ export class GameRuntime implements WorldRuntime {
   }
 
   private interactionView(): InteractionView | null {
-    if (this.machine.state !== "level") return null;
+    return this.interactionViewFor();
+  }
 
-    const activation = this.nearestInactivePuzzle();
+  private interactionViewFor(actor?: PlayerId): InteractionView | null {
+    if (this.machine.state !== "level") return null;
+    const abilityActor = actor ?? (this.activeP2 ? "p2" : "p1");
+
+    const activation = this.nearestInactivePuzzle(actor);
     if (activation) {
       return {
         kind: "puzzle",
@@ -3090,7 +3399,11 @@ export class GameRuntime implements WorldRuntime {
       };
     }
 
-    const target = this.nearestEntity(["agent", "gate"], INTERACT_RANGE);
+    const target = this.nearestEntity(
+      ["agent", "gate"],
+      INTERACT_RANGE,
+      actor,
+    );
     if (target?.entity.type === "agent" && target.entity.dialogueId) {
       return {
         kind: "dialogue",
@@ -3111,32 +3424,31 @@ export class GameRuntime implements WorldRuntime {
       };
     }
 
-    const actor: PlayerId = this.activeP2 ? "p2" : "p1";
-    const abilities = this.abilitiesFor(actor);
+    const abilities = this.abilitiesFor(abilityActor);
     if (abilities.includes("carry")) {
-      const carried = this.carriedProp(actor);
+      const carried = this.carriedProp(abilityActor);
       if (carried) {
-        const receptor = this.nearestReceptor(actor);
+        const receptor = this.nearestReceptor(abilityActor);
         const label = this.entityLabel(carried.id);
         return {
           kind: "prop",
           id: carried.id,
           label: receptor ? `Place ${label}` : `Drop ${label}`,
-          key: this.activeP2 ? "'" : "G",
+          key: abilityActor === "p2" ? "'" : "G",
         };
       }
-      const prop = this.nearestProp(actor);
+      const prop = this.nearestProp(abilityActor);
       if (prop) {
         return {
           kind: "prop",
           id: prop.id,
           label: `Pick up ${this.entityLabel(prop.id)}`,
-          key: this.activeP2 ? "'" : "G",
+          key: abilityActor === "p2" ? "'" : "G",
         };
       }
     }
     if (abilities.includes("pulse")) {
-      const pulse = this.nearestPulseSource(actor);
+      const pulse = this.nearestPulseSource(abilityActor);
       if (pulse) {
         return {
           kind: "pulse",
@@ -3148,6 +3460,69 @@ export class GameRuntime implements WorldRuntime {
     }
 
     return null;
+  }
+
+  /** Ephemeral control affordance for one controller slot. */
+  controlDescriptor(id: PlayerId): HostControlDescriptor {
+    const abilities = this.abilitiesFor(id);
+    const verbs: HostControlVerb[] = ["jump", "interact", "scan"];
+    if (abilities.includes("signal-dash")) verbs.push("dash");
+    if (abilities.includes("pulse")) verbs.push("pulse");
+    if (abilities.includes("carry")) verbs.push("carry");
+    if (abilities.includes("carry") && this.carriedProp(id)) {
+      verbs.push("throw");
+    }
+
+    const conversation =
+      [...this.conversations.values()].find(
+        (candidate) => candidate.owner === id,
+      ) ?? null;
+    let mode: HostControlDescriptor["mode"] = "explore";
+    let choices: number | undefined;
+    let selected: number | undefined;
+    if (conversation) {
+      const node = currentNode(conversation.document, conversation.session);
+      if (node?.choices && node.choices.length > 0) {
+        mode = "choice";
+        choices = node.choices.length;
+        selected = conversation.selectedChoiceIndex + 1;
+      } else if (node) {
+        mode = "talk";
+      }
+    }
+
+    let activeVerb: HostControlVerb | undefined;
+    if (mode !== "explore") {
+      activeVerb = "interact";
+    } else {
+      const interaction = this.interactionViewFor(id);
+      if (interaction?.kind === "pulse") activeVerb = "pulse";
+      else if (interaction) activeVerb = "interact";
+      else if (this.nearestEntity(["scanTarget"], SCAN_RANGE, id)) {
+        activeVerb = "scan";
+      }
+    }
+    if (activeVerb && !verbs.includes(activeVerb)) activeVerb = undefined;
+
+    return {
+      mode,
+      ...(choices !== undefined ? { choices } : {}),
+      ...(selected !== undefined ? { selected } : {}),
+      verbs,
+      ...(activeVerb !== undefined ? { activeVerb } : {}),
+      dashReady:
+        abilities.includes("signal-dash") &&
+        this.world.players[id].dashCooldown === 0,
+    };
+  }
+
+  drainControlActions(): ReadonlyArray<{
+    slot: PlayerId;
+    feedback: HostActionFeedback;
+  }> {
+    const actions = this.controlActions;
+    this.controlActions = [];
+    return actions;
   }
 
   snapshot(): RuntimeSnapshot {
@@ -3268,6 +3643,30 @@ export class GameRuntime implements WorldRuntime {
   /** Structural `WorldRuntime` hook used by the renderer's highlight. */
   interactionId(): string | null {
     return this.interactionView()?.id ?? null;
+  }
+}
+
+function controlVerbForAction(action: string): HostControlVerb | null {
+  switch (action) {
+    case "interact":
+    case "puzzle.activate":
+    case "exit":
+      return "interact";
+    case "pickup":
+    case "place":
+    case "drop":
+    case "carry":
+      return "carry";
+    case "throw":
+      return "throw";
+    case "pulse":
+      return "pulse";
+    case "scan":
+      return "scan";
+    case "dash":
+      return "dash";
+    default:
+      return null;
   }
 }
 

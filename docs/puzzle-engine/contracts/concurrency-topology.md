@@ -3,7 +3,7 @@
 The engine upgrade runs in a single browser event loop with a fixed 60 Hz
 simulation step. Source ADRs: ADR-0001, ADR-0002, ADR-0004, ADR-0005, ADR-0007,
 ADR-0009–0013.
-Optional online co-op amendment: ADR-0047, ADR-0048, ADR-0053.
+Optional controller input amendment: ADR-0066, ADR-0068, ADR-0081.
 
 ## 1. The graph
 
@@ -28,25 +28,26 @@ simulation is the single writer of puzzle, physics, and save state. Feedback
 ticks and effect production run synchronously inside the same step and only
 produce presentation data.
 
-### 1.1 Optional online co-op amendment
+### 1.1 Optional controller input amendment
 
-M4 adds an optional two-player online mode without changing the single-writer
-rule:
+M4.0a adds optional phone controllers without changing the single-writer rule:
 
 - the **host browser** continues to run the fixed-step simulation and remains
   the single writer of puzzle, physics, save, and evidence state;
-- the guest sends input frames and renders host snapshots; it does not step
-  gameplay simulation;
-- a Cloudflare Durable Object relays WebSocket messages and stores membership
+- a controller sends input frames for one player slot only; it renders no game
+  state and never steps gameplay simulation;
+- a Cloudflare Durable Object relays controller messages and stores membership
   only; it is not a game loop, a state store, or a second writer;
-- the host’s `visibilitychange`, guest reconnect, and host disconnect paths pause
-  or end the session rather than running a concurrent simulation.
+- controller disconnect, host pause, and reconnect paths pause or end the
+  session rather than running a concurrent simulation.
 
-This exception applies only to the optional online session. Local
-single-player and local co-op remain single-browser, single-writer systems. See
-[`ADR-0047`](../../adr-online/0047-host-authoritative-thin-client.md),
-[`ADR-0048`](../../adr-online/0048-session-topology-room-lifecycle.md), and
-[`ADR-0053`](../../adr-online/0053-failure-reconnect-host-lifecycle.md).
+This exception applies only to the optional controller input path. Local
+single-player and keyboard co-op remain single-browser, single-writer systems.
+Remote guest co-op and game-state snapshots are not planned (ADR-0081). See
+[`ADR-0066`](../../adr-controller/0066-phone-controller-first-multiplayer-phase.md),
+[`ADR-0068`](../../adr-controller/0068-controller-session-pairing-and-trust.md),
+and
+[`ADR-0081`](../../adr-controller/0081-same-room-shared-screen-multiplayer.md).
 
 ### 1.2 Optional controller input amendment
 

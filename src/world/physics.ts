@@ -398,6 +398,9 @@ export class RoomPhysics {
       player.dashTime === 0 &&
       player.dashCooldown === 0
     ) {
+      if (intent.moveX !== 0) {
+        player.facing = intent.moveX;
+      }
       player.dashTime = DASH_DURATION;
       player.dashCooldown = DASH_COOLDOWN;
       Matter.Body.setVelocity(body, {

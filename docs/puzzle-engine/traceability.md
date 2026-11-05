@@ -115,6 +115,7 @@ implementation.
 | Request-gated shared help and authored info areas | `requested-hints.feature` | interface, data-model, state-machine |
 | On-demand transient cues, latest-wins inbox, compact captions | `on-demand-feedback.feature` | interface, state-machine, failure-semantics |
 | Shared feedback visibility, shared state/beat filtering, cue/inbox/help clearing, settings persistence | `shared-feedback-toggle.feature` | interface, data-model, state-machine, failure-semantics |
+| Compact state markers/rings/chips, hidden logical state, shared inspect panel, `I`/click | `state-markers.feature` | interface, data-model, state-machine, failure-semantics, module-boundaries |
 | Co-op ownership and per-player input | `feedback-surfaces.feature` | interface, state-machine |
 | Entity conversations | `entity-conversations.feature` | interface, data-model, state-machine |
 | Capability descriptors, event coverage, reasons | `capability-coverage.feature` | interface, module-boundaries, data-model |
@@ -134,21 +135,21 @@ implementation.
 Deferred within the accepted target: `wang` transitions, pattern animation,
 image/atlas-sourced UI patterns, final atlases, and editor tooling.
 
-## Online co-op (M4, proposed)
+## Controller input (M4.0a)
 
-This table indexes the proposed online domain. It is not part of the M1.75
-acceptance evidence until M4 Phase 0.
+This table indexes the same-room phone-controller domain. Remote guest co-op,
+snapshots, interpolation, and prediction are not planned (ADR-0081).
 
-| ADR | Primary contracts/docs | M4 phase |
+| ADR | Primary contracts/docs | M4.0a phase |
 |---|---|---|
-| 0047 | architecture §7 amendment, concurrency-topology | 0, 2 |
-| 0048 | module-boundaries (`net`, `worker`), failure-semantics | 1, 3 |
-| 0049 | interface (`NetWorld`, `NetInput`, `NetAction`), data-model (snapshot fields) | 2, 3 |
-| 0050 | interface (surface actions, ownership), data-model (P1/P2 attribution) | 3, 4 |
-| 0051 | save contract (host-only), curriculum evidence | 5 |
-| 0052 | M1.75/M1.8/M2/M3 compatibility, module-boundaries | 0, 4, 6 |
+| 0066 | architecture §7 amendment, controller domain index | 0, 5 |
+| 0067 | interface (input slots, arbiter), concurrency-topology | 1 |
+| 0068 | module-boundaries (`net`, `worker`), failure-semantics | 2, 3, 5, 6 |
+| 0069 | latency plan, physics/input-feel contract | 7 |
+| 0081 | architecture §7, module-boundaries, hub/plan scope | 0, 5.5, 6 |
+| 0048/0049 input subset | module-boundaries (`net`), interface (`NetInput`) | 2 |
 | 0053 | failure-semantics, concurrency-topology | 1, 6 |
 | 0054 | module-boundaries (`worker`), failure-semantics | 5, 6 |
 | 0055 | deployment docs, CI workflows | 6 |
 | 0056 | test matrix, acceptance evidence | 6 |
-| 0057 | module-boundaries (`worker`), deployment/IaC docs, ADR-0055 | 0, 1, 6 |
+| 0057 | module-boundaries (`worker`), deployment/IaC docs | 0, 1, 6 |

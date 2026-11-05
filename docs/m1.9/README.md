@@ -1,12 +1,17 @@
 # M1.9 — Bathroom Hub and Launch
 
 **Status:** core implementation complete; manual visual/accessibility playtest
-pending  
+pending
+
 **Scope:** pre-game bathroom, pack selection, player mode, launch cinematic,
-per-pack saves, and the reserved online lobby slot  
+per-pack saves, and the local-co-op phone setup added by M4.0a
+
 **Depends on:** M1.75; M1.8 for the material layer (placeholders remain
-acceptable)  
-**Feeds:** M2 (Silicon card flips), M3.5 (hub art), M4 (online lobby)  
+acceptable)
+
+**Feeds:** M2 (Silicon card flips), M3.5 (hub art), M4.0a (same-room phone
+controllers)
+
 **ADRs:** [`../adr-hub/`](../adr-hub/) — ADR-0058–0059
 
 **Remaining work:** [`remaining-work.md`](remaining-work.md) records what is
@@ -19,8 +24,8 @@ pack. That was the right shortcut for the one-level slice, but it leaves no
 place for:
 
 - choosing between the Anatomy and Silicon cycles;
-- choosing Solo, Local co-op, or Online co-op;
-- showing the planned Cloudflare multiplayer setup;
+- choosing Solo or Local co-op;
+- showing the same-room phone-controller setup added by M4.0a;
 - a diegetic launch from the real world into the body;
 - keeping separate progress for separate packs.
 
@@ -33,10 +38,10 @@ responsibilities.
 |---|---|
 | Bathroom hub scene rendered with Phaser | Free movement or platforming in the hub |
 | Washing-machine DOM menu anchored over the scene | Final bathroom art |
-| Anatomy cycle available; Silicon visible but gated | Silicon pack content (M2) |
-| Solo and Local co-op | Real online host/join/ready flow (M4) |
+| Anatomy and Silicon cycles available | New pack content beyond the current packs |
+| Solo and Local co-op | Remote online co-op or a fourth device |
 | Continue / New cycle with per-pack saves | Multiple save profiles per pack |
-| Launch cinematic with skip and reduced motion | Synchronized online launch |
+| Launch cinematic with skip and reduced motion | Remote synchronized launch |
 | Return to the bathroom from pause/complete | Guest save/evidence |
 | Direct-boot query for tests/debugging | A general pack-download system |
 
@@ -53,8 +58,8 @@ responsibilities.
 
 ### Content
 
-- [x] `public/packs/index.json` catalog with `available` / `coming-soon` /
-      `online` metadata.
+- [x] `public/packs/index.json` catalog with `available` / `coming-soon`
+      metadata.
 - [x] `public/hub/bathroom/hub.json`, `theme.json`, placeholder/final manifests.
 - [x] Placeholder bathroom, washing machine, civilian, and tiny astronaut
       rendering; final art hooks use the same asset IDs.
@@ -63,8 +68,8 @@ responsibilities.
 ### Menu
 
 - [x] Pack cards with status and save indicator.
-- [x] Solo / Local co-op / Online co-op modes; online is disabled with an M4
-      explanation.
+- [x] Solo / Local co-op modes. The old Online co-op placeholder was removed by
+      M4.0a Phase 5.5; multiplayer is same-room only.
 - [x] Start / Continue / New cycle with inline confirmation.
 - [x] Settings: sound, text scale, reduced motion.
 - [x] Controls reference.
@@ -139,7 +144,7 @@ e2e/hub.spec.ts             hub browser smoke
 | 1 | Catalog, hub content, bathroom scene, theme | 2 d |
 | 2 | Menu UI, pack selection, Solo/Local, Continue/New | 2 d |
 | 3 | Launch cinematic, skip, reduced motion, scene swap | 1.5 d |
-| 4 | Online placeholder, return-to-hub, accessibility polish | 1 d |
+| 4 | Return-to-hub, accessibility polish | 1 d |
 | 5 | Tests, validation, docs, screenshots | 1 d |
 
 **Total:** roughly **7–9 focused days**.
@@ -154,14 +159,15 @@ e2e/hub.spec.ts             hub browser smoke
   [`../m3.5/hub-asset-prompts-v01.md`](../m3.5/hub-asset-prompts-v01.md).
   Hub IDs exist; the redesign moves the machine out from under the DOM panel and
   adds the logo, civilian walk, poster, cartridges, and small props.
-- **M4:** replace the disabled online block with the real lobby:
-  - host/join and room code;
-  - host's pack read-only to the guest;
-  - both ready before start;
-  - version/pack handshake in the hub;
-  - host save, guest memory/no-op save;
-  - host departure returns the guest to the hub;
-  - M4.0 online is `03-nerve-forest` only; Silicon online is M4.1.
+- **M4.0a:** same-room phone-controller co-op:
+  - per-slot `P1: Keyboard | Phone` and `P2: Keyboard | Phone`;
+  - one QR and six-character code per phone slot;
+  - waiting/connected/ready/error status and “Use keyboard instead”;
+  - explicit Start gate; readiness never auto-starts;
+  - disconnect/reconnect/keyboard-fallback overlay;
+  - remove the obsolete Online co-op placeholder and `online` catalog flag.
+  - There is no remote guest, fourth device, snapshots, interpolation,
+    prediction, M4.0b, or M4.1 (ADR-0081).
 
 ## 8. Verification
 
@@ -177,8 +183,7 @@ npx playwright test   7/7 passed (system Chrome, port 4173)
 
 Manual checks still recommended:
 
-- screen reader pass over pack cards, mode radios, online placeholder, and
-  start/confirm controls;
+- screen reader pass over pack cards, mode radios, and start/confirm controls;
 - 720p and narrow-window layout;
 - reduced-motion launch start to finish;
 - skip immediately and skip after the spin begins;
@@ -193,7 +198,7 @@ Manual checks still recommended:
 | Save migration loses progress | Legacy key is copied, then removed; mismatched packs are not migrated; tests cover both. |
 | Hub and pack textures collide | One Phaser game at a time; unique hub IDs. |
 | Launch blocks the menu too long | Skip control and reduced-motion variant; pack load runs in parallel. |
-| Online placeholder grows | It is deliberately stateless; M4 owns the lobby. |
+| Online placeholder grows | Removed by M4.0a Phase 5.5; no active online mode remains. |
 | Hub art expands M3 | Separate M3.5 pass. |
 | App shell recovery leaves a dead screen | Every start failure returns to the hub with an error and a working Start button. |
 

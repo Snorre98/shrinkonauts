@@ -43,10 +43,19 @@ jobs:
         run: npm run gdd:smoke
 
       - name: Type check and production build
+        env:
+          VITE_NET_URL: wss://shrinkonauts-rooms.snosaet.workers.dev
+          VITE_BUILD_ID: ${{ github.sha }}
         run: npm run build
 
       - name: Unit and integration tests
         run: npm test
+
+      - name: Worker type check
+        run: npm run worker:typecheck
+
+      - name: Worker dry run
+        run: npm run worker:dry-run
 
       - name: Validate content packs
         run: npm run pack:validate
@@ -93,6 +102,9 @@ jobs:
 
       - name: Browser smoke (system Chrome)
         run: npm run smoke:e2e
+
+      - name: Controller browser smoke
+        run: npm run smoke:controller
 
       - name: Upload failure artifacts
         if: failure()

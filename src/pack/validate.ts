@@ -1140,6 +1140,24 @@ function checkLevelFeedback(input: {
         );
       }
 
+      const authoredNode = puzzle.nodes.find((entry) => entry.id === nodeId);
+      if (override.placement === "world" && authoredNode) {
+        const hasSpatialAnchor =
+          Boolean(authoredNode.entityId) ||
+          ("rect" in authoredNode && Boolean(authoredNode.rect));
+        if (!hasSpatialAnchor) {
+          addIssue(
+            "FEEDBACK_LAYOUT_INVALID",
+            `${nodeLabel}.placement "world" requires an entityId or rect anchor`,
+          );
+        }
+      }
+      if (override.socket && authoredNode && !authoredNode.entityId) {
+        addWarning(
+          `${nodeLabel}.socket is ignored because node "${nodeId}" has no entityId`,
+        );
+      }
+
       const effectPreset = override.effectPreset;
       const tilePath =
         effectPreset !== undefined &&

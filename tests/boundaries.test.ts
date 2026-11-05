@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const SRC = fileURLToPath(new URL("../src/", import.meta.url));
+const WORKER_SRC = fileURLToPath(new URL("../worker/src/", import.meta.url));
 
 const MEDIA_PATTERN =
   /(["'])[^"'\n]+\.(?:avif|png|jpe?g|gif|webp|svg|mp3|wav|ogg|m4a|woff2?|ttf|otf)\1/i;
@@ -54,6 +55,7 @@ describe("module boundaries", () => {
       fileURLToPath(new URL("../src/audio/", import.meta.url)),
       fileURLToPath(new URL("../src/game/", import.meta.url)),
       fileURLToPath(new URL("../src/platform/", import.meta.url)),
+      fileURLToPath(new URL("../src/controller/", import.meta.url)),
     ];
 
     for (const directory of guarded) {
@@ -201,6 +203,17 @@ describe("module boundaries", () => {
     }
   });
 
+  it("keeps the network seam out of the UI", () => {
+    for (const file of sourceFiles(
+      fileURLToPath(new URL("../src/ui/", import.meta.url)),
+    )) {
+      expect(
+        read(file),
+        `${relativeToSrc(file)} must not import net`,
+      ).not.toMatch(/from\s+["']\.\.\/net(?:\/[^"']*)?["']/);
+    }
+  });
+
   it("lets UI consume feedback but not puzzle internals", () => {
     const uiFiles = sourceFiles(
       fileURLToPath(new URL("../src/ui/", import.meta.url)),
@@ -263,6 +276,47 @@ describe("module boundaries", () => {
     }
   });
 
+  it("keeps the Worker relay independent of gameplay and rendering", () => {
+    for (const file of sourceFiles(WORKER_SRC)) {
+      const source = read(file);
+      expect(
+        source,
+        `${relative(file, WORKER_SRC)} must not import Phaser`,
+      ).not.toMatch(/from\s+["']phaser["']/);
+      expect(
+        source,
+        `${relative(file, WORKER_SRC)} must not import Matter`,
+      ).not.toMatch(/from\s+["']matter-js["']/);
+      for (const moduleName of ["game", "world", "puzzle"]) {
+        expect(
+          source,
+          `${relative(file, WORKER_SRC)} must not import ${moduleName}`,
+        ).not.toMatch(
+          new RegExp(
+            `from\\s+["']\\.\\./\\.\\./src/${moduleName}(?:/[^"']*)?["']`,
+          ),
+        );
+      }
+    }
+  });
+
+  it("keeps the net seam free of renderer and physics engines", () => {
+    const netFiles = sourceFiles(
+      fileURLToPath(new URL("../src/net/", import.meta.url)),
+    );
+    for (const file of netFiles) {
+      const source = read(file);
+      expect(
+        source,
+        `${relativeToSrc(file)} must not import Phaser`,
+      ).not.toMatch(/from\s+["']phaser["']/);
+      expect(
+        source,
+        `${relativeToSrc(file)} must not import Matter`,
+      ).not.toMatch(/from\s+["']matter-js["']/);
+    }
+  });
+
   it("keeps module dependencies acyclic and directionally ordered", () => {
     // ADR-0002: domain modules never depend on adapters, and adapters only
     // depend downwards. A module may always import from itself.
@@ -283,6 +337,8 @@ describe("module boundaries", () => {
       audio: ["assets", "core"],
       ui: ["assets", "core", "curriculum", "feedback", "materials", "pack"],
       world: ["assets", "core", "hub", "materials", "pack", "puzzle"],
+      controller: ["core", "net"],
+      net: ["core", "game", "save", "ui", "world"],
       game: [
         "assets",
         "audio",
@@ -300,7 +356,7 @@ describe("module boundaries", () => {
         "ui",
         "world",
       ],
-      platform: ["core", "game", "ui"],
+      platform: ["core", "game", "ui", "net"],
     };
 
     const violations: string[] = [];

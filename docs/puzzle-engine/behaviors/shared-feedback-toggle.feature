@@ -1,9 +1,9 @@
 # language: en
 # Source: ADR-0021, ADR-0022
 Feature: Shared feedback visibility
-  Shared-owned feedback boxes, the shared help surface, and beat progress can be
-  turned off globally. Player-specific feedback and cosmetic effects keep
-  working.
+  Shared-owned state markers, rings, chips, text, the shared help surface, and
+  beat progress can be turned off globally. Player-specific feedback and
+  cosmetic effects keep working.
 
   Scenario: Shared feedback is on by default
     Given a player has no saved shared-feedback preference
@@ -30,9 +30,10 @@ Feature: Shared feedback visibility
     Then the shared cue is removed immediately
 
   Scenario: Turning shared feedback off hides shared state and beats
-    Given shared persistent state surfaces and the beat tracker are visible
+    Given shared state markers, rings, chips, and the beat tracker are visible
     When shared feedback is turned off
-    Then the shared state surfaces are removed from the snapshot
+    Then the shared surfaces are removed from the snapshot
+    And the inspect panel closes
     And the beat tracker is hidden
     And player-owned cues remain available
 

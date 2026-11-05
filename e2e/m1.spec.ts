@@ -20,10 +20,10 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
     page.locator(".feedback-beats__item", { hasText: "Press a dendrite input" }),
   ).toBeVisible();
   await expect(
-    page.locator(".feedback-surface--stateSwap", {
-      hasText: "Dendrite input A is ready.",
-    }),
-  ).toBeVisible();
+    page.locator(
+      '.feedback-surface--stateMarker[data-surface-id="fb:binary:input-a"]',
+    ),
+  ).toHaveAttribute("aria-label", /Dendrite input A is ready/);
 
   // Conversation.
   await teleport(page, "agent-neuron");
@@ -143,15 +143,19 @@ test("boots into the vertical slice and finishes conversation, scans, Node Run, 
     "Signal restored",
   );
   await expect(
-    page.locator('.feedback-surface[data-surface-id="fb:carrier:ach-packet"]'),
-  ).toContainText("ACh packet cleared", { timeout: 6_000 });
+    page.locator(
+      '.feedback-surface--stateMarker[data-surface-id="fb:carrier:ach-packet"]',
+    ),
+  ).toHaveAttribute("aria-label", /ACh packet cleared/, { timeout: 6_000 });
 
   await page.evaluate(() => {
     const runtime = (window as ShrinkonautsWindow).__shrinkonauts?.runtime;
     if (!runtime) throw new Error("runtime bridge is missing");
     const exit = runtime.entityPixel("exit-muscle");
     if (!exit) throw new Error("exit-muscle is missing");
-    runtime.placePlayer("p1", exit.x, exit.y + 48);
+    // The exit lever stands on the chamber dais; place the player inside the
+    // exit trigger cell directly above it.
+    runtime.placePlayer("p1", exit.x, exit.y - 16);
   });
   await expect(page.getByRole("dialog", { name: "Debrief" })).toBeVisible();
   await expect(page.getByRole("dialog", { name: "Level complete" })).toHaveCount(0);

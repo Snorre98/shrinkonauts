@@ -1,34 +1,40 @@
 # Phone Controller Co-op — Implementation Plan (M4.0a)
 
-**Status:** Draft for review, 2026-11-01
+**Status:** M4.0a authority, 2026-11-01; same-room scope confirmed 2026-11-04;
+Phase 6.5 implemented 2026-11-04
 **Owner:** Snorre
-**Source decisions:** [ADR-0066–0069](../adr-controller/README.md)
-**Milestone:** [M4](../m4/README.md) — M4.0a, the first phase of complete
-multiplayer
+**Source decisions:** [ADR-0066–0069, ADR-0081, and ADR-0082](../adr-controller/README.md)
+**Milestone:** [M4](../m4/README.md) — M4.0a, the complete multiplayer scope
 **Format:** phased plan matching
 [`../puzzle-engine/implementation-plan.md`](../puzzle-engine/implementation-plan.md)
 and [`../puzzle-engine/feedback-implementation-plan.md`](../puzzle-engine/feedback-implementation-plan.md)
 
 This plan is the authority for M4.0a. **No production code is written until
-Phase 0 accepts ADR-0066–0069 and approves this plan.** Phase 1 may begin only
-after that gate.
+Phase 0 accepts ADR-0066–0069, ADR-0081, and ADR-0082 and approves this plan.**
+Phase 1 may begin only after that gate.
 
-M4.0b (remote guest with world/UI snapshots) remains described by the existing
-[M4 README](../m4/README.md) and
-[online ADR domain](../adr-online/README.md). M4.0a is not a replacement for
-M4.0b; it is the smaller, earlier tracer bullet that proves the transport and
-input boundary.
+M4.0a is the complete multiplayer scope: same-room, shared-screen co-op with
+keyboard-or-phone input slots. M4.0b (remote guest with world/UI snapshots) and
+M4.1 (full-pack online) are **not planned** (ADR-0081). Their design remains in
+the [M4 historical appendix](../m4/README.md#appendix-a--remote-guest-co-op-not-planned-historical)
+and the [online ADR domain](../adr-online/README.md) for historical precedent.
 
 ### Review gate
 
 - [ ] Accept [ADR-0066](../adr-controller/0066-phone-controller-first-multiplayer-phase.md)
-  (phase ladder and scope).
+  (phone-controller phase and same-room scope).
 - [ ] Accept [ADR-0067](../adr-controller/0067-per-player-input-slots-and-device-arbitration.md)
   (host is not a player; per-slot input).
 - [ ] Accept [ADR-0068](../adr-controller/0068-controller-session-pairing-and-trust.md)
   (controller role, pairing, trust).
 - [ ] Accept [ADR-0069](../adr-controller/0069-controller-latency-and-input-feel.md)
   (latency budget and no prediction).
+- [ ] Accept [ADR-0081](../adr-controller/0081-same-room-shared-screen-multiplayer.md)
+  (same-room product boundary; no remote guest).
+- [ ] Accept [ADR-0082](../adr-controller/0082-demo-quota-guard-and-device-admission.md)
+  (demo quota guard, signed tickets, device admission, three-socket cap).
+- [ ] Accept [ADR-0083–0087](../adr-controller/README.md) for the Phase 6.5
+  controller ergonomics, gesture, dialogue, and ability pass.
 - [ ] Resolve or defer the open decisions in §13.
 - [ ] Approve this plan as the M4.0a authority.
 
@@ -58,15 +64,17 @@ session fails.
 
 ### Non-goals
 
-- Remote co-op with a second rendered game view; that is M4.0b.
+- Remote co-op, a second rendered game view, or a fourth device; M4.0b/M4.1
+  are not planned (ADR-0081).
 - World, UI, puzzle, dialogue, camera, feedback, or save state on the phone.
 - Phone-side prediction, rollback, or a second simulation.
+- Guest rendering, world/UI snapshots, interpolation, or host migration.
 - Bluetooth, native iOS/Android apps, or a phone as a Bluetooth HID device.
 - Accounts, matchmaking, lobbies, spectators, chat, voice, or profiles.
 - A third player.
 - New puzzles, levels, abilities, assets, or save fields.
 - Trusted graded assessment from a public controller.
-- Full M2 pack online; that is M4.1.
+- Keeping the obsolete Online co-op placeholder or `online` catalog flag.
 
 ---
 
@@ -94,8 +102,10 @@ A successful M4.0a demo looks like this:
 8. The latency playtest records a keyboard baseline and phone p50/p95
    input-to-photon on the demo Wi-Fi and display. The target is p95 ≤ 120 ms; if
    it is not met, the fallback is a local relay or keyboard, not prediction.
-9. Existing local co-op, solo, save, feedback, materials, and pack tests still
-   pass.
+9. The obsolete Online co-op hub mode/panel and the `online` pack catalog flag
+   are removed; the hub advertises Solo and Local co-op only.
+10. Existing local co-op, solo, save, feedback, materials, and pack tests still
+    pass.
 
 ---
 
@@ -113,11 +123,16 @@ A successful M4.0a demo looks like this:
   [`../../src/world/runtime-port.ts`](../../src/world/runtime-port.ts).
 - P1/P2 ownership, surface routing, tether, camera, feedback, save, and
   evidence are already host-local.
-- The bathroom hub exposes Solo, Local co-op, and a disabled Online co-op block
-  ([`../../src/ui/hub-ui.ts`](../../src/ui/hub-ui.ts),
-  [`../../src/game/boot.ts`](../../src/game/boot.ts)).
-- No `worker/` directory or network client exists yet. The online ADRs describe
-  it, but M4.0a is the first implementation of it.
+- The bathroom hub still exposes Solo, Local co-op, and a disabled Online co-op
+  block ([`../../src/ui/hub-ui.ts`](../../src/ui/hub-ui.ts),
+  [`../../src/game/boot.ts`](../../src/game/boot.ts)). Phase 5.5 removes it.
+- Phases 1–5 are implemented: the input arbiter, protocol/transport, Worker +
+  `GameRoom` Durable Object, host session, and standalone controller page exist.
+- The temporary developer bridge is still active: `prepareHostRun()` creates the
+  room after launch and `HostRunAdapter` uses `autoStart: true`. Phase 6 replaces
+  both with hub-time room creation and an explicit Start gate.
+- The online ADRs describe historical remote-guest co-op and are not an active
+  plan (ADR-0081).
 
 ### Assumptions
 
@@ -282,6 +297,8 @@ subset is:
 | controller → host | `ping` | `t0` |
 | host → controller | `pong` | `t0` |
 | host → controller | `pause` / `resume` | `reason`, state |
+| host → controller | `control` | ephemeral mode, choice count, verbs, active verb, dash readiness (ADR-0084) |
+| host → controller | `action` | accepted/rejected/cooldown result code (ADR-0084) |
 | host → controller | `session-end` | `reason` |
 | either | `error` | `code`, `message` |
 
@@ -294,10 +311,13 @@ Host ↔ DO control messages:
 | controller → DO | `hello` | claim a reserved slot |
 | DO → controller | `welcome` | slot accepted; relay begins |
 | host → DO | `close-slot` | keyboard fallback or host revocation |
+| host → DO | `control` / `action` | relay a control descriptor or result to one slot |
 | host → DO | `session-end` | end the room cleanly |
 
-Explicitly absent: `run`, `world`, `ui`, `session` pack config, snapshot
-interpolation, pack/content versions, and asset data.
+Explicitly absent: `run`, `world`, `ui` content, `session` pack config,
+dialogue text, snapshot interpolation, pack/content versions, and asset data.
+The `control`/`action` messages are control descriptors only, not game state
+(ADR-0084).
 
 `NetInput` for one player:
 
@@ -319,7 +339,8 @@ interface NetInput {
 Limits:
 
 - controller → host message: 8 KiB;
-- input rate: 120/s;
+- input rate: 20 messages/s per controller in the demo (protocol absolute cap
+  120/s); 12,000 messages per room; 5-minute session;
 - heartbeat: 20–30 s;
 - room sockets: host + at most two controllers;
 - invalid/oversize/rate-limited messages are dropped and counted; repeated abuse
@@ -381,12 +402,13 @@ active ── controller lost / host hidden / host pause ──▶ paused
 
 Tasks:
 
-1. Review and accept ADR-0066–0069.
+1. Review and accept ADR-0066–0069, ADR-0081, and ADR-0082.
 2. Approve this plan as the M4.0a authority.
-3. Update the M4 README to show the M4.0a → M4.0b → M4.1 ladder, scope table,
-   deliverables, DoD, risks, verification, and open decisions.
-4. Update the online ADR domain's scope/relationship notes: controller sessions
-   reuse its transport but not its snapshots. Do not rewrite accepted records.
+3. Update the M4 README to show the M4.0a-only scope: same-room, shared-screen
+   co-op; scope table, deliverables, DoD, risks, verification, and open
+   decisions. Move M4.0b/M4.1 history into the appendix.
+4. Update the online ADR domain to historical status: controller sessions reuse
+   its transport but not its snapshots. Do not rewrite accepted record bodies.
 5. Amend the local-only contracts for the optional controller input path:
    - [`../puzzle-engine/architecture.md`](../puzzle-engine/architecture.md) §7;
    - [`../puzzle-engine/contracts/failure-semantics.md`](../puzzle-engine/contracts/failure-semantics.md);
@@ -394,7 +416,7 @@ Tasks:
    - [`../puzzle-engine/contracts/module-boundaries.md`](../puzzle-engine/contracts/module-boundaries.md);
    - [`../puzzle-engine/contracts/interface.md`](../puzzle-engine/contracts/interface.md).
 6. Update the hub-domain relationship note so Local co-op has a phone-input
-   setup panel; the disabled Online block remains for M4.0b.
+   setup panel and the obsolete online block is removed.
 7. Record the open decisions in §13 as resolved or explicitly deferred.
 
 Exit criteria:
@@ -511,10 +533,9 @@ Exit criteria:
 
 ### Phase 3 — Worker and Durable Object
 
-**Estimate:** 1.5–2 focused days. This phase is shared with M4.0b and should be
-built once.
+**Estimate:** 1.5–2 focused days.
 
-Goal: a real cloud relay with controller roles and slot reservations.
+Goal: a real cloud input relay with controller roles and slot reservations.
 
 Files:
 
@@ -559,6 +580,79 @@ Exit criteria:
 
 ---
 
+### Phase 3.5 — Demo quota guard and device admission
+
+**Estimate:** 2–3 focused days.
+
+Goal: make the public relay fit the Cloudflare free plan by construction, make
+unwanted joins free of room traffic, and make the one-host/two-phone boundary a
+server-enforced admission rule.
+
+Files:
+
+- `worker/src/demo-config.ts` (new)
+- `worker/src/ticket.ts` (new)
+- `worker/src/gate-core.ts` (new)
+- `worker/src/gate.ts` (new)
+- `worker/src/router.ts`
+- `worker/src/room.ts`
+- `worker/src/room-core.ts`
+- `worker/src/env.ts`
+- `worker/wrangler.jsonc`
+- `src/net/demo-client.ts` (new)
+- `src/net/room-code.ts`
+- `src/net/host-run.ts`
+- `src/net/index.ts`
+- `src/game/boot.ts`
+- `src/game/host-run-port.ts`
+- `src/platform/main.ts`
+- `src/controller/main.ts`
+- `src/controller/controller-session.ts`
+- `tests/worker/*`, `tests/net/*`, `tests/controller/*`, `e2e/controller.spec.ts`
+
+Tasks:
+
+1. Add the singleton `DemoGate` Durable Object with UTC daily session, attempt,
+   and device-issue budgets plus an active-room registry. Add the same-host
+   supersede rule so a hub plan change or host refresh does not produce a false
+   concurrency denial.
+2. Add `POST /device`, `POST /session`, and `POST /session/release` with CORS.
+   Sign room tickets and device tokens with HMAC-SHA256. Verify tickets and
+   device tokens at the Worker edge. Reject a host or controller before
+   `env.ROOMS.getByName()` when the ticket, device, or active room is invalid.
+3. Keep the six-character code fallback: verify the code against the gate's
+   active-room registry; an inactive code never creates a room DO.
+4. Add server-issued device identity: one device per slot, the host device
+   cannot also be a controller, reconnect is same-device only, and `close-slot`
+   blocks the removed device for the session.
+5. Move room admission before `acceptWebSocket()`. Bind the slot from the URL,
+   reject a second host/third controller/duplicate or reserved slot, and add
+   handshake, ready, and join caps.
+6. Add the 5-minute wall-clock session alarm, the 12,000-message room cap, the
+   20/s all-controller-message rate limit, and the 60/s host rate limit.
+7. Disable Workers Logs in `wrangler.jsonc`; do not add `console.log` to the
+   request or message paths.
+8. Client plumbing: cache the device token, carry the room ticket in the QR and
+   WebSocket URL, release the session on explicit end/hub teardown, stop input
+   while hidden, and give up after 5 reconnect attempts.
+9. Tests: gate budgets and UTC reset; ticket/device sign and verify; edge
+   rejection without a room DO; admission before accept; same-device slot
+   reservation; session alarm; message/rate caps; hibernation restore; CORS;
+   two-phone browser smoke with separate device contexts.
+
+Exit criteria:
+
+- A random or stale QR join never creates or wakes a room DO.
+- One host plus two controllers is enforced before the socket is accepted; a
+  fourth device, duplicate slot, reserved slot, host-device controller, and
+  unready join are rejected.
+- A session ends at 5 minutes or 12,000 messages; controller messages are
+  capped at 20/s; the gate enforces the daily budgets.
+- Workers Logs is disabled and `wrangler deploy --dry-run` passes.
+- Existing local, controller, Worker, and browser suites pass.
+
+---
+
 ### Phase 4 — Host session wiring
 
 **Estimate:** 1 focused day.
@@ -579,7 +673,10 @@ Tasks:
 1. Carry the `InputPlan` into the run start path.
 2. Create the host session and remote sources for phone slots before the scene
    starts; attach them to the arbiter.
-3. Wire slot readiness to the hub Start gate.
+3. Expose slot readiness to the hub Start gate. Phase 4 does not add the hub
+   control; Phase 6 owns the gate. Any temporary Phase 4 bridge that starts the
+   host session as soon as controllers become ready must be replaced in Phase 6
+   with an explicit host Start action.
 4. On controller disconnect:
    - pause the runtime;
    - show which slot is missing;
@@ -607,6 +704,8 @@ Exit criteria:
 - The host runs all four plans with fake controllers.
 - Keyboard-only and solo paths are unchanged.
 - Session teardown leaves no listeners or timers.
+- Slot readiness and missing-slot state are exposed for the Phase 6 hub Start
+  gate and disconnect overlay.
 
 ---
 
@@ -668,8 +767,58 @@ Exit criteria:
 
 ---
 
+### Phase 5.5 — Remove the obsolete online co-op placeholder
+
+**Status:** implemented 2026-11-04.
+**Estimate:** 0.25–0.5 focused day.
+
+Goal: make the product boundary match ADR-0081. The hub is same-room, shared
+screen only. The Worker/DO/controller page remain; only the remote-guest
+placeholder and its catalog flag are removed.
+
+Files:
+
+- `src/ui/hub-model.ts`
+- `src/ui/hub-ui.ts`
+- `src/ui/index.ts`
+- `src/ui/styles.css`
+- `src/world/hub-scene.ts`
+- `src/game/app-state.ts`
+- `src/game/boot.ts`
+- `src/pack/catalog.ts`
+- `public/packs/index.json`
+- `tests/app-state.test.ts`
+- `tests/catalog.test.ts`
+- `e2e/support.ts`
+- `e2e/hub.spec.ts`
+
+Tasks:
+
+1. Remove `online` from `HubMode`; keep `solo` and `local`.
+2. Remove the Online co-op radio, the Multiplayer panel, Host/Join buttons, and
+   their styles.
+3. Remove `HubOnlineView`, `HubPackView.online`, and `onlineAvailable`.
+4. Remove `PackCatalogEntry.online`, catalog parsing/validation, and the
+   `online` flags in `public/packs/index.json`.
+5. Remove `mode === "online"` branches and notices from boot/app-state.
+6. Remove `"online"` from the hub-scene mode union.
+7. Update unit/e2e tests to assert the online mode and panel are absent.
+8. Do not remove the Worker, Durable Object, controller page, input arbiter,
+   host session, or phone input plan.
+
+Exit criteria:
+
+- The hub exposes Solo and Local co-op only.
+- No `hub__online`, Host/Join panel, `HubOnlineView`, `onlineAvailable`, or
+  `online` catalog field remains.
+- Keyboard/keyboard and phone-controller paths still work.
+- Existing tests pass.
+
+---
+
 ### Phase 6 — Hub setup and pairing
 
+**Status:** implemented 2026-11-04.
 **Estimate:** 1–1.5 focused days.
 
 Goal: make the four input plans selectable and startable from the bathroom hub.
@@ -692,9 +841,14 @@ Tasks:
    - manual code fallback;
    - status: waiting, connected, ready, error;
    - "Use keyboard instead" per slot.
-3. Gate Start:
+3. Own the Start gate:
    - K/K starts immediately;
-   - phone slots must be ready, or explicitly downgraded before start.
+   - Start stays disabled until every phone slot is ready, or explicitly
+     downgraded to keyboard before start;
+   - while waiting, keep the run unstarted and the hub/setup panel active, or
+     hold the mounted scene paused; gameplay must not advance;
+   - readiness never auto-starts the run. Phase 6 must replace any Phase 4
+     auto-start bridge with the explicit host Start action.
 4. On start, launch locally; controllers only transition to active.
 5. Add the pause/disconnect overlay:
    - "P2 disconnected";
@@ -703,23 +857,192 @@ Tasks:
    - End session.
 6. On return to hub, close the session and reset the plan to K/K (see open
    decision).
-7. Keep the disabled Online co-op block for M4.0b; do not conflate it with phone
-   setup.
+7. Do not reintroduce an Online co-op block; Phase 5.5 removed it and the
+   product is same-room only.
 8. Tests:
    - hub renders K/K by default;
    - phone setup states;
    - Start gating;
    - fallback;
    - keyboard/keyboard regression;
-   - QR/code UI.
+   - QR/code UI;
+   - online mode/panel absence.
 
 Exit criteria:
 
 - A user can start all four plans from the hub.
+- Start is blocked or held paused until controller slots are ready; becoming
+  ready does not start the run automatically.
 - The keyboard default requires no network or QR.
-- The disabled online block remains for M4.0b.
+- The hub advertises Solo and Local co-op only.
 
 ---
+
+### Phase 6.5 — Controller ergonomics, gestures, dialogue, and ability affordances
+
+**Status:** Implemented 2026-11-04; ADR-0083–0087 accepted.
+**Estimate:** 4.5–6 focused days.
+**Source decisions:** ADR-0083, ADR-0084, ADR-0085, ADR-0086, ADR-0087.
+
+Goal: make the phone controller comfortable for a full co-op session. Movement
+stays under the left thumb; Jump and actions sit under the right thumb; Dash is
+a double-tap movement gesture with a visible indicator and keyboard-slot
+fallback;
+dialogue appears automatically when the owned conversation needs input; and
+abilities appear only when unlocked and confirm their result.
+
+Non-goals: no new verbs, abilities, puzzles, levels, art, audio, or save fields;
+no dialogue text or world state on the phone; no phone-side prediction; no
+replacement of keyboard co-op; no remote guest; no gesture beyond Dash in this
+phase.
+
+Files:
+
+- `src/controller/controller-ui.ts`
+- `src/controller/touch-layout.ts`
+- `src/controller/touch-gestures.ts` (new, pure double-tap detector)
+- `src/controller/controller.css`
+- `src/controller/main.ts`
+- `src/controller/controller-session.ts`
+- `src/net/protocol.ts`
+- `src/net/session.ts`
+- `worker/src/room-core.ts`
+- `src/game/boot.ts`
+- `src/game/runtime.ts`
+- `src/ui/game-ui.ts`
+- `src/ui/feedback-renderer.ts`
+- `src/ui/styles.css`
+- `tests/controller/*`
+- `tests/net/*`
+- `tests/worker/*`
+- `e2e/controller.spec.ts`
+- `docs/adr-controller/*`, `docs/m4/*`, `IMPLEMENTATION.md`
+
+Tasks:
+
+1. Accept ADR-0083–0087 and add them to the controller ADR index. Add
+   “Later decision” notes to ADR-0068 and ADR-0069 where appropriate. Do not
+   rewrite accepted record bodies.
+2. Rebuild the controller board per ADR-0083:
+   - left thumb zone: left/right movement only;
+   - right thumb zone: Jump (largest, bottom-right), Interact, Scan, role verb,
+     conditional Throw;
+   - no Dash button; leave the space free for larger Jump/Interact;
+   - 56 CSS px minimum targets, 10–12 px gaps, safe-area insets;
+   - stable positions; no context remapping;
+   - optional left-handed mirror and optional slide-between-directions.
+3. Add the double-tap Dash gesture per ADR-0087:
+   - add a pure `src/controller/touch-gestures.ts` detector with injected
+     clock, tap/double-tap thresholds, same-button rule, pointer-slop limit,
+     and reset API;
+   - listen only on the ◀ / ▶ button hit areas; the surrounding movement zone
+     does not trigger Dash;
+   - detect on the controller page, not the host;
+   - send one `NetInput` snapshot with `moveX` and `dash: true`; clear the
+     pulse after that send;
+   - suppress recognition when Dash is locked, paused, in choice mode, or the
+     board is disabled;
+   - add the `» DASH` indicator states: hidden/locked, ready, first-tap `2×`,
+     recognized, cooldown, rejected, disabled;
+   - add the one-time coach mark, persistent “Hold to move · Double-tap to
+     dash” hint, and controls sheet;
+   - make the host resolve dash direction from `moveX` before applying the
+     dash, with tests for both directions.
+4. Add the control-state channel per ADR-0084:
+   - define `ControlMode`, `ControlVerb`, `ControllerControlMessage`, and
+     `ControllerActionMessage`;
+   - validate closed vocabularies, choice counts, selection, size, and rate;
+   - bump `PROTOCOL_VERSION` and update fixtures/build assumptions;
+   - add host session APIs to send descriptors and action results;
+   - relay host messages only to the bound slot in the Durable Object;
+   - reject controller-originated `control`/`action` messages;
+   - ignore malformed descriptors without breaking input;
+   - resend the current descriptor on reconnect, resume, and slot bind.
+5. Implement dialogue control per ADR-0085:
+   - remove the manual Dialogue toggle and nine-button panel;
+   - add `talk` mode: Continue/Back, movement and Jump remain, Dash gesture
+     remains enabled;
+   - add `choice` mode: exactly `choiceCount` numbered buttons plus Back;
+   - hide or disable Jump and disable/reset the Dash gesture while the owner is
+     frozen;
+   - send `ui.choose = N` for choice N; keep `interact` as confirm;
+   - add number badges, owner emphasis, and selected-state clarity to the
+     shared-screen choice renderer;
+   - restore `explore` mode on close, cancel, completion, and level change.
+6. Implement ability disclosure per ADR-0086:
+   - derive the visible verb set from `abilitiesFor(slot)` and the active mode;
+   - enable the Dash gesture only after `signal-dash` unlocks;
+   - hide Throw unless the player is carrying;
+   - send `activeVerb` from the nearest actionable target; dash emphasis goes
+     to the movement zone/indicator;
+   - send `action` results with closed reasons and optional `retryAfterMs`;
+   - add Dash cooldown and action-result feedback on the movement-zone Dash
+     indicator;
+   - add the local haptics toggle;
+   - show P1/P2 ability differences without dead buttons.
+7. Make the shared HUD input-aware:
+   - show keyboard keys only for keyboard slots;
+   - show action names for phone slots in the control cards and prompt;
+   - keep locked keyboard abilities dimmed as today.
+8. Tests:
+   - unit: touch model, layout geometry, gesture timing/direction, mode
+     switching, choice mapping, verb filtering, action result mapping, protocol
+     validation;
+   - integration: host → DO → controller targeting, reconnect resend, slot
+     isolation, malformed descriptor fallback, no controller-originated
+     control messages, deterministic dash direction;
+   - browser: Jump is on the right; move + Jump works; double-tap Dash works
+     left and right; single taps do not dash; dialogue auto-switches; choice N
+     selects N; only unlocked verbs appear; Dash cooldown and action feedback;
+     no canvas/assets/dialogue text on the controller page;
+   - regression: K/K, solo, pause, reconnect, keyboard fallback, existing
+     controller and e2e suites.
+9. Update docs: controller ADR index, ADR-0068/0069 later-decision notes, M4
+   README phase table/status/deliverables, this plan, `IMPLEMENTATION.md`, and
+   the Phase 7 playtest note.
+
+Exit criteria:
+
+- Jump is bottom-right; movement is left-only; move + Jump works with two
+  thumbs.
+- Dash is a double-tap movement gesture in both directions, with no default
+  Dash button; a single tap does not dash; the host dashes in the tapped
+  direction.
+- The Dash indicator communicates locked/ready/first-tap/recognized/cooldown/
+  rejected states; the coach mark and controls sheet make the gesture
+  discoverable.
+- There is no on-phone Dash button; the keyboard slot remains the documented
+  fallback for players who cannot double-tap.
+- The controller board meets the target-size and spacing floor on the target
+  phone in landscape.
+- Dialogue switches automatically within ~150 ms of the owned surface
+  starting; choice buttons match the shared-screen count; tapping N chooses N;
+  no dialogue text appears on the phone; the Dash gesture is disabled in choice
+  mode.
+- Only unlocked abilities appear; cooldown and accepted/rejected feedback are
+  visible; Throw appears only while carrying.
+- The controller falls back to the stable explore layout if no descriptor
+  arrives.
+- Keyboard/keyboard and solo behaviour are unchanged.
+- All existing tests, the new controller tests, the build, and `git diff
+  --check` pass.
+- Phase 7 records latency and manual playtest results against this final
+  layout.
+
+Risks and mitigations:
+
+| Risk | Mitigation |
+|---|---|
+| Control-state channel expands the phone boundary | Closed vocabulary; no text/world/save fields; ADR-0084 review; DOM assertions |
+| Right cluster overcrowds on small phones | Progressive disclosure; compact tier; 56 px floor; two-phone manual test |
+| Double-tap Dash fires accidentally during normal movement taps | Same-half rule, 220 ms tap cap, 12 px slop, 300 ms window; first-tap hint; test single taps |
+| Double-tap is inaccessible to some players | Accepted limitation for this phase; keyboard slot fallback; controls sheet; revisit if playtest includes motor-impaired players |
+| Dash direction differs from the tapped direction | Host resolves facing from `moveX` before dash; left/right integration tests |
+| Descriptor loss leaves the phone in the wrong mode | Same transport as input; resend on reconnect/resume; default explore fallback; `interact` confirm parity |
+| Host runtime and net layer become coupled | Build descriptors in the presentation/boot seam; `net` stays content-free |
+| Dialogue choice mapping drifts from shared screen | Single source: host sends `choices`; shared screen renders the same count; test N-to-N |
+| Gesture language grows into hidden controls | Closed set in ADR-0087; new gesture requires ADR, coach mark, legend entry, and a documented fallback |
+| Phase creeps into new mechanics | Non-goals: no new verbs, cooldowns, ranges, or content |
 
 ### Phase 7 — Latency, game feel, playtest, and close-out
 
@@ -757,10 +1080,10 @@ Tasks:
    - two phones, one phone, keyboard fallback;
    - disconnect/reconnect, host hidden, host leaves;
    - wake lock/screen lock, orientation, accessibility;
-   - free-tier usage over a 30-minute session.
+   - free-tier usage over several full 5-minute sessions.
 5. Update docs:
-   - ADR statuses;
-   - M4 README ladder and DoD;
+   - ADR statuses, including ADR-0081;
+   - M4 README same-room scope and DoD;
    - architecture/failure/concurrency/module-boundary/interface amendments;
    - README/IMPLEMENTATION status after acceptance;
    - playtest note with measurements and known limitations.
@@ -783,9 +1106,17 @@ Exit criteria:
 | K/K regression | Existing keyboard tests | Host runtime | Existing E2E | Yes |
 | K/P | Arbiter | Fake transport | Touch context | Yes |
 | P/K | Arbiter | Fake transport | Touch context | Yes |
-| P/P | Arbiter | Fake transport | Two touch contexts | Yes |
+| P/P | Arbiter | Fake transport | Two separate device contexts | Yes |
 | Slot ownership | Yes | Yes | Yes | — |
+| Signed ticket / edge admission | Yes | Yes | Yes | — |
+| Device ID / three-socket cap | Yes | Yes | Yes | Yes |
+| Quota, session, message caps | Yes | Yes | — | Free-tier math |
 | Edge coalescing | Yes | Yes | — | — |
+| Thumb-zone layout | Yes | — | Yes | Yes |
+| Double-tap dash timing/direction | Yes | Yes | Yes | Yes |
+| Dialogue auto modes / N-to-N | Yes | Yes | Yes | Yes |
+| Ability disclosure / feedback | Yes | Yes | Yes | Yes |
+| No dialogue text on phone | — | Yes | DOM assertion | Yes |
 | Protocol/version | Yes | Yes | Yes | — |
 | QR/code join | URL parser | Session | Yes | Yes |
 | Disconnect/reconnect | — | Yes | Yes | Yes |
@@ -794,17 +1125,16 @@ Exit criteria:
 | Host leaves | — | Yes | Yes | Yes |
 | Security/rate/Origin | Yes | Yes | Yes | — |
 | No game state on phone | — | Yes | DOM/bundle check | Yes |
+| Online placeholder absent | — | — | Hub absence check | Yes |
 | Latency/feel | Physics tests | — | Instrumented | Yes |
 | Existing suites | `npm test` | — | `smoke:e2e` | — |
 
-New provisional commands:
+Controller commands:
 
 ```sh
 npm run test:controller
 npm run smoke:controller
 ```
-
-Names are provisional; keep them separate from the existing suites until Phase 3.
 
 ---
 
@@ -851,8 +1181,19 @@ Names are provisional; keep them separate from the existing suites until Phase 3
 - [ ] Controller page loads no game content.
 - [ ] Origin allowlist includes Pages and localhost only.
 - [ ] Message size, input rate, and room membership are capped.
+- [ ] A QR join requires a valid signed room ticket; invalid, expired, or
+      wrong-room tickets are rejected before a room DO is created.
+- [ ] A manual six-character join checks the gate's active-room registry and
+      never creates a room for an inactive code.
+- [ ] Device tokens are server-issued; one device owns one slot, the host device
+      cannot be a controller, and reconnect is same-device only.
+- [ ] At most one host and two controllers are admitted before the socket is
+      accepted; a fourth device is rejected without a `101`.
+- [ ] Sessions are capped at 5 minutes and 12,000 messages; controller messages
+      are capped at 20/s across all message types.
+- [ ] Workers Logs is disabled and no request/message path calls `console.log`.
 - [ ] Room code is a bearer token, not identity.
-- [ ] No input payloads, evidence, or PII are logged.
+- [ ] No input payloads, evidence, device IDs, or PII are logged.
 - [ ] Evidence export remains host-only; controller input is not treated as
       trusted assessment.
 - [ ] Version/build mismatch rejects before input.
@@ -864,17 +1205,21 @@ Names are provisional; keep them separate from the existing suites until Phase 3
 
 | Document | Change |
 |---|---|
-| `docs/adr-controller/README.md` | New domain index and scope |
-| ADR-0066–0069 | New proposed records |
-| `docs/m4/README.md` | M4.0a ladder, scope, deliverables, DoD, risks, verification |
-| `docs/adr-online/README.md` | Cross-reference the controller phase; no rewrite of accepted records |
-| `docs/adr-hub/README.md` | Local co-op phone setup; online block remains M4.0b |
+| `docs/adr-controller/README.md` | Active controller domain index and scope, including ADR-0081 |
+| ADR-0066–0069 | Accepted phone-controller records |
+| ADR-0081 | Same-room, shared-screen product boundary; no remote guest |
+| ADR-0082 | Demo quota guard, signed room tickets, device admission, and three-socket cap |
+| ADR-0083–0087 | Thumb-zone layout, control descriptors, dialogue modes, ability disclosure, and gesture vocabulary |
+| `docs/m4/README.md` | M4.0a-only scope, deliverables, DoD, risks, verification; M4.0b/M4.1 historical appendix |
+| `docs/adr-online/README.md` | Historical status; no rewrite of record bodies |
+| `docs/adr-hub/README.md` | Local co-op phone setup; obsolete online block removed |
+| `docs/m1.9/remaining-work.md` | Phone-controller same-room setup; no online lobby |
 | `docs/puzzle-engine/architecture.md` | Optional controller input path; authority unchanged |
 | `docs/puzzle-engine/contracts/failure-semantics.md` | Controller disconnect/fallback |
 | `docs/puzzle-engine/contracts/concurrency-topology.md` | Input arbiter and controller relay; single writer unchanged |
 | `docs/puzzle-engine/contracts/module-boundaries.md` | `net` module and controller entry boundaries |
 | `docs/puzzle-engine/contracts/interface.md` | Input-source contracts and controller page boundary |
-| `README.md`, `IMPLEMENTATION.md` | Status after implementation |
+| `README.md`, `IMPLEMENTATION.md` | Status after implementation; no online mode |
 | `docs/m4/playtest-m4.0a.md` | Latency and manual evidence |
 
 ---
@@ -885,16 +1230,17 @@ Names are provisional; keep them separate from the existing suites until Phase 3
 |---|---|
 | Wi-Fi AP client isolation blocks phone↔laptop | Cloud WSS is the default; local relay is optional; add a connection test |
 | Cloud latency is noticeable | Measure; use local relay if needed; keep keyboard fallback; add coyote/buffer |
-| Touch ergonomics are poor for platforming | Large fixed targets, contextual verbs, haptics, playtest, allow keyboard fallback |
+| Touch ergonomics are poor for platforming | Thumb-zone layout, large fixed targets, double-tap dash, progressive verbs, haptics, playtest, allow keyboard fallback |
+| Double-tap Dash is inaccessible to some players | Documented limitation; the keyboard slot is the fallback; revisit after a wider playtest |
 | Phone screen sleeps and drops the socket | Wake lock when available; reconnect; pause; clear guidance |
 | Two-slot hub is confusing | K/K default, per-slot QR/status, explicit ready/error copy, "use keyboard" escape |
 | Input ownership bugs | Pure arbiter tests; discard on every source change; no double sampling |
 | TV/projector display latency dominates | Game mode; keyboard baseline; separate display from network in measurements |
-| Scope creeps into M4.0b | Non-goals: no snapshots, no phone rendering, no prediction |
+| Scope creeps into remote online co-op | ADR-0081: no snapshots, no guest rendering, no prediction, no fourth device |
 | Controller can spoof actions | Slot-bound connection; host allowlist; ownership validation |
 | Controller page is stale after deploy | Build ID check; reload message; no degraded join |
 | Worker/DO deployment fails | `wrangler deploy --dry-run`; local Worker tests; no game loop in DO |
-| Free-tier limits | Input-only traffic; heartbeat; measure a 30-minute session |
+| Free-tier limits | ADR-0082: daily session/attempt/device budgets, 5-minute sessions, 12k room message cap, 20/s controller rate, signed tickets and device admission, Workers Logs disabled |
 | Evidence trust is overstated | Host-only export; document that controller input is not graded assessment |
 | Keyboard regression | Keyboard-only path stays default; dedicated regression suite at every phase |
 | Phase 1/2 code becomes framework-coupled | Pure TS contracts; no Phaser/DOM in arbiter/protocol; fake transport tests |
@@ -905,7 +1251,8 @@ Names are provisional; keep them separate from the existing suites until Phase 3
 
 M4.0a is done when:
 
-1. ADR-0066–0069 are accepted and indexed; this plan is approved.
+1. ADR-0066–0069, ADR-0081, ADR-0082, and ADR-0083–0087 are accepted and
+   indexed; this plan is approved.
 2. Keyboard/keyboard local co-op is unchanged, is the default, and passes the
    existing regression suite.
 3. Keyboard/phone, phone/keyboard, and phone/phone each start from the hub and
@@ -926,12 +1273,21 @@ M4.0a is done when:
     target is met or the chosen fallback is documented.
 11. Coyote time and jump buffer are implemented and tested without changing
     keyboard/solo correctness.
-12. Unit, integration, browser, and manual tests pass, including the existing
+12. The obsolete online mode, panel, and catalog flag are removed; the hub
+    advertises Solo and Local co-op only.
+13. Unit, integration, browser, and manual tests pass, including the existing
     `npm test`, pack validation/smoke, `smoke:e2e`, build, and `git diff --check`.
-13. Docs are updated: controller ADR index, M4 README, architecture/contracts,
+14. Docs are updated: controller ADR index, M4 README, architecture/contracts,
     README/IMPLEMENTATION status, playtest note.
-14. The multiplayer ladder is explicit: M4.0a complete; M4.0b and M4.1 remain
-    future phases.
+15. The multiplayer scope is explicit: M4.0a is complete; M4.0b/M4.1 are not
+    planned (ADR-0081).
+16. The demo quota guard is enforced and configurable: signed room tickets,
+    server-issued device IDs, one host plus two controllers, 5-minute sessions,
+    room message and controller rate caps, and Workers Logs disabled
+    (ADR-0082).
+17. The controller layout, double-tap Dash gesture, dialogue modes, and ability
+    affordances meet ADR-0083–0087; the Phase 7 playtest is run against that
+    layout.
 
 ---
 
@@ -941,7 +1297,7 @@ M4.0a is done when:
 |---|---|---|
 | 1 | QR per phone slot or one QR plus a slot picker? | One QR per slot; clearer for a demo |
 | 2 | Remember the last input plan or reset to K/K on return? | Reset to K/K; less surprise |
-| 3 | Show dialogue choices on the phone or keep them on the shared screen? | Buttons only on the phone; shared screen for reading |
+| 3 | Show dialogue choices on the phone or keep them on the shared screen? | Shared screen for text; phone gets mode, choice count, and numbered buttons only (ADR-0085) |
 | 4 | Allow mid-run keyboard↔phone hot-swap beyond disconnect fallback? | No; only the pause/disconnect fallback |
 | 5 | Build a local relay now? | No; cloud-first, add only if measurements require it |
 | 6 | Allow pause from the phone? | No; host-only in M4.0a |
@@ -950,13 +1306,18 @@ M4.0a is done when:
 | 9 | Should the controller page show RTT? | Yes, dev/optional; useful evidence and support |
 | 10 | Should the host show a per-slot "connected" HUD? | Yes, in the hub and pause overlay; no gameplay HUD clutter |
 
+The same-room decision is closed: no remote guest, no fourth device, no M4.0b or
+M4.1 (ADR-0081).
+
 ---
 
 ## 14. Traceability
 
 | Decision | ADR | Phases | Verification |
 |---|---|---|---|
-| Phone controller is phase 1 of M4 | 0066 | 0, 7 | Scope/DoD review; no snapshot messages |
+| Phone controller is the complete multiplayer scope | 0066, 0081 | 0, 5.5, 7 | Scope/DoD review; no snapshot messages |
+| Multiplayer is same-room and shared-screen | 0081 | 0, 5.5, 6 | Hub has no online mode/panel; no fourth device |
+| Online placeholder and catalog flag removed | 0081 | 5.5 | Hub/catalog absence tests |
 | Keyboard co-op remains default | 0066, 0067 | 1, 4, 6 | Existing suite; K/K regression |
 | P1/P2 are independent input slots | 0067 | 1, 4, 6 | Arbiter unit tests; four-plan integration |
 | Host is authority/display, not a player | 0067 | 1, 4, 6 | P/P session with host keyboard only for host actions |
@@ -967,35 +1328,53 @@ M4.0a is done when:
 | Reconnect and keyboard fallback | 0067, 0068 | 2, 4, 6 | Failure tests; manual matrix |
 | Latency budget and no prediction | 0069 | 7 | Playtest p50/p95; physics tests |
 | Coyote time and jump buffer | 0069 | 7 | Physics/input-feel tests |
+| Signed room ticket and edge admission | 0082 | 3.5 | Router tests; invalid joins never call `ROOMS` |
+| Device IDs and three-socket cap | 0082 | 3.5 | DO admission tests; separate-device browser smoke |
+| Daily budgets, session/message caps, logs off | 0082 | 3.5 | Gate/config tests; `wrangler deploy --dry-run`; free-tier math |
+| Thumb-zone layout and right-thumb jump | 0083 | 6.5 | Geometry/browser tests; move + Jump manual test |
+| Ephemeral control descriptors | 0084 | 6.5 | Protocol/DO/session tests; no text/world fields |
+| Auto dialogue and N-to-N choices | 0085 | 6.5 | Runtime/controller/browser tests; no phone text |
+| Progressive abilities and result feedback | 0086 | 6.5 | Verb-filter, cooldown, and action-result tests |
+| Double-tap Dash gesture | 0087 | 6.5 | Gesture timing/direction tests; coach mark/controls sheet |
 | Cloud-first, local relay optional | 0066, 0068, 0069 | 0, 3, 7 | Deployment check; measurement decision |
 
 ---
 
 ## 15. Out of scope
 
-- M4.0b guest renderer, world/UI snapshots, interpolation, guest save/evidence.
-- M4.1 full-pack online and guest gate/debrief.
+- Remote guest co-op, a fourth device, or M4.0b/M4.1 (ADR-0081).
+- Guest renderer, world/UI snapshots, interpolation, prediction, guest
+  save/evidence.
+- Full-pack online and guest gate/debrief.
 - Phone-rendered game view, video streaming, spectator view.
 - Bluetooth, native apps, or a phone as a Bluetooth HID device.
 - Accounts, matchmaking, lobbies, chat, voice, profiles, PII.
 - Third player, spectators, or a controller+guest mix for one slot.
+- Keeping the obsolete online mode/panel or `online` catalog flag.
 - Trusted graded assessment.
 - New content, puzzles, levels, abilities, art, audio, or save fields.
 - Gamepad support (the input seam may accept it later, but it is not M4.0a).
 
 ---
 
-## 16. First action after approval
+## 16. Next action
 
-Phase 1 starts with the pure input contract and arbiter only:
+Phases 1–6 and Phase 6.5 are implemented, Phase 5.5 is complete, Phase 3.5
+(ADR-0082) is implemented, and the Cloudflare deployment spike passed. The next
+action is Phase 7:
 
-- no `worker/` directory;
-- no network client;
-- no hub UI;
-- no controller page;
-- no gameplay behavior change.
+1. Add controller/host latency instrumentation for the playtest HUD.
+2. Add coyote time and jump buffering without changing keyboard/solo behavior.
+3. Run the latency and manual input matrix on the stable GitHub Pages URL.
+4. Record the playtest note and close out the active documentation.
 
-The first reviewable increment is a keyboard-only regression that passes
-unchanged, plus pure arbiter tests for K/K, K/P, P/K, and P/P. If that increment
-cannot keep keyboard behavior identical, stop and fix the seam before adding
-transport.
+Phase 6 is the explicit-Start boundary: the hub creates/reuses the host session
+before Start, K/K remains network-free, and controller readiness only enables
+Start. Keyboard/K keyboard co-op must remain unchanged throughout.
+
+Production deployment is GitHub Actions only: `.github/workflows/deploy-pages.yml`
+builds with `VITE_NET_URL`/`VITE_BUILD_ID` and publishes GitHub Pages;
+`.github/workflows/deploy-worker.yml` deploys the Worker/Durable Objects with
+`DEMO_SIGNING_SECRET` supplied from GitHub Actions. The checked-in `ALLOWED_ORIGINS` includes
+`https://snorre98.github.io` and local development only. Do not use hash preview
+origins for phone pairing, and do not deploy with manual Wrangler commands.

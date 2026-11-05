@@ -14,6 +14,7 @@ export {
   Ownership,
   Presentation,
   Priority,
+  Placement,
   SourceRef,
   State,
   Visual,
@@ -47,6 +48,15 @@ export {
   type EffectPresetContext,
   type EffectPresetId,
 } from "./effect-presets";
+export {
+  READOUT_PRESENTATIONS,
+  WORLD_STATE_PRESENTATIONS,
+  defaultPlacement,
+  isInspectableKind,
+  isWorldAnchor,
+  visualKind,
+  type FeedbackVisualKind,
+} from "./placement";
 export {
   CAPABILITY_DEFAULTS,
   FEEDBACK_CAPABILITIES,

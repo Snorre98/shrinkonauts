@@ -1,0 +1,52 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "shrinkonauts-rooms",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-30",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGINS": "http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:4173,http://localhost:4173,https://snorre98.github.io",
+    "DEMO_MAX_SESSIONS_PER_DAY": "50",
+    "DEMO_MAX_CONCURRENT_ROOMS": "2",
+    "DEMO_MAX_WS_ATTEMPTS_PER_DAY": "5000",
+    "DEMO_MAX_DEVICE_ISSUES_PER_DAY": "500",
+    "DEMO_MAX_SESSION_MINUTES": "5",
+    "DEMO_MAX_MESSAGES_PER_ROOM": "12000",
+    "DEMO_MAX_CONTROLLER_MESSAGES_PER_SECOND": "20",
+    "DEMO_MAX_HOST_MESSAGES_PER_SECOND": "60",
+    "DEMO_MAX_JOINS_PER_ROOM": "20",
+    "DEMO_RECONNECT_GRACE_SECONDS": "60",
+    "DEMO_HANDSHAKE_TIMEOUT_SECONDS": "10",
+    "DEMO_READY_TIMEOUT_SECONDS": "15",
+    "DEMO_DEVICE_TOKEN_TTL_HOURS": "24",
+    "DEMO_IP_WS_ATTEMPTS_PER_MINUTE": "30",
+    "DEMO_IP_SESSION_ATTEMPTS_PER_MINUTE": "10",
+    "DEMO_IP_DEVICE_ISSUES_PER_MINUTE": "10",
+    "DEMO_ALLOW_HOST_DEVICE_AS_CONTROLLER": "false"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "ROOMS",
+        "class_name": "GameRoom"
+      },
+      {
+        "name": "DEMO_GATE",
+        "class_name": "DemoGate"
+      }
+    ]
+  },
+  "exports": {
+    "GameRoom": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    },
+    "DemoGate": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  },
+  "observability": {
+    "enabled": false
+  }
+}

@@ -20,8 +20,10 @@ export { mountHubUi } from "./hub-ui";
 export type { HubUi, HubUiOptions } from "./hub-ui";
 export type {
   HubCallbacks,
+  HubControllerSlotView,
+  HubControllerView,
+  HubInputSource,
   HubMode,
-  HubOnlineView,
   HubPackView,
   HubPhase,
   HubView,
@@ -31,6 +33,7 @@ export type {
   GameUiCallbacks,
   GameUiDiagnostics,
   GameUiOptions,
+  InputSourceKind,
 } from "./game-ui";
 export type {
   BlueprintComponentView,
@@ -39,6 +42,7 @@ export type {
   ConceptView,
   DebriefView,
   GateView,
+  HostRunOverlayView,
   InteractionView,
   MapView,
   PlayerView,

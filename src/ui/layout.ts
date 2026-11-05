@@ -1,9 +1,16 @@
-import type { FeedbackOwner, FeedbackPresentation } from "../feedback";
+import type {
+  FeedbackOwner,
+  FeedbackPlacement,
+  FeedbackPresentation,
+  FeedbackVisualKind,
+} from "../feedback";
 import type { CanvasRect, ScreenAnchor } from "./anchors";
 
 export interface LayoutItem {
   id: string;
   presentation: FeedbackPresentation;
+  placement: FeedbackPlacement;
+  kind: FeedbackVisualKind;
   owner: FeedbackOwner;
   priority: number;
   width: number;
@@ -17,6 +24,7 @@ export interface LayoutBox {
   x: number;
   y: number;
   docked: boolean;
+  visible: boolean;
 }
 
 export interface SafeArea {
@@ -50,12 +58,53 @@ function worldPresentation(presentation: FeedbackPresentation): boolean {
   );
 }
 
+const COMPACT_GAP = 6;
+
 function boxFor(
   item: LayoutItem,
   viewport: { canvasRect: CanvasRect; width: number; height: number },
   safeArea: SafeArea,
 ): LayoutBox {
   const canvas = viewport.canvasRect;
+
+  if (item.kind === "marker" || item.kind === "ring") {
+    if (!item.anchor.visible || item.anchor.fallback) {
+      return {
+        id: item.id,
+        layer: "world",
+        x: 0,
+        y: 0,
+        docked: true,
+        visible: false,
+      };
+    }
+
+    const above = item.anchor.y - item.height - COMPACT_GAP;
+    const below = item.anchor.y + COMPACT_GAP;
+    const y = above >= safeArea.top ? above : below;
+    const x = clamp(
+      item.anchor.x - item.width / 2,
+      Math.max(canvas.x + safeArea.left, safeArea.left),
+      Math.min(
+        canvas.x + canvas.width - safeArea.right - item.width,
+        viewport.width - safeArea.right - item.width,
+      ),
+    );
+    const visible =
+      y + item.height <= viewport.height - safeArea.bottom &&
+      x + item.width >= safeArea.left &&
+      x <= viewport.width - safeArea.right;
+
+    return {
+      id: item.id,
+      layer: "world",
+      x,
+      y,
+      docked: false,
+      visible,
+    };
+  }
+
   const fallback = item.anchor.layer === "hud" || item.anchor.fallback;
 
   if (fallback) {
@@ -67,6 +116,7 @@ function boxFor(
         x: viewport.width / 2 - item.width / 2,
         y: viewport.height - safeArea.bottom - item.height,
         docked: true,
+        visible: true,
       };
     }
     if (slot === "left" || slot === "right") {
@@ -79,6 +129,7 @@ function boxFor(
             : viewport.width - safeArea.right - item.width,
         y: safeArea.top,
         docked: true,
+        visible: true,
       };
     }
     return {
@@ -87,6 +138,7 @@ function boxFor(
       x: viewport.width / 2 - item.width / 2,
       y: safeArea.top,
       docked: true,
+      visible: true,
     };
   }
 
@@ -116,6 +168,7 @@ function boxFor(
     x: clamp(desiredX, minimumX, maximumX),
     y: clamp(desiredY, minimumY, maximumY),
     docked: !item.anchor.visible,
+    visible: true,
   };
 }
 
@@ -129,8 +182,10 @@ function overlaps(a: LayoutBox, aw: number, ah: number, b: LayoutBox, bw: number
 }
 
 /**
- * Deterministic layout for a frame's surfaces/cues. Stacking is grouped by
- * presentation + anchor key; overlapping P1/P2 captions get separate lanes.
+ * Deterministic layout for a frame's surfaces/cues. Compact world markers and
+ * rings stack by anchor key; cards stack by presentation + anchor; HUD items
+ * stack by slot. A final pass shifts compact world items away from overlapping
+ * cards, chips, and each other. Overlapping P1/P2 captions get separate lanes.
  */
 export function layoutSurfaces(
   items: readonly LayoutItem[],
@@ -145,10 +200,13 @@ export function layoutSurfaces(
   const groups = new Map<string, LayoutItem[]>();
 
   for (const item of ordered) {
+    const compactWorld = item.kind === "marker" || item.kind === "ring";
     const world = worldPresentation(item.presentation);
-    const key = world
-      ? `world:${item.presentation}:${item.anchor.key}`
-      : `hud:${item.anchor.slot ?? "top"}`;
+    const key = compactWorld
+      ? `world:compact:${item.anchor.key}`
+      : world
+        ? `world:card:${item.presentation}:${item.anchor.key}`
+        : `hud:${item.anchor.slot ?? "top"}`;
     const group = groups.get(key);
     if (group) group.push(item);
     else groups.set(key, [item]);
@@ -157,6 +215,9 @@ export function layoutSurfaces(
   for (const group of groups.values()) {
     const caption = group[0]?.presentation === "playerCaption";
     const bubble = group[0]?.presentation === "speechBubble";
+    const compact = group[0]
+      ? group[0].kind === "marker" || group[0].kind === "ring"
+      : false;
     const hud = group[0] ? !worldPresentation(group[0].presentation) : false;
     const placed = group
       .map((item) => ({
@@ -172,7 +233,7 @@ export function layoutSurfaces(
 
     for (const [index, entry] of placed.entries()) {
       const offset = index * (entry.item.height + 8);
-      const desiredY = bubble
+      const desiredY = bubble || compact
         ? entry.box.y - offset
         : caption || hud
           ? entry.box.y + offset
@@ -224,6 +285,57 @@ export function layoutSurfaces(
         );
       }
     }
+  }
+
+  // Compact world items are small but can share an anchor (a timer ring on a
+  // gate) or sit near each other. Resolve remaining overlaps against every
+  // visible card, chip, and compact item.
+  const sizeById = new Map(
+    items.map((item) => [
+      item.id,
+      { width: item.width, height: item.height },
+    ]),
+  );
+  const compactItems = ordered.filter(
+    (item) => item.kind === "marker" || item.kind === "ring",
+  );
+  const compactIds = new Set(compactItems.map((item) => item.id));
+  const occupied: LayoutBox[] = [...boxes.values()].filter(
+    (box) => box.visible && !compactIds.has(box.id),
+  );
+  for (const item of compactItems) {
+    const current = boxes.get(item.id);
+    if (!current || !current.visible) continue;
+    const candidate = { ...current };
+    let attempts = 0;
+    const collides = (): boolean =>
+      occupied.some((other) => {
+        if (!other.visible) return false;
+        const size = sizeById.get(other.id) ?? { width: 0, height: 0 };
+        return overlaps(
+          candidate,
+          item.width,
+          item.height,
+          other,
+          size.width,
+          size.height,
+        );
+      });
+    while (collides() && attempts < 8) {
+      candidate.y += item.height + 4;
+      attempts += 1;
+      if (candidate.y + item.height > viewport.height - safeArea.bottom) {
+        candidate.y = safeArea.top + attempts * (item.height + 4);
+      }
+    }
+    if (
+      collides() ||
+      candidate.y + item.height > viewport.height - safeArea.bottom
+    ) {
+      candidate.visible = false;
+    }
+    boxes.set(item.id, candidate);
+    occupied.push(candidate);
   }
 
   return [...boxes.values()];

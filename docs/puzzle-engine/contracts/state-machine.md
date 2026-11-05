@@ -150,8 +150,8 @@ Invariants:
 
 | State | Meaning |
 |---|---|
-| enabled | shared cues may be buffered or spawned, shared help may be requested, and shared state surfaces/beats are visible |
-| disabled | shared cues are dropped, pending shared copies and visible shared cues are cleared, shared state surfaces and beats are filtered from the snapshot, and shared help is removed |
+| enabled | shared cues may be buffered or spawned, shared help may be requested, and shared state markers/rings/chips/beats are visible |
+| disabled | shared cues are dropped, pending shared copies and visible shared cues are cleared, shared state markers/rings/chips and beats are filtered from the snapshot, the inspect panel closes, and shared help is removed |
 
 | From | To | Trigger | Notes |
 |---|---|---|---|
@@ -161,6 +161,30 @@ Invariants:
 The setting is global and persisted. It never changes player cues, puzzle state,
 or effect timing. Hidden shared persistent surfaces remain in the director so
 their cosmetic effects keep running.
+
+### 4.2 Placements and the inspect panel
+
+| Placement | Presentation |
+|---|---|
+| world | compact marker on a physical object |
+| world | progress ring for an anchored `hudMeter` |
+| hud | compact chip for a timer without an anchor or a counter |
+| hidden | stays in the director and is omitted from the runtime snapshot |
+| hud | existing text card for help, conversations, and the inspect panel |
+
+| Inspect state | Meaning |
+|---|---|
+| closed | no `fb:inspect:*` surface exists |
+| open | one shared `anchoredPanel` surface exists at the bottom HUD slot |
+
+| From | To | Trigger | Notes |
+|---|---|---|---|
+| closed | open | marker/ring/chip click or `I` | opening another source replaces the panel |
+| open | closed | same source click, `I`, close button, source disappears, level change, conversation/help opens, or shared feedback off | no gameplay input is consumed |
+
+Idle `hudMeter` surfaces are hidden until they start. A world marker or ring
+whose anchor is off-screen is hidden; the HUD chips, blueprint, and progress
+checklist remain the fallback.
 
 ## 5. Effect lifetime
 

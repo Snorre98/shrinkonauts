@@ -78,6 +78,29 @@ describe("level feedback content", () => {
     expect(config?.nodes?.["ach-packet"]?.label).toBe("ACh packet");
   });
 
+  it("parses placement overrides for decoys and logical nodes", () => {
+    const ferry = feedback(readLevel("04-muscle-effector"))?.puzzles?.[
+      "puzzle-endplate-ferry"
+    ];
+    expect(ferry?.nodes?.["wrong-receptor"]?.placement).toBe("hidden");
+    expect(ferry?.nodes?.["response-relay"]?.placement).toBe("hidden");
+
+    const silicon = parse(
+      JSON.parse(
+        readFileSync(
+          new URL(
+            "01-interrupt-loop/level.json",
+            SILICON_LEVEL_DIR,
+          ),
+          "utf8",
+        ),
+      ),
+    ).feedback?.puzzles?.["puzzle-interrupt-loop"];
+    expect(silicon?.nodes?.["sensor-trigger"]?.placement).toBe("hidden");
+    expect(silicon?.nodes?.["controller-relay"]?.placement).toBe("hidden");
+    expect(silicon?.nodes?.["cpu-socket"]?.label).toBe("CPU socket");
+  });
+
   it("parses the authored 03 and 04 blueprints", () => {
     const nodeRun = feedback(readLevel("03-nerve-forest"))?.puzzles?.[
       "puzzle-node-run"

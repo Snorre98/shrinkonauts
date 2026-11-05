@@ -95,8 +95,7 @@
       ],
       "scanTargets": [
         "pad-terminal",
-        "scan-cleft",
-        "scan-receptor"
+        "scan-cleft"
       ],
       "mapLabels": [
         "Muscle Effector"

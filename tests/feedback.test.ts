@@ -8,8 +8,11 @@ import {
 } from "../src/puzzle";
 import {
   createFeedbackDirector,
+  defaultPlacement,
+  nodeAnchor,
   orderAndDedupe,
   projectSignal,
+  visualKind,
   type FeedbackCue,
   type FeedbackDirector,
   type FeedbackFrame,
@@ -63,6 +66,7 @@ function makeSurface(
     audience: "both",
     anchor: { kind: "hud" },
     presentation: "hudStatus",
+    placement: "hud",
     content: { text: id },
     state: "idle",
     severity: "neutral",
@@ -100,6 +104,83 @@ function makeCue(
 }
 
 describe("feedback projection", () => {
+  it("defaults physical state to world markers and hides unanchored state", () => {
+    const document = readPuzzle("03-nerve-forest");
+    const inputA = document.nodes.find((node) => node.id === "input-a");
+    const axon = document.nodes.find((node) => node.id === "axon-entry");
+    const trigger = document.nodes.find((node) => node.id === "input-a-trigger");
+    if (!inputA || !axon || !trigger) throw new Error("node fixture missing");
+
+    expect(nodeAnchor(axon)).toEqual({
+      kind: "world",
+      point: { x: 560, y: 264 },
+    });
+    expect(
+      defaultPlacement({
+        presentation: "stateSwap",
+        anchor: nodeAnchor(inputA),
+        state: "available",
+      }),
+    ).toBe("world");
+    expect(
+      defaultPlacement({
+        presentation: "stateSwap",
+        anchor: nodeAnchor(trigger),
+        state: "available",
+      }),
+    ).toBe("hidden");
+  });
+
+  it("places timers as rings when anchored and chips when unanchored", () => {
+    const document = readPuzzle("04-muscle-effector");
+    const timer = document.nodes.find((node) => node.id === "ca-timer");
+    if (!timer) throw new Error("timer fixture missing");
+
+    expect(
+      defaultPlacement({
+        presentation: "hudMeter",
+        anchor: nodeAnchor(timer),
+        state: "idle",
+      }),
+    ).toBe("hidden");
+    expect(
+      defaultPlacement({
+        presentation: "hudMeter",
+        anchor: nodeAnchor(timer),
+        state: "progress",
+      }),
+    ).toBe("world");
+    expect(
+      defaultPlacement({
+        presentation: "hudMeter",
+        anchor: { kind: "hud", slot: "left" },
+        state: "progress",
+      }),
+    ).toBe("hud");
+    expect(
+      defaultPlacement({
+        presentation: "tracker",
+        anchor: { kind: "hud", slot: "left" },
+        state: "idle",
+      }),
+    ).toBe("hud");
+  });
+
+  it("maps placements to marker, ring, chip, and card forms", () => {
+    expect(visualKind({ presentation: "stateSwap", placement: "world" })).toBe(
+      "marker",
+    );
+    expect(visualKind({ presentation: "hudMeter", placement: "world" })).toBe(
+      "ring",
+    );
+    expect(visualKind({ presentation: "hudMeter", placement: "hud" })).toBe(
+      "chip",
+    );
+    expect(visualKind({ presentation: "speechBubble", placement: "world" })).toBe(
+      "card",
+    );
+  });
+
   it("projects the initial 03 surfaces as a stable golden", () => {
     const document = readPuzzle("03-nerve-forest");
     const director = createFeedbackDirector();

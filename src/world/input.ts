@@ -1,4 +1,8 @@
 import Phaser from "phaser";
+import type {
+  HostActions,
+  PlayerFrameInput,
+} from "./intent-source";
 import type { PlayerId, PlayerIntent } from "./simulation";
 import type { PlayerUiActions, RuntimeInput } from "./runtime-port";
 
@@ -35,6 +39,7 @@ export class KeyboardIntentSource {
   private readonly pauseKey: Phaser.Input.Keyboard.Key;
   private readonly muteKey: Phaser.Input.Keyboard.Key;
   private readonly toggleP2Key: Phaser.Input.Keyboard.Key;
+  private readonly inspectKey: Phaser.Input.Keyboard.Key;
   private readonly navState: Record<
     PlayerId,
     { up: boolean; down: boolean }
@@ -117,6 +122,7 @@ export class KeyboardIntentSource {
     this.pauseKey = latch(plain(Phaser.Input.Keyboard.KeyCodes.ESC));
     this.muteKey = latch(plain(Phaser.Input.Keyboard.KeyCodes.M));
     this.toggleP2Key = latch(plain(Phaser.Input.Keyboard.KeyCodes.P));
+    this.inspectKey = latch(plain(Phaser.Input.Keyboard.KeyCodes.I));
   }
 
   /** Drops latched actions when a text field takes focus. */
@@ -139,22 +145,36 @@ export class KeyboardIntentSource {
   }
 
   sample(): FrameInput {
-    const p1Actions = this.samplePlayerActions("p1");
-    const p2Actions = this.samplePlayerActions("p2");
+    const p1 = this.samplePlayer("p1");
+    const p2 = this.samplePlayer("p2");
     return {
       intents: {
-        p1: this.samplePlayer(this.keys.p1),
-        p2: this.samplePlayer(this.keys.p2),
+        p1: p1.intent,
+        p2: p2.intent,
       },
       actions: {
-        p1: p1Actions,
-        p2: p2Actions,
-        map: this.consume(this.mapKey),
-        log: this.consume(this.logKey),
-        pause: this.consume(this.pauseKey),
-        mute: this.consume(this.muteKey),
-        toggleP2: this.consume(this.toggleP2Key),
+        p1: p1.actions,
+        p2: p2.actions,
+        ...this.sampleHost(),
       },
+    };
+  }
+
+  samplePlayer(id: PlayerId): PlayerFrameInput {
+    return {
+      intent: this.sampleIntent(this.keys[id]),
+      actions: this.samplePlayerActions(id),
+    };
+  }
+
+  sampleHost(): HostActions {
+    return {
+      map: this.consume(this.mapKey),
+      log: this.consume(this.logKey),
+      pause: this.consume(this.pauseKey),
+      mute: this.consume(this.muteKey),
+      toggleP2: this.consume(this.toggleP2Key),
+      inspect: this.consume(this.inspectKey),
     };
   }
 
@@ -201,7 +221,7 @@ export class KeyboardIntentSource {
     };
   }
 
-  private samplePlayer(keys: PlayerKeys): PlayerIntent {
+  private sampleIntent(keys: PlayerKeys): PlayerIntent {
     return {
       moveX: axis(keys.left, keys.right),
       jump: this.consumeAny(keys.jumps),
