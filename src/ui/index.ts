@@ -26,6 +26,7 @@ export type {
   HubMode,
   HubPackView,
   HubPhase,
+  HubPwaView,
   HubView,
 } from "./hub-model";
 export type {

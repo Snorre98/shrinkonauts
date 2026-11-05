@@ -48,6 +48,9 @@ jobs:
           VITE_BUILD_ID: ${{ github.sha }}
         run: npm run build
 
+      - name: PWA installability and offline smoke
+        run: npm run smoke:pwa
+
       - name: Unit and integration tests
         run: npm test
 

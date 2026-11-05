@@ -34,6 +34,16 @@ export interface HubControllerView {
   slots: HubControllerSlotView[];
 }
 
+export interface HubPwaView {
+  supported: boolean;
+  online: boolean;
+  offlineReady: boolean;
+  needRefresh: boolean;
+  canInstall: boolean;
+  installed: boolean;
+  installHint: string | null;
+}
+
 export interface HubView {
   phase: HubPhase;
   title: string;
@@ -53,6 +63,7 @@ export interface HubView {
   error: string | null;
   settings: SettingsView;
   assetMode: string;
+  pwa: HubPwaView;
 }
 
 export interface HubCallbacks {
@@ -64,4 +75,6 @@ export interface HubCallbacks {
   onMute(): void;
   onTextScale(scale: number): void;
   onToggleReducedMotion(): void;
+  onInstall(): void;
+  onApplyUpdate(): void;
 }

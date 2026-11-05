@@ -36,13 +36,24 @@ jobs:
           name: dist
           path: dist
 
-      - name: Verify phone relay configuration
+      - name: Verify phone relay and PWA configuration
         run: |
           if ! grep -Rq "shrinkonauts-rooms.snosaet.workers.dev" dist/assets; then
             echo "::error::Production build is missing VITE_NET_URL"
             exit 1
           fi
           test -f dist/controller.html
+          test -f dist/sw.js
+          test -f dist/manifest.webmanifest
+          test -f dist/controller.webmanifest
+          test -f dist/icons/icon-192.png
+          test -f dist/icons/icon-512.png
+          test -f dist/icons/icon-maskable-512.png
+          test -f dist/icons/apple-touch-icon-180.png
+          if grep -q 'gdd/' dist/sw.js; then
+            echo "::error::The GDD gallery must not be precached"
+            exit 1
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

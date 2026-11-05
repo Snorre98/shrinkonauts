@@ -7,6 +7,7 @@ import type {
   HubView,
 } from "./hub-model";
 import type { PlayerId } from "./model";
+import { pwaNotice, pwaNoticeText } from "./pwa-notice";
 import { qrSvgDataUrl } from "./qr";
 import { snapTextScale, TEXT_SCALES } from "./text-scale";
 
@@ -265,6 +266,25 @@ export function mountHubUi(
   error.setAttribute("role", "alert");
   error.hidden = true;
 
+  const pwa = el("section", "hub__pwa");
+  pwa.hidden = true;
+  const pwaText = el("p", "hub__pwa-text", "");
+  pwaText.setAttribute("role", "status");
+  pwaText.setAttribute("aria-live", "polite");
+  const pwaActions = el("div", "hub__pwa-actions");
+  const installButton = button(
+    "Install app",
+    "button button--small hub__pwa-install",
+    () => callbacks.onInstall(),
+  );
+  const updateButton = button(
+    "Reload to update",
+    "button button--small hub__pwa-update",
+    () => callbacks.onApplyUpdate(),
+  );
+  pwaActions.append(installButton, updateButton);
+  pwa.append(pwaText, pwaActions);
+
   const settings = el("details", "hub__details");
   const settingsSummary = el("summary", "hub__summary", "Settings");
   const settingsBody = el("div", "hub__details-body");
@@ -329,6 +349,7 @@ export function mountHubUi(
     startSection,
     confirm,
     error,
+    pwa,
     settings,
     controls,
     footer,
@@ -565,6 +586,16 @@ export function mountHubUi(
 
     error.textContent = next.error ?? "";
     error.hidden = !next.error;
+
+    const pwaTextValue = pwaNoticeText(next.pwa);
+    const pwaNoticeValue = pwaNotice(next.pwa);
+    pwaText.textContent = pwaTextValue ?? "";
+    pwa.hidden = pwaTextValue === null;
+    pwa.dataset.notice = pwaNoticeValue ?? "";
+    updateButton.hidden = !next.pwa.needRefresh;
+    updateButton.disabled = next.busy || next.phase === "starting";
+    installButton.hidden = !next.pwa.canInstall || next.pwa.installed;
+    installButton.disabled = next.busy || next.phase === "starting";
 
     muteButton.textContent = next.settings.audio.muted ? "Unmute (M)" : "Mute (M)";
     muteButton.setAttribute("aria-pressed", String(next.settings.audio.muted));

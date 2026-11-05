@@ -346,12 +346,13 @@ Manual — M4.0a:
 - browser-touch smoke and unit/integration coverage;
 - removal of the online placeholder and catalog flag;
 - deployed Pages + Worker + DO;
+- optional installable game/controller shell with offline solo and
+  prompt-based updates (ADR-0089);
 - docs.
 
 ### M4.0a — Can defer without invalidating the architecture
 
 - local relay (only if measurements require it);
-- PWA/home-screen installation;
 - haptics on iOS (not supported);
 - private dialogue choices on the phone;
 - mid-run hot-swap beyond the disconnect fallback;

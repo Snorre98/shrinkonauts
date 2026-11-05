@@ -37,9 +37,10 @@ uses ADR-0060–0065, and controller uses ADR-0066–0069.
 The highest record in the repository was **ADR-0069** before this domain. This
 domain continues at **ADR-0070**, and ADR-0074 follows it. ADR-0075 lives in the
 art-pipeline domain but continues the same global sequence. ADR-0080 returns to
-this domain for the M3.75 in-room HUD. These are new records, not amendments. If
-the project later reconciles one global sequence, renumber before acceptance;
-accepted records are immutable.
+this domain for the M3.75 in-room HUD. ADR-0088 lives in the art-pipeline domain;
+ADR-0089 returns here for the installable PWA shell. These are new records, not
+amendments. If the project later reconciles one global sequence, renumber before
+acceptance; accepted records are immutable.
 
 ## Index
 
@@ -51,6 +52,7 @@ accepted records are immutable.
 | [0073](0073-hud-density-and-canvas-scaling.md) | HUD density presets and integer canvas scaling | Proposed |
 | [0074](0074-hero-scale-npcs-and-interactables.md) | Hero-scale NPCs and interactables | Proposed |
 | [0080](0080-hud-blueprint-and-player-colors.md) | Compact HUD blueprint, player colours, and the in-room HUD layout | Proposed |
+| [0089](0089-pwa-offline-shell-and-update-lifecycle.md) | Installable PWA shell, offline runtime, and prompt-based updates | Proposed |
 
 ## Relationship to accepted decisions
 
