@@ -433,10 +433,12 @@ function buildUsageMap(): Map<string, string[]> {
     "sprite.player.p1.jump",
     "sprite.player.p1.fall",
     "sprite.player.p1.land",
+    "sprite.player.p1.dance",
     "sprite.player.p2.walk",
     "sprite.player.p2.jump",
     "sprite.player.p2.fall",
     "sprite.player.p2.land",
+    "sprite.player.p2.dance",
   ]) {
     add(id, "player animator/runtime sheet");
   }
@@ -744,9 +746,11 @@ function buildConcepts(): GalleryItem[] {
 /* ------------------------------------------------------------------ */
 
 const CHARACTER_PREFIXES = [
+  "player-p1/dance-griddy-p1/",
   "player-p1/ludo/walk-49f-2026-10-29/",
   "player-p1/ludo/walk-36f-2026-10-29/",
   "player-p1/working/",
+  "player-p2/dance-p2/",
   "player-p2/walk/",
   "player-p2/jump/",
   "player-p2/working/",

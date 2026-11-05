@@ -20,7 +20,10 @@ import {
   PlayerAnimator,
   type PlayerAnimationAsset,
 } from "./player-animator";
-import type { PlayerClip } from "./player-animation";
+import {
+  PLAYER_WALK_SPEED_THRESHOLD,
+  type PlayerClip,
+} from "./player-animation";
 import { EntityIdleAnimator } from "./entity-idle-animator";
 import {
   ENTITY_INTERACTION_TINT,
@@ -107,6 +110,7 @@ function emptyActions(input: RuntimeInput): RuntimeInput {
         pulse: false,
         carry: false,
         throw: false,
+        dance: false,
         ui: emptyPlayerUiActions(),
       },
       p2: {
@@ -115,6 +119,7 @@ function emptyActions(input: RuntimeInput): RuntimeInput {
         pulse: false,
         carry: false,
         throw: false,
+        dance: false,
         ui: emptyPlayerUiActions(),
       },
       map: false,
@@ -248,6 +253,9 @@ export class RoomScene
           ? emptyActions(held)
           : held
         : emptyRuntimeInput();
+      if (!stepped && held) {
+        this.triggerDances(held);
+      }
       const cues = this.config.runtime.step(FIXED_STEP, input);
       for (const cue of cues) {
         this.config.onCue?.(cue);
@@ -767,6 +775,22 @@ export class RoomScene
     }
   }
 
+  /**
+   * Dance is presentation-only, so it is triggered from the sampled input edge
+   * rather than the runtime simulation. The animator state machine cancels it
+   * if the player starts moving or leaves the ground afterwards.
+   */
+  private triggerDances(input: RuntimeInput): void {
+    for (const id of PLAYER_IDS) {
+      if (!input.actions[id].dance) continue;
+      if (input.intents[id].moveX !== 0) continue;
+      const player = this.simulation.players[id];
+      if (!player.active || !player.onGround) continue;
+      if (Math.abs(player.vx) > PLAYER_WALK_SPEED_THRESHOLD) continue;
+      this.playerAnimators[id]?.requestDance();
+    }
+  }
+
   private createPlayer(id: PlayerId): void {
     const { theme, assets } = this.config;
     const asset = assets.sprite(PLAYER_ASSET_IDS[id]);
@@ -813,7 +837,7 @@ export class RoomScene
     id: PlayerId,
   ): Partial<Record<PlayerClip, PlayerAnimationAsset>> {
     const animations: Partial<Record<PlayerClip, PlayerAnimationAsset>> = {};
-    for (const clip of ["walk", "jump", "fall", "land"] as const) {
+    for (const clip of ["walk", "jump", "fall", "land", "dance"] as const) {
       const asset = this.config.assets.sprite(
         PLAYER_ANIMATION_ASSET_IDS[id][clip],
       );

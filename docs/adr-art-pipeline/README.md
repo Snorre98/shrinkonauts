@@ -18,9 +18,10 @@ accepted history.
 The repository currently has domain-local numbering collisions: M3 uses
 ADR-0047–0049, the online domain uses ADR-0047–0057, the hub domain uses
 ADR-0058–0059, the controller domain uses ADR-0066–0069, and the presentation
-domain uses ADR-0070–0074. This domain starts at **ADR-0060**. ADR-0075 is the
-last record in this domain; ADR-0076–0077 are audio records, and ADR-0078 is the
-cross-discipline asset prompt-library record in `docs/adr-assets/`. If the
+domain uses ADR-0070–0074. This domain starts at **ADR-0060**. ADR-0075 and ADR-0088 are the
+records in this domain; ADR-0076–0077 are audio records, ADR-0078 is the
+cross-discipline asset prompt-library record in `docs/adr-assets/`, and
+ADR-0087 belongs to the controller domain. If the
 project later reconciles a single global sequence, renumber these records
 before acceptance; accepted records are immutable.
 
@@ -35,6 +36,7 @@ before acceptance; accepted records are immutable.
 | [0064](adr-0064-orange-p2-suit-palette-swap.md) | Orange P2 suit and visor palette swap | Superseded by 0065 |
 | [0065](adr-0065-p2-bone-suit-joint-visor.md) | P2 bone suit and joint-cyan visor | Accepted |
 | [0075](adr-0075-hero-asset-treatment.md) | Hero-asset treatment profiles and per-class fit pipeline | Proposed |
+| [0088](adr-0088-player-28x44-masters-and-dance-emote.md) | 28×44 player masters and the dance emote | Accepted |
 
 ## Implementation status
 
@@ -47,10 +49,11 @@ before acceptance; accepted records are immutable.
   `scripts/art-variant.ts` applies the single-pass palette LUT. P2 now uses the
   approved bone-suit/joint-cyan source sheets; the palette LUT role map is in
   `art-source/characters/player-p1/working/palette.json`.
-- **ADR-0062:** POC implemented. `scripts/art-build-player.ts` reads
-  `working/clips.json`, writes runtime walk/jump/fall/land sheets, and
-  `src/world/player-animator.ts` plays them from manifest sheet metadata. The
-  full generalized descriptor/state machine remains future work.
+- **ADR-0062 / ADR-0088:** POC implemented. `scripts/art-build-player.ts`
+  reads `working/clips.json`, writes runtime walk/jump/fall/land/dance sheets
+  at a 28×44 master cell, and `src/world/player-animator.ts` plays them from
+  manifest sheet metadata. The full generalized descriptor/state machine
+  remains future work.
 - **ADR-0063:** `npm run art:build-player` writes build-time GIF and contact
   strip previews from the same runtime sheets and clip timing.
 - **Background keying:** `npm run art:key` removes flat magenta backgrounds from

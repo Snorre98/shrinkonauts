@@ -12,6 +12,7 @@ export type TouchControl =
   | "pulse"
   | "carry"
   | "throw"
+  | "dance"
   | "ui-confirm"
   | "ui-cancel"
   | "ui-up"
@@ -126,6 +127,7 @@ export class TouchInputModel {
         pulse: this.isPressed("pulse"),
         carry: this.isPressed("carry"),
         throw: this.isPressed("throw"),
+        dance: this.isPressed("dance"),
         ui: {
           ...emptyUi(),
           // Keyboard parity: interact confirms dialogue choices as well.

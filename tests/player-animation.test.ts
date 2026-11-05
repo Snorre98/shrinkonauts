@@ -88,6 +88,45 @@ describe("choosePlayerClip", () => {
     ).toBe("walk");
   });
 
+  it("keeps a playing dance clip while grounded and still", () => {
+    expect(
+      choosePlayerClip(
+        input(),
+        memory({ clip: "dance", previousOnGround: true, playing: true }),
+      ),
+    ).toBe("dance");
+  });
+
+  it("interrupts dance with walk, jump, and fall", () => {
+    expect(
+      choosePlayerClip(
+        input({ vx: 120 }),
+        memory({ clip: "dance", previousOnGround: true, playing: true }),
+      ),
+    ).toBe("walk");
+    expect(
+      choosePlayerClip(
+        input({ onGround: false, vy: -200 }),
+        memory({ clip: "dance", previousOnGround: true, playing: true }),
+      ),
+    ).toBe("jump");
+    expect(
+      choosePlayerClip(
+        input({ onGround: false, vy: 200 }),
+        memory({ clip: "dance", previousOnGround: true, playing: true }),
+      ),
+    ).toBe("fall");
+  });
+
+  it("returns to idle after the dance one-shot finishes", () => {
+    expect(
+      choosePlayerClip(
+        input(),
+        memory({ clip: "dance", previousOnGround: true, playing: false }),
+      ),
+    ).toBe("idle");
+  });
+
   it("uses idle for an inactive player", () => {
     expect(
       choosePlayerClip(

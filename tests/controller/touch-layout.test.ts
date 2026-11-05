@@ -13,6 +13,7 @@ describe("TouchInputModel", () => {
         pulse: false,
         carry: false,
         throw: false,
+        dance: false,
         ui: {
           confirm: false,
           cancel: false,
@@ -77,6 +78,7 @@ describe("TouchInputModel", () => {
     touch.press("throw", 4);
     touch.press("dash", 5);
     touch.press("interact", 6);
+    touch.press("dance", 7);
 
     const frame = touch.snapshot();
     expect(frame.intents.dash).toBe(true);
@@ -86,6 +88,7 @@ describe("TouchInputModel", () => {
       pulse: true,
       carry: true,
       throw: true,
+      dance: true,
       ui: { confirm: true },
     });
   });

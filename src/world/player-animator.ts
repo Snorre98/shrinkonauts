@@ -27,8 +27,8 @@ export interface PlayerAnimatorOptions {
  * Phaser adapter for the pure `choosePlayerClip` state machine.
  *
  * The static idle texture remains `sprite.player.p1` / `sprite.player.p2`.
- * Walk/jump/fall/land are sheet textures whose frame count, fps, and loop flag
- * come from the asset manifest.
+ * Walk/jump/fall/land/dance are sheet textures whose frame count, fps, and loop
+ * flag come from the asset manifest.
  */
 export class PlayerAnimator {
   private readonly scene: Phaser.Scene;
@@ -67,6 +67,18 @@ export class PlayerAnimator {
     }
 
     this.showIdle();
+  }
+
+  /**
+   * Starts the dance emote when its sheet is available. The caller owns the
+   * gameplay guard (active, grounded, and not moving); the animation state
+   * machine interrupts the clip if the player moves or jumps afterwards.
+   */
+  requestDance(): void {
+    if (!this.animationKeys.dance) return;
+    if (this.clip === "dance" && this.sprite.anims.isPlaying) return;
+    this.clip = "dance";
+    this.playClip("dance");
   }
 
   update(player: PlayerAnimationInput): void {

@@ -107,6 +107,7 @@ function netInput(overrides: {
       pulse: false,
       carry: false,
       throw: false,
+      dance: false,
       ui: {
         confirm: false,
         cancel: false,

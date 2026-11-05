@@ -24,6 +24,7 @@ interface ActionState {
   pulse: boolean;
   carry: boolean;
   throw: boolean;
+  dance: boolean;
   ui: PlayerUiActions;
 }
 
@@ -38,6 +39,7 @@ function emptyActions(): PlayerActionInput {
     pulse: false,
     carry: false,
     throw: false,
+    dance: false,
     ui: emptyPlayerUiActions(),
   };
 }
@@ -51,6 +53,7 @@ function actionState(input?: NetInput): ActionState {
     pulse: input?.actions.pulse ?? false,
     carry: input?.actions.carry ?? false,
     throw: input?.actions.throw ?? false,
+    dance: input?.actions.dance ?? false,
     ui: input ? { ...input.actions.ui } : emptyPlayerUiActions(),
   };
 }
@@ -86,6 +89,7 @@ function actionEdges(
     pulse: next.actions.pulse && !previous.pulse,
     carry: next.actions.carry && !previous.carry,
     throw: next.actions.throw && !previous.throw,
+    dance: next.actions.dance && !previous.dance,
     ui: {
       confirm: next.actions.ui.confirm && !previous.ui.confirm,
       cancel: next.actions.ui.cancel && !previous.ui.cancel,
@@ -107,6 +111,7 @@ function actionEdges(
     actions.pulse ||
     actions.carry ||
     actions.throw ||
+    actions.dance ||
     hasUiEdge(previous.ui, next.actions.ui);
 
   return hasActionEdge ? { intent, actions } : null;

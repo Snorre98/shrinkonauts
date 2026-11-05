@@ -93,6 +93,10 @@ npm run art:build-player -- \
   --write-runtime
 ```
 
+The commands below document the older 14×22 remaster profile. Runtime player
+builds now use a 28×44 master cell via `art:build-player --sampler downscale`
+(ADR-0088); the semantic path is retained for comparison.
+
 The semantic remaster path (optional; the POC uses the downscale + palette path):
 
 ```bash
@@ -192,7 +196,7 @@ ADR-0075 introduced per-class cells and gates:
 | `hero-interactable` | 64×64 | 64×64 |
 | `hero-prop` | 48×48 | 48×48 |
 | `ui-1x` scan | 36×36 | 36×36 |
-| `world-2x` player | 14×22 | 28×44 |
+| `world-2x` player | 28×44 | 28×44 |
 | `world-2x` decor | 18×18 | 36×36 |
 
 The fit reports in `source/reports/` record source trim, fitted size, margins,

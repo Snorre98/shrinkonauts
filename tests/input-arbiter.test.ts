@@ -45,6 +45,7 @@ function frame(
       pulse: false,
       carry: false,
       throw: false,
+      dance: false,
       ...actionFlags,
       ui: {
         ...emptyPlayerUiActions(),

@@ -204,6 +204,7 @@ function playerActions(
     pulse: false,
     carry: false,
     throw: false,
+    dance: false,
     ...overrides,
   };
 }

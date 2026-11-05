@@ -40,6 +40,7 @@ function netInput(overrides: InputOverrides = {}): NetInput {
       pulse: false,
       carry: false,
       throw: false,
+      dance: false,
       ...overrides.actions,
       ui: {
         confirm: false,
@@ -109,6 +110,7 @@ function frame(
       pulse: false,
       carry: false,
       throw: false,
+      dance: false,
       ...actions,
       ui: {
         ...emptyPlayerUiActions(),

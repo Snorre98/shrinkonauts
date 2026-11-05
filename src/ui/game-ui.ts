@@ -192,6 +192,7 @@ const PLAYER_CONTROLS: Record<"p1" | "p2", readonly HudControl[]> = {
     { label: "Pulse", keys: "F", ability: "pulse" },
     { label: "Carry", keys: "G", ability: "carry" },
     { label: "Throw", keys: "H", ability: "carry" },
+    { label: "Dance", keys: "T" },
     { label: "Choose", keys: "1–5" },
   ],
   p2: [
@@ -202,6 +203,7 @@ const PLAYER_CONTROLS: Record<"p1" | "p2", readonly HudControl[]> = {
     { label: "Scan", keys: ".", ability: "scan" },
     { label: "Carry", keys: "'", ability: "carry" },
     { label: "Throw", keys: ";", ability: "carry" },
+    { label: "Dance", keys: "L" },
     { label: "Cancel", keys: "Delete" },
   ],
 };

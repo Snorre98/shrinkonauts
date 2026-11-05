@@ -392,10 +392,10 @@ into a set; the next fixed step drains each one exactly once. This replaces
 `Phaser.Input.Keyboard.JustDown`, which clears on keyup and silently drops taps
 shorter than a render frame (including Playwright's instant presses).
 
-| Player | Move | Jump | Interact | Scan | Dash | Pulse | Carry | Throw |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| P1 | `A` / `D` | `W` or `Space` | `E` | `Q` | `Shift` | `F` | `G` | `H` |
-| P2 | `←` / `→` | `↑` | `,` | `.` | `/` | — | `'` | `;` |
+| Player | Move | Jump | Interact | Scan | Dash | Pulse | Carry | Throw | Dance |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| P1 | `A` / `D` | `W` or `Space` | `E` | `Q` | `Shift` | `F` | `G` | `H` | `T` |
+| P2 | `←` / `→` | `↑` | `,` | `.` | `/` | — | `'` | `;` | `L` |
 
 Shared: `P` join/rest P2 at a checkpoint, `Tab` map, `C` concept log, `Esc`
 pause/close, `M` mute. `Tab` is captured so focus cannot leave the game before

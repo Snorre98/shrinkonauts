@@ -5,5 +5,5 @@
   "output": "public/hub/bathroom/shared/sprites/tiny-astronaut.png",
   "width": 14,
   "height": 22,
-  "note": "Reused P1 tiny astronaut; hub.player.tinyScale is 1."
+  "note": "Reused P1 tiny astronaut downscaled from the 28x44 master; hub.player.tinyScale is 1."
 }

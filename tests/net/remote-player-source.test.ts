@@ -26,6 +26,7 @@ function netInput(overrides: InputOverrides = {}): NetInput {
       pulse: false,
       carry: false,
       throw: false,
+      dance: false,
       ...overrides.actions,
       ui: {
         confirm: false,
@@ -123,14 +124,14 @@ describe("RemotePlayerSource", () => {
     expect(source.queuedActions).toBe(0);
   });
 
-  it("latches carry, throw, and UI edges", () => {
+  it("latches carry, throw, dance, and UI edges", () => {
     const source = new RemotePlayerSource("p1");
     source.connect();
 
     source.ingest(
       0,
       netInput({
-        actions: { carry: true, throw: true },
+        actions: { carry: true, throw: true, dance: true },
         ui: {
           confirm: true,
           cancel: true,
@@ -147,6 +148,7 @@ describe("RemotePlayerSource", () => {
       pulse: false,
       carry: true,
       throw: true,
+      dance: true,
       ui: {
         confirm: true,
         cancel: true,

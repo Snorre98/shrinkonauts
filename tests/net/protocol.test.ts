@@ -24,6 +24,7 @@ function netInput(): NetInput {
       pulse: false,
       carry: false,
       throw: false,
+      dance: false,
       ui: {
         confirm: false,
         cancel: false,
@@ -149,6 +150,10 @@ describe("controller protocol", () => {
       },
       {
         ...netInput(),
+        actions: { ...netInput().actions, dance: 1 },
+      },
+      {
+        ...netInput(),
         actions: {
           ...netInput().actions,
           ui: { ...netInput().actions.ui, choose: 6 },
@@ -166,6 +171,18 @@ describe("controller protocol", () => {
         error: { code: "BAD_MESSAGE" },
       });
     }
+  });
+
+  it("treats a missing dance action as false for older controllers", () => {
+    const legacy = netInput() as unknown as {
+      actions: Record<string, unknown>;
+    };
+    delete legacy.actions.dance;
+
+    const parsed = parseNetInput(legacy);
+
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) expect(parsed.value.actions.dance).toBe(false);
   });
 
   it("rejects a disconnected slot marked ready", () => {

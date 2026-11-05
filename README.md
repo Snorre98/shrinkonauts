@@ -90,13 +90,14 @@ CI runs on Node 24 (pinned by `.nvmrc`) and installs with `npm ci`, so
 
 ## Controls
 
-| Player | Move | Jump | Interact | Scan | Dash | Pulse | Carry | Throw |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| P1 | `A` / `D` | `W` or `Space` | `E` | `Q` | `Shift` | `F` | `G` | `H` |
-| P2 | `←` / `→` | `↑` | `,` | `.` | `/` | — | `'` | `;` |
+| Player | Move | Jump | Interact | Scan | Dash | Pulse | Carry | Throw | Dance |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| P1 | `A` / `D` | `W` or `Space` | `E` | `Q` | `Shift` | `F` | `G` | `H` | `T` |
+| P2 | `←` / `→` | `↑` | `,` | `.` | `/` | — | `'` | `;` | `L` |
 
 Phone: hold the left `◀` / `▶` buttons to move, tap `Jump` with the right thumb,
-and double-tap `◀` or `▶` to dash. Dialogue switches the owning phone to
+and double-tap `◀` or `▶` to dash. Tap `Dance` to play the one-shot dance emote;
+moving or jumping interrupts it. Dialogue switches the owning phone to
 `Continue` / `Back` or numbered choices automatically; the shared screen keeps
 the dialogue text. Only unlocked verbs are shown, and throw appears while
 carrying. The `?` button opens the full controls sheet.
@@ -361,11 +362,12 @@ Phase 7 latency/game-feel measurement and the playtest record remain.
 Remote online co-op, M4.0b, and M4.1 are not planned (ADR-0081). See
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
 
-M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, and land
-sheets play in `03-nerve-forest`, P2 uses the approved bone-suit/joint-cyan
-source sheets (ADR-0065), and `npm run art:key` removes magenta backgrounds from
-the nanobanan concept plates. Entity/background animation, final art approval,
-and the full ADR-0062 descriptor remain future work.
+M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, land, and
+dance sheets play in `03-nerve-forest`, P2 uses the approved
+bone-suit/joint-cyan source sheets (ADR-0065), and `npm run art:key` removes
+magenta backgrounds from the nanobanan concept plates. Player masters are
+28×44 and display 1:1 (ADR-0088). Entity/background animation, final art
+approval, and the full ADR-0062 descriptor remain future work.
 
 M3.75 is **implemented** with automated verification: the in-room HUD uses the
 three-zone header with the compact 2–4-component puzzle blueprint, header

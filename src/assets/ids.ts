@@ -21,12 +21,14 @@ export const PLAYER_ANIMATION_ASSET_IDS = {
     jump: "sprite.player.p1.jump",
     fall: "sprite.player.p1.fall",
     land: "sprite.player.p1.land",
+    dance: "sprite.player.p1.dance",
   },
   p2: {
     walk: "sprite.player.p2.walk",
     jump: "sprite.player.p2.jump",
     fall: "sprite.player.p2.fall",
     land: "sprite.player.p2.land",
+    dance: "sprite.player.p2.dance",
   },
 } as const;
 

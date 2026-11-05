@@ -101,7 +101,7 @@ and the consolidated
   cartridges, plush, basket, cycle icons and the reused P1 tiny astronaut are
   wired final art. Towel and detergent bottles are manifest-only; the logo uses
   the approved Silkscreen CSS fallback and the toy astronaut is cut.
-- **Anatomy:** P1/P2 idle + walk/jump/fall/land sheets, Neuron Keeper static +
+- **Anatomy:** P1/P2 idle + walk/jump/fall/land/dance sheets, Neuron Keeper static +
   36-frame idle, `scan.synapse`, `scan.muscle`, `pad.dendrite`,
   `pad.terminal`, `gate.ferry`, `prop.tracer`, `pulse.terminal`, both
   receptors, the pretty nerve-forest sky, the final 04 sky, the four coloured
