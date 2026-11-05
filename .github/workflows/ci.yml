@@ -67,7 +67,7 @@ jobs:
 
       - name: Upload capture failure artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gdd-capture-failure
           path: |
@@ -78,7 +78,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload production build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
@@ -108,7 +108,7 @@ jobs:
 
       - name: Upload failure artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |
