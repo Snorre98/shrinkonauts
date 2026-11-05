@@ -61,7 +61,8 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.156.0"
-          command: deploy -c worker/wrangler.jsonc
+          workingDirectory: worker
+          command: deploy -c wrangler.jsonc
           secrets: |
             DEMO_SIGNING_SECRET
         env:
