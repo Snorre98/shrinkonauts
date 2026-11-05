@@ -90,7 +90,7 @@ describe("parsePaletteDocument", () => {
         ),
       ),
     );
-    expect(document.cell).toEqual({ width: 14, height: 22 });
+    expect(document.cell).toEqual({ width: 28, height: 44 });
     expect(document.ramps.orange).toEqual({
       shadow: "#813115",
       base: "#e59b34",

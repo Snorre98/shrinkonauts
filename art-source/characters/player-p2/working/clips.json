@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "character": "player-p2",
-  "cell": { "width": 14, "height": 22 },
+  "cell": { "width": 28, "height": 44 },
   "origin": [0.5, 1],
   "sources": {
     "walk-36": {
@@ -13,6 +13,11 @@
       "sheet": "jump/sprite-max-px-frames-36-rows-6-cols-6.png",
       "atlas": "jump/sprite-max-px-frames-36-rows-6-cols-6.json",
       "sourceFps": 12.5
+    },
+    "dance-64": {
+      "sheet": "dance-p2/sprite-max-px-frames-64-rows-8-cols-8.png",
+      "atlas": "dance-p2/sprite-max-px-frames-64-rows-8-cols-8.json",
+      "sourceFps": 17.2414
     }
   },
   "animations": {
@@ -51,6 +56,13 @@
       "fps": 30,
       "loop": false,
       "output": "player-p2-land"
+    },
+    "dance": {
+      "source": "dance-64",
+      "frames": [0, 63],
+      "fps": 30,
+      "loop": false,
+      "output": "player-p2-dance"
     }
   }
 }

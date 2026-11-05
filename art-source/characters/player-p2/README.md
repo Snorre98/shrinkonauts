@@ -10,17 +10,19 @@ bone-shadow grime. This supersedes the orange-suit P2 concept in ADR-0064.
 |---|---|---|---:|---:|---|---:|
 | `walk/` | Walk | 6 × 6 | 36 | 248 × 352 | 1488 × 2112 | 76 ms |
 | `jump/` | Jump | 6 × 6 | 36 | 304 × 528 | 1824 × 3168 | 80 ms |
+| `dance-p2/` | Dance | 8 × 8 | 64 | 336 × 448 | 2688 × 3584 | 58 ms |
 
 The jump sheet contains idle, crouch, takeoff, air, landing, and recovery.
-Runtime clips use frames 6–17 (jump), 18–27 (fall), and 28–35 (land).
+Runtime clips use frames 6–17 (jump), 18–27 (fall), and 28–35 (land). The dance
+clip uses all 64 frames as a one-shot emote.
 
 `p2.png` is a single high-resolution reference frame, not a runtime asset.
 
 ## Status
 
 - **Approved:** 2026-10-31.
-- **Runtime:** POC walk/jump/fall/land sheets are built by
-  `npm run art:build-player` and live in
+- **Runtime:** POC walk/jump/fall/land/dance sheets use a 28×44 master cell,
+  are built by `npm run art:build-player`, and live in
   `public/packs/anatomy-reflex/shared/sprites/`.
 - **Working data:** see [`working/README.md`](working/README.md).
 - **Prompt / model / seed:** TBD.

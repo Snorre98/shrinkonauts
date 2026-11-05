@@ -16,7 +16,6 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
-  copyFileSync,
   mkdirSync,
   readFileSync,
   statSync,
@@ -623,16 +622,26 @@ function processBackground(options: CliOptions): void {
   );
 }
 
-function copyTinyAstronaut(options: CliOptions): void {
+function copyTinyAstronaut(
+  options: CliOptions,
+  palette: PaletteDocument,
+): void {
   const source = "public/packs/anatomy-reflex/shared/sprites/player-p1.png";
   const output = `${SPRITES}/tiny-astronaut.png`;
-  const image = decodePng(source);
-  if (image.width !== 14 || image.height !== 22) {
-    throw new Error(`P1 sprite is ${image.width}x${image.height}, expected 14x22`);
+  const sourceImage = decodePng(source);
+  let image: RgbaImage;
+  if (sourceImage.width === 14 && sourceImage.height === 22) {
+    image = sourceImage;
+  } else if (sourceImage.width === 28 && sourceImage.height === 44) {
+    const resized = thresholdAlpha(resizeBox(sourceImage, 14, 22), 128);
+    image = quantizeImage(resized, palette, ALL_RAMPS).image;
+  } else {
+    throw new Error(
+      `P1 sprite is ${sourceImage.width}x${sourceImage.height}, expected 28x44 or 14x22`,
+    );
   }
   if (!options.noWrite) {
-    mkdirSync(dirname(output), { recursive: true });
-    copyFileSync(source, output);
+    writePng(output, image);
   }
   const report = {
     schemaVersion: 1,
@@ -641,14 +650,16 @@ function copyTinyAstronaut(options: CliOptions): void {
     output,
     width: image.width,
     height: image.height,
-    note: "Reused P1 tiny astronaut; hub.player.tinyScale is 1.",
+    note: "Reused P1 tiny astronaut downscaled from the 28x44 master; hub.player.tinyScale is 1.",
   };
   mkdirSync(REPORT_DIR, { recursive: true });
   writeFileSync(
     join(REPORT_DIR, "sprite.player.p1.hub.json"),
     `${JSON.stringify(report, null, 2)}\n`,
   );
-  console.log(`sprite.player.p1: copied 14x22 tiny astronaut`);
+  console.log(
+    `sprite.player.p1: wrote 14x22 tiny astronaut from ${sourceImage.width}x${sourceImage.height} source`,
+  );
 }
 
 function main(): void {
@@ -660,13 +671,18 @@ function main(): void {
   if (!options.asset || options.asset === "bg.bathroom.wall") {
     processBackground(options);
   }
-  if (!options.asset) {
-    copyTinyAstronaut(options);
+  if (!options.asset || options.asset === "sprite.player.p1") {
+    copyTinyAstronaut(options, palette);
   }
   const selected = options.asset
     ? ASSETS.filter((asset) => asset.id === options.asset)
     : ASSETS;
-  if (options.asset && selected.length === 0 && options.asset !== "bg.bathroom.wall") {
+  if (
+    options.asset &&
+    selected.length === 0 &&
+    options.asset !== "bg.bathroom.wall" &&
+    options.asset !== "sprite.player.p1"
+  ) {
     throw new Error(`Unknown asset ${options.asset}`);
   }
   for (const spec of selected) {

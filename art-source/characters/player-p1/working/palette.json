@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "character": "player-p1",
-  "cell": { "width": 14, "height": 22 },
+  "cell": { "width": 28, "height": 44 },
   "ramps": {
     "teal": { "shadow": "#05090b", "base": "#101a20", "highlight": "#1d2f38" },
     "bone": { "shadow": "#c9b79a", "base": "#f2e8d5", "highlight": "#fff8e8" },

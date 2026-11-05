@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "character": "player-p1",
-  "cell": { "width": 14, "height": 22 },
+  "cell": { "width": 28, "height": 44 },
   "origin": [0.5, 1],
   "sources": {
     "walk-49": {
@@ -13,6 +13,11 @@
       "sheet": "ludo/walk-36f-2026-10-29/A-complete-full-body-side-view-pixel-art-sprite-of-max-px-frames-36-rows-6-cols-6.png",
       "atlas": "ludo/walk-36f-2026-10-29/A-complete-full-body-side-view-pixel-art-sprite-of-max-px-frames-36-rows-6-cols-6.json",
       "sourceFps": 15.625
+    },
+    "dance-64": {
+      "sheet": "dance-griddy-p1/A-complete-full-body-side-view-pixel-art-sprite-of-max-px-frames-64-rows-8-cols-8.png",
+      "atlas": "dance-griddy-p1/A-complete-full-body-side-view-pixel-art-sprite-of-max-px-frames-64-rows-8-cols-8.json",
+      "sourceFps": 15.3846
     }
   },
   "animations": {
@@ -51,6 +56,13 @@
       "fps": 30,
       "loop": false,
       "output": "player-p1-land"
+    },
+    "dance": {
+      "source": "dance-64",
+      "frames": [0, 63],
+      "fps": 30,
+      "loop": false,
+      "output": "player-p1-dance"
     }
   }
 }

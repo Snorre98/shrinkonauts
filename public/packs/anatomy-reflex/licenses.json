@@ -78,7 +78,7 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; idle from walk-49 frame 0"
+      "modified": "2026-11-05; idle from walk-49 frame 0; rebuilt at 28x44"
     },
     {
       "file": "shared/sprites/player-p1-walk.png",
@@ -86,7 +86,7 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; 49-frame walk sheet"
+      "modified": "2026-11-05; walk sheet rebuilt at 28x44"
     },
     {
       "file": "shared/sprites/player-p1-jump.png",
@@ -94,7 +94,7 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; jump frames 6-17 of the 36-frame source"
+      "modified": "2026-11-05; jump sheet rebuilt at 28x44"
     },
     {
       "file": "shared/sprites/player-p1-fall.png",
@@ -102,7 +102,7 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; fall frames 18-27 of the 36-frame source"
+      "modified": "2026-11-05; fall sheet rebuilt at 28x44"
     },
     {
       "file": "shared/sprites/player-p1-land.png",
@@ -110,7 +110,15 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; land frames 28-35 of the 36-frame source"
+      "modified": "2026-11-05; land sheet rebuilt at 28x44"
+    },
+    {
+      "file": "shared/sprites/player-p1-dance.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-05; 64-frame dance sheet at 28x44"
     },
     {
       "file": "shared/sprites/player-p2.png",
@@ -118,7 +126,7 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; idle from the approved P2 walk frame 0"
+      "modified": "2026-11-05; idle from the approved P2 walk frame 0; rebuilt at 28x44"
     },
     {
       "file": "shared/sprites/player-p2-walk.png",
@@ -126,7 +134,7 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; 36-frame walk sheet"
+      "modified": "2026-11-05; walk sheet rebuilt at 28x44"
     },
     {
       "file": "shared/sprites/player-p2-jump.png",
@@ -134,7 +142,7 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; jump frames 6-17 of the 36-frame source"
+      "modified": "2026-11-05; jump sheet rebuilt at 28x44"
     },
     {
       "file": "shared/sprites/player-p2-fall.png",
@@ -142,7 +150,7 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; fall frames 18-27 of the 36-frame source"
+      "modified": "2026-11-05; fall sheet rebuilt at 28x44"
     },
     {
       "file": "shared/sprites/player-p2-land.png",
@@ -150,7 +158,15 @@
       "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
       "author": "AI-generated in Ludo.ai; art direction by Snorre",
       "license": "Ludo.ai source (POC; plan TBD)",
-      "modified": "2026-10-31; land frames 28-35 of the 36-frame source"
+      "modified": "2026-11-05; land sheet rebuilt at 28x44"
+    },
+    {
+      "file": "shared/sprites/player-p2-dance.png",
+      "type": "image",
+      "source": "Ludo.ai source sheet; local POC downscale + palette quantization",
+      "author": "AI-generated in Ludo.ai; art direction by Snorre",
+      "license": "Ludo.ai source (POC; plan TBD)",
+      "modified": "2026-11-05; 64-frame dance sheet at 28x44"
     },
     {
       "file": "shared/sprites/agent-neuron.png",

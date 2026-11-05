@@ -9,18 +9,18 @@ data and are tracked.
 `frames/walk-49f/` and `frames/walk-36f/` contain raw Ludo slices at 264×352 and
 342×603. They are **not** cleaned 14×22 masters and must not be shipped.
 
-The POC runtime sheets are built and integrated:
+The POC runtime sheets are built and integrated at a **28×44 master cell**,
+displayed at 28×44 (1:1). The earlier 14×22 masters are retained only as
+history; the runtime is no longer built from them.
 
-- The current `master/player-p1-idle-14x22.png` and
-  `master/player-p2-idle-14x22.png` are the POC downscale + palette-quantize
-  masters. The semantic `art:remaster` command remains available and can
-  regenerate the P1 master if you want to compare paths.
-- P1 idle, walk, jump, fall, and land are in
+- P1 idle, walk, jump, fall, land, and dance are in
   `public/packs/anatomy-reflex/shared/sprites/`.
-- `clips.json` is now schema v2 and maps the walk-49 and jump-36 sources to the
-  five clips.
-- P2 uses its own approved walk/jump sheets under
+- `clips.json` is schema v2 and maps the walk-49, jump-36, and dance-64
+  sources to the six clips.
+- P2 uses its own approved walk/jump/dance sheets under
   `art-source/characters/player-p2/`; it is not derived from P1 for the POC.
+- The `art:remaster` path still describes the old 14×22 semantic masters and is
+  kept for comparison. Runtime builds use `--sampler downscale`.
 
 The pipeline stages:
 
@@ -195,13 +195,14 @@ visor/tank and accent masks; the suit, joints, outline, and grime stay unchanged
 
 ## Validation checklist
 
-- P1/P2 share the 14×22 cell, 28×44 display, bottom-centre origin, and clip
-  names.
+- P1/P2 share the 28×44 master cell, 28×44 display, bottom-centre origin, and
+  clip names.
 - P1 uses bone/amber/nerve/joint; P2 uses bone/joint/joint/nerve (ADR-0065).
 - Orange appears nowhere on P2.
 - Every pixel is on an approved ramp; alpha is 0 or 255.
 - No anti-aliasing or semi-transparent edges.
-- Static player PNG is ≤16 KB; each animation sheet is ≤64 KB.
+- Runtime sheets are allowed to exceed the old 14×22 64 KB guideline because
+  the master cell is larger; previews are still generated for review.
 - `clips.json` uses the same cell, origin, and clip names for P1 and P2. P1 and
   P2 walk sources have different frame counts (49 vs 36); cycle duration is
   normalized by fps.
@@ -212,9 +213,9 @@ The POC runtime assets are already in
 `public/packs/anatomy-reflex/shared/sprites/` and declared in
 `public/packs/anatomy-reflex/assets.final.json`:
 
-- `sprite.player.p1` / `sprite.player.p2` — static idle.
-- `sprite.player.p1.walk/jump/fall/land` — `sheet` entries.
-- `sprite.player.p2.walk/jump/fall/land` — `sheet` entries.
+- `sprite.player.p1` / `sprite.player.p2` — static idle at 28×44.
+- `sprite.player.p1.walk/jump/fall/land/dance` — `sheet` entries.
+- `sprite.player.p2.walk/jump/fall/land/dance` — `sheet` entries.
 
 The asset IDs are stable. The full ADR-0062 descriptor and generalized animation
 system remain future work; the POC reads frame count, fps, and loop from the
