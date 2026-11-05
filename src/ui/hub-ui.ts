@@ -190,7 +190,7 @@ export function mountHubUi(
     el(
       "p",
       "hub__controller-hint",
-      "Scan with each phone. Keep this screen visible. Sessions end after 5 minutes.",
+      "Scan with each phone. Keep this screen visible. Sessions end after 20 minutes.",
     ),
   );
   const controllerRoom = el("div", "hub__controller-room");

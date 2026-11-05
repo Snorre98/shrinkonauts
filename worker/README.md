@@ -64,8 +64,8 @@ the session.
 | `DEMO_MAX_CONCURRENT_ROOMS` | 2 |
 | `DEMO_MAX_WS_ATTEMPTS_PER_DAY` | 5,000 |
 | `DEMO_MAX_DEVICE_ISSUES_PER_DAY` | 500 |
-| `DEMO_MAX_SESSION_MINUTES` | 5 |
-| `DEMO_MAX_MESSAGES_PER_ROOM` | 12,000 |
+| `DEMO_MAX_SESSION_MINUTES` | 20 |
+| `DEMO_MAX_MESSAGES_PER_ROOM` | 30,000 |
 | `DEMO_MAX_CONTROLLER_MESSAGES_PER_SECOND` | 20 |
 | `DEMO_MAX_HOST_MESSAGES_PER_SECOND` | 60 |
 | `DEMO_MAX_JOINS_PER_ROOM` | 20 |
@@ -78,12 +78,12 @@ the session.
 | `DEMO_IP_DEVICE_ISSUES_PER_MINUTE` | 10 |
 | `DEMO_ALLOW_HOST_DEVICE_AS_CONTROLLER` | false |
 
-The gate resets at 00:00 UTC. The 5-minute session clock starts when
+The gate resets at 00:00 UTC. The 20-minute session clock starts when
 `POST /session` admits the session; setup time counts.
 
 Worst case with the defaults:
 
-- 50 sessions × 12,000 messages ÷ 20 = 30,000 Durable Object requests from
+- 50 sessions × 30,000 messages ÷ 20 = 75,000 Durable Object requests from
   input, plus gate/connection requests and alarms — under 100,000/day.
 - Workers requests are dominated by the 5,000 admission-attempt cap.
 - Workers Logs is disabled, so observability events stay at zero.

@@ -92,7 +92,7 @@ function endMessage(view: ControllerSessionView): string {
     case "reconnect-exhausted":
       return "Could not reconnect. Check the room code and try again.";
     case "demo-time-limit":
-      return "This demo session reached its 5-minute limit.";
+      return "This demo session reached its 20-minute limit.";
     case "demo-message-limit":
       return "This demo session reached its traffic limit.";
     case "join-timeout":

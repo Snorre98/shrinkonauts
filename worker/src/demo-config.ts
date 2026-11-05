@@ -2,8 +2,10 @@
  * Demo quota and admission configuration.
  *
  * All values are plain Worker vars so the deployed limits can be tuned without
- * a code change. The defaults are the values recorded in ADR-0082; the clamps
- * keep a bad env value from disabling the guard or making a session unbounded.
+ * a code change. The defaults match the deployed demo configuration; ADR-0082
+ * records the original guard, amended on 2026-11-05 to 20 minutes and 30,000
+ * messages. The clamps keep a bad env value from disabling the guard or making
+ * a session unbounded.
  */
 
 export interface DemoEnv {
@@ -91,10 +93,10 @@ export function demoConfig(env: DemoEnv): DemoConfig {
       10_000,
     ),
     maxSessionMs:
-      integer(env.DEMO_MAX_SESSION_MINUTES, 5, 1, 30) * 60_000,
+      integer(env.DEMO_MAX_SESSION_MINUTES, 20, 1, 30) * 60_000,
     maxMessagesPerRoom: integer(
       env.DEMO_MAX_MESSAGES_PER_ROOM,
-      12_000,
+      30_000,
       1_000,
       200_000,
     ),
