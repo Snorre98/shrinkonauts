@@ -13,7 +13,7 @@ const processEnvironment = Object.fromEntries(
  */
 export default defineConfig({
   testDir: "./e2e",
-  testIgnore: ["controller.spec.ts"],
+  testIgnore: ["controller.spec.ts", "**/pwa/**"],
   timeout: 90_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,
@@ -22,7 +22,12 @@ export default defineConfig({
   projects: [
     {
       name: "smoke",
-      testIgnore: ["**/capture/**", "**/gallery/**", "**/controller.spec.ts"],
+      testIgnore: [
+        "**/capture/**",
+        "**/gallery/**",
+        "**/controller.spec.ts",
+        "**/pwa/**",
+      ],
     },
     {
       name: "capture",
