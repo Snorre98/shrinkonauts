@@ -102,6 +102,31 @@ test("starts with reduced motion enabled without the spin animation", async ({
   await expect(page.locator(".hud__title")).toHaveText("Nerve Forest");
 });
 
+test("offers the 75% text scale at a small viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  const consoleErrors = await bootHub(page);
+
+  await page.locator(".hub__summary", { hasText: "Settings" }).click();
+  const settings = page.locator(".hub__details", { hasText: "Settings" });
+  const smallest = settings.getByRole("button", { name: "75%" });
+  await expect(smallest).toBeVisible();
+  await smallest.click();
+
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--ui-font-scale").trim(),
+      ),
+    )
+    .toBe("0.75");
+
+  const bounds = await smallest.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(360);
+  expect(consoleErrors).toEqual([]);
+});
+
 test("boots into the bathroom, starts a solo anatomy cycle, and returns to the hub", async ({
   page,
 }) => {

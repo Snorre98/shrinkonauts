@@ -3,10 +3,12 @@ import { snapTextScale, TEXT_SCALES } from "../src/ui/text-scale";
 
 describe("text scale options", () => {
   it("uses integer-friendly UI scales", () => {
-    expect(TEXT_SCALES).toEqual([1, 1.25, 1.5, 2]);
+    expect(TEXT_SCALES).toEqual([0.75, 1, 1.25, 1.5, 2]);
   });
 
   it("snaps a saved fractional scale to the nearest option", () => {
+    expect(snapTextScale(0.7)).toBe(0.75);
+    expect(snapTextScale(0.8)).toBe(0.75);
     expect(snapTextScale(0.9)).toBe(1);
     expect(snapTextScale(1.1)).toBe(1);
     expect(snapTextScale(1.3)).toBe(1.25);
