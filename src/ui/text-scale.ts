@@ -1,8 +1,9 @@
 /**
  * Integer-friendly text scales for the pixel UI. Values stay on simple
- * fractions so 100/125/150/200% render predictably with pixel fonts.
+ * fractions so 75/100/125/150/200% render predictably with pixel fonts.
+ * The 75% step keeps dense HUD and hub copy usable on small screens.
  */
-export const TEXT_SCALES = [1, 1.25, 1.5, 2] as const;
+export const TEXT_SCALES = [0.75, 1, 1.25, 1.5, 2] as const;
 
 export type TextScale = (typeof TEXT_SCALES)[number];
 

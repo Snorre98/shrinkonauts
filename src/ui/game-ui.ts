@@ -324,7 +324,12 @@ export function mountGameUi(
   const audioStatus = el("span", "hud__audio", "Audio on");
   audioStatus.dataset.muted = "false";
   const saveStatus = el("span", "hud__save", "Autosave ready");
-  badgeRow.append(modeBadge, audioStatus, saveStatus);
+  const pauseButton = button("Pause", "hud__pause-button", () =>
+    callbacks.onEscape(),
+  );
+  pauseButton.setAttribute("aria-label", "Pause and open settings");
+  pauseButton.title = "Pause and open settings";
+  badgeRow.append(modeBadge, audioStatus, saveStatus, pauseButton);
 
   const strip = el("div", "hud__strip");
   strip.append(hintGroup, badgeRow);

@@ -470,7 +470,7 @@ Run snapshot additions in M1.75:
 
 `status` is `playing`, `debrief`, or `complete`. Loading rejects malformed JSON,
 an unsupported schema version, a different pack ID, or a different pack version.
-Settings clamp volume to `0..1` and text scale to `0.8..1.6`, and fall back to
+Settings clamp volume to `0..1` and text scale to `0.75..2`, and fall back to
 defaults on corrupt data. Storage may be unavailable (private mode/no
 localStorage); the save module then keeps working in memory.
 
@@ -524,8 +524,11 @@ were wired. The assets, key/fit reports and 1×/2×/4× previews are committed u
 
 The accessibility baseline is:
 
-- `Esc` pause from gameplay, with a visible pause overlay.
-- Text scale presets (90–150%) applied through `--ui-font-scale`.
+- `Esc` pause from gameplay, with a visible pause overlay. The HUD also exposes
+  a touch-sized Pause button that opens the same settings overlay on tablets and
+  other touch-only screens.
+- Text scale presets (75–200%) applied through `--ui-font-scale`; 75% keeps the
+  HUD and hub readable on small screens.
 - Reduced motion: sets `data-reduced-motion="true"`, disables CSS animation, and
   simplifies movement effects while keeping surfaces/text.
 - Mute toggle (`M`) from gameplay and from every overlay, with HUD status.
@@ -542,7 +545,7 @@ The accessibility baseline is:
 - Semantic buttons and labels for gate reordering, choices, and debrief; compact
   blueprint components are labelled buttons and the Tab popup traps focus.
 - Density states at `data-hud-density` keep content reachable through the
-  expanded blueprint, pause controls, and text scaling at 1/1.25/1.5/2.
+  expanded blueprint, pause controls, and text scaling at 0.75/1/1.25/1.5/2.
 
 Full key rebinding is deferred. Settings changes update the mounted pause
 overlay in place, so buttons reflect their new state without recreating the

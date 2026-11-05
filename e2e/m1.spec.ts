@@ -304,6 +304,15 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await page.getByRole("button", { name: "Reset puzzle" }).click();
   await expect(page.locator(".hud__save")).toContainText("Puzzle reset");
 
+  await page.getByRole("button", { name: "75%" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--ui-font-scale").trim(),
+      ),
+    )
+    .toBe("0.75");
+
   await page.getByRole("button", { name: "125%" }).click();
   await expect
     .poll(() =>
@@ -332,6 +341,38 @@ test("pause settings, checkpoint player toggle, map and mute work from the keybo
   await page.keyboard.press("Escape");
   await expect(page.locator(".overlay--map")).toHaveCount(0);
 
+  expect(consoleErrors).toEqual([]);
+});
+
+test("HUD pause button opens settings on a tablet-sized touch screen", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  const consoleErrors = await boot(page);
+
+  const pause = page.getByRole("button", {
+    name: "Pause and open settings",
+  });
+  await expect(pause).toBeVisible();
+  const bounds = await pause.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds!.width).toBeGreaterThanOrEqual(44);
+  expect(bounds!.height).toBeGreaterThanOrEqual(44);
+
+  await pause.click();
+  await expect(page.getByRole("dialog", { name: "Paused" })).toBeVisible();
+
+  await page.getByRole("button", { name: "75%" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--ui-font-scale").trim(),
+      ),
+    )
+    .toBe("0.75");
+
+  await page.getByRole("button", { name: "Resume" }).click();
+  await expect(page.locator(".overlay--pause")).toHaveCount(0);
   expect(consoleErrors).toEqual([]);
 });
 

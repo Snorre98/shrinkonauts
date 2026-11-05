@@ -36,6 +36,18 @@ describe("save", () => {
     expect(reloaded.settings.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
   });
 
+  it("persists the smallest 75% text scale and clamps below it", () => {
+    const storage = new MemorySaveStorage();
+    const save = createSave({ storage });
+
+    save.updateAccessibility({ textScale: 0.75 });
+    expect(createSave({ storage }).settings.accessibility.textScale).toBe(0.75);
+
+    save.updateAccessibility({ textScale: 0.5 });
+    expect(save.settings.accessibility.textScale).toBe(0.75);
+    expect(createSave({ storage }).settings.accessibility.textScale).toBe(0.75);
+  });
+
   it("defaults shared feedback on for old or malformed settings", () => {
     const oldSettings = new MemorySaveStorage({
       [SETTINGS_STORAGE_KEY]: JSON.stringify({
