@@ -13,6 +13,7 @@ import {
   generateRoomCode,
   releaseRoomSession,
 } from "../net";
+import { createPwaController } from "./pwa";
 
 declare global {
   interface Window {
@@ -71,6 +72,7 @@ bootApp({
     releaseRoomSession({ netUrl }, room, ticket),
   controllerUrlFor: (room, slot, ticket) =>
     buildControllerUrl(controllerPageUrl, room, slot, ticket),
+  pwa: createPwaController(),
 })
   .then((app) => {
     window.__shrinkonauts = app;

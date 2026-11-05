@@ -3135,6 +3135,53 @@ kbd {
   line-height: 1.5;
 }
 
+.hub__pwa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 0.7rem;
+  margin-top: 0.55rem;
+  padding: 0.45rem 0.55rem;
+  border: var(--ui-border) solid color-mix(in srgb, var(--color-joint) 45%, transparent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--color-joint) 8%, transparent);
+}
+
+.hub__pwa[data-notice="update"] {
+  border-color: color-mix(in srgb, var(--color-nerve) 55%, transparent);
+  background: color-mix(in srgb, var(--color-nerve) 9%, transparent);
+}
+
+.hub__pwa[data-notice="offline"] {
+  border-color: color-mix(in srgb, var(--color-muted) 45%, transparent);
+  background: color-mix(in srgb, var(--color-muted) 8%, transparent);
+}
+
+.hub__pwa[data-notice="ready"] {
+  border-color: color-mix(in srgb, var(--color-bone) 22%, transparent);
+  background: color-mix(in srgb, var(--color-bone) 5%, transparent);
+}
+
+.hub__pwa-text {
+  flex: 1 1 14rem;
+  margin: 0;
+  color: var(--color-bone);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.hub__pwa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.hub__pwa-install,
+.hub__pwa-update {
+  white-space: nowrap;
+}
+
 .hub__details {
   margin-top: 0.35rem;
   border-top: var(--ui-border) solid color-mix(in srgb, var(--color-bone) 12%, transparent);
