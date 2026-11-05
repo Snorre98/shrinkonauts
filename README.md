@@ -23,31 +23,37 @@ npm run dev
 Open <http://127.0.0.1:5173/>.
 
 ```bash
-npm test               # 74 files, 788 unit/integration tests
+npm test               # 75 files, 816 unit/integration tests
 npm run smoke          # room boot + module boundary tests
-npm run build          # type check and production build
+npm run build          # type check, production build, controller + PWA checks
+npm run check:pwa      # validate the built service worker, manifests, and icons
 npm run pack:validate  # dev fixture + anatomy + catalog/hub validation
 npm run pack:map       # regenerate the mapping document
 npm run pack:smoke     # dev simulation + headless runtime loop
 npm run smoke:e2e      # Playwright browser smoke using system Chrome
+npm run smoke:pwa      # installability + offline smoke over /shrinkonauts/
 npm run gdd:capture    # capture 34 action shots into ignored gdd-captures/
 npm run gdd:site       # build the public GDD gallery into public/gdd/
 npm run gdd:smoke      # smoke the generated gallery + walkthrough
 npm run build:site     # build the gallery + production build
 npm run art:key        # remove a flat magenta background from a concept plate
 npm run art:build-player # build P1/P2 POC animation sheets and previews
+npm run art:pwa-icons  # regenerate the committed PWA icon set
 npm run preview        # serve the production build
+npm run preview:pwa    # serve dist under /shrinkonauts/ for PWA checks
 ```
 
 `smoke:e2e` starts Vite on port 4173 and launches the installed Chrome through
 Playwright's `channel: "chrome"`. It never downloads a bundled browser.
+`smoke:pwa` serves the production `dist/` under `/shrinkonauts/`, matching the
+GitHub Pages subpath, and exercises the service worker with offline reloads.
 
 ## CI and deployment
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Gameplay capture, GDD gallery build, type check + build with the Worker URL/build ID, unit tests, Worker checks, pack validation, committed-mapping drift check, Playwright smoke |
-| `.github/workflows/deploy-pages.yml` | push to `main`, manual dispatch | Runs CI, then publishes the tested `dist/` artifact to GitHub Pages |
+| `.github/workflows/ci.yml` | pull requests, manual dispatch, called by deploy | Gameplay capture, GDD gallery build, type check + build with the Worker URL/build ID, PWA installability/offline smoke, unit tests, Worker checks, pack validation, committed-mapping drift check, Playwright smoke |
+| `.github/workflows/deploy-pages.yml` | push to `main`, manual dispatch | Runs CI, verifies the relay and PWA artifacts, then publishes the tested `dist/` artifact to GitHub Pages |
 | `.github/workflows/deploy-worker.yml` | push to `main` for Worker/shared relay changes, manual dispatch | Runs tests, Worker type check/dry run, then deploys the Worker and Durable Objects with the demo signing secret |
 
 Deployments are GitHub Actions only. Do not run `wrangler deploy` or
@@ -87,6 +93,37 @@ active controller sessions; clients reconnect or start a new room.
 
 CI runs on Node 24 (pinned by `.nvmrc`) and installs with `npm ci`, so
 `package-lock.json` must stay in sync with `package.json`.
+
+## Install, offline play, and updates
+
+The game and the phone controller are installable PWAs.
+
+- **Game (desktop/laptop):** open the live build in Chrome or Edge and use the
+  install icon in the address bar, or the **Install app** action in the bathroom
+  hub. On macOS Safari, use **File → Add to Dock**.
+- **Phone controller:** open `controller.html` from the hub link or directly,
+  then use the browser menu or **Share → Add to Home Screen**. It opens the
+  join screen, where the six-character room code can be entered.
+- **iOS Safari:** use **Share → Add to Home Screen**. The hub shows the same
+  hint when the app is not already installed.
+
+After the first load, the service worker precaches the hub, both authored
+packs, fonts, and audio (about 8.7 MiB). The hub, solo play, and keyboard
+co-op then work offline. Phone-controller co-op still requires the Cloudflare
+relay; selecting a phone slot while offline shows a clear connection message.
+The GDD gallery under `/gdd/` is intentionally online-only and is not
+precached.
+
+New builds are detected in the hub. Choose **Reload to update** to apply them;
+the game never reloads in the middle of a run. Installed standalone mode
+requests persistent storage best-effort, but evidence export remains the
+durable record.
+
+The PWA decision is recorded in
+[ADR-0089](docs/adr-presentation/0089-pwa-offline-shell-and-update-lifecycle.md).
+`npm run check:pwa` validates the generated service worker, manifests, and
+icons, and `npm run smoke:pwa` verifies installability and offline boot from
+the production build.
 
 ## Controls
 
@@ -275,19 +312,26 @@ src/
   world/         Phaser scenes, fixed-step simulation, effects, tile visuals
   ui/            HUD, blueprint, bathroom menu, anchored feedback surfaces, overlays
   game/          App shell, pack runtime orchestrator, surface router, boot
-  platform/      Browser entry point
+  platform/      Browser entry point and PWA adapter
 scripts/
   pack-validate.ts   Dev fixture + anatomy + catalog/hub validation
   pack-map.ts        Mapping generation/drift check
   pack-smoke.ts      Dev simulation + headless runtime loop
+  check-pwa-bundle.ts  Service-worker precache, manifest, and icon checks
+  pwa-preview-server.ts  Serve dist under /shrinkonauts/ for PWA smoke
+  pwa-icons.ts       Regenerate the committed icon set from the washer sprite
 e2e/
   hub.spec.ts        Bathroom → cycle → launch skip → level → return
   m1.spec.ts         System-Chrome smoke: 03 → 04, conversations, reduced motion
+  pwa/pwa.spec.ts    Installability + offline reload over the production build
 public/content/dev/  M0 regression fixture (not booted by the app)
 public/hub/bathroom/ Bathroom scene, theme, manifests
 public/packs/index.json  Cycle catalog
 public/packs/anatomy-reflex/
 public/syllabi/
+public/icons/        Committed 192/512/maskable/apple-touch icons
+public/manifest.webmanifest          Game PWA manifest
+public/controller.webmanifest        Phone-controller PWA manifest
 ```
 
 Only `src/world/` imports Phaser, and only `src/world/` imports Matter.js. Only
@@ -299,6 +343,12 @@ loop headlessly.
 `pack` never imports `feedback`; `validatePack` receives an injected structural
 feedback vocabulary. `world` never imports `feedback`; effects enter through
 `WorldEffectPlan` and tile visual ports.
+
+The PWA boundary is `game/pwa-port.ts` → `platform/pwa.ts`. The game shell
+consumes a typed snapshot and never touches the service-worker API; `platform`
+owns registration, install prompts, connectivity, and the update handshake.
+The controller registers the same worker directly because its module boundary
+permits only `core` and `net` dependencies.
 
 ## Documentation
 
@@ -331,6 +381,9 @@ feedback vocabulary. `world` never imports `feedback`; effects enter through
 - [`docs/adr-presentation/0080-hud-blueprint-and-player-colors.md`](docs/adr-presentation/0080-hud-blueprint-and-player-colors.md)
   — ADR for the compact component blueprint, player colour tokens, and the
   M3.75 HUD layout.
+- [`docs/adr-presentation/0089-pwa-offline-shell-and-update-lifecycle.md`](docs/adr-presentation/0089-pwa-offline-shell-and-update-lifecycle.md)
+  — ADR for installability, the offline precache boundary, and prompt-based
+  updates.
 - [`docs/m1.9/remaining-work.md`](docs/m1.9/remaining-work.md) — what is
   deliberately missing and which milestone owns it.
 - [`docs/adr-hub/README.md`](docs/adr-hub/README.md) — ADR-0058–0059 for the
@@ -349,8 +402,9 @@ modified by this codebase.
 M1.9's bathroom hub is **core implementation complete; manual visual and
 accessibility playtest pending**. M1.8's material/pattern layer is implemented
 with placeholder proof content; human visual review is pending. The automated
-suite passes (74 files / 788 tests), pack validation/smoke pass, the browser
-smoke passes 18/18, and the controller browser smoke passes 2/2. The hub starts
+suite passes (75 files / 816 tests), pack validation/smoke pass, the browser
+smoke passes 22/22, the controller browser smoke passes 2/2, and the PWA smoke
+passes 7/7. The hub starts
 Anatomy in Solo or Local co-op, returns to the bathroom, and preserves per-pack
 saves. Silicon is available. Multiplayer is same-room, shared-screen co-op:
 phone-controller M4.0a has its host session, input-only Cloudflare relay,
@@ -361,6 +415,14 @@ dialogue control descriptors, progressive abilities, and action feedback.
 Phase 7 latency/game-feel measurement and the playtest record remain.
 Remote online co-op, M4.0b, and M4.1 are not planned (ADR-0081). See
 [`docs/m4/phone-coop-implementation-plan.md`](docs/m4/phone-coop-implementation-plan.md).
+
+The game and controller are installable PWAs (ADR-0089). The service worker
+precaches the hub, both authored packs, fonts, and audio (~8.7 MiB), so the
+hub, solo play, and keyboard co-op work offline. Phone-controller co-op still
+requires the relay, and the GDD gallery remains online-only. Updates are
+prompted from the hub and never reload a run. Automated installability and
+offline boot pass; manual iOS Safari installation and an installed-app
+playtest remain.
 
 M3 has a **POC player-animation pass**: P1/P2 idle, walk, jump, fall, land, and
 dance sheets play in `03-nerve-forest`, P2 uses the approved

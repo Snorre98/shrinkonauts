@@ -44,6 +44,7 @@ import {
   type HubControllerSlotView,
   type HubControllerView,
   type HubMode,
+  type HubPwaView,
   type HubUi,
   type HubView,
   type HostRunOverlayView,
@@ -89,6 +90,11 @@ import type {
   HostRunSlotStatus,
   HostRunView,
 } from "./host-run-port";
+import {
+  OFFLINE_PHONE_MESSAGE,
+  type PwaPort,
+  type PwaSnapshot,
+} from "./pwa-port";
 import { GameRuntime, type AudioPort } from "./runtime";
 
 export interface BootRoomSession {
@@ -110,6 +116,7 @@ export interface BootOptions {
   createSession?: (room?: string) => Promise<BootRoomSession>;
   releaseSession?: (room: string, ticket: string) => Promise<void>;
   controllerUrlFor?: (room: string, slot: PlayerSlot, ticket?: string) => string;
+  pwa?: PwaPort;
 }
 
 export interface PackBundle {
@@ -260,6 +267,7 @@ export class AppController {
     slot: PlayerSlot,
     ticket?: string,
   ) => string;
+  private readonly pwa?: PwaPort;
 
   private saveData!: SaveModule;
   private catalogData!: PackCatalog;
@@ -316,6 +324,8 @@ export class AppController {
     this.createSession = options.createSession;
     this.releaseSession = options.releaseSession;
     this.controllerUrlFor = options.controllerUrlFor;
+    this.pwa = options.pwa;
+    this.pwa?.subscribe(() => this.refreshHub());
 
     this.transition = document.createElement("div");
     this.transition.className = "hub-transition";
@@ -625,12 +635,28 @@ export class AppController {
       error: this.state.error,
       settings: this.saveData.settings,
       assetMode: modeLabel(this.mode),
+      pwa: this.pwaView(),
     };
     this.hubUi.update(view);
     this.hubScene?.setSelection({
       packId: this.state.selectedPackId,
       mode: this.state.mode,
     });
+  }
+
+  private pwaView(): HubPwaView {
+    const snapshot: PwaSnapshot | undefined = this.pwa?.snapshot();
+    return {
+      supported: snapshot?.supported ?? false,
+      online:
+        snapshot?.online ??
+        (typeof navigator === "undefined" ? true : navigator.onLine),
+      offlineReady: snapshot?.offlineReady ?? false,
+      needRefresh: snapshot?.needRefresh ?? false,
+      canInstall: snapshot?.canInstall ?? false,
+      installed: snapshot?.installed ?? false,
+      installHint: snapshot?.installHint ?? null,
+    };
   }
 
   private controllerGateInput(): ControllerGateInput {
@@ -793,6 +819,16 @@ export class AppController {
         onMute: () => this.toggleMute(),
         onTextScale: (scale) => this.setTextScale(scale),
         onToggleReducedMotion: () => this.toggleReducedMotion(),
+        onInstall: () => {
+          void this.pwa?.promptInstall().catch((error: unknown) => {
+            this.warn(`[pwa] install prompt failed: ${toError(error).message}`);
+          });
+        },
+        onApplyUpdate: () => {
+          void this.pwa?.applyUpdate().catch((error: unknown) => {
+            this.warn(`[pwa] update failed: ${toError(error).message}`);
+          });
+        },
       },
     });
     this.refreshHub();
@@ -998,6 +1034,15 @@ export class AppController {
     const generation = ++this.hostGeneration;
     this.hostRunError = null;
     this.hostRunStartAttempted = false;
+
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      this.hostRunError = {
+        code: "HOST_RUN_OFFLINE",
+        message: OFFLINE_PHONE_MESSAGE,
+      };
+      this.refreshHub();
+      return;
+    }
 
     if (!this.hostRunFactory) {
       this.hostRunError = {

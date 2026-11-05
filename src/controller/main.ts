@@ -13,6 +13,7 @@ import {
   parseControllerUrl,
 } from "../net/room-code";
 import { WebSocketRoomTransport } from "../net/transport";
+import { registerSW } from "virtual:pwa-register";
 import {
   ControllerSession,
   type ControllerSessionView,
@@ -27,6 +28,14 @@ import { TouchInputModel, type TouchControl } from "./touch-layout";
 
 const BUILD_ID = import.meta.env.VITE_BUILD_ID ?? "dev";
 const NET_URL = import.meta.env.VITE_NET_URL?.trim() ?? "";
+
+// The controller is installable and cacheable, but installation is always
+// initiated from the browser menu or the iOS Share sheet, never a CTA here.
+// Register directly instead of importing the platform adapter: the controller
+// boundary in `tests/boundaries.test.ts` only permits core/net dependencies.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  registerSW({ immediate: true });
+}
 
 const root = document.getElementById("controller-root");
 if (!root) {

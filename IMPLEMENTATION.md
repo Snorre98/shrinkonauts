@@ -71,6 +71,7 @@ procedural placeholders, and every cue resolves to a synth or silent fallback.
 | Pure validator with injected feedback vocabulary | Working |
 | Headless runtime smoke | Working |
 | Playwright browser smoke on system Chrome | Working |
+| Installable game + controller PWA | Working; offline solo/keyboard co-op; manual iOS install/playtest pending (ADR-0089) |
 | Human hub visual/accessibility playtest | **Pending** |
 | Human solo/co-op playtest | **Pending** |
 | Remaining final art files (03 scans, Silicon interrupt/exit, deferred backgrounds/UI) | Deferred |
@@ -90,21 +91,28 @@ Run from `shrinkonauts/`:
 ```bash
 npm install
 npm run dev             # http://127.0.0.1:5173/
-npm test                # 74 files, 788 unit/integration tests
+npm test                # 75 files, 816 unit/integration tests
 npm run smoke           # room boot + module boundary tests
-npm run build           # tsc --noEmit + Vite production build
+npm run build           # tsc --noEmit + Vite build + controller/PWA checks
+npm run check:pwa       # validate SW precache, manifests, and icons
 npm run pack:validate   # dev fixture + anatomy + catalog/hub validation
 npm run pack:map        # regenerate/check the mapping document
 npm run pack:smoke      # dev simulation + headless runtime loop
 npm run smoke:e2e       # Playwright, system Chrome, port 4173
+npm run smoke:pwa       # installability + offline smoke, port 4174
 npm run art:key         # remove a flat magenta background from a concept plate
 npm run art:build-player # build P1/P2 POC animation sheets and previews
+npm run art:pwa-icons   # regenerate public/icons from the washer sprite
 npm run preview         # serve dist/
+npm run preview:pwa     # serve dist under /shrinkonauts/ for PWA checks
 ```
 
 `smoke:e2e` starts Vite on port 4173 and launches Playwright with
 `channel: "chrome"`. It uses the installed system Chrome and never downloads a
-bundled browser.
+bundled browser. `smoke:pwa` serves the production build under
+`/shrinkonauts/` with `scripts/pwa-preview-server.ts`, matching the GitHub
+Pages subpath, and tests service-worker scope, installability, offline reloads,
+and GDD isolation.
 
 Asset modes:
 
@@ -160,10 +168,10 @@ platform ──> net
 | `hub` | Bathroom hub document, loader, validation | `assets`, `core`, `pack` |
 | `ui` | HUD, bathroom menu, overlays, anchored surfaces, live region, settings | `assets`, `core`, `curriculum`, `feedback`, `pack` |
 | `world` | Phaser hub/room scenes, fixed-step simulation, effects, tile visuals, input | `assets`, `core`, `hub`, `pack`, `puzzle` |
-| `controller` | Standalone phone input surface, touch layout, double-tap gesture, control descriptors | `core`, `net` |
+| `controller` | Standalone phone input surface, touch layout, double-tap gesture, control descriptors, direct worker registration | `core`, `net` |
 | `net` | Protocol, transport, host session, relay adapter, remote input source | `core`, `game`, `save`, `ui`, `world` |
-| `game` | App shell, pack runtime orchestrator, feedback integration, conversations, effect mapping, browser boot | all domain/adapters |
-| `platform` | Browser entry point | `core`, `game`, `ui`, `net` |
+| `game` | App shell, pack runtime orchestrator, feedback integration, conversations, effect mapping, browser boot, PWA port | all domain/adapters |
+| `platform` | Browser entry points and PWA adapter (service worker, install, connectivity, updates) | `core`, `game`, `ui`, `net` |
 
 `tests/boundaries.test.ts` enforces the graph: no Phaser or Matter outside
 `world`, no media paths outside `assets`, no direct media imports in
@@ -183,6 +191,10 @@ Three deliberate seams keep the graph acyclic:
 - `src/game/host-run-port.ts` defines the game-owned host-session seam and the
   ephemeral control-descriptor types. `net` implements the seam; `controller`
   consumes protocol types only and imports no game runtime or pack content.
+- `src/game/pwa-port.ts` defines the browser-independent PWA snapshot. The
+  platform adapter implements it, and the hub renders it. The controller
+  registers the same worker directly because its module boundary permits only
+  `core` and `net` dependencies.
 
 The one documented dependency exception is `pack/validate.ts` importing
 `../assets`. Validation must answer the same question the renderer asks — does
@@ -522,6 +534,16 @@ builder, while the v02 placeholder entries were removed once the final assets
 were wired. The assets, key/fit reports and 1×/2×/4× previews are committed under
 `art-source/blueprint-icons/` and `art-source/previews/blueprint-icons/`.
 
+The bathroom hub owns a compact PWA strip (`.hub__pwa`). It surfaces the
+Chromium install action when `beforeinstallprompt` is available, the iOS
+Share → Add to Home Screen hint in Safari, a one-shot offline-ready
+confirmation, the offline boundary, and the prompt-based update action. The
+strip is a polite live region; update reloads are offered only in the hub, so a
+run is never interrupted. The permissionless `navigator.storage.persist()` call
+is made only in standalone mode to avoid Firefox's prompt. The service worker
+itself is registered by `src/platform/pwa.ts`; the hub only consumes the typed
+snapshot from `src/game/pwa-port.ts`.
+
 The accessibility baseline is:
 
 - `Esc` pause from gameplay, with a visible pause overlay. The HUD also exposes
@@ -633,6 +655,17 @@ For the two-level slice, forward references remain advisory warnings:
 generated mapping drift, and `pack:smoke` asserts that all referenced anatomy
 IDs resolve.
 
+`scripts/check-pwa-bundle.ts` runs after the production build. It parses the
+generated `dist/sw.js` and asserts that both HTML entries, both manifests, the
+four icons, the hub, both packs, the syllabus, and the fonts are precached. It
+rejects `gdd/**` and `content/dev/**`, a navigation fallback, and the relay
+hostname. It also validates both manifests and decodes the
+icon PNGs to confirm the 192/512/512-maskable/180 dimensions. The verify job in
+CI runs `npm run smoke:pwa` against the built output served at
+`/shrinkonauts/`; the test covers service-worker scope, Chrome installability
+(ignoring the expected incognito error), offline hub + solo, offline direct
+boot with query flags, the offline controller shell, and GDD isolation.
+
 ## Simulation and rendering
 
 `src/world/simulation.ts` is the pure, fixed-step simulation: AABB tile
@@ -689,6 +722,8 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 | `tests/pattern-projection.test.ts` | World/local/screen placement, UI parity, no mutation |
 | `tests/material-accessibility.test.ts` | Contrast, static reduced motion, old-room fallback |
 | `tests/boundaries.test.ts` | Media paths, Phaser/Matter confinement, materials purity, module graph |
+| `tests/pwa.test.ts` | iOS/standalone detection, install hint, PWA notice priority and copy |
+| `e2e/pwa/pwa.spec.ts` | Browser: SW scope, installability, offline hub/solo/direct boot, controller shell, GDD isolation |
 | `e2e/hub.spec.ts` | Browser: bathroom, cycle selection, launch skip, solo start, return |
 | `e2e/m1.spec.ts` | Browser: 03 → 04, conversations, attribution, reduced motion, live region, export |
 | `e2e/hud.spec.ts` | Browser: three-zone header, checklist, hint strip, cards, blueprint popup, image-backed 03/04/01 symbols, density, safe area |
@@ -697,9 +732,26 @@ The 03 room is 40 × 23 tiles at 32 px; the 04 room is 40 × 22.
 `npm run smoke` runs the room-boot and boundary suites. `pack:smoke` adds a
 headless full-loop runtime run plus the M0 placeholder/fixture simulation
 regression. `smoke:e2e` runs the Playwright smoke project against the dev server
-using system Chrome.
+using system Chrome. `smoke:pwa` runs against the production build under the
+Pages subpath and is the only browser suite that requires a built `dist/`.
 
 ## Verification performed
+
+On 2026-11-05, on `feat/pwa-offline-shell`:
+
+```text
+npm test                75 files, 816 tests passed
+npm run build           tsc clean + Vite build + controller bundle + PWA bundle check
+npm run check:pwa       175 precache entries, 8.7 MiB, PASS
+npm run pack:validate   PASS with the expected anatomy/Silicon warnings
+npm run smoke:e2e       22/22 passed
+npm run smoke:controller 2/2 passed
+npm run smoke:pwa       7/7 passed (scope, installability/install, offline hub/solo/direct boot/controller/GDD)
+```
+
+The PWA smoke serves the production build at `/shrinkonauts/` and confirms
+that the GDD gallery is not precached or served the game shell. Manual iOS
+Safari installation and an installed standalone playtest remain pending.
 
 On 2026-11-04, after merging `add-missing-04-03-assets` into `feat/m4.0a-phone-coop`:
 
@@ -793,6 +845,10 @@ procedural placeholder:
   session, hub pairing/start gate, signed tickets, device admission, and demo
   quota guard are wired, but the Phase 7 latency/game-feel close-out and
   playtest record remain.
+- Offline phone-controller co-op or a local relay; the cloud relay is required
+  for phone slots (ADR-0089).
+- Push notifications, background sync, and offline GDD gallery support.
+- Manual iOS Safari installation and an installed standalone-app playtest.
 - Physical puzzle-gate bodies (ADR-0002 target).
 - `locked`/`unlock`/`propReleased` (ADR-0004 target).
 - `requires`/`message`/`linkBlocked` (ADR-0005 target).

@@ -14,7 +14,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "vite-plugin-pwa/client", "node"]
   },
   "include": [
     "src",
@@ -25,6 +25,7 @@
     "vitest.config.ts",
     "playwright.config.ts",
     "playwright.controller.config.ts",
-    "playwright.gallery.config.ts"
+    "playwright.gallery.config.ts",
+    "playwright.pwa.config.ts"
   ]
 }

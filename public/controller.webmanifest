@@ -1,0 +1,34 @@
+{
+  "id": "./controller.html",
+  "name": "Shrinkonauts Controller",
+  "short_name": "Shrinkonauts Pad",
+  "description": "A phone controller for Shrinkonauts co-op.",
+  "start_url": "./controller.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#081216",
+  "theme_color": "#081216",
+  "categories": ["games"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
